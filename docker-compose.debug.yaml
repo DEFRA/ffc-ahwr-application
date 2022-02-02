@@ -1,4 +1,4 @@
 version: '3.8'
 services:
-  ffc-template-node:
+  ffc-ahwr-application:
     command: npm run start:debug

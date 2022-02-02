@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  ffc-template-node:
+  ffc-ahwr-application:
     command: >
       sh -c "npm run test:watch"
     volumes:
