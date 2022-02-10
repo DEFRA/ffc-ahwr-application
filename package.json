@@ -18,7 +18,8 @@
   "license": "OGL-UK-3.0",
   "dependencies": {
     "@hapi/hapi": "^20.1.5",
-    "applicationinsights": "^2.1.6"
+    "applicationinsights": "^2.1.6",
+    "ffc-messaging": "^2.3.4"
   },
   "devDependencies": {
     "jest": "^27.0.6",
