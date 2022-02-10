@@ -9,6 +9,10 @@ labels: {}
 appInsights:
   key:
 
+azureIdentity:
+  clientID:
+  resourceID:
+
 containerConfigMap:
   name: ffc-ahwr-application-config-map
 
@@ -23,12 +27,15 @@ deployment:
   minReadySeconds: 0
 
 container:
+  applicationRequestQueueAddress: ffc-sfi-application-request
+  applicationResponseQueueAddress: ffc-sfi-application-response
   imagePullPolicy: IfNotPresent
-  requestMemory: 10Mi
-  requestCpu: 10m
+  messageQueueHost: namespace.servicebus.windows.net
   limitMemory: 40Mi
   limitCpu: 40m
   port: 3000
+  requestCpu: 10m
+  requestMemory: 10Mi
 
 livenessProbe:
   path: /healthz
