@@ -6,8 +6,14 @@ image: ffc-ahwr-application
 
 labels: {}
 
+aadPodIdentity: true
+
 appInsights:
   key:
+
+azureIdentity:
+  clientID:
+  resourceID:
 
 containerConfigMap:
   name: ffc-ahwr-application-config-map
@@ -17,18 +23,25 @@ containerSecret:
   type: Opaque
 
 deployment:
-  restartPolicy: Always
-  priorityClassName: default
-  replicas: 1
+  cpuThreshold: 40
+  memoryThreshold: 80
   minReadySeconds: 0
+  minReplicas: 1
+  maxReplicas: 2
+  priorityClassName: default
+  restartPolicy: Always
+  replicas: 1
 
 container:
+  applicationRequestQueueAddress: ffc-ahwr-application-request
+  applicationResponseQueueAddress: ffc-ahwr-application-response
   imagePullPolicy: IfNotPresent
-  requestMemory: 10Mi
-  requestCpu: 10m
+  messageQueueHost: namespace.servicebus.windows.net
   limitMemory: 40Mi
   limitCpu: 40m
   port: 3000
+  requestCpu: 10m
+  requestMemory: 10Mi
 
 livenessProbe:
   path: /healthz

@@ -1,0 +1,6 @@
+resources:
+  queues:
+    - name: applicationRequest
+      enableSessions: true
+    - name: applicationResponse
+      enableSessions: true
