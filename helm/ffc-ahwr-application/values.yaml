@@ -27,8 +27,8 @@ deployment:
   minReadySeconds: 0
 
 container:
-  applicationRequestQueueAddress: ffc-sfi-application-request
-  applicationResponseQueueAddress: ffc-sfi-application-response
+  applicationRequestQueueAddress: ffc-ahwr-application-request
+  applicationResponseQueueAddress: ffc-ahwr-application-response
   imagePullPolicy: IfNotPresent
   messageQueueHost: namespace.servicebus.windows.net
   limitMemory: 40Mi
