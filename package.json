@@ -19,7 +19,10 @@
   "dependencies": {
     "@hapi/hapi": "^20.1.5",
     "applicationinsights": "^2.1.6",
-    "ffc-messaging": "^2.3.4"
+    "ffc-messaging": "^2.3.4",
+    "pg": "^8.7.3",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.16.2"
   },
   "devDependencies": {
     "jest": "^27.0.6",
