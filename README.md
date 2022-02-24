@@ -19,6 +19,17 @@ Compose in development and Kubernetes in production.
 
 - A Helm chart is provided for production deployments to Kubernetes.
 
+### Run database migrations
+
+For local development run the Docker Compose command to execute the
+Liquibase database migrations (creating tables, columns, seed data etc):
+
+```sh
+# Run the database-up script (executes Liquibase)
+# Explicitly run the docker-compose down command to shut down the database container
+docker-compose -f docker-compose.migrate.yaml up database-up && docker-compose -f docker-compose.migrate.yaml down
+```
+
 ### Build container image
 
 Container images are built using Docker Compose, with the same images used to
