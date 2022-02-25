@@ -17,6 +17,13 @@ services:
       MESSAGE_QUEUE_USER: ${MESSAGE_QUEUE_USER:-notset}
       APPLICATIONRESPONSE_QUEUE_ADDRESS: ${APPLICATIONRESPONSE_QUEUE_ADDRESS:-ffc-ahwr-application-response}${MESSAGE_QUEUE_SUFFIX}
       APPLICATIONREQUEST_QUEUE_ADDRESS: ${APPLICATIONREQUEST_QUEUE_ADDRESS:-ffc-ahwr-application-request}${MESSAGE_QUEUE_SUFFIX}
+      POSTGRES_DB: ffc_ahwr_application
+      POSTGRES_HOST: ${POSTGRES_HOST:-ffc-ahwr-application-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_SCHEMA_PASSWORD:-ppp}
+      POSTGRES_PORT: 5432
+      POSTGRES_SCHEMA_NAME: ${POSTGRES_SCHEMA_NAME:-public}
+      POSTGRES_USERNAME: ${POSTGRES_SCHEMA_USERNAME:-postgres}
+
 
   ffc-ahwr-application-postgres:
     image: postgres:11.4-alpine
