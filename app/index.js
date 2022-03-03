@@ -6,7 +6,7 @@ const init = async () => {
 
   const db = require('./data')
   const applications = await db.models.application.findAll()
-  console.log(`There are ${applications.length} applications`)
+  console.log(`There are ${applications.length} applications in the database`)
   applications.forEach(a => console.log(`Application ${a.applicationId} with reference ${a.reference}`))
 }
 
