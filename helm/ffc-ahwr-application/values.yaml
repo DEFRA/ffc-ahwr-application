@@ -37,11 +37,23 @@ container:
   applicationResponseQueueAddress: ffc-ahwr-application-response
   imagePullPolicy: IfNotPresent
   messageQueueHost: namespace.servicebus.windows.net
-  limitMemory: 40Mi
-  limitCpu: 40m
+  limitMemory: 100Mi
+  limitCpu: 80m
   port: 3000
-  requestCpu: 10m
-  requestMemory: 10Mi
+  requestCpu: 40m
+  requestMemory: 80Mi
+
+postgresService:
+  postgresDb: ffc_ahwr_application
+  # postgresExternalName is the external host name to which PostgreSQL
+  # requests should be forwarded. If empty, PostgreSQL is assumed to be
+  # within the cluster and accessible via postgresHost
+  postgresExternalName:
+  postgresHost: ffc-ahwr-application-postgres
+  postgresPort: 5432
+  postgresSchema: public
+  postgresUser: postgres
+
 
 livenessProbe:
   path: /healthz

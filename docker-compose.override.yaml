@@ -10,8 +10,17 @@ services:
     image: ffc-ahwr-application-development
     container_name: ffc-ahwr-application-development
     ports:
-      - "3000:3000"
-      - "9229:9229"
+      - "3001:3000"
+      - "9230:9229"
     volumes:
       - ./app:/home/node/app
       - ./package.json:/home/node/package.json
+
+  ffc-ahwr-application-postgres:
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

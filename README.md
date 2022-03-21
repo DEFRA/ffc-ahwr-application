@@ -19,6 +19,17 @@ Compose in development and Kubernetes in production.
 
 - A Helm chart is provided for production deployments to Kubernetes.
 
+### Run database migrations
+
+For local development run the Docker Compose command to execute the
+Liquibase database migrations (creating tables, columns, seed data etc):
+
+```sh
+# Run the database-up script (executes Liquibase)
+# Explicitly run the docker compose down command to shut down the database container
+docker compose -f docker-compose.migrate.yaml up database-up && docker compose -f docker-compose.migrate.yaml down
+```
+
 ### Build container image
 
 Container images are built using Docker Compose, with the same images used to
@@ -36,7 +47,7 @@ through the Docker Compose
 
 ```sh
 # Build container images
-docker-compose build
+docker compose build
 ```
 
 ### Start
@@ -44,7 +55,7 @@ docker-compose build
 Use Docker Compose to run service locally.
 
 ```sh
-docker-compose up
+docker compose up
 ```
 
 ## Test structure
@@ -55,9 +66,9 @@ The tests have been structured into subfolders of `./test` as per the
 ### Running tests
 
 A convenience script is provided to run automated tests in a containerised
-environment. This will rebuild images before running tests via docker-compose,
+environment. This will rebuild images before running tests via docker compose,
 using a combination of `docker-compose.yaml` and `docker-compose.test.yaml`.
-The command given to `docker-compose run` may be customised by passing
+The command given to `docker compose run` may be customised by passing
 arguments to the test script.
 
 Examples:
