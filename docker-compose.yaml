@@ -31,3 +31,8 @@ services:
       POSTGRES_DB: ffc_ahwr_application
       POSTGRES_PASSWORD: ppp
       POSTGRES_USERNAME: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+volumes:
+  postgres_data: {}

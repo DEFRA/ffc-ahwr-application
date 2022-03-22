@@ -33,7 +33,11 @@ const dbConfig = {
   logging: process.env.POSTGRES_LOGGING || false,
   retry,
   schema: process.env.POSTGRES_SCHEMA_NAME,
-  username: process.env.POSTGRES_USERNAME
+  username: process.env.POSTGRES_USERNAME,
+  define: {
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  }
 }
 
 module.exports = {
