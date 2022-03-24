@@ -2,10 +2,12 @@ const util = require('util')
 const { set } = require('../repositories/application-repository')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../config')
 const { sendMessage } = require('../messaging')
+const createReference = require('../lib/create-reference')
 
 const processApplication = async (msg) => {
+  const reference = createReference()
   await set({
-    reference: msg.body.applicationId,
+    reference,
     grantType: 'SGS001',
     data: JSON.stringify(msg.body),
     createdBy: 'admin',
