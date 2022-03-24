@@ -1,4 +1,4 @@
-const { MessageReceiver, MessageSender } = require('ffc-messaging')
+const { MessageReceiver } = require('ffc-messaging')
 const config = require('../config')
 const processApplicationMessage = require('./process-message')
 

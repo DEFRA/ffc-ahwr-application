@@ -20,12 +20,10 @@ const processApplication = async (msg) => {
 
 const processApplicationMessage = async (message, receiver) => {
   try {
-    const { body: msgBody, sessionId } = message
-    console.log('message', msgBody, sessionId)
+    const { body: msgBody } = message
     console.log('Application received:', util.inspect(msgBody, false, null, true))
     await processApplication(message)
     await receiver.completeMessage(message)
-    console.log('Application processed')
   } catch (err) {
     console.error('Unable to process Application request:', err)
   }
