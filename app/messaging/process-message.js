@@ -1,9 +1,11 @@
 const util = require('util')
 const { set } = require('../repositories/application-repository')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../config')
-const { sendMessage } = require('../messaging')
+const sendMessage = require('../messaging/send-message')
 const createReference = require('../lib/create-reference')
-
+const { notify: { templateIdApplicationComplete } } = require('../config')
+const sendEmail = require('../lib/send-email')
+const boom = require('@hapi/boom')
 const processApplication = async (msg) => {
   const reference = createReference()
   await set({
@@ -17,7 +19,12 @@ const processApplication = async (msg) => {
   })
   const msgBody = msg.body
   msgBody.applicationId = '123456789'
-  sendMessage(msgBody, applicationResponseMsgType, applicationResponseQueue, { sessionId: msg.body.sessionId })
+  sendMessage(msgBody, applicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+  const result = await sendEmail(templateIdApplicationComplete, msgBody.organisation.email, { personalisation: { name: msgBody.organisation.name, reference }, reference })
+
+  if (!result) {
+    return boom.internal()
+  }
 }
 
 const processApplicationMessage = async (message, receiver) => {

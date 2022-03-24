@@ -1,6 +1,7 @@
 const Joi = require('joi')
-
+const uuidRegex = '[0-9a-f]{8}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{12}'
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
+const notifyApiKeyRegex = new RegExp(`.*-${uuidRegex}-${uuidRegex}`)
 
 const sharedConfigSchema = {
   appInsights: Joi.object(),
@@ -23,7 +24,11 @@ const schema = Joi.object({
     type: Joi.string(),
     ...sharedConfigSchema
   },
-  applicationResponseMsgType: Joi.string()
+  applicationResponseMsgType: Joi.string(),
+  notify: {
+    apiKey: Joi.string().pattern(notifyApiKeyRegex),
+    templateIdApplicationComplete: Joi.string().uuid()
+  }
 })
 
 const sharedConfig = {
@@ -47,7 +52,11 @@ const config = {
     type: 'queue',
     ...sharedConfig
   },
-  applicationResponseMsgType: `${msgTypePrefix}.app.response`
+  applicationResponseMsgType: `${msgTypePrefix}.app.response`,
+  notify: {
+    apiKey: process.env.NOTIFY_API_KEY,
+    templateIdApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_APPLICATION_COMPLETE
+  }
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })
