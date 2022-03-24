@@ -5,7 +5,7 @@ async function get (ref) {
   const existingData =
         await models.application.findOne(
           {
-            attributes: ['id', 'reference', 'grantType', 'data', 'createdAt'],
+            attributes: ['id', 'reference', 'type', 'data', 'createdAt'],
             where: { reference: ref },
             order: [['created_at', 'DESC']]
           })
@@ -18,7 +18,7 @@ async function getAll (page = 0) {
   const existingData =
         await models.application.findAll(
           {
-            attributes: ['id', 'reference', 'grantType', 'data', 'createdAt'],
+            attributes: ['id', 'reference', 'type', 'data', 'createdAt'],
             order: [['created_at', 'DESC']],
             limit: 20,
             offset: 0

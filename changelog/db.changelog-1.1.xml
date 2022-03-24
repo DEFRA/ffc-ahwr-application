@@ -8,7 +8,7 @@
             <column name="reference" type="VARCHAR(255)">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="application_pkey"/>
             </column>
-            <column name="grantType" type="VARCHAR(20)">
+            <column name="type" type="VARCHAR(20)">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="application_pkey"/>
             </column>
             <column name="data" type="TEXT">

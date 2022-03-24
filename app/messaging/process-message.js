@@ -10,7 +10,7 @@ const processApplication = async (msg) => {
   const reference = createReference()
   await set({
     reference,
-    grantType: 'SGS001',
+    type: 'VV001',
     data: JSON.stringify(msg.body),
     createdBy: 'admin',
     updatedBy: 'admin',
@@ -18,7 +18,7 @@ const processApplication = async (msg) => {
     createdAt: new Date()
   })
   const msgBody = msg.body
-  msgBody.applicationId = '123456789'
+  msgBody.applicationId = reference
   sendMessage(msgBody, applicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   const result = await sendEmail(templateIdApplicationComplete, msgBody.organisation.email, { personalisation: { name: msgBody.organisation.name, reference }, reference })
 

@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         this.setDataValue('reference', val.toUpperCase())
       }
     },
-    grantType: { type: DataTypes.STRING, primaryKey: true, allowNull: false },
+    type: { type: DataTypes.STRING, primaryKey: true, allowNull: false },
     data: DataTypes.STRING,
     createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
     updatedAt: { type: DataTypes.DATE, defaultValue: Date.now() },
