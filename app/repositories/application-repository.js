@@ -1,12 +1,11 @@
 const { models } = require('../data')
 
-async function get (ref) {
-  console.log(ref, 'referance')
+async function get (reference) {
   const existingData =
         await models.application.findOne(
           {
             attributes: ['id', 'reference', 'type', 'data', 'createdAt'],
-            where: { reference: ref },
+            where: { reference },
             order: [['created_at', 'DESC']]
           })
   if (existingData) {
@@ -21,15 +20,11 @@ async function getAll (page = 0) {
             attributes: ['id', 'reference', 'type', 'data', 'createdAt'],
             order: [['created_at', 'DESC']],
             limit: 20,
-            offset: 0
+            offset: page
           })
-  if (existingData) {
-    // console.info(`Got application: ${existingData}`)
-  }
   return existingData
 }
 async function set (data) {
-  // console.log(data, 'Set Repository')
   await models.application.create(data)
 }
 
