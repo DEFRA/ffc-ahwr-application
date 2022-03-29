@@ -8,9 +8,7 @@ async function get (reference) {
             where: { reference },
             order: [['created_at', 'DESC']]
           })
-  if (existingData) {
-    console.info(`Got application: ${existingData.id}`)
-  }
+
   return existingData
 }
 async function getAll (page = 0) {
