@@ -19,6 +19,7 @@
   "dependencies": {
     "@azure/identity": "^2.0.4",
     "@hapi/hapi": "^20.1.5",
+    "@pact-foundation/pact": "^9.17.3",
     "applicationinsights": "^2.1.6",
     "ffc-messaging": "^2.3.4",
     "notifications-node-client": "^5.1.1",
