@@ -31,7 +31,6 @@ describe('receiving a new claim', () => {
       .withContent({
         email: Matchers.email(),
         reference: Matchers.like('VV-'),
-        type: Matchers.like('VV001'),
         data: Matchers.like('{pigs: yes}'),
         createdBy: Matchers.like('admin'),
         updatedBy: Matchers.like('admin')

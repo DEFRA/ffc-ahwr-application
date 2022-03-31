@@ -1,15 +1,21 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
-  <changeSet author="Paul Andrews" id="1">
+  <changeSet  author="Satish Chatap"  id="0">
+  <sql dbms="pgsql"
+   endDelimiter=";"
+   splitStatements="true"
+   stripComments="true">
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp"   
+    <comment>Install UUID Extension</comment>
+   </sql>
+</changeSet>
+  <changeSet author="Satish Chatap" id="1">
     <createTable tableName="application">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="applicationId_pkey" />
+            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()" >
+                <constraints nullable="false" primaryKey="true" primaryKeyName="applicationId_pkey"/>
             </column>
-            <column name="reference" type="VARCHAR(255)">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="application_pkey"/>
-            </column>
-            <column name="type" type="VARCHAR(20)">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="application_pkey"/>
+            <column name="reference" type="VARCHAR(12)">
+                <constraints nullable="false" primaryKey="true" />
             </column>
             <column name="data" type="TEXT">
                 <constraints nullable="false"/>
@@ -18,13 +24,13 @@
                 <constraints nullable="false"/>
             </column>
             <column defaultValueComputed="now()" name="updatedAt" type="TIMESTAMP WITH TIME ZONE">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="createdBy" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="updatedBy" type="VARCHAR(50)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </createTable>
   </changeSet>

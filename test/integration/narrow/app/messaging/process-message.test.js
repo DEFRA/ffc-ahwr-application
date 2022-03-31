@@ -55,7 +55,16 @@ describe('Process Message test', () => {
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
     expect(sendEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(boom.internal).toHaveBeenCalledTimes(1)
+    const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
+    expect(applications.length).toBe(1)
+  })
+
+  test('Call processApplicationMessage fail to send message', async () => {
+    sendMessage.mockResolvedValue(() => { throw new Error('error error error') })
+    await processApplicationMessage(message, receiver)
+    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+    expect(sendEmail).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)
   })

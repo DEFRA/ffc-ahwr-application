@@ -1,23 +1,22 @@
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define('application', {
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.UUID,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
+      defaultValue: sequelize.UUIDV4
     },
     reference: {
       type: DataTypes.STRING,
-      primaryKey: true,
       set (val) {
         this.setDataValue('reference', val.toUpperCase())
       }
     },
-    type: { type: DataTypes.STRING, primaryKey: true, allowNull: false },
     data: DataTypes.STRING,
     createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
-    updatedAt: { type: DataTypes.DATE, defaultValue: Date.now() },
+    updatedAt: { type: DataTypes.DATE, defaultValue: null },
     createdBy: DataTypes.STRING,
-    updatedBy: DataTypes.STRING
+    updatedBy: { type: DataTypes.STRING, defaultValue: null }
   }, {
     freezeTableName: true,
     tableName: 'application'

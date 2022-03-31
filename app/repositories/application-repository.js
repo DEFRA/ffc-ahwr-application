@@ -1,29 +1,27 @@
 const { models } = require('../data')
 
 async function get (reference) {
-  const existingData =
-        await models.application.findOne(
-          {
-            attributes: ['id', 'reference', 'type', 'data', 'createdAt'],
-            where: { reference },
-            order: [['created_at', 'DESC']]
-          })
-
-  return existingData
+  return models.application.findOne(
+    {
+      attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
+      where: { reference }
+    })
 }
 async function getAll (page = 0) {
-  const existingData =
-        await models.application.findAll(
-          {
-            attributes: ['id', 'reference', 'type', 'data', 'createdAt'],
-            order: [['created_at', 'DESC']],
-            limit: 20,
-            offset: page
-          })
-  return existingData
+  return models.application.findAll(
+    {
+      attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
+      order: [['createdAt', 'DESC']],
+      limit: 20,
+      offset: page
+    })
 }
 async function set (data) {
-  await models.application.create(data)
+  return models.application.create(data)
+}
+async function update (data) {
+  return models.application.update(data,
+    { where: { id: data.id } })
 }
 
-module.exports = { get, set, getAll }
+module.exports = { get, set, getAll, update }
