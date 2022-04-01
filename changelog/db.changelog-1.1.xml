@@ -1,7 +1,7 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
-  <changeSet  author="Satish Chatap"  id="0">
-  <sql dbms="pgsql"
+  <changeSet  author="Satish Chatap"  id="1">
+  <sql dbms="postgresql"
    endDelimiter=";"
    splitStatements="true"
    stripComments="true">
@@ -9,7 +9,7 @@
     <comment>Install UUID Extension</comment>
    </sql>
 </changeSet>
-  <changeSet author="Satish Chatap" id="1">
+  <changeSet author="Satish Chatap" id="2">
     <createTable tableName="application">
             <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()" >
                 <constraints nullable="false" primaryKey="true" primaryKeyName="applicationId_pkey"/>
