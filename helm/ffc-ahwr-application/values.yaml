@@ -35,6 +35,8 @@ deployment:
 container:
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
+  fetchApplicationRequestQueueAddress: ffc-ahwr-fetch-application-request
+  fetchAapplicationResponseQueueAddress: ffc-ahwr-fetch-application-response
   imagePullPolicy: IfNotPresent
   messageQueueHost: namespace.servicebus.windows.net
   limitMemory: 100Mi
