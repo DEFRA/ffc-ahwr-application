@@ -8,7 +8,7 @@
     endDelimiter=";"
     splitStatements="true"
     stripComments="true">
-        CREATE EXTENSION IF NOT EXISTS "uuid-ossp"  SCHEMA public  
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
         <comment>Install UUID Extension</comment>
     </sql>
   </changeSet>
