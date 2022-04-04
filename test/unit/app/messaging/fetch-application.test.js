@@ -12,16 +12,11 @@ describe(('Fetch application tests'), () => {
       sessionId: '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
     }
   }
-  const receiver = {
-    completeMessage: jest.fn(),
-    abandonMessage: jest.fn()
-  }
 
   test('successfully fetched application', async () => {
-    await fetchApplication(message, receiver)
+    await fetchApplication(message)
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.application)
-    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
   })
 })

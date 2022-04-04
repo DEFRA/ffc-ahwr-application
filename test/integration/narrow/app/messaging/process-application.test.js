@@ -1,6 +1,6 @@
 const dbHelper = require('../../../../db-helper')
 const { models } = require('../../../../../app/data')
-const processApplicationMessage = require('../../../../../app/messaging/process-message')
+const processApplication = require('../../../../../app/messaging/process-application')
 const sendEmail = require('../../../../../app/lib/send-email')
 const sendMessage = require('../../../../../app/messaging/send-message')
 const boom = require('@hapi/boom')
@@ -19,11 +19,10 @@ describe('Process Message test', () => {
         name: 'test-org',
         email: 'test-email'
       }
+    },
+    applicationProperties: {
+      type: 'uk.gov.ffc.ahwr.app.request'
     }
-  }
-  const receiver = {
-    completeMessage: jest.fn(),
-    abandonMessage: jest.fn()
   }
 
   beforeEach(async () => {
@@ -41,8 +40,7 @@ describe('Process Message test', () => {
 
   test('Call processApplicationMessage success', async () => {
     sendEmail.mockResolvedValue(true)
-    await processApplicationMessage(message, receiver)
-    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+    await processApplication(message)
     expect(sendEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
@@ -51,8 +49,7 @@ describe('Process Message test', () => {
 
   test('Call processApplicationMessage fail to send email', async () => {
     sendEmail.mockResolvedValue(false)
-    await processApplicationMessage(message, receiver)
-    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+    await processApplication(message)
     expect(sendEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
@@ -61,8 +58,7 @@ describe('Process Message test', () => {
 
   test('Call processApplicationMessage fail to send message', async () => {
     sendMessage.mockResolvedValue(() => { throw new Error('error error error') })
-    await processApplicationMessage(message, receiver)
-    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+    await processApplication(message)
     expect(sendEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
