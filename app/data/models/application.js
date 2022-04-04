@@ -1,3 +1,4 @@
+const createReference = require('../../lib/create-reference')
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define('application', {
     id: {
@@ -19,6 +20,14 @@ module.exports = (sequelize, DataTypes) => {
     updatedBy: { type: DataTypes.STRING, defaultValue: null }
   }, {
     freezeTableName: true,
-    tableName: 'application'
+    tableName: 'application',
+    hooks: {
+      afterCreate: async (application, options) => {
+        application.dataValues.reference = createReference(application.id)
+        application.dataValues.updatedBy = 'admin'
+        application.dataValues.updatedAt = new Date()
+        await application.update(application.dataValues)
+      }
+    }
   })
 }

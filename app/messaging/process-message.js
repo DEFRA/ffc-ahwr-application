@@ -1,8 +1,7 @@
 const util = require('util')
-const { set, update } = require('../repositories/application-repository')
+const { set } = require('../repositories/application-repository')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../config')
 const sendMessage = require('../messaging/send-message')
-const createReference = require('../lib/create-reference')
 const { notify: { templateIdApplicationComplete } } = require('../config')
 const sendEmail = require('../lib/send-email')
 const processApplication = async (msg) => {
@@ -18,15 +17,7 @@ const processApplication = async (msg) => {
     })
     // GetReference for ID
     const application = result.dataValues
-    reference = msg.body.applicationId = createReference(application.id)
-    // Update
-    await update({
-      ...application,
-      reference,
-      data: JSON.stringify(msg.body),
-      updatedBy: 'admin',
-      updatedAt: new Date()
-    })
+    reference = msg.body.applicationId = application.reference
     await sendMessage(msg.body, applicationResponseMsgType, applicationResponseQueue, { sessionId: msg.body.sessionId })
   } catch {
     responseMessage.error = {
