@@ -8,7 +8,6 @@
     endDelimiter=";"
     splitStatements="true"
     stripComments="true">
-        show search_path ;
         CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
         <comment>Install UUID Extension</comment>
     </sql>
