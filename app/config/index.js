@@ -72,7 +72,7 @@ const config = {
   },
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
   fetchApplicationResponseQueue: {
-    address: process.env.APPLICATIONRESPONSE_QUEUE_ADDRESS,
+    address: process.env.FETCHAPPLICATIONRESPONSE_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfig
   },
