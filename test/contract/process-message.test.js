@@ -1,6 +1,5 @@
 const path = require('path')
 const { MessageConsumerPact, Matchers } = require('@pact-foundation/pact')
-const asbHelper = require('../asb-helper')
 const { set } = require('../../app/repositories/application-repository')
 const dbHelper = require('../db-helper')
 
@@ -8,7 +7,7 @@ describe('receiving a new claim', () => {
   let messagePact
 
   beforeAll(async () => {
-    await asbHelper.clearAllSubscriptions()
+    // await asbHelper.clearAllSubscriptions()
     await dbHelper.truncate()
 
     messagePact = new MessageConsumerPact({
@@ -20,7 +19,7 @@ describe('receiving a new claim', () => {
   }, 30000)
 
   afterAll(async () => {
-    await asbHelper.clearAllSubscriptions()
+    // await asbHelper.clearAllSubscriptions()
     await dbHelper.close()
   }, 30000)
 
