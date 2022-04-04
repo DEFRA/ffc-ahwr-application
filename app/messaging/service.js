@@ -10,9 +10,9 @@ const start = async () => {
   applicationReceiver = new MessageReceiver(config.applicationRequestQueue, applicationAction)
   await applicationReceiver.subscribe()
 
-  const fetchApplicationAction = message = fetchApplication(message, applicationReceiver)
-  fetchApplicationReceiver = new MessageReceiver(config.fetchApplicationRequestQueue, fetchApplicationAction)
-  await fetchApplicationReceiver.subscribe()
+  const fetchApplicationAction = message => fetchApplication(message, applicationReceiver)
+  applicationReceiver = new MessageReceiver(config.fetchApplicationRequestQueue, fetchApplicationAction)
+  await applicationReceiver.subscribe()
 
   console.info('Ready to receive messages')
 }
