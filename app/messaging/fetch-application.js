@@ -6,7 +6,6 @@ const { fetchApplicationResponseMsgType, fetchApplicationResponseQueue } = requi
 const fetchApplication = async (message, receiver) => {
   try {
     const msgBody = message.body
-    console.log(msgBody)
     console.log('received application fetch request', util.inspect(msgBody, false, null, true))
     const application = await get(msgBody.application)
     await sendMessage(application, fetchApplicationResponseMsgType, fetchApplicationResponseQueue, { sessionId: msgBody.sessionId })
