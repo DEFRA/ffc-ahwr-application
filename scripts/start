@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+
 if [ -z "$(docker network ls --filter name=^ffc-ahwr$ --format={{.Name}})" ]; then
   echo "Creating ffc-ahwr Docker network"
   docker network create ffc-ahwr
@@ -9,7 +10,7 @@ projectRoot="$(a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; cd "$a/.." || return; p
 
 cd "${projectRoot}"
 
-docker compose down -v
+docker compose down
 
 docker compose \
   -f docker-compose.yaml \
