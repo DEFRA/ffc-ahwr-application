@@ -20,15 +20,7 @@ const processApplication = async (msg) => {
     })
     // GetReference for ID
     const application = result.dataValues
-    reference = msg.body.applicationId = createReference(application.id)
-    // Update
-    await update({
-      ...application,
-      reference,
-      data: JSON.stringify(msg.body),
-      updatedBy: 'admin',
-      updatedAt: new Date()
-    })
+    reference = msg.body.applicationId = application.reference
     await sendMessage(msg.body, applicationResponseMsgType, applicationResponseQueue, { sessionId: msg.body.sessionId })
   } catch {
     responseMessage.error = {
