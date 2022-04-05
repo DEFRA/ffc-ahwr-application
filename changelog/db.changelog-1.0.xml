@@ -3,4 +3,13 @@
   <changeSet author="Paul Andrews" id="1">
     <tagDatabase tag="v0.0.0" />
   </changeSet>
+  <changeSet  author="Satish Chatap"  id="2">
+    <sql dbms="postgresql"
+    endDelimiter=";"
+    splitStatements="true"
+    stripComments="true">
+        CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+        <comment>Install UUID Extension</comment>
+    </sql>
+  </changeSet>
 </databaseChangeLog>
