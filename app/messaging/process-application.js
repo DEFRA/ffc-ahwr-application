@@ -1,8 +1,7 @@
 const util = require('util')
-const { set, update } = require('../repositories/application-repository')
+const { set } = require('../repositories/application-repository')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../config')
 const sendMessage = require('../messaging/send-message')
-const createReference = require('../lib/create-reference')
 const { notify: { templateIdApplicationComplete } } = require('../config')
 const sendEmail = require('../lib/send-email')
 

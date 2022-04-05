@@ -1,6 +1,5 @@
 const path = require('path')
 const { MessageConsumerPact, Matchers } = require('@pact-foundation/pact')
-const asbHelper = require('../asb-helper')
 const { set } = require('../../app/repositories/application-repository')
 const dbHelper = require('../db-helper')
 
