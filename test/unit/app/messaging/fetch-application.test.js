@@ -8,7 +8,7 @@ jest.mock('../../../../app/messaging/send-message')
 describe(('Fetch application tests'), () => {
   const message = {
     body: {
-      application: 'VV-1234-5678',
+      applicationReference: 'VV-1234-5678',
       sessionId: '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
     }
   }
@@ -16,7 +16,7 @@ describe(('Fetch application tests'), () => {
   test('successfully fetched application', async () => {
     await fetchApplication(message)
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.get).toHaveBeenCalledWith(message.body.application)
+    expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
   })
 })

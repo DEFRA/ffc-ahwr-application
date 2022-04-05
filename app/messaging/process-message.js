@@ -5,11 +5,13 @@ const processApplication = require('./process-application')
 const processApplicationMessage = async (message, receiver) => {
   try {
     const { applicationProperties: properties } = message
-    if (properties.type === fetchApplicationRequestMsgType) {
-      await fetchApplication(message)
-    }
-    if (properties.type === applicationRequestMsgType) {
-      await processApplication(message)
+    switch (properties.type) {
+      case fetchApplicationRequestMsgType:
+        await fetchApplication(message)
+        break
+      case applicationRequestMsgType:
+        await processApplication(message)
+        break
     }
     await receiver.completeMessage(message)
   } catch (err) {

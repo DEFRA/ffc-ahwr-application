@@ -19,7 +19,7 @@ const processApplication = async (msg) => {
     })
     // GetReference for ID
     const application = result.dataValues
-    reference = msg.body.applicationId = application.reference
+    reference = msg.body.applicationReference = application.reference
     await sendMessage(msg.body, applicationResponseMsgType, applicationResponseQueue, { sessionId: msg.body.sessionId })
   } catch {
     responseMessage.error = {
