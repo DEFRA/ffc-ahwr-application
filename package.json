@@ -1,6 +1,6 @@
 {
   "name": "ffc-ahwr-application",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Application manager for AHWR",
   "homepage": "https://github.com/DEFRA/ffc-ahwr-application",
   "main": "app/index.js",
@@ -19,15 +19,18 @@
   "dependencies": {
     "@azure/identity": "^2.0.4",
     "@hapi/hapi": "^20.1.5",
+    "@pact-foundation/pact": "^9.17.3",
     "applicationinsights": "^2.1.6",
     "ffc-messaging": "^2.3.4",
+    "notifications-node-client": "^5.1.1",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.16.2"
+    "sequelize": "^6.16.2",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "jest": "^27.0.6",
-    "jest-junit": "^12.2.0",
+    "jest-junit": "^13.0.0",
     "nodemon": "^2.0.12",
     "standard": "^16.0.3"
   },
