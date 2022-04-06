@@ -25,6 +25,8 @@ const schema = Joi.object({
     ...sharedConfigSchema
   },
   applicationResponseMsgType: Joi.string(),
+  fetchApplicationRequestMsgType: Joi.string(),
+  fetchApplicationResponseMsgType: Joi.string(),
   notify: {
     apiKey: Joi.string().pattern(notifyApiKeyRegex),
     templateIdApplicationComplete: Joi.string().uuid()
@@ -53,6 +55,8 @@ const config = {
     ...sharedConfig
   },
   applicationResponseMsgType: `${msgTypePrefix}.app.response`,
+  fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
+  fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
   notify: {
     apiKey: process.env.NOTIFY_API_KEY,
     templateIdApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_APPLICATION_COMPLETE
