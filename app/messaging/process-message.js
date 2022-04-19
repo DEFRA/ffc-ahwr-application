@@ -1,6 +1,7 @@
-const { applicationRequestMsgType, fetchApplicationRequestMsgType } = require('../config')
+const { applicationRequestMsgType, fetchApplicationRequestMsgType, vetVisitRequestMsgType } = require('../config')
 const fetchApplication = require('./fetch-application')
 const processApplication = require('./process-application')
+const processVetVisit = require('./process-vet-visit')
 
 const processApplicationMessage = async (message, receiver) => {
   try {
@@ -11,6 +12,9 @@ const processApplicationMessage = async (message, receiver) => {
         break
       case applicationRequestMsgType:
         await processApplication(message)
+        break
+      case vetVisitRequestMsgType:
+        await processVetVisit(message)
         break
     }
     await receiver.completeMessage(message)
