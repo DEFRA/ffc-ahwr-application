@@ -6,8 +6,9 @@ const { vetVisitResponseMsgType, applicationResponseQueue } = require('../config
 const processVetVisit = async (message) => {
   try {
     const msgBody = message.body
+    let reference = ''
     console.log('received process vet visit request', util.inspect(msgBody, false, null, true))
-    const { applicationReference, rsvc } = msgBody;
+    const { applicationReference, rsvc } = msgBody
     const result = await set({
       reference,
       applicationReference,
@@ -18,8 +19,8 @@ const processVetVisit = async (message) => {
     })
 
     const application = result.dataValues
-    reference = msg.body.applicationReference = application.reference
-    await sendMessage(msg.body, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msg.body.sessionId })
+    reference = msgBody.applicationReference = application.reference
+    await sendMessage(msgBody, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {
     console.error(`failed to process vet visit request ${JSON.stringify(message.body)}`, error)
   }
