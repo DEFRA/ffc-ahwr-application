@@ -18,8 +18,7 @@ const processVetVisit = async (message) => {
       createdAt: new Date()
     })
 
-    const application = result.dataValues
-    reference = msgBody.applicationReference = application.reference
+    msgBody.vetReference = result?.dataValues?.reference
     await sendMessage(msgBody, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {
     console.error(`failed to process vet visit request ${JSON.stringify(message.body)}`, error)

@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     freezeTableName: true,
     tableName: 'vet_visit',
     hooks: {
-      afterCreate: async (application, options) => {
+      afterCreate: async (application, _) => {
         application.dataValues.reference = createReference(application.id)
         application.dataValues.updatedBy = 'admin'
         application.dataValues.updatedAt = new Date()
