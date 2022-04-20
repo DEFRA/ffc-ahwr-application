@@ -2,16 +2,13 @@ const processVetVisit = require('../../../../app/messaging/process-vet-visit')
 const vetVisitRepository = require('../../../../app/repositories/vet-visit-repository')
 const sendMessage = require('../../../../app/messaging/send-message')
 
-vetVisitRepository.set = jest.fn().mockReturnValue({
-  dataValues: {
-    reference: '23D13'
-  }
-})
-
 jest.mock('../../../../app/messaging/send-message')
 jest.mock('../../../../app/repositories/vet-visit-repository')
 
 describe(('Store data in database'), () => {
+  beforeEach(async () => {
+    jest.clearAllMocks()
+  })
   const message = {
     body: {
       applicationReference: 'VV-1234-5678',
@@ -22,6 +19,11 @@ describe(('Store data in database'), () => {
   }
 
   test('successfully fetched application', async () => {
+    vetVisitRepository.set.mockReturnValue({
+      dataValues: {
+        reference: '23D13'
+      }
+    })
     await processVetVisit(message)
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
