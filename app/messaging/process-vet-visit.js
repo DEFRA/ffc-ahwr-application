@@ -7,11 +7,11 @@ const processVetVisit = async (message) => {
   try {
     const msgBody = message.body
     console.log('received process vet visit request', util.inspect(msgBody, false, null, true))
-    const { applicationReference, rsvc } = msgBody
+    const { reference, rcvs } = msgBody.signup
     const result = await set({
       reference: '',
-      applicationReference,
-      rsvc,
+      applicationReference: reference,
+      rcvs,
       data: JSON.stringify(msgBody),
       createdBy: 'admin',
       createdAt: new Date()
