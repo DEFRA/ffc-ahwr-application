@@ -29,12 +29,12 @@ describe('Application Repository test', () => {
     await repository.getAll()
     expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
   })
-  test('get returns single data by refereencee', async () => {
+  test('get returns single data by uppercased reference', async () => {
     await repository.get(reference)
     expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
     const expectObj = {
       attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
-      where: { reference }
+      where: { reference: reference.toUpperCase() }
     }
     expect(data.models.application.findOne).toHaveBeenCalledWith(expectObj)
   })

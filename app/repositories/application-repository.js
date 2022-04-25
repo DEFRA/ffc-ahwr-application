@@ -4,7 +4,7 @@ async function get (reference) {
   return models.application.findOne(
     {
       attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
-      where: { reference }
+      where: { reference: reference.toUpperCase() }
     })
 }
 async function getAll (page = 0) {
