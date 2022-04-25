@@ -1,7 +1,9 @@
 const processVetVisit = require('../../../../app/messaging/process-vet-visit')
 const vetVisitRepository = require('../../../../app/repositories/vet-visit-repository')
 const sendMessage = require('../../../../app/messaging/send-message')
+const sendEmail = require('../../../../app/lib/send-email')
 
+jest.mock('../../../../app/lib/send-email')
 jest.mock('../../../../app/messaging/send-message')
 jest.mock('../../../../app/repositories/vet-visit-repository')
 
@@ -20,12 +22,13 @@ describe(('Store data in database'), () => {
     }
   }
 
-  test('successfully fetched application', async () => {
+  test('successfully submits application', async () => {
     vetVisitRepository.set.mockReturnValue({
       dataValues: {
         reference: '23D13'
       }
     })
+    sendEmail.mockResolvedValue(true)
     await processVetVisit(message)
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(1)
     expect(vetVisitRepository.set).toHaveBeenCalledWith(expect.objectContaining({
