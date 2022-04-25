@@ -31,7 +31,8 @@ const schema = Joi.object({
   vetVisitResponseMsgType: Joi.string(),
   notify: {
     apiKey: Joi.string().pattern(notifyApiKeyRegex),
-    templateIdApplicationComplete: Joi.string().uuid()
+    templateIdApplicationComplete: Joi.string().uuid(),
+    templateIdVetApplicationComplete: Joi.string().uuid()
   }
 })
 
@@ -63,7 +64,8 @@ const config = {
   vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
   notify: {
     apiKey: process.env.NOTIFY_API_KEY,
-    templateIdApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_APPLICATION_COMPLETE
+    templateIdApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_APPLICATION_COMPLETE,
+    templateIdVetApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE
   }
 }
 

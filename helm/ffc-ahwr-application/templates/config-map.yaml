@@ -12,4 +12,5 @@ data:
   POSTGRES_PORT: {{ quote .Values.postgresService.postgresPort }}
   POSTGRES_SCHEMA_NAME: {{ quote .Values.postgresService.postgresSchema }}
   NOTIFY_TEMPLATE_ID_APPLICATION_COMPLETE: {{ quote .Values.container.notifyTemplateIdApplicationComplete }}
+  NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE: {{ quote .Values.container.notifyTemplateIdVetApplicationComplete }}
 {{- end -}}
