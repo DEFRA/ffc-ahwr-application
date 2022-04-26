@@ -2,7 +2,7 @@ const util = require('util')
 const { set } = require('../repositories/application-repository')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../config')
 const sendMessage = require('../messaging/send-message')
-const { notify: { templateIdApplicationComplete } } = require('../config')
+const { notify: { templateIdFarmerApplicationComplete } } = require('../config')
 const sendEmail = require('../lib/send-email')
 
 const processApplication = async (msg) => {
@@ -26,7 +26,7 @@ const processApplication = async (msg) => {
       message: 'can\'t submit application at this time.'
     }
   } finally {
-    const result = await sendEmail(templateIdApplicationComplete, msg.body.organisation.email, { personalisation: { name: msg.body.organisation.name, reference }, reference })
+    const result = await sendEmail(templateIdFarmerApplicationComplete, msg.body.organisation.email, { personalisation: { name: msg.body.organisation.name, reference }, reference })
 
     if (!result) {
       responseMessage.error = {
