@@ -11,6 +11,7 @@ jest.mock('../../../../app/repositories/application-repository')
 
 applicationRepository.get.mockResolvedValueOnce({
   reference: 'VV-1234-5678',
+  data: JSON.stringify({ email: 'test@farmer.email.com' }),
   vetVisit: null
 }).mockResolvedValue({
   reference: 'VV-1234-5678',
@@ -53,7 +54,7 @@ describe(('Store data in database'), () => {
       createdAt: expect.any(Date)
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendEmail).toHaveBeenCalledTimes(1)
+    expect(sendEmail).toHaveBeenCalledTimes(2)
   })
 
   test('Do not store application if already submitted', async () => {

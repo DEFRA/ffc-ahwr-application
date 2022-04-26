@@ -32,6 +32,7 @@ const schema = Joi.object({
   notify: {
     apiKey: Joi.string().pattern(notifyApiKeyRegex),
     templateIdFarmerApplicationComplete: Joi.string().uuid(),
+    templateIdFarmerApplicationClaim: Joi.string().uuid(),
     templateIdVetApplicationComplete: Joi.string().uuid()
   },
   serviceUri: Joi.string().uri()
@@ -66,6 +67,7 @@ const config = {
   notify: {
     apiKey: process.env.NOTIFY_API_KEY,
     templateIdFarmerApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE,
+    templateIdFarmerApplicationClaim: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM,
     templateIdVetApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE
   },
   serviceUri: process.env.SERVICE_URI

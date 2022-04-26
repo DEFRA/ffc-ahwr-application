@@ -10,9 +10,9 @@ const fetchApplication = async (message) => {
     const application = await get(msgBody.applicationReference)
 
     // if application doesn't exists or already submitted return null.
-    if (!application || application?.vetVisit?.dataValues) {
-      return sendMessage(null, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
-    }
+    // if (!application || application?.vetVisit?.dataValues) {
+    //   return sendMessage(null, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+    // }
 
     await sendMessage(application, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {
