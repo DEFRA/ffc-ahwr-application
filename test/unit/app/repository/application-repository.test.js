@@ -34,7 +34,8 @@ describe('Application Repository test', () => {
     expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
     const expectObj = {
       attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
-      where: { reference: reference.toUpperCase() }
+      where: { reference: reference.toUpperCase() },
+      include: [{ model: data.models.vetVisit }]
     }
     expect(data.models.application.findOne).toHaveBeenCalledWith(expectObj)
   })

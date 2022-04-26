@@ -1,4 +1,3 @@
-const createReference = require('../../lib/create-reference')
 module.exports = (sequelize, DataTypes) => {
   const vetVisit = sequelize.define('vetVisit', {
     id: {
@@ -16,11 +15,11 @@ module.exports = (sequelize, DataTypes) => {
     updatedBy: { type: DataTypes.STRING, defaultValue: null }
   }, {
     freezeTableName: true,
-    tableName: 'vet_visit',
+    tableName: 'vet_visit'
   })
   vetVisit.associate = function (models) {
     vetVisit.belongsTo(models.application, {
-      foreignKey: 'applicationReference',
+      foreignKey: 'applicationReference'
     })
   }
   return vetVisit
