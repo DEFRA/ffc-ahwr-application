@@ -15,7 +15,7 @@ const processVetVisit = async (message) => {
 
     // if no application or application already submitted return
     if (!farmerApplication || farmerApplication?.vetVisit?.dataValues) {
-      // return sendMessage(null, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+      return sendMessage(null, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
     }
 
     await set({
