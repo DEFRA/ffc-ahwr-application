@@ -22,11 +22,11 @@ module.exports = (sequelize, DataTypes) => {
     freezeTableName: true,
     tableName: 'application',
     hooks: {
-      afterCreate: async (application, options) => {
-        application.dataValues.reference = createReference(application.id)
-        application.dataValues.updatedBy = 'admin'
-        application.dataValues.updatedAt = new Date()
-        await application.update(application.dataValues)
+      afterCreate: async (applicationRecord, _) => {
+        applicationRecord.dataValues.reference = createReference(applicationRecord.id)
+        applicationRecord.dataValues.updatedBy = 'admin'
+        applicationRecord.dataValues.updatedAt = new Date()
+        await applicationRecord.update(applicationRecord.dataValues)
       }
     }
   })
