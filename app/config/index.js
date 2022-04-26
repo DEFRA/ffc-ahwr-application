@@ -33,7 +33,8 @@ const schema = Joi.object({
     apiKey: Joi.string().pattern(notifyApiKeyRegex),
     templateIdApplicationComplete: Joi.string().uuid(),
     templateIdVetApplicationComplete: Joi.string().uuid()
-  }
+  },
+  serviceUri: Joi.string().uri()
 })
 
 const sharedConfig = {
@@ -66,7 +67,8 @@ const config = {
     apiKey: process.env.NOTIFY_API_KEY,
     templateIdApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_APPLICATION_COMPLETE,
     templateIdVetApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE
-  }
+  },
+  serviceUri: process.env.SERVICE_URI
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })

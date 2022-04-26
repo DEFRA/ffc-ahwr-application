@@ -1,5 +1,6 @@
 const util = require('util')
 const { set } = require('../repositories/vet-visit-repository')
+const { get } = require('../repositories/application-repository')
 const sendMessage = require('../messaging/send-message')
 const { vetVisitResponseMsgType, applicationResponseQueue } = require('../config')
 const { notify: { templateIdVetApplicationComplete } } = require('../config')
@@ -10,8 +11,14 @@ const processVetVisit = async (message) => {
     const msgBody = message.body
     console.log('received process vet visit request', util.inspect(msgBody, false, null, true))
     const { reference, rcvs } = msgBody.signup
-    const result = await set({
-      reference: '',
+    const farmerApplication = await get(reference)
+
+    // if no application or application already submitted return
+    if (!farmerApplication || farmerApplication?.vetVisit?.dataValues) {
+      return sendMessage(null, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+    }
+
+    await set({
       applicationReference: reference,
       rcvs,
       data: JSON.stringify(msgBody),
@@ -19,11 +26,10 @@ const processVetVisit = async (message) => {
       createdAt: new Date()
     })
 
-    msgBody.vetReference = result?.dataValues?.reference
     await sendEmail(
       templateIdVetApplicationComplete,
       msgBody.signup.email,
-      { personalisation: { reference: msgBody.vetReference }, reference: msgBody.vetReference }
+      { personalisation: { reference }, reference }
     )
     await sendMessage(msgBody, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {

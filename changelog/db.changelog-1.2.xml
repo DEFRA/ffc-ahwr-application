@@ -5,9 +5,6 @@
       <column name="id" type="UUID" defaultValueComputed="public.uuid_generate_v4()">
         <constraints nullable="false" primaryKey="true" primaryKeyName="vetVisitId_pkey" />
       </column>
-      <column name="reference" type="VARCHAR(12)">
-        <constraints nullable="false" primaryKey="true" />
-      </column>
       <column name="applicationReference" type="VARCHAR(12)">
         <constraints nullable="false" primaryKey="true" />
       </column>

@@ -8,6 +8,12 @@ const fetchApplication = async (message) => {
     const msgBody = message.body
     console.log('received application fetch request', util.inspect(msgBody, false, null, true))
     const application = await get(msgBody.applicationReference)
+
+    // if application doesn't exists or already submitted return null.
+    if (!application || application?.vetVisit?.dataValues) {
+      return sendMessage(null, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+    }
+
     await sendMessage(application, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {
     console.error(`failed to fetch application for request ${JSON.stringify(message.body)}`, error)

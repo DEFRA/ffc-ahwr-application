@@ -4,7 +4,8 @@ async function get (reference) {
   return models.application.findOne(
     {
       attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
-      where: { reference: reference.toUpperCase() }
+      where: { reference: reference.toUpperCase() },
+      include: [{ model: models.vetVisit }]
     })
 }
 async function getAll (page = 0) {

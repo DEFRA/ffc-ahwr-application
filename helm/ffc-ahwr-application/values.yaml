@@ -45,6 +45,7 @@ container:
   notifyApiKey: example-644a2a30-7487-4e98-a908-b5ecd82d5225-644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdApplicationComplete: 644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdVetApplicationComplete: 644a2a30-7487-4e98-a908-b5ecd82d5225
+  serviceUri:
 
 postgresService:
   postgresDb: ffc_ahwr_application

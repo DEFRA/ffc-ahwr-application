@@ -1,6 +1,6 @@
 const createReference = require('../../lib/create-reference')
 module.exports = (sequelize, DataTypes) => {
-  return sequelize.define('application', {
+  const application =  sequelize.define('application', {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
@@ -30,4 +30,11 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   })
+  application.associate = function (models) {
+    application.hasOne(models.vetVisit, {
+      sourceKey: 'reference',
+      foreignKey: 'applicationReference',
+    })
+  }
+  return application
 }
