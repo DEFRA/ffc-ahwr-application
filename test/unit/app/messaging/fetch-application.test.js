@@ -8,14 +8,14 @@ jest.mock('../../../../app/messaging/send-message')
 
 const application = {
   reference: 'VV-1234-5678',
-  vetVisit: null,
-};
+  vetVisit: null
+}
 
 applicationRepository.get.mockResolvedValueOnce(application).mockResolvedValue({
   reference: 'VV-1234-5678',
   vetVisit: {
     dataValues: {
-      reference: 'VV-1234-5678',
+      reference: 'VV-1234-5678'
     }
   }
 })

@@ -11,12 +11,12 @@ jest.mock('../../../../app/repositories/application-repository')
 
 applicationRepository.get.mockResolvedValueOnce({
   reference: 'VV-1234-5678',
-  vetVisit: null,
+  vetVisit: null
 }).mockResolvedValue({
   reference: 'VV-1234-5678',
   vetVisit: {
     dataValues: {
-      reference: 'VV-1234-5678',
+      reference: 'VV-1234-5678'
     }
   }
 })
