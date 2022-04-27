@@ -10,7 +10,7 @@ const processVetVisit = async (message) => {
   try {
     const msgBody = message.body
     console.log('received process vet visit request', util.inspect(msgBody, false, null, true))
-    const { reference, rcvs } = msgBody.signup
+    const { reference } = msgBody.signup
     const farmerApplication = await get(reference)
 
     // if no application or application already submitted return
@@ -20,7 +20,6 @@ const processVetVisit = async (message) => {
 
     await set({
       applicationReference: reference,
-      rcvs,
       data: JSON.stringify(msgBody),
       createdBy: 'admin',
       createdAt: new Date()

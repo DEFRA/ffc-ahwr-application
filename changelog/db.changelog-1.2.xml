@@ -8,9 +8,6 @@
       <column name="applicationReference" type="VARCHAR(12)">
         <constraints nullable="false" primaryKey="true" />
       </column>
-      <column name="rcvs" type="VARCHAR(12)">
-        <constraints nullable="false" primaryKey="true" />
-      </column>
       <column name="data" type="TEXT">
         <constraints nullable="false" />
       </column>

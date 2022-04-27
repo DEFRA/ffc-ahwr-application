@@ -30,7 +30,6 @@ describe(('Store data in database'), () => {
     body: {
       signup: {
         applicationReference: 'VV-1234-5678',
-        rcvs: '13D2332',
         sessionId: '8e5b5789-dad5-4f16-b4dc-bf6db90ce090',
         reference: 'VV-1234-5678'
       }
@@ -48,7 +47,6 @@ describe(('Store data in database'), () => {
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(1)
     expect(vetVisitRepository.set).toHaveBeenCalledWith(expect.objectContaining({
       applicationReference: 'VV-1234-5678',
-      rcvs: '13D2332',
       data: expect.any(String),
       createdBy: 'admin',
       createdAt: expect.any(Date)
