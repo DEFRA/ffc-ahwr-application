@@ -1,8 +1,7 @@
 const notifyClient = require('./notify-client')
-const { notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete } } = require('../config')
-const { serviceUri } = require('../config')
+const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete } } = require('../config')
 
-module.exports.sendFarmerConfirmationEmail = async (email, name, reference) => {
+const sendFarmerConfirmationEmail = async (email, name, reference) => {
   let success = true
   try {
     await notifyClient.sendEmail(
@@ -17,7 +16,7 @@ module.exports.sendFarmerConfirmationEmail = async (email, name, reference) => {
   return success
 }
 
-module.exports.sendVetConfirmationEmail = async (vetEmail, reference) => {
+const sendVetConfirmationEmail = async (vetEmail, reference) => {
   let success = true
   try {
     await notifyClient.sendEmail(
@@ -32,7 +31,7 @@ module.exports.sendVetConfirmationEmail = async (vetEmail, reference) => {
   return success
 }
 
-module.exports.sendFarmerClaimInvitationEmail = async (vetEmail, reference) => {
+const sendFarmerClaimInvitationEmail = async (vetEmail, reference) => {
   let success = true
   try {
     await notifyClient.sendEmail(
@@ -45,4 +44,10 @@ module.exports.sendFarmerClaimInvitationEmail = async (vetEmail, reference) => {
     console.error('Error occurred during sending email', e.response.data)
   }
   return success
+}
+
+module.exports = {
+  sendFarmerConfirmationEmail,
+  sendVetConfirmationEmail,
+  sendFarmerClaimInvitationEmail
 }

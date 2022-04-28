@@ -1,7 +1,6 @@
 const sendEmail = require('../../../../app/lib/send-email')
 const notifyClient = require('../../../../app/lib/notify-client')
-const { notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete } } = require('../../../../app/config')
-const { serviceUri } = require('../../../../app/config')
+const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete } } = require('../../../../app/config')
 
 const error = new Error('Test exception')
 error.response = { data: 'failed to send email' }

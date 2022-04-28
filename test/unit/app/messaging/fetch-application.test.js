@@ -11,7 +11,7 @@ const application = {
   vetVisit: null
 }
 
-applicationRepository.get.mockResolvedValueOnce(application).mockResolvedValue({
+applicationRepository.get.mockResolvedValueOnce(application).mockResolvedValueOnce(null).mockResolvedValue({
   reference: 'VV-1234-5678',
   vetVisit: {
     dataValues: {
@@ -37,7 +37,15 @@ describe(('Fetch application tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(application, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: 'not_submitted' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+  })
+
+  test('no application found', async () => {
+    await fetchApplication(message)
+    expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: 'not_exist' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
   })
 
   test('already submitted application', async () => {
@@ -45,6 +53,6 @@ describe(('Fetch application tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(null, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: 'already_submitted' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
   })
 })
