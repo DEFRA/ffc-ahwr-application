@@ -5,7 +5,11 @@ const sendEmail = require('../../../../../app/lib/send-email')
 const sendMessage = require('../../../../../app/messaging/send-message')
 const boom = require('@hapi/boom')
 
-jest.mock('../../../../../app/lib/send-email')
+sendEmail.sendFarmerConfirmationEmail = jest.fn()
+  .mockResolvedValueOnce(true)
+  .mockResolvedValueOnce(false)
+  .mockResolvedValueOnce(true)
+
 jest.mock('../../../../../app/messaging/send-message')
 boom.internal = jest.fn()
 
@@ -39,18 +43,16 @@ describe('Process Message test', () => {
   })
 
   test('Call processApplicationMessage success', async () => {
-    sendEmail.mockResolvedValue(true)
     await processApplication(message)
-    expect(sendEmail).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)
   })
 
   test('Call processApplicationMessage fail to send email', async () => {
-    sendEmail.mockResolvedValue(false)
     await processApplication(message)
-    expect(sendEmail).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)
@@ -59,7 +61,7 @@ describe('Process Message test', () => {
   test('Call processApplicationMessage fail to send message', async () => {
     sendMessage.mockResolvedValue(() => { throw new Error('error error error') })
     await processApplication(message)
-    expect(sendEmail).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)

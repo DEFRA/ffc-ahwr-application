@@ -30,6 +30,10 @@ Liquibase database migrations (creating tables, columns, seed data etc):
 docker compose -f docker-compose.migrate.yaml up database-up && docker compose -f docker-compose.migrate.yaml down
 ```
 
+For ease or running, the above command has been added to a script -
+`./scripts/migrate`. The script will also shut down the application as if it is
+still running errors will be reported when the migration(s) run.
+
 ### Build container image
 
 Container images are built using Docker Compose, with the same images used to

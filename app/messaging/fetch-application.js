@@ -8,9 +8,19 @@ const fetchApplication = async (message) => {
     const msgBody = message.body
     console.log('received application fetch request', util.inspect(msgBody, false, null, true))
     const application = await get(msgBody.applicationReference)
-    await sendMessage(application, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+
+    if (!application) {
+      return sendMessage({ applicationState: 'not_exist' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+    }
+
+    if (application?.vetVisit?.dataValues) {
+      return sendMessage({ applicationState: 'already_submitted' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+    }
+
+    await sendMessage({ applicationState: 'not_submitted' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {
     console.error(`failed to fetch application for request ${JSON.stringify(message.body)}`, error)
+    return sendMessage({ applicationState: 'failed' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
   }
 }
 
