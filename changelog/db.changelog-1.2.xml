@@ -28,4 +28,7 @@
   <changeSet author="Shivanshu Patel" id="1">
     <tagDatabase tag="v1.2.0" />
   </changeSet>
+  <changeSet author="Shivanshu Patel" id="2">
+    <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="vet_visit" constraintName="fk_application_reference" referencedColumnNames="reference" referencedTableName="application" />
+  </changeSet>
 </databaseChangeLog>
