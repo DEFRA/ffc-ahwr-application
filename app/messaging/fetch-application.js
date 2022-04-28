@@ -2,6 +2,7 @@ const util = require('util')
 const { get } = require('../repositories/application-repository')
 const sendMessage = require('../messaging/send-message')
 const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../config')
+const { validateApplication } = require('./validate-message')
 
 const fetchApplication = async (message) => {
   try {
@@ -9,8 +10,7 @@ const fetchApplication = async (message) => {
     console.log('received application fetch request', util.inspect(msgBody, false, null, true))
     const application = await get(msgBody.applicationReference)
 
-    // if application doesn't exists or already submitted return null.
-    if (!application || application?.vetVisit?.dataValues) {
+    if (validateApplication(application) === false) {
       return sendMessage(null, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
     }
 
