@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: sequelize.UUIDV4
     },
     applicationReference: DataTypes.STRING,
-    data: DataTypes.STRING,
+    data: DataTypes.JSONB,
     createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
     updatedAt: { type: DataTypes.DATE, defaultValue: null },
     createdBy: DataTypes.STRING,

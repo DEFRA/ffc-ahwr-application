@@ -8,6 +8,19 @@ async function get (reference) {
       include: [{ model: models.vetVisit }]
     })
 }
+
+async function getByEmail (email) {
+  return models.application.findOne(
+    {
+      logging: console.log,
+      attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
+      where: { 'data.organisation.email': email.toLowerCase() },
+      include: [{
+        model: models.vetVisit
+      }]
+    })
+}
+
 async function getAll (page = 0) {
   return models.application.findAll(
     {
@@ -17,12 +30,20 @@ async function getAll (page = 0) {
       offset: page
     })
 }
+
 async function set (data) {
   return models.application.create(data)
 }
+
 async function update (data) {
   return models.application.update(data,
     { where: { id: data.id } })
 }
 
-module.exports = { get, set, getAll, update }
+module.exports = {
+  get,
+  getByEmail,
+  getAll,
+  set,
+  update
+}

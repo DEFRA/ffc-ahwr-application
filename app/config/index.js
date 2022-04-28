@@ -27,6 +27,8 @@ const schema = Joi.object({
   applicationResponseMsgType: Joi.string(),
   fetchApplicationRequestMsgType: Joi.string(),
   fetchApplicationResponseMsgType: Joi.string(),
+  fetchClaimRequestMsgType: Joi.string(),
+  fetchClaimResponseMsgType: Joi.string(),
   vetVisitRequestMsgType: Joi.string(),
   vetVisitResponseMsgType: Joi.string(),
   notify: {
@@ -62,6 +64,8 @@ const config = {
   applicationResponseMsgType: `${msgTypePrefix}.app.response`,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
   fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
+  fetchClaimRequestMsgType: `${msgTypePrefix}.fetch.claim.request`,
+  fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
   vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
   vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
   notify: {

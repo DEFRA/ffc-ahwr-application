@@ -22,14 +22,14 @@ const processVetVisit = async (message) => {
 
     await set({
       applicationReference: reference,
-      data: JSON.stringify(msgBody),
+      data: msgBody,
       createdBy: 'admin',
       createdAt: new Date()
     })
 
     await sendEmail.sendVetConfirmationEmail(msgBody.signup.email, reference)
-    const farmerData = JSON.parse(farmerApplication.data)
-    await sendEmail.sendFarmerClaimInvitationEmail(farmerData.organisation.email, reference)
+    // const farmerData = JSON.parse(farmerApplication.data)
+    await sendEmail.sendFarmerClaimInvitationEmail(farmerApplication.data.organisation.email, reference)
     await sendMessage({ applicationState: 'submitted' }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {
     console.error(`failed to process vet visit request ${JSON.stringify(error)}`, error)

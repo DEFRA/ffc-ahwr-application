@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
         this.setDataValue('reference', val.toUpperCase())
       }
     },
-    data: DataTypes.STRING,
+    data: DataTypes.JSONB,
     createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
     updatedAt: { type: DataTypes.DATE, defaultValue: null },
     createdBy: DataTypes.STRING,

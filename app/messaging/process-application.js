@@ -12,7 +12,7 @@ const processApplication = async (msg) => {
     // Get ID
     const result = await set({
       reference,
-      data: JSON.stringify(msg.body),
+      data: msg.body,
       createdBy: 'admin',
       createdAt: new Date()
     })
