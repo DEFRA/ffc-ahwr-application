@@ -6,7 +6,7 @@
         <constraints nullable="false" primaryKey="true" primaryKeyName="applicationId_pkey" />
       </column>
       <column name="reference" type="VARCHAR(12)">
-        <constraints nullable="false" primaryKey="true" />
+        <constraints nullable="false"  unique="true" uniqueConstraintName="applicationReference_ukey" />
       </column>
       <column name="data" type="TEXT">
         <constraints nullable="false" />
