@@ -1,7 +1,7 @@
 const { models, sequelize } = require('../app/data')
 
 async function truncate () {
-  await models.application.destroy({ truncate: true })
+  await models.application.destroy({ truncate: { cascade: true } })
 }
 
 async function close () {
