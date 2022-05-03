@@ -12,6 +12,27 @@ Optional:
 - Kubernetes
 - Helm
 
+### Environment variables
+
+The following environment variables are required by the application.
+Values for development are set in the Docker Compose configuration. Default
+values for production-like deployments are set in the Helm chart and may be
+overridden by build and release pipelines.
+
+| Name                                           | Description                                                                                      |
+| ----                                           | -----------                                                                                      |
+| MESSAGE_QUEUE_HOST                             | Azure Service Bus hostname, e.g. `myservicebus.servicebus.windows.net`                           |
+| MESSAGE_QUEUE_PASSWORD                         | Azure Service Bus SAS policy key                                                                 |
+| MESSAGE_QUEUE_SUFFIX                           | Developer initials                                                                               |
+| MESSAGE_QUEUE_USER                             | Azure Service Bus SAS policy name, e.g. `RootManageSharedAccessKey`                              |
+| APPLICATIONREQUEST_QUEUE_ADDRESS               | Azure Service Bus message request queue name, e.g. `application-request`                         |
+| APPLICATIONRESPONSE_QUEUE_ADDRESS              | Azure Service Bus message response queue name, e.g. `application-response`                       |
+| NOTIFY_API_KEY                                 | GOV.UK Notify API Key                                                                            |
+| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE | Id of email template used for farmer application complete                                        |
+| NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE    | Id of email template used for veet application complete                                          |
+| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM    | Id of email template used to notify farmer for claim                                             |
+| SERVICE_URI                                    | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
+
 ## Running the application
 
 The application is designed to run in containerised environments, using Docker
