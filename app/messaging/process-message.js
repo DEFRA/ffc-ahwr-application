@@ -23,7 +23,6 @@ const processApplicationMessage = async (message, receiver) => {
     }
     await receiver.completeMessage(message)
   } catch (err) {
-    console.log(err)
     console.error('Unable to process Application request:', err)
   }
 }
