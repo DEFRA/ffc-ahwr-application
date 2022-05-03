@@ -4,6 +4,7 @@ const { get } = require('../repositories/application-repository')
 const sendMessage = require('../messaging/send-message')
 const { vetVisitResponseMsgType, applicationResponseQueue } = require('../config')
 const sendEmail = require('../lib/send-email')
+const states = require('./states')
 
 const processVetVisit = async (message) => {
   try {
@@ -13,11 +14,11 @@ const processVetVisit = async (message) => {
     const farmerApplication = await get(reference)
 
     if (!farmerApplication) {
-      return sendMessage({ applicationState: 'not_exist' }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+      return sendMessage({ applicationState: states.notExist }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
     }
 
     if (farmerApplication?.vetVisit?.dataValues) {
-      return sendMessage({ applicationState: 'already_submitted' }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+      return sendMessage({ applicationState: states.alreadySubmitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
     }
 
     await set({
@@ -28,12 +29,11 @@ const processVetVisit = async (message) => {
     })
 
     await sendEmail.sendVetConfirmationEmail(msgBody.signup.email, reference)
-    // const farmerData = JSON.parse(farmerApplication.data)
     await sendEmail.sendFarmerClaimInvitationEmail(farmerApplication.data.organisation.email, reference)
-    await sendMessage({ applicationState: 'submitted' }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
+    await sendMessage({ applicationState: states.submitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: msgBody.sessionId })
   } catch (error) {
     console.error(`failed to process vet visit request ${JSON.stringify(error)}`, error)
-    return sendMessage({ applicationState: 'failed' }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    return sendMessage({ applicationState: states.failed }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
   }
 }
 

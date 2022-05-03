@@ -12,7 +12,6 @@ async function get (reference) {
 async function getByEmail (email) {
   return models.application.findOne(
     {
-      logging: console.log,
       attributes: ['id', 'reference', 'data', 'createdAt', 'updatedAt', 'updatedBy', 'createdBy'],
       where: { 'data.organisation.email': email.toLowerCase() },
       include: [{
