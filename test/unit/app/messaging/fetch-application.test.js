@@ -1,24 +1,11 @@
 const fetchApplication = require('../../../../app/messaging/fetch-application')
-const applicationRepository = require('../../../../app/repositories/application-repository')
-const sendMessage = require('../../../../app/messaging/send-message')
 const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../../../../app/config')
+const states = require('../../../../app/messaging/states')
 
 jest.mock('../../../../app/repositories/application-repository')
+const applicationRepository = require('../../../../app/repositories/application-repository')
 jest.mock('../../../../app/messaging/send-message')
-
-const application = {
-  reference: 'VV-1234-5678',
-  vetVisit: null
-}
-
-applicationRepository.get.mockResolvedValueOnce(application).mockResolvedValueOnce(null).mockResolvedValue({
-  reference: 'VV-1234-5678',
-  vetVisit: {
-    dataValues: {
-      reference: 'VV-1234-5678'
-    }
-  }
-})
+const sendMessage = require('../../../../app/messaging/send-message')
 
 describe(('Fetch application tests'), () => {
   const message = {
@@ -33,26 +20,62 @@ describe(('Fetch application tests'), () => {
   })
 
   test('successfully fetched application', async () => {
+    const application = {
+      dataValues: {
+        reference: 'VV-1234-5678',
+        vetVisit: null
+      }
+    }
+    applicationRepository.get.mockResolvedValueOnce(application)
+
     await fetchApplication(message)
+
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: 'not_submitted' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notSubmitted, ...application.dataValues }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
   })
 
   test('no application found', async () => {
+    applicationRepository.get.mockResolvedValueOnce({ dataValues: null })
+
     await fetchApplication(message)
+
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: 'not_exist' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notExist }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
   })
 
   test('already submitted application', async () => {
+    const application = {
+      dataValues: {
+        reference: 'VV-1234-5678',
+        vetVisit: {
+          dataValues: {
+            reference: 'VV-1234-5678'
+          }
+        }
+      }
+    }
+    applicationRepository.get.mockResolvedValue(application)
+
     await fetchApplication(message)
+
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: 'already_submitted' }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadySubmitted, ...application.dataValues }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+  })
+
+  test('error handling', async () => {
+    applicationRepository.get.mockRejectedValue(new Error('bust'))
+
+    await fetchApplication(message)
+
+    expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
   })
 })
