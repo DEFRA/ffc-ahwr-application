@@ -34,16 +34,14 @@ describe('Process Message test', () => {
     jest.clearAllMocks()
   })
 
-  afterEach(async () => {
-    await dbHelper.truncate()
-  })
-
   afterAll(async () => {
+    await dbHelper.truncate()
     await dbHelper.close()
   })
 
   test('Call processApplicationMessage success', async () => {
     await processApplication(message)
+
     expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
@@ -52,6 +50,7 @@ describe('Process Message test', () => {
 
   test('Call processApplicationMessage fail to send email', async () => {
     await processApplication(message)
+
     expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
@@ -60,7 +59,9 @@ describe('Process Message test', () => {
 
   test('Call processApplicationMessage fail to send message', async () => {
     sendMessage.mockResolvedValue(() => { throw new Error('error error error') })
+
     await processApplication(message)
+
     expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })

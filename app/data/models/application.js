@@ -1,4 +1,5 @@
 const createReference = require('../../lib/create-reference')
+
 module.exports = (sequelize, DataTypes) => {
   const application = sequelize.define('application', {
     id: {
