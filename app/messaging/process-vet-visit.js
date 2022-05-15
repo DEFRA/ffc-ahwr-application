@@ -15,7 +15,7 @@ const processVetVisit = async (message) => {
     const farmerApplication = await get(reference)
 
     if (!farmerApplication) {
-      return sendMessage({ applicationState: states.notExist }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
+      return sendMessage({ applicationState: states.notFound }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     }
 
     if (farmerApplication?.vetVisit?.dataValues) {

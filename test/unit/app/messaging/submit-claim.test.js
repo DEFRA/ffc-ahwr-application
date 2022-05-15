@@ -1,6 +1,6 @@
 const submitClaim = require('../../../../app/messaging/submit-claim')
 const { submitClaimResponseMsgType, applicationResponseQueue } = require('../../../../app/config')
-const { alreadyClaimed, failed, error, notExist, success } = require('../../../../app/messaging/states')
+const { alreadyClaimed, failed, error, notFound, success } = require('../../../../app/messaging/states')
 
 jest.mock('../../../../app/repositories/application-repository')
 const applicationRepository = require('../../../../app/repositories/application-repository')
@@ -35,7 +35,7 @@ describe(('Submit claim tests'), () => {
   })
 
   test.each([
-    { desc: 'no application exists returns notExist state', applicationMock: null, state: notExist },
+    { desc: 'no application exists returns notFound state', applicationMock: null, state: notFound },
     { desc: 'application already claimed returns alreadyClaimed state', applicationMock: { claimed: true }, state: alreadyClaimed }
   ])('$desc', async ({ applicationMock, state }) => {
     applicationRepository.get.mockResolvedValueOnce({ dataValues: applicationMock })

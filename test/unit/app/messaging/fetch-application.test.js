@@ -45,7 +45,7 @@ describe(('Fetch application tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notExist }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notFound }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('already submitted application', async () => {

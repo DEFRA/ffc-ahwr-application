@@ -12,7 +12,7 @@ const fetchApplication = async (message) => {
     const application = (await get(msgBody.applicationReference)).dataValues
 
     if (!application) {
-      return sendMessage({ applicationState: states.notExist, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+      return sendMessage({ applicationState: states.notFound, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
     }
 
     if (application?.vetVisit?.dataValues) {

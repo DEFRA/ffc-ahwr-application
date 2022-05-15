@@ -1,6 +1,6 @@
 const fetchClaim = require('../../../../app/messaging/fetch-claim')
 const { fetchClaimResponseMsgType, applicationResponseQueue } = require('../../../../app/config')
-const { failed, notExist } = require('../../../../app/messaging/states')
+const { failed, notFound } = require('../../../../app/messaging/states')
 
 jest.mock('../../../../app/repositories/application-repository')
 const applicationRepository = require('../../../../app/repositories/application-repository')
@@ -40,7 +40,7 @@ describe(('Fetch claim tests'), () => {
     expect(applicationRepository.getByEmail).toHaveBeenCalledTimes(1)
     expect(applicationRepository.getByEmail).toHaveBeenCalledWith(message.body.email)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: notExist, ...claim }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: notFound, ...claim }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('error handling', async () => {

@@ -2,7 +2,7 @@ const util = require('util')
 const { get, updateByReference } = require('../repositories/application-repository')
 const sendMessage = require('../messaging/send-message')
 const { applicationResponseQueue, submitClaimResponseMsgType } = require('../config')
-const { alreadyClaimed, failed, error, notExist, success } = require('./states')
+const { alreadyClaimed, failed, error, notFound, success } = require('./states')
 
 const submitClaim = async (message) => {
   try {
@@ -14,7 +14,7 @@ const submitClaim = async (message) => {
     console.log('application', application)
 
     if (!application.dataValues) {
-      return sendMessage({ state: notExist }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+      return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
     }
 
     if (application.dataValues.claimed) {

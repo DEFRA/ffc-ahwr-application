@@ -2,7 +2,7 @@ const util = require('util')
 const { getByEmail } = require('../repositories/application-repository')
 const sendMessage = require('../messaging/send-message')
 const { fetchClaimResponseMsgType, applicationResponseQueue } = require('../config')
-const { failed, notExist } = require('./states')
+const { failed, notFound } = require('./states')
 
 const fetchClaim = async (message) => {
   const { sessionId } = message
@@ -12,7 +12,7 @@ const fetchClaim = async (message) => {
     const claim = (await getByEmail(msgBody.email)).dataValues
 
     if (!claim) {
-      return sendMessage({ applicationState: notExist, ...claim }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
+      return sendMessage({ applicationState: notFound, ...claim }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
     }
 
     await sendMessage(claim, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })

@@ -72,7 +72,7 @@ describe(('Store data in database'), () => {
 
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notExist }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notFound }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendEmail.sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(0)
     expect(sendEmail.sendVetConfirmationEmail).toHaveBeenCalledTimes(0)
   })
