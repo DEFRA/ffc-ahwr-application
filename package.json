@@ -32,18 +32,11 @@
     "jest": "^27.0.6",
     "jest-junit": "^13.0.0",
     "nodemon": "^2.0.12",
-    "standard": "^16.0.3"
+    "standard": "^17.0.0"
   },
   "standard": {
-    "globals": [
-      "describe",
-      "beforeEach",
-      "expect",
-      "test",
-      "afterEach",
-      "jest",
-      "beforeAll",
-      "afterAll"
+    "env": [
+      "jest"
     ]
   },
   "nodemonConfig": {
