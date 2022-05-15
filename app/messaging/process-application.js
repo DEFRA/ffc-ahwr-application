@@ -20,7 +20,8 @@ const processApplication = async (msg) => {
     const application = result.dataValues
     reference = msg.body.applicationReference = application.reference
     await sendMessage(msg.body, applicationResponseMsgType, applicationResponseQueue, { sessionId: msg.body.sessionId })
-  } catch {
+  } catch (err) {
+    console.error(err)
     responseMessage.error = {
       message: 'can\'t submit application at this time.'
     }
