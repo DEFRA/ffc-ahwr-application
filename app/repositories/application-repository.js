@@ -11,6 +11,7 @@ async function get (reference) {
 async function getByEmail (email) {
   return models.application.findOne(
     {
+      order: [['createdAt', 'DESC']],
       where: { 'data.organisation.email': email.toLowerCase() },
       include: [{
         model: models.vetVisit

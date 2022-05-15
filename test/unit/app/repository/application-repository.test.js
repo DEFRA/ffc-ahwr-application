@@ -35,20 +35,40 @@ describe('Application Repository test', () => {
     expect(data.models.application.update).toHaveBeenCalledWith({ id, reference }, { where: { id } })
   })
 
-  test('getAll returns all data from table', async () => {
-    await repository.getAll()
+  test.each([
+    { page: undefined },
+    { page: 1 }
+  ])('getAll returns pages of 20 ordered by createdAt DESC', async ({ page }) => {
+    await repository.getAll(page)
 
     expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']], limit: 20, offset: page === undefined ? 0 : page
+    })
+  })
+
+  test('getByEmail queries based on lowercased email and orders by createdAt DESC', async () => {
+    const email = 'TEST@email.com'
+
+    await repository.getByEmail(email)
+
+    expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findOne).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']],
+      where: { 'data.organisation.email': email.toLowerCase() },
+      include: [{
+        model: data.models.vetVisit
+      }]
+    })
   })
 
   test('get returns single data by uppercased reference', async () => {
     await repository.get(reference)
 
     expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
-    const expectObj = {
+    expect(data.models.application.findOne).toHaveBeenCalledWith({
       where: { reference: reference.toUpperCase() },
       include: [{ model: data.models.vetVisit }]
-    }
-    expect(data.models.application.findOne).toHaveBeenCalledWith(expectObj)
+    })
   })
 })
