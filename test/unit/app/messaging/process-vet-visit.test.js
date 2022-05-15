@@ -30,18 +30,20 @@ applicationRepository.get.mockResolvedValueOnce({
 }).mockRejectedValueOnce(error)
 
 describe(('Store data in database'), () => {
-  beforeEach(async () => {
-    jest.clearAllMocks()
-  })
+  const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const message = {
     body: {
       signup: {
         applicationReference: 'VV-1234-5678',
         reference: 'VV-1234-5678'
-      },
-      sessionId: '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
-    }
+      }
+    },
+    sessionId
   }
+
+  beforeEach(async () => {
+    jest.clearAllMocks()
+  })
 
   test('successfully submits application', async () => {
     vetVisitRepository.set.mockReturnValue({
@@ -60,7 +62,7 @@ describe(('Store data in database'), () => {
       createdAt: expect.any(Date)
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendEmail.sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(1)
     expect(sendEmail.sendVetConfirmationEmail).toHaveBeenCalledTimes(1)
   })
@@ -70,7 +72,7 @@ describe(('Store data in database'), () => {
 
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notExist }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notExist }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendEmail.sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(0)
     expect(sendEmail.sendVetConfirmationEmail).toHaveBeenCalledTimes(0)
   })
@@ -80,7 +82,7 @@ describe(('Store data in database'), () => {
 
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadySubmitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadySubmitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendEmail.sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(0)
     expect(sendEmail.sendVetConfirmationEmail).toHaveBeenCalledTimes(0)
   })
@@ -89,6 +91,6 @@ describe(('Store data in database'), () => {
     await processVetVisit(message)
 
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
   })
 })

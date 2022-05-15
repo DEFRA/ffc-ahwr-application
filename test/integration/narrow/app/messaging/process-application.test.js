@@ -18,7 +18,6 @@ describe('Process Message test', () => {
     body: {
       cattle: 'yes',
       pigs: 'yes',
-      sessionId: '23423',
       organisation: {
         name: 'test-org',
         email: 'test-email'
@@ -26,7 +25,8 @@ describe('Process Message test', () => {
     },
     applicationProperties: {
       type: 'uk.gov.ffc.ahwr.app.request'
-    }
+    },
+    sessionId: '23423'
   }
 
   beforeEach(async () => {

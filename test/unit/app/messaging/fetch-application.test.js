@@ -8,11 +8,12 @@ jest.mock('../../../../app/messaging/send-message')
 const sendMessage = require('../../../../app/messaging/send-message')
 
 describe(('Fetch application tests'), () => {
+  const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const message = {
     body: {
-      applicationReference: 'VV-1234-5678',
-      sessionId: '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
-    }
+      applicationReference: 'VV-1234-5678'
+    },
+    sessionId
   }
 
   beforeEach(async () => {
@@ -33,7 +34,7 @@ describe(('Fetch application tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notSubmitted, ...application.dataValues }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notSubmitted, ...application.dataValues }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('no application found', async () => {
@@ -44,7 +45,7 @@ describe(('Fetch application tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notExist }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notExist }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('already submitted application', async () => {
@@ -65,7 +66,7 @@ describe(('Fetch application tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadySubmitted, ...application.dataValues }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadySubmitted, ...application.dataValues }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('error handling', async () => {
@@ -76,6 +77,6 @@ describe(('Fetch application tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(message.body.applicationReference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 })

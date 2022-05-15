@@ -8,12 +8,8 @@ jest.mock('../../../../app/messaging/send-message')
 const sendMessage = require('../../../../app/messaging/send-message')
 
 describe(('Fetch claim tests'), () => {
-  const message = {
-    body: {
-      email: 'an@email.com',
-      sessionId: '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
-    }
-  }
+  const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
+  const message = { body: { email: 'an@email.com' }, sessionId }
 
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -32,7 +28,7 @@ describe(('Fetch claim tests'), () => {
     expect(applicationRepository.getByEmail).toHaveBeenCalledTimes(1)
     expect(applicationRepository.getByEmail).toHaveBeenCalledWith(message.body.email)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(claim.dataValues, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith(claim.dataValues, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('no claim found', async () => {
@@ -44,7 +40,7 @@ describe(('Fetch claim tests'), () => {
     expect(applicationRepository.getByEmail).toHaveBeenCalledTimes(1)
     expect(applicationRepository.getByEmail).toHaveBeenCalledWith(message.body.email)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: notExist, ...claim }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: notExist, ...claim }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('error handling', async () => {
@@ -55,6 +51,6 @@ describe(('Fetch claim tests'), () => {
     expect(applicationRepository.getByEmail).toHaveBeenCalledTimes(1)
     expect(applicationRepository.getByEmail).toHaveBeenCalledWith(message.body.email)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: failed }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId: message.body.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: failed }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 })

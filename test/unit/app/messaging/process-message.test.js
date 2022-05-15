@@ -14,6 +14,7 @@ jest.mock('../../../../app/messaging/process-vet-visit')
 jest.mock('../../../../app/messaging/submit-claim')
 
 describe('Process Message test', () => {
+  const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const receiver = {
     completeMessage: jest.fn(),
     abandonMessage: jest.fn()
@@ -37,7 +38,6 @@ describe('Process Message test', () => {
       body: {
         cattle: 'yes',
         pigs: 'yes',
-        sessionId: '23423',
         organisation: {
           name: 'test-org',
           email: 'test-email'
@@ -45,7 +45,8 @@ describe('Process Message test', () => {
       },
       applicationProperties: {
         type: applicationRequestMsgType
-      }
+      },
+      sessionId
     }
     await processApplicationMessage(message, receiver)
     expect(processApplication).toHaveBeenCalledTimes(1)
@@ -57,7 +58,6 @@ describe('Process Message test', () => {
       body: {
         cattle: 'yes',
         pigs: 'yes',
-        sessionId: '23423',
         organisation: {
           name: 'test-org',
           email: 'test-email'
@@ -65,7 +65,8 @@ describe('Process Message test', () => {
       },
       applicationProperties: {
         type: fetchApplicationRequestMsgType
-      }
+      },
+      sessionId
     }
     await processApplicationMessage(message, receiver)
     expect(fetchApplication).toHaveBeenCalledTimes(1)

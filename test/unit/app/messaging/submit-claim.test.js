@@ -9,7 +9,8 @@ const sendMessage = require('../../../../app/messaging/send-message')
 
 describe(('Submit claim tests'), () => {
   const reference = 'VV-1234-5678'
-  const message = { body: { reference }, sessionId: 'sessionId' }
+  const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
+  const message = { body: { reference }, sessionId }
 
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -30,7 +31,7 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, updatedBy: 'admin' })
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test.each([
@@ -44,7 +45,7 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('error occurring return error state', async () => {
@@ -55,6 +56,6 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 })
