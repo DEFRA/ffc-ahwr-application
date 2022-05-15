@@ -1,10 +1,10 @@
 const util = require('util')
-const { set } = require('../repositories/vet-visit-repository')
-const { get } = require('../repositories/application-repository')
-const sendMessage = require('../messaging/send-message')
+const states = require('./states')
 const { vetVisitResponseMsgType, applicationResponseQueue } = require('../config')
 const sendEmail = require('../lib/send-email')
-const states = require('./states')
+const sendMessage = require('../messaging/send-message')
+const { get } = require('../repositories/application-repository')
+const { set } = require('../repositories/vet-visit-repository')
 
 const processVetVisit = async (message) => {
   const { sessionId } = message
