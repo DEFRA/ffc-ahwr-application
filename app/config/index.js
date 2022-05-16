@@ -11,8 +11,6 @@ const sharedConfigSchema = {
   useCredentialChain: Joi.bool().default(false)
 }
 const schema = Joi.object({
-  env: Joi.string().valid('development', 'test', 'production').default('development'),
-  isDev: Joi.boolean().default(false),
   applicationRequestQueue: {
     address: Joi.string().default('applicationRequestQueue'),
     type: Joi.string(),
@@ -25,19 +23,23 @@ const schema = Joi.object({
     ...sharedConfigSchema
   },
   applicationResponseMsgType: Joi.string(),
+  env: Joi.string().valid('development', 'test', 'production').default('development'),
   fetchApplicationRequestMsgType: Joi.string(),
   fetchApplicationResponseMsgType: Joi.string(),
   fetchClaimRequestMsgType: Joi.string(),
   fetchClaimResponseMsgType: Joi.string(),
-  vetVisitRequestMsgType: Joi.string(),
-  vetVisitResponseMsgType: Joi.string(),
+  isDev: Joi.boolean().default(false),
   notify: {
     apiKey: Joi.string().pattern(notifyApiKeyRegex),
     templateIdFarmerApplicationComplete: Joi.string().uuid(),
     templateIdFarmerApplicationClaim: Joi.string().uuid(),
     templateIdVetApplicationComplete: Joi.string().uuid()
   },
-  serviceUri: Joi.string().uri()
+  serviceUri: Joi.string().uri(),
+  submitClaimRequestMsgType: Joi.string(),
+  submitClaimResponseMsgType: Joi.string(),
+  vetVisitRequestMsgType: Joi.string(),
+  vetVisitResponseMsgType: Joi.string()
 })
 
 const sharedConfig = {
@@ -48,8 +50,6 @@ const sharedConfig = {
   useCredentialChain: process.env.NODE_ENV === 'production'
 }
 const config = {
-  env: process.env.NODE_ENV,
-  isDev: process.env.NODE_ENV === 'development',
   applicationRequestQueue: {
     address: process.env.APPLICATIONREQUEST_QUEUE_ADDRESS,
     type: 'queue',
@@ -62,19 +62,23 @@ const config = {
     ...sharedConfig
   },
   applicationResponseMsgType: `${msgTypePrefix}.app.response`,
+  env: process.env.NODE_ENV,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
   fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
   fetchClaimRequestMsgType: `${msgTypePrefix}.fetch.claim.request`,
   fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
-  vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
-  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
+  isDev: process.env.NODE_ENV === 'development',
   notify: {
     apiKey: process.env.NOTIFY_API_KEY,
     templateIdFarmerApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE,
     templateIdFarmerApplicationClaim: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM,
     templateIdVetApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE
   },
-  serviceUri: process.env.SERVICE_URI
+  serviceUri: process.env.SERVICE_URI,
+  submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
+  submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
+  vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
+  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })

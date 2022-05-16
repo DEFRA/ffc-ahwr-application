@@ -1,4 +1,5 @@
 const createReference = require('../../lib/create-reference')
+
 module.exports = (sequelize, DataTypes) => {
   const application = sequelize.define('application', {
     id: {
@@ -14,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     data: DataTypes.JSONB,
+    claimed: { type: DataTypes.BOOLEAN, defaultValue: false },
     createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
     updatedAt: { type: DataTypes.DATE, defaultValue: null },
     createdBy: DataTypes.STRING,

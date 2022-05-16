@@ -6,6 +6,7 @@ const sendEmail = require('../lib/send-email')
 
 const processApplication = async (msg) => {
   const responseMessage = msg.body
+  const { sessionId } = msg
   let reference = ''
   try {
     console.log('Application received:', util.inspect(msg.body, false, null, true))
@@ -19,8 +20,9 @@ const processApplication = async (msg) => {
     // GetReference for ID
     const application = result.dataValues
     reference = msg.body.applicationReference = application.reference
-    await sendMessage(msg.body, applicationResponseMsgType, applicationResponseQueue, { sessionId: msg.body.sessionId })
-  } catch {
+    await sendMessage(msg.body, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+  } catch (err) {
+    console.error(err)
     responseMessage.error = {
       message: 'can\'t submit application at this time.'
     }
