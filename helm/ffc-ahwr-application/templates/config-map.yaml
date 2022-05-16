@@ -13,6 +13,7 @@ data:
   POSTGRES_SCHEMA_NAME: {{ quote .Values.postgresService.postgresSchema }}
   NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerApplicationComplete }}
   NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM: {{ quote .Values.container.notifyTemplateIdFarmerApplicationClaim }}
+  NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerClaimComplete }}
   NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE: {{ quote .Values.container.notifyTemplateIdVetApplicationComplete }}
   SERVICE_URI: {{ quote .Values.container.serviceUri }}
 {{- end -}}

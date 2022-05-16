@@ -6,6 +6,8 @@ jest.mock('../../../../app/repositories/application-repository')
 const applicationRepository = require('../../../../app/repositories/application-repository')
 jest.mock('../../../../app/messaging/send-message')
 const sendMessage = require('../../../../app/messaging/send-message')
+jest.mock('../../../../app/lib/send-email')
+const { sendFarmerClaimConfirmationEmail } = require('../../../../app/lib/send-email')
 
 describe(('Submit claim tests'), () => {
   const reference = 'VV-1234-5678'
@@ -20,7 +22,8 @@ describe(('Submit claim tests'), () => {
     { desc: 'unclaimed application successfully updated returns success state', updateRes: [1], state: success },
     { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed }
   ])('$desc', async ({ updateRes, state }) => {
-    const applicationMock = { dataValues: { reference: 'VV-1234-5678' } }
+    const email = 'an@email.com'
+    const applicationMock = { dataValues: { reference: 'VV-1234-5678', data: { organisation: { email } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
@@ -32,6 +35,12 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, updatedBy: 'admin' })
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+    if (state === success) {
+      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
+    } else {
+      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+    }
   })
 
   test.each([

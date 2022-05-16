@@ -28,9 +28,10 @@ overridden by build and release pipelines.
 | APPLICATIONREQUEST_QUEUE_ADDRESS               | Azure Service Bus message request queue name, e.g. `application-request`                         |
 | APPLICATIONRESPONSE_QUEUE_ADDRESS              | Azure Service Bus message response queue name, e.g. `application-response`                       |
 | NOTIFY_API_KEY                                 | GOV.UK Notify API Key                                                                            |
-| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE | Id of email template used for farmer application complete                                        |
-| NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE    | Id of email template used for veet application complete                                          |
 | NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM    | Id of email template used to notify farmer for claim                                             |
+| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE | Id of email template used for farmer application complete                                        |
+| NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE       | Id of email template used to notify farmer for claim being completed                             |
+| NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE    | Id of email template used for veet application complete                                          |
 | SERVICE_URI                                    | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
 
 ## Running the application

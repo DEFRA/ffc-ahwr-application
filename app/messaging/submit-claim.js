@@ -1,8 +1,13 @@
 const util = require('util')
-const { get, updateByReference } = require('../repositories/application-repository')
-const sendMessage = require('../messaging/send-message')
-const { applicationResponseQueue, submitClaimResponseMsgType } = require('../config')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
+const { applicationResponseQueue, submitClaimResponseMsgType } = require('../config')
+const { get, updateByReference } = require('../repositories/application-repository')
+const { sendFarmerClaimConfirmationEmail } = require('../lib/send-email')
+const sendMessage = require('../messaging/send-message')
+
+function isUpdateSuccessful (res) {
+  return res[0] === 1
+}
 
 const submitClaim = async (message) => {
   try {
@@ -11,7 +16,6 @@ const submitClaim = async (message) => {
 
     const { reference } = msgBody
     const application = await get(reference)
-    console.log('application', application)
 
     if (!application.dataValues) {
       return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
@@ -20,9 +24,13 @@ const submitClaim = async (message) => {
     if (application.dataValues.claimed) {
       return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
     }
-    const [res] = await updateByReference({ reference, claimed: true, updatedBy: 'admin' })
+    const res = await updateByReference({ reference, claimed: true, updatedBy: 'admin' })
 
-    await sendMessage({ state: res === 1 ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+    if (isUpdateSuccessful(res)) {
+      await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
+    }
+
+    await sendMessage({ state: isUpdateSuccessful(res) ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   } catch (err) {
     console.error(`failed to submit claim for request ${JSON.stringify(message.body)}`, err)
     return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })

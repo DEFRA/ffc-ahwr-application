@@ -1,53 +1,44 @@
 const notifyClient = require('./notify-client')
-const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete } } = require('../config')
+const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete, templateIdFarmerClaimComplete } } = require('../config')
+
+const sendEmail = async (email, personalisation, reference, templateId) => {
+  let success = true
+  try {
+    await notifyClient.sendEmail(
+      templateId,
+      email,
+      { personalisation, reference }
+    )
+  } catch (e) {
+    success = false
+    console.error('Error occurred during sending email', e.response.data)
+  }
+  return success
+}
 
 const sendFarmerConfirmationEmail = async (email, name, reference) => {
-  let success = true
-  try {
-    await notifyClient.sendEmail(
-      templateIdFarmerApplicationComplete,
-      email,
-      { personalisation: { name, reference }, reference }
-    )
-  } catch (e) {
-    success = false
-    console.error('Error occurred during sending email', e.response.data)
-  }
-  return success
+  const personalisation = { name, reference }
+  return sendEmail(email, personalisation, reference, templateIdFarmerApplicationComplete)
 }
 
-const sendVetConfirmationEmail = async (vetEmail, reference) => {
-  let success = true
-  try {
-    await notifyClient.sendEmail(
-      templateIdVetApplicationComplete,
-      vetEmail,
-      { personalisation: { reference }, reference }
-    )
-  } catch (e) {
-    success = false
-    console.error('Error occurred during sending email', e.response.data)
-  }
-  return success
+const sendFarmerClaimConfirmationEmail = async (email, reference) => {
+  const personalisation = { reference }
+  return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete)
 }
 
-const sendFarmerClaimInvitationEmail = async (vetEmail, reference) => {
-  let success = true
-  try {
-    await notifyClient.sendEmail(
-      templateIdFarmerApplicationClaim,
-      vetEmail,
-      { personalisation: { reference, claimStartUrl: `${serviceUri}/farmer-claim` }, reference }
-    )
-  } catch (e) {
-    success = false
-    console.error('Error occurred during sending email', e.response.data)
-  }
-  return success
+const sendVetConfirmationEmail = async (email, reference) => {
+  const personalisation = { reference }
+  return sendEmail(email, personalisation, reference, templateIdVetApplicationComplete)
+}
+
+const sendFarmerClaimInvitationEmail = async (email, reference) => {
+  const personalisation = { claimStartUrl: `${serviceUri}/farmer-claim`, reference }
+  return sendEmail(email, personalisation, reference, templateIdFarmerApplicationClaim)
 }
 
 module.exports = {
+  sendFarmerClaimInvitationEmail,
   sendFarmerConfirmationEmail,
-  sendVetConfirmationEmail,
-  sendFarmerClaimInvitationEmail
+  sendFarmerClaimConfirmationEmail,
+  sendVetConfirmationEmail
 }

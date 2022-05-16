@@ -7,7 +7,7 @@ services:
       target: production
     image: ffc-ahwr-application
     container_name: ffc-ahwr-application
-    depends_on: 
+    depends_on:
       - ffc-ahwr-application-postgres
     environment:
       APPINSIGHTS_CLOUDROLE: ffc-ahwr-application-local
@@ -24,8 +24,9 @@ services:
       POSTGRES_SCHEMA_NAME: ${POSTGRES_SCHEMA_NAME:-public}
       POSTGRES_USERNAME: ${POSTGRES_SCHEMA_USERNAME:-postgres}
       NOTIFY_API_KEY: ${NOTIFY_API_KEY:-examplekey-644a2a30-7487-4e98-a908-b5ecd82d5225-644a2a30-7487-4e98-a908-b5ecd82d5225}
-      NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE: ${NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE:-644a2a30-7487-4e98-a908-b5ecd82d5225}
       NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM: ${NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM:-644a2a30-7487-4e98-a908-b5ecd82d5225}
+      NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE: ${NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE:-644a2a30-7487-4e98-a908-b5ecd82d5225}
+      NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE: ${NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE:-644a2a30-7487-4e98-a908-b5ecd82d5225}
       NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE: ${NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE:-644a2a30-7487-4e98-a908-b5ecd82d5225}
       SERVICE_URI: http://localhost:3000
 
@@ -38,6 +39,6 @@ services:
       POSTGRES_USERNAME: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  
+
 volumes:
   postgres_data: {}
