@@ -33,6 +33,8 @@ deployment:
   replicas: 1
 
 container:
+  backOfficeRequestQueueAddress: ffc-ahwr-backoffice-request
+  backOfficeResponseQueueAddress: ffc-ahwr-backoffice-response
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
   imagePullPolicy: IfNotPresent

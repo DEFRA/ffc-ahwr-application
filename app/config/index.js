@@ -23,6 +23,18 @@ const schema = Joi.object({
     ...sharedConfigSchema
   },
   applicationResponseMsgType: Joi.string(),
+  backOfficeRequestQueue: {
+    address: Joi.string().default('backOfficeRequestQueue'),
+    type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  backOfficeRequestMsgType: Joi.string(),
+  backOfficeResponseQueue: {
+    address: Joi.string().default('backOfficeResponseQueue'),
+    type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  backOfficeResponseMsgType: Joi.string(),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   fetchApplicationRequestMsgType: Joi.string(),
   fetchApplicationResponseMsgType: Joi.string(),
@@ -63,6 +75,18 @@ const config = {
     ...sharedConfig
   },
   applicationResponseMsgType: `${msgTypePrefix}.app.response`,
+  backOfficeRequestQueue: {
+    address: process.env.BACKOFFICEREQUEST_QUEUE_ADDRESS,
+    type: 'queue',
+    ...sharedConfig
+  },
+  backOfficeRequestMsgType: `${msgTypePrefix}.backoffice.request`,
+  backOfficeResponseQueue: {
+    address: process.env.BACKOFFICERESPONSE_QUEUE_ADDRESS,
+    type: 'queue',
+    ...sharedConfig
+  },
+  backOfficeResponseMsgType: `${msgTypePrefix}.backoffice.response`,
   env: process.env.NODE_ENV,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
   fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
