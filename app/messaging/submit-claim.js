@@ -1,9 +1,9 @@
 const util = require('util')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
 const { applicationResponseQueue, submitClaimResponseMsgType } = require('../config')
-const { get, updateByReference } = require('../repositories/application-repository')
 const { sendFarmerClaimConfirmationEmail } = require('../lib/send-email')
 const sendMessage = require('../messaging/send-message')
+const { get, updateByReference } = require('../repositories/application-repository')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
@@ -26,11 +26,12 @@ const submitClaim = async (message) => {
     }
     const res = await updateByReference({ reference, claimed: true, updatedBy: 'admin' })
 
-    if (isUpdateSuccessful(res)) {
+    const updateSuccess = isUpdateSuccessful(res)
+    if (updateSuccess) {
       await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
     }
 
-    await sendMessage({ state: isUpdateSuccessful(res) ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+    await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   } catch (err) {
     console.error(`failed to submit claim for request ${JSON.stringify(message.body)}`, err)
     return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
