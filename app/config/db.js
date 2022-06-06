@@ -25,19 +25,22 @@ const retry = {
 
 const dbConfig = {
   database: process.env.POSTGRES_DB,
-  dialect: 'postgres',
-  hooks,
-  host: process.env.POSTGRES_HOST,
-  password: process.env.POSTGRES_PASSWORD,
-  port: process.env.POSTGRES_PORT,
-  logging: process.env.POSTGRES_LOGGING || false,
-  retry,
-  schema: process.env.POSTGRES_SCHEMA_NAME,
-  username: process.env.POSTGRES_USERNAME,
   define: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
-  }
+  },
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: isProd()
+  },
+  hooks,
+  host: process.env.POSTGRES_HOST,
+  logging: process.env.POSTGRES_LOGGING || false,
+  password: process.env.POSTGRES_PASSWORD,
+  port: process.env.POSTGRES_PORT,
+  retry,
+  schema: process.env.POSTGRES_SCHEMA_NAME,
+  username: process.env.POSTGRES_USERNAME
 }
 
 module.exports = {
