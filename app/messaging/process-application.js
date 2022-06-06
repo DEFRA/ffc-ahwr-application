@@ -18,9 +18,9 @@ const processApplication = async (msg) => {
     })
 
     const application = result.dataValues
-    reference = msg.body.applicationReference = application.reference
+    reference = application.reference
     await sendFarmerConfirmationEmail(msg.body.organisation.email, msg.body.organisation.name, reference)
-    await sendMessage({ applicationState: states.submitted, ...msg.body }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    await sendMessage({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   } catch (error) {
     console.error(`failed to process application ${JSON.stringify(error)}`, error)
     return sendMessage({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
