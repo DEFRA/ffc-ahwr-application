@@ -19,12 +19,12 @@ async function getByEmail (email) {
     })
 }
 
-async function getAll (page = 0) {
+async function getAll (limit, offset) {
   return models.application.findAll(
     {
       order: [['createdAt', 'DESC']],
-      limit: 20,
-      offset: page
+      limit: limit,
+      offset: offset
     })
 }
 

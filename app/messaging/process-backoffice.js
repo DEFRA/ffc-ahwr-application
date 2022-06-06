@@ -9,11 +9,9 @@ const processBackOfficeRequest = async (msg) => {
   try {
     console.log('BackOffice Request received:', util.inspect(msg.body, false, null, true))
     // Get ID
-    const result = await getAll(msg.body.page ?? 1)
+    const result = await getAll(msg.body.limit ?? 10, msg.body.offset ?? 0)
     // Get All Applications
-    const applications = result.dataValues
-    msg.body.applications = applications
-    await sendMessage(msg.body, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
+    await sendMessage({ applications: result.dataValues }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
   } catch (err) {
     console.error(err)
     responseMessage.error = {
