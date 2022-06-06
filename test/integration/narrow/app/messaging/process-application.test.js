@@ -1,15 +1,12 @@
 const dbHelper = require('../../../../db-helper')
 const { models } = require('../../../../../app/data')
 const processApplication = require('../../../../../app/messaging/process-application')
-const sendEmail = require('../../../../../app/lib/send-email')
-const sendMessage = require('../../../../../app/messaging/send-message')
 const boom = require('@hapi/boom')
 
-sendEmail.sendFarmerConfirmationEmail = jest.fn()
-  .mockResolvedValueOnce(true)
-  .mockResolvedValueOnce(false)
-  .mockResolvedValueOnce(true)
+const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
+jest.mock('../../../../../app/lib/send-email')
 
+const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/send-message')
 boom.internal = jest.fn()
 
@@ -42,7 +39,7 @@ describe('Process Message test', () => {
   test('Call processApplicationMessage success', async () => {
     await processApplication(message)
 
-    expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)
@@ -51,7 +48,7 @@ describe('Process Message test', () => {
   test('Call processApplicationMessage fail to send email', async () => {
     await processApplication(message)
 
-    expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)
@@ -62,7 +59,7 @@ describe('Process Message test', () => {
 
     await processApplication(message)
 
-    expect(sendEmail.sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)

@@ -1,41 +1,30 @@
 const util = require('util')
-const { set } = require('../repositories/application-repository')
+const states = require('./states')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../config')
+const { sendFarmerConfirmationEmail } = require('../lib/send-email')
 const sendMessage = require('../messaging/send-message')
-const sendEmail = require('../lib/send-email')
+const { set } = require('../repositories/application-repository')
 
 const processApplication = async (msg) => {
-  const responseMessage = msg.body
   const { sessionId } = msg
-  let reference = ''
   try {
     console.log('Application received:', util.inspect(msg.body, false, null, true))
-    // Get ID
+    let reference = ''
     const result = await set({
       reference,
       data: msg.body,
       createdBy: 'admin',
       createdAt: new Date()
     })
-    // GetReference for ID
+
     const application = result.dataValues
     reference = msg.body.applicationReference = application.reference
-    await sendMessage(msg.body, applicationResponseMsgType, applicationResponseQueue, { sessionId })
-  } catch (err) {
-    console.error(err)
-    responseMessage.error = {
-      message: 'can\'t submit application at this time.'
-    }
-  } finally {
-    const result = await sendEmail.sendFarmerConfirmationEmail(msg.body.organisation.email, msg.body.organisation.name, reference)
-
-    if (!result) {
-      responseMessage.error = {
-        message: 'can\'t send message.'
-      }
-    }
+    await sendFarmerConfirmationEmail(msg.body.organisation.email, msg.body.organisation.name, reference)
+    await sendMessage({ applicationState: states.submitted, ...msg.body }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+  } catch (error) {
+    console.error(`failed to process application ${JSON.stringify(error)}`, error)
+    return sendMessage({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   }
-  return responseMessage
 }
 
 module.exports = processApplication
