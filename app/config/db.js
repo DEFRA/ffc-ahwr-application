@@ -31,7 +31,7 @@ const dbConfig = {
   },
   dialect: 'postgres',
   dialectOptions: {
-    rejectUnauthorized: false,
+    checkServerIdentity: () => undefined,
     ssl: isProd()
   },
   hooks,
