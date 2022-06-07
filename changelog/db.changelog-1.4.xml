@@ -1,13 +1,6 @@
 <?xml version="1.1" encoding="utf-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
   <changeSet author="Satish Chatap" id="2">
-    <addColumn tableName="application">
-      <column name="sbi" type="INTEGER">
-        <constraints nullable="false" />
-      </column>
-    </addColumn>
-  </changeSet>
-  <changeSet author="Satish Chatap" id="3">
     <createTable tableName="status">
       <column autoIncrement="false" name="statusId" type="SMALLINT">
         <constraints nullable="true" primaryKey="true" primaryKeyName="status_pkey" />
@@ -31,24 +24,12 @@
       <column name="status" value="Deleted" />
     </insert>
   </changeSet>
-  <changeSet author="Satish Chatap" id="4">
+  <changeSet author="Satish Chatap" id="3">
     <addColumn tableName="application">
       <column afterColumn="updatedAt" name="statusId" type="SMALLINT" defaultValue="1" />
     </addColumn>
     <addForeignKeyConstraint baseColumnNames="statusId" baseTableName="application" constraintName="fk_application_statusId" referencedColumnNames="statusId" referencedTableName="status" />
-  </changeSet>
-  <changeSet author="Satish Chatap" id="5">
-    <createTable tableName="progress">
-      <column autoIncrement="true" name="progressId" type="SMALLINT">
-        <constraints nullable="true" primaryKey="true" primaryKeyName="progress_pkey" />
-      </column>
-      <column name="progress" type="JSON" />
-    </createTable>
-    <addColumn tableName="application">
-      <column afterColumn="statusId" name="progressId" type="SMALLINT" />
-    </addColumn>
-    <addForeignKeyConstraint baseColumnNames="progressId" baseTableName="application" constraintName="fk_application_progressId" referencedColumnNames="progressId" referencedTableName="progress" />
-  </changeSet>
+  </changeSet> 
   <changeSet author="Satish Chatap" id="1">
     <tagDatabase tag="v1.4.0" />
   </changeSet>

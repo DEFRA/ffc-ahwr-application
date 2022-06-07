@@ -11,7 +11,7 @@ const processBackOfficeRequest = async (msg) => {
     // Get ID
     const result = await getAll(msg.body.limit ?? 10, msg.body.offset ?? 0)
     // Get All Applications
-    await sendMessage({ applications: result.dataValues }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
+    await sendMessage({ applications: result }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
   } catch (err) {
     console.error(err)
     responseMessage.error = {
