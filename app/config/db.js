@@ -31,7 +31,10 @@ const dbConfig = {
   },
   dialect: 'postgres',
   dialectOptions: {
-    checkServerIdentity: () => undefined,
+    checkServerIdentity: (hostname) => {
+      console.log('checkServerIdentity', hostname)
+      return undefined
+    },
     ssl: isProd()
   },
   hooks,
