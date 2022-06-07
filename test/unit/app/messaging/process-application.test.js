@@ -9,22 +9,6 @@ jest.mock('../../../../app/messaging/send-message')
 const applicationRepository = require('../../../../app/repositories/application-repository')
 jest.mock('../../../../app/repositories/application-repository')
 
-// const error = new Error('Test exception')
-// error.response = { data: 'failed to send email' }
-
-// applicationRepository.get.mockResolvedValueOnce({
-//   reference: 'VV-1234-5678',
-//   data: { organisation: { email: 'test@farmer.email.com' } },
-//   vetVisit: null
-// }).mockResolvedValueOnce(null).mockResolvedValueOnce({
-//   reference: 'VV-1234-5678',
-//   vetVisit: {
-//     dataValues: {
-//       reference: 'VV-1234-5678'
-//     }
-//   }
-// }).mockRejectedValueOnce(error)
-
 describe(('Store application in database'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const email = 'email@domain.com'
