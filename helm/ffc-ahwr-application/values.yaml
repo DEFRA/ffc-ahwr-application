@@ -53,11 +53,7 @@ container:
 
 postgresService:
   postgresDb: ffc_ahwr_application
-  # postgresExternalName is the external host name to which PostgreSQL
-  # requests should be forwarded. If empty, PostgreSQL is assumed to be
-  # within the cluster and accessible via postgresHost
-  postgresExternalName:
-  postgresHost: ffc-ahwr-application-postgres
+  postgresExternalName: namespace.postgres.database.azure.com
   postgresPort: 5432
   postgresSchema: public
   postgresUser: postgres
