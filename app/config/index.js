@@ -29,12 +29,14 @@ const schema = Joi.object({
     ...sharedConfigSchema
   },
   backOfficeRequestMsgType: Joi.string(),
+  getBackOfficeApplicationRequestMsgType: Joi.string(),
   backOfficeResponseQueue: {
     address: Joi.string().default('backOfficeResponseQueue'),
     type: Joi.string(),
     ...sharedConfigSchema
   },
   backOfficeResponseMsgType: Joi.string(),
+  getBackOfficeApplicationResponseMsgType: Joi.string(),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   fetchApplicationRequestMsgType: Joi.string(),
   fetchApplicationResponseMsgType: Joi.string(),
@@ -81,12 +83,14 @@ const config = {
     ...sharedConfig
   },
   backOfficeRequestMsgType: `${msgTypePrefix}.backoffice.request`,
+  getBackOfficeApplicationRequestMsgType: `${msgTypePrefix}.get.application.backoffice.request`,
   backOfficeResponseQueue: {
     address: process.env.BACKOFFICERESPONSE_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfig
   },
   backOfficeResponseMsgType: `${msgTypePrefix}.backoffice.response`,
+  getBackOfficeApplicationResponseMsgType: `${msgTypePrefix}.get.application.backoffice.response`,
   env: process.env.NODE_ENV,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
   fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
