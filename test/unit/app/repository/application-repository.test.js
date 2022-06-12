@@ -4,6 +4,7 @@ const data = require('../../../../app/data')
 data.models.application.create = jest.fn()
 data.models.application.update = jest.fn()
 data.models.application.findAll = jest.fn()
+data.models.application.count = jest.fn()
 data.models.application.findOne = jest.fn()
 
 beforeEach(() => {
@@ -60,6 +61,27 @@ describe('Application Repository test', () => {
     }
   })
 
+  test.each([
+    { sbi: undefined },
+    { sbi: '444444444' },
+    { sbi: '   444444444    ' }
+  ])('getApplicationCount successfully called with SBI', async ({ sbi }) => {
+    await repository.getApplicationCount(sbi)
+
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    if (sbi) {
+      expect(data.models.application.count).toHaveBeenCalledWith({
+        order: [['createdAt', 'DESC']],
+        where: {
+          'data.organisation.sbi': '444444444'
+        }
+      })
+    } else {
+      expect(data.models.application.count).toHaveBeenCalledWith({
+        order: [['createdAt', 'DESC']]
+      })
+    }
+  })
   test('getByEmail queries based on lowercased email and orders by createdAt DESC', async () => {
     const email = 'TEST@email.com'
 

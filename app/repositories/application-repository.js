@@ -26,7 +26,7 @@ async function getAll (limit, offset, sbi) {
     offset: offset
   }
   if (sbi && sbi.trim().length > 0) {
-    query.where = { 'data.organisation.sbi': sbi }
+    query.where = { 'data.organisation.sbi': sbi.trim() }
   }
   return models.application.findAll(query)
 }
@@ -34,8 +34,8 @@ async function getApplicationCount (sbi) {
   const query = {
     order: [['createdAt', 'DESC']]
   }
-  if (sbi.trim().length > 0) {
-    query.where = { 'data.organisation.sbi': sbi }
+  if (sbi && sbi.trim().length > 0) {
+    query.where = { 'data.organisation.sbi': sbi.trim() }
   }
   return models.application.count(query)
 }
