@@ -36,15 +36,28 @@ describe('Application Repository test', () => {
   })
 
   test.each([
-    { page: undefined },
-    { page: 1 }
-  ])('getAll returns pages of 20 ordered by createdAt DESC', async ({ page }) => {
-    await repository.getAll(page)
+    { limit: 10, offset: 0, sbi: undefined },
+    { limit: 10, offset: 0, sbi: '444444444' }
+  ])('getAll returns pages of 10 ordered by createdAt DESC', async ({ limit, offset, sbi }) => {
+    await repository.getAll(limit, offset, sbi)
 
     expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
-    expect(data.models.application.findAll).toHaveBeenCalledWith({
-      order: [['createdAt', 'DESC']], limit: 20, offset: page === undefined ? 0 : page
-    })
+    if (sbi) {
+      expect(data.models.application.findAll).toHaveBeenCalledWith({
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        offset: offset,
+        where: {
+          'data.organisation.sbi': '444444444'
+        }
+      })
+    } else {
+      expect(data.models.application.findAll).toHaveBeenCalledWith({
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        offset: offset
+      })
+    }
   })
 
   test('getByEmail queries based on lowercased email and orders by createdAt DESC', async () => {
