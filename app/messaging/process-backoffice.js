@@ -10,7 +10,6 @@ const processBackOfficeRequest = async (msg) => {
     console.log('BackOffice Request received:', util.inspect(msg.body, false, null, true))
     // Get ID
     const result = await getAll(msg.body.limit ?? 10, msg.body.offset ?? 0, msg.body.search.text)
-    console.log(result.length, 'result count')
     const total = await getApplicationCount(msg.body.search.text)
     // Get All Applications
     await sendMessage({ applications: result, total }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
