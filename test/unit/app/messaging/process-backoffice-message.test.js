@@ -1,7 +1,7 @@
 const dbHelper = require('../../../db-helper')
-const { backOfficeRequestMsgType } = require('../../../../app/config')
-const processBackOfficeMessage = require('../../../../app/messaging/process-backoffice')
-const processBackOfficeMessageMessage = require('../../../../app/messaging/process-backoffice-message')
+const { backOfficeRequestMsgType, getBackOfficeApplicationRequestMsgType } = require('../../../../app/config')
+const processBackOffice = require('../../../../app/messaging/process-backoffice')
+const processBackOfficeMessage = require('../../../../app/messaging/process-backoffice-message')
 
 jest.mock('../../../../app/messaging/process-backoffice')
 
@@ -37,8 +37,22 @@ describe('Process BackOffice Message test', () => {
       },
       sessionId
     }
-    await processBackOfficeMessageMessage(message, receiver)
-    expect(processBackOfficeMessage).toHaveBeenCalledTimes(1)
+    await processBackOfficeMessage(message, receiver)
+    expect(processBackOffice).toHaveBeenCalledTimes(1)
+    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+  })
+  test(`${getBackOfficeApplicationRequestMsgType} message calls fetch applications`, async () => {
+    const message = {
+      body: {
+        reference: '444444444'
+      },
+      applicationProperties: {
+        type: getBackOfficeApplicationRequestMsgType
+      },
+      sessionId
+    }
+    await processBackOfficeMessage(message, receiver)
+    expect(jest.fn()).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 })
