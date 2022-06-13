@@ -2,9 +2,10 @@ const dbHelper = require('../../../db-helper')
 const { backOfficeRequestMsgType, getBackOfficeApplicationRequestMsgType } = require('../../../../app/config')
 const processBackOffice = require('../../../../app/messaging/process-backoffice')
 const processBackOfficeMessage = require('../../../../app/messaging/process-backoffice-message')
+const fetchBackOfficeApplication = require('../../../../app/messaging/fetch-backoffice-application')
 
 jest.mock('../../../../app/messaging/process-backoffice')
-
+jest.mock('../../../../app/messaging/fetch-backoffice-application')
 describe('Process BackOffice Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const receiver = {
@@ -52,7 +53,7 @@ describe('Process BackOffice Message test', () => {
       sessionId
     }
     await processBackOfficeMessage(message, receiver)
-    expect(jest.fn()).toHaveBeenCalledTimes(1)
+    expect(fetchBackOfficeApplication).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 })
