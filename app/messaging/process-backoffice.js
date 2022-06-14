@@ -12,7 +12,7 @@ const processBackOfficeRequest = async (msg) => {
     // Get ID
     const result = await getAll(msg.body.limit ?? 10, msg.body.offset ?? 0, msg.body.search.text)
     const total = await getApplicationCount(msg.body.search.text)
-    if (total <= 0) {
+    if (result.length <= 0) {
       await sendMessage({ applicationState: states.notFound, applications: [], total: 0 }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
     } else {
     // Get All Applications
