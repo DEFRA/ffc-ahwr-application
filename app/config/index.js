@@ -22,6 +22,16 @@ const schema = Joi.object({
     type: Joi.string(),
     ...sharedConfigSchema
   },
+  paymentRequestTopic: {
+    address: Joi.string().default('paymentRequestTopic'),
+    ...sharedConfigSchema
+  },
+  paymentResponseSubscription: {
+    topic: Joi.string().default('paymentResponseTopic'),
+    address: Joi.string().default('paymentResponseSubscription'),
+    type: Joi.string().default('subscription'),
+    ...sharedConfigSchema
+  },
   applicationResponseMsgType: Joi.string(),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   fetchApplicationRequestMsgType: Joi.string(),
@@ -40,7 +50,8 @@ const schema = Joi.object({
   submitClaimRequestMsgType: Joi.string(),
   submitClaimResponseMsgType: Joi.string(),
   vetVisitRequestMsgType: Joi.string(),
-  vetVisitResponseMsgType: Joi.string()
+  vetVisitResponseMsgType: Joi.string(),
+  submitPaymentRequestMsgType: Joi.string()
 })
 
 const sharedConfig = {
@@ -62,6 +73,16 @@ const config = {
     type: 'queue',
     ...sharedConfig
   },
+  paymentRequestTopic: {
+    address: process.env.PAYMENTREQUEST_TOPIC_ADDRESS,
+    ...sharedConfig
+  },
+  paymentResponseSubscription: {
+    topic: process.env.PAYMENTRESPONSE_TOPIC_ADDRESS,
+    address: process.env.PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS,
+    type: 'subscription',
+    ...sharedConfig
+  },
   applicationResponseMsgType: `${msgTypePrefix}.app.response`,
   env: process.env.NODE_ENV,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
@@ -80,7 +101,8 @@ const config = {
   submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
   vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
-  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`
+  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
+  submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })

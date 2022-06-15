@@ -4,6 +4,7 @@ const { applicationResponseQueue, submitClaimResponseMsgType } = require('../con
 const { sendFarmerClaimConfirmationEmail } = require('../lib/send-email')
 const sendMessage = require('../messaging/send-message')
 const { get, updateByReference } = require('../repositories/application-repository')
+const { submitPaymentRequest } = require('./payments')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
@@ -16,7 +17,7 @@ const submitClaim = async (message) => {
 
     const { reference } = msgBody
     const application = await get(reference)
-
+    await submitPaymentRequest(application.dataValues, message.sessionId)
     if (!application.dataValues) {
       return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
     }

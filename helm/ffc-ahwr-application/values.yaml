@@ -35,6 +35,9 @@ deployment:
 container:
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
+  paymentRequestTopicAddress: ffc-ahwr-test-payment-request
+  paymentResponseTopicAddress: ffc-ahwr-test-payment-request
+  paymentResponseSubscriptionAddress: ffc-ahwr-payment-response
   imagePullPolicy: IfNotPresent
   messageQueueHost: namespace.servicebus.windows.net
   limitMemory: 100Mi
