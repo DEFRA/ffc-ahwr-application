@@ -73,7 +73,7 @@ describe('Application Repository test', () => {
       expect(data.models.application.count).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
         where: {
-          'data.organisation.sbi': '444444444'
+          'data.organisation.sbi': sbi
         }
       })
     } else {
