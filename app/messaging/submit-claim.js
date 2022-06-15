@@ -17,7 +17,7 @@ const submitClaim = async (message) => {
 
     const { reference } = msgBody
     const application = await get(reference)
-    await submitPaymentRequest(application.dataValues, message.sessionId)
+
     if (!application.dataValues) {
       return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
     }
@@ -31,6 +31,8 @@ const submitClaim = async (message) => {
     if (updateSuccess) {
       await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
     }
+
+    await submitPaymentRequest(application.dataValues, message.sessionId)
 
     await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   } catch (err) {
