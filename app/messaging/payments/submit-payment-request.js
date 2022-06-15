@@ -17,9 +17,7 @@ const buildPaymentRequest = (application) => {
     marketingYear,
     paymentRequestNumber: 1,
     agreementNumber,
-    contractNumber: agreementNumber,
     value,
-    invoiceNumber: '123456789',
     invoiceLines: [{
       standardCode,
       description: 'G00 - Gross value of claim',
