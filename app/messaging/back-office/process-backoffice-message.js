@@ -1,6 +1,6 @@
-const { getBackOfficeApplicationRequestMsgType, backOfficeRequestMsgType } = require('../config')
-const processBackOfficeRequest = require('./process-backoffice')
-const fetchBackOfficeApplication = require('./fetch-backoffice-application')
+const { getBackOfficeApplicationRequestMsgType, backOfficeRequestMsgType } = require('../../config')
+const processBackOfficeRequest = require('../back-office/process-backoffice')
+const fetchBackOfficeApplication = require('../back-office/fetch-backoffice-application')
 
 const processBackOfficeMessage = async (message, receiver) => {
   try {

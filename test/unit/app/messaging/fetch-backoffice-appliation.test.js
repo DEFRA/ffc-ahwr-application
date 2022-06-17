@@ -1,4 +1,4 @@
-const fetchBackOfficeApplication = require('../../../../app/messaging/fetch-backoffice-application')
+const fetchBackOfficeApplication = require('../../../../app/messaging/back-office/fetch-backoffice-application')
 const { getBackOfficeApplicationResponseMsgType, backOfficeResponseQueue } = require('../../../../app/config')
 const states = require('../../../../app/messaging/states')
 

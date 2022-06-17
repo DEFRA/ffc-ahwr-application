@@ -1,8 +1,8 @@
 const util = require('util')
-const { getAll, getApplicationCount } = require('../repositories/application-repository')
-const { backOfficeResponseMsgType, backOfficeResponseQueue } = require('../config')
-const sendMessage = require('../messaging/send-message')
-const states = require('./states')
+const { getAll, getApplicationCount } = require('../../repositories/application-repository')
+const { backOfficeResponseMsgType, backOfficeResponseQueue } = require('../../config')
+const sendMessage = require('../../messaging/send-message')
+const states = require('../states')
 
 const processBackOfficeRequest = async (msg) => {
   const responseMessage = msg.body
@@ -10,7 +10,7 @@ const processBackOfficeRequest = async (msg) => {
   try {
     console.log('BackOffice Request received:', util.inspect(msg.body, false, null, true))
     // Get ID
-    const result = await getAll(msg.body.limit ?? 10, msg.body.offset ?? 0, msg.body.search.text)
+    const result = await getAll(msg.body.search.text, msg.body.limit ?? 10, msg.body.offset ?? 0)
     const total = await getApplicationCount(msg.body.search.text)
     if (result.length <= 0) {
       await sendMessage({ applicationState: states.notFound, applications: [], total: 0 }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })

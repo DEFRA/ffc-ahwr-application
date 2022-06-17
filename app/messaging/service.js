@@ -1,7 +1,7 @@
 const { MessageReceiver } = require('ffc-messaging')
 const config = require('../config')
 const processApplicationMessage = require('./process-message')
-const processBackOfficeMessage = require('./process-backoffice-message')
+const processBackOfficeMessage = require('./back-office/process-backoffice-message')
 
 let applicationReceiver, backOfficeReceiver
 

@@ -19,11 +19,11 @@ async function getByEmail (email) {
     })
 }
 
-async function getAll (limit, offset, sbi) {
+async function getAll (sbi, limit = 10, offset = 0) {
   const query = {
     order: [['createdAt', 'DESC']],
-    limit: limit,
-    offset: offset
+    limit,
+    offset
   }
   if (sbi) {
     query.where = { 'data.organisation.sbi': sbi }

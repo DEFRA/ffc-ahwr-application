@@ -1,8 +1,8 @@
 const util = require('util')
-const { get } = require('../repositories/application-repository')
-const sendMessage = require('../messaging/send-message')
-const { getBackOfficeApplicationResponseMsgType, backOfficeResponseQueue } = require('../config')
-const states = require('./states')
+const { get } = require('../../repositories/application-repository')
+const sendMessage = require('../send-message')
+const { getBackOfficeApplicationResponseMsgType, backOfficeResponseQueue } = require('../../config')
+const states = require('../states')
 
 const fetchBackOfficeApplication = async (message) => {
   const { sessionId } = message

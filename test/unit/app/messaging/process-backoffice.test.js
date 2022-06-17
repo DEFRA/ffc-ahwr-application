@@ -1,4 +1,4 @@
-const processBackOffice = require('../../../../app/messaging/process-backoffice')
+const processBackOffice = require('../../../../app/messaging/back-office/process-backoffice')
 const { backOfficeResponseMsgType, backOfficeResponseQueue } = require('../../../../app/config')
 const states = require('../../../../app/messaging/states')
 
@@ -42,9 +42,11 @@ describe(('Store backOffice in database'), () => {
       [{ reference, createdBy: 'admin', createdAt: new Date(), data: message.body }]
     )
 
+    applicationRepository.getApplicationCount.mockResolvedValue(1)
     await processBackOffice(searchMessage)
 
     expect(applicationRepository.getAll).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.getApplicationCount).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({
       applicationState: states.submitted,
@@ -56,7 +58,7 @@ describe(('Store backOffice in database'), () => {
           reference: 'ABCDEFG'
         }
       ],
-      total: undefined
+      total: 1
     }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
   })
 
@@ -65,6 +67,6 @@ describe(('Store backOffice in database'), () => {
 
     await processBackOffice(searchMessage)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applications: new Error('bust'), total: undefined }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applications: new Error('bust'), total: 1 }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
   })
 })
