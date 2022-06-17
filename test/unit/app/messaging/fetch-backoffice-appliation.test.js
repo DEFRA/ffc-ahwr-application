@@ -8,7 +8,7 @@ jest.mock('../../../../app/messaging/send-message')
 const applicationRepository = require('../../../../app/repositories/application-repository')
 jest.mock('../../../../app/repositories/application-repository')
 
-describe(('Store backOffice in database'), () => {
+describe('process backOffice fetch application message', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const email = 'email@domain.com'
   const name = 'name-on-org'
@@ -40,6 +40,7 @@ describe(('Store backOffice in database'), () => {
     await fetchBackOfficeApplication(message)
 
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     // expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, backOfficeReference: reference }, getBackOfficeApplicationResponseMsgType, backOfficeResponseQueue, { sessionId })
   })

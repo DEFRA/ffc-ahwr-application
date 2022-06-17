@@ -8,7 +8,7 @@ jest.mock('../../../../app/messaging/send-message')
 const applicationRepository = require('../../../../app/repositories/application-repository')
 jest.mock('../../../../app/repositories/application-repository')
 
-describe(('Store backOffice in database'), () => {
+describe('processing backOffice request message', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const searchText = '444444444'
   const searchType = 'sbi'
