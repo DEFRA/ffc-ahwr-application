@@ -32,6 +32,7 @@ const schema = Joi.object({
     type: Joi.string().default('subscription'),
     ...sharedConfigSchema
   },
+  sendPaymentRequest: Joi.boolean().default(true),
   applicationResponseMsgType: Joi.string(),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   fetchApplicationRequestMsgType: Joi.string(),
@@ -83,6 +84,7 @@ const config = {
     type: 'subscription',
     ...sharedConfig
   },
+  sendPaymentRequest: process.env.SEND_PAYMENT_REQUEST,
   applicationResponseMsgType: `${msgTypePrefix}.app.response`,
   env: process.env.NODE_ENV,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,

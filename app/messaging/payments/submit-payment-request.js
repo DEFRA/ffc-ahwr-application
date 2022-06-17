@@ -3,6 +3,7 @@ const sendMessage = require('../send-message')
 const validatePaymentRequest = require('./payment-request-schema')
 const { submitPaymentRequestMsgType, paymentRequestTopic } = require('../../config')
 const { get, set } = require('../../repositories/payment-repository')
+const config = require('../../config')
 
 const buildPaymentRequest = (application) => {
   const agreementNumber = application?.reference
@@ -36,12 +37,18 @@ const submitPaymentRequest = async (application, sessionId) => {
     const paymentRequest = buildPaymentRequest(application)
     if (validatePaymentRequest(paymentRequest)) {
       await savePaymentRequest(reference, paymentRequest)
-      await sendMessage(paymentRequest, submitPaymentRequestMsgType, paymentRequestTopic, { sessionId })
+      await sendPaymentRequest(paymentRequest, sessionId)
     } else {
       throw new Error(`Payment request schema not valid for reference ${reference}`)
     }
   } else {
     throw new Error(`Payment request already exists for reference ${reference}`)
+  }
+}
+
+const sendPaymentRequest = async (paymentRequest, sessionId) => {
+  if (config.sendPaymentRequest) {
+    await sendMessage(paymentRequest, submitPaymentRequestMsgType, paymentRequestTopic, { sessionId })
   }
 }
 
