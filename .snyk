@@ -5,5 +5,5 @@ ignore:
   SNYK-JS-ANSIREGEX-1583908:
     - '@pact-foundation/pact > cli-color > ansi-regex':
         reason: Development deps only
-        expires: '2022-06-14T13:37:03.840Z'
+        expires: '2022-07-14T13:37:03.840Z'
 patch: {}

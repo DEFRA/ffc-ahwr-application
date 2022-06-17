@@ -9,7 +9,7 @@ labels: {}
 aadPodIdentity: true
 
 appInsights:
-  key:
+  connectionString:
 
 azureIdentity:
   clientID:
