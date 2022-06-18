@@ -9,6 +9,7 @@ const applicationRepository = require('../../../../app/repositories/application-
 jest.mock('../../../../app/repositories/application-repository')
 
 describe('process backOffice fetch application message', () => {
+  const reference = '23D13'
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const email = 'email@domain.com'
   const name = 'name-on-org'
@@ -17,7 +18,8 @@ describe('process backOffice fetch application message', () => {
       organisation: {
         email,
         name
-      }
+      },
+      reference
     },
     sessionId
   }
@@ -26,7 +28,6 @@ describe('process backOffice fetch application message', () => {
     jest.clearAllMocks()
   })
 
-  const reference = '23D13'
   test('successfully process backOffice get application request', async () => {
     applicationRepository.get.mockResolvedValue({
       dataValues: {
