@@ -1,4 +1,3 @@
-const util = require('util')
 const { getAll, getApplicationCount } = require('../../repositories/application-repository')
 const { backOfficeResponseMsgType, backOfficeResponseQueue } = require('../../config')
 const sendMessage = require('../../messaging/send-message')
