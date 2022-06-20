@@ -7,7 +7,8 @@ describe(('Process payment response'), () => {
 
   const receiver = {
     completeMessage: jest.fn(),
-    abandonMessage: jest.fn()
+    abandonMessage: jest.fn(),
+    deadLetterMessage: jest.fn()
   }
 
   beforeEach(async () => {

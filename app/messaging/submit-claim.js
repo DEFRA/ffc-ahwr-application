@@ -28,11 +28,11 @@ const submitClaim = async (message) => {
     const res = await updateByReference({ reference, claimed: true, updatedBy: 'admin' })
 
     const updateSuccess = isUpdateSuccessful(res)
+
     if (updateSuccess) {
+      await submitPaymentRequest(application.dataValues, message.sessionId)
       await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
     }
-
-    await submitPaymentRequest(application.dataValues, message.sessionId)
 
     await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   } catch (err) {
