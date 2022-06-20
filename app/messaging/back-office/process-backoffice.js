@@ -7,13 +7,9 @@ const processBackOfficeRequest = async (msg) => {
   const { sessionId } = msg
   try {
     // Search application with SBI number and return requested page for selected offset and limit.
-    const result = await getAll(msg.body.search.text, msg.body.offset, msg.body.limit)
+    const applications = await getAll(msg.body.search.text, msg.body.offset, msg.body.limit)
     const total = await getApplicationCount(msg.body.search.text)
-    if (result.length <= 0) {
-      await sendMessage({ applications: [], total: 0 }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
-    } else {
-      await sendMessage({ applications: result, total }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
-    }
+    await sendMessage({ applications, total }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
   } catch (err) {
     console.error(err)
     responseMessage.error = {
