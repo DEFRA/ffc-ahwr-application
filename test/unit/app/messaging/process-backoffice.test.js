@@ -1,6 +1,5 @@
 const processBackOffice = require('../../../../app/messaging/back-office/process-backoffice')
 const { backOfficeResponseMsgType, backOfficeResponseQueue } = require('../../../../app/config')
-const states = require('../../../../app/messaging/states')
 
 jest.mock('../../../../app/lib/send-email')
 const sendMessage = require('../../../../app/messaging/send-message')
@@ -49,7 +48,6 @@ describe('processing backOffice request message', () => {
     expect(applicationRepository.getApplicationCount).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({
-      applicationState: states.submitted,
       applications: [
         {
           createdAt: expect.any(Date),
@@ -67,6 +65,6 @@ describe('processing backOffice request message', () => {
 
     await processBackOffice(searchMessage)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applications: new Error('bust'), total: 1 }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applications: new Error('bust'), total: 1 }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
   })
 })

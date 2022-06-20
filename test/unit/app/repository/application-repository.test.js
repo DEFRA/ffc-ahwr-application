@@ -40,7 +40,7 @@ describe('Application Repository test', () => {
     { limit: 10, offset: 0, sbi: undefined },
     { limit: 10, offset: 0, sbi: '444444444' }
   ])('getAll returns pages of 10 ordered by createdAt DESC', async ({ limit, offset, sbi }) => {
-    await repository.getAll(sbi, limit, offset)
+    await repository.getAll(sbi, offset, limit)
 
     expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
     if (sbi) {
@@ -71,14 +71,12 @@ describe('Application Repository test', () => {
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
     if (sbi) {
       expect(data.models.application.count).toHaveBeenCalledWith({
-        order: [['createdAt', 'DESC']],
         where: {
           'data.organisation.sbi': sbi
         }
       })
     } else {
       expect(data.models.application.count).toHaveBeenCalledWith({
-        order: [['createdAt', 'DESC']]
       })
     }
   })

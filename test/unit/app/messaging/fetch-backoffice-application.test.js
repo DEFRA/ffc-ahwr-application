@@ -43,7 +43,6 @@ describe('process backOffice fetch application message', () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    // expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, backOfficeReference: reference }, getBackOfficeApplicationResponseMsgType, backOfficeResponseQueue, { sessionId })
   })
 
   test('Sends failed state on db error', async () => {

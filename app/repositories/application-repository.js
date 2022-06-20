@@ -19,7 +19,7 @@ async function getByEmail (email) {
     })
 }
 
-async function getAll (sbi, limit = 10, offset = 0) {
+async function getAll (sbi, offset = 0, limit = 10) {
   const query = {
     order: [['createdAt', 'DESC']],
     limit,
@@ -32,7 +32,6 @@ async function getAll (sbi, limit = 10, offset = 0) {
 }
 async function getApplicationCount (sbi) {
   const query = {
-    order: [['createdAt', 'DESC']]
   }
   if (sbi) {
     query.where = { 'data.organisation.sbi': sbi }
