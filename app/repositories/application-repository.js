@@ -19,15 +19,25 @@ async function getByEmail (email) {
     })
 }
 
-async function getAll (page = 0) {
-  return models.application.findAll(
-    {
-      order: [['createdAt', 'DESC']],
-      limit: 20,
-      offset: page
-    })
+async function getAll (sbi, offset = 0, limit = 10) {
+  const query = {
+    order: [['createdAt', 'DESC']],
+    limit,
+    offset
+  }
+  if (sbi) {
+    query.where = { 'data.organisation.sbi': sbi }
+  }
+  return models.application.findAll(query)
 }
-
+async function getApplicationCount (sbi) {
+  const query = {
+  }
+  if (sbi) {
+    query.where = { 'data.organisation.sbi': sbi }
+  }
+  return models.application.count(query)
+}
 async function set (data) {
   return models.application.create(data)
 }
@@ -60,6 +70,7 @@ async function updateById (data) {
 module.exports = {
   get,
   getByEmail,
+  getApplicationCount,
   getAll,
   set,
   updateById,

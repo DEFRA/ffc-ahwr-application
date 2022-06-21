@@ -1,0 +1,36 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Satish Chatap" id="2">
+    <createTable tableName="status">
+      <column autoIncrement="false" name="statusId" type="SMALLINT">
+        <constraints nullable="true" primaryKey="true" primaryKeyName="status_pkey" />
+      </column>
+      <column name="status" type="VARCHAR(255)" />
+    </createTable>
+    <insert tableName="status">
+      <column name="statusId" value="1" />
+      <column name="status" value="In Progress" />
+    </insert>
+    <insert tableName="status">
+      <column name="statusId" value="2" />
+      <column name="status" value="Submitted" />
+    </insert>
+    <insert tableName="status">
+      <column name="statusId" value="3" />
+      <column name="status" value="Withdrawn" />
+    </insert>
+    <insert tableName="status">
+      <column name="statusId" value="4" />
+      <column name="status" value="Deleted" />
+    </insert>
+  </changeSet>
+  <changeSet author="Satish Chatap" id="3">
+    <addColumn tableName="application">
+      <column afterColumn="updatedAt" name="statusId" type="SMALLINT" defaultValue="1" />
+    </addColumn>
+    <addForeignKeyConstraint baseColumnNames="statusId" baseTableName="application" constraintName="fk_application_statusId" referencedColumnNames="statusId" referencedTableName="status" />
+  </changeSet> 
+  <changeSet author="Satish Chatap" id="1">
+    <tagDatabase tag="v1.4.0" />
+  </changeSet>
+</databaseChangeLog>
