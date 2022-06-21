@@ -79,7 +79,7 @@ describe('Application Repository test', () => {
   ])('getApplications returns pages of 10 ordered by createdAt DESC', async ({ searchText, searchType, limit, offset }) => {
     await repository.searchApplications(searchText, searchType, offset, limit)
 
-    expect(data.models.application.count).toHaveBeenCalled()
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
     if (searchText) {
       switch (searchType) {
         case 'sbi':
@@ -153,7 +153,7 @@ describe('Application Repository test', () => {
     data.models.application.count.mockReturnValue(0)
     await repository.searchApplications(searchText, searchType, offset, limit)
 
-    expect(data.models.application.count).toHaveBeenCalled()
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
     expect(data.models.application.findAll).not.toHaveBeenCalled()
   })
   test.each([

@@ -35,7 +35,7 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
         break
     }
   }
-  total = models.application.count(query)
+  total = await models.application.count(query)
   if (total > 0) {
     query = {
       ...query,
@@ -43,7 +43,7 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
       limit,
       offset
     }
-    applications = models.application.findAll(query)
+    applications = await models.application.findAll(query)
   }
   return {
     applications, total
