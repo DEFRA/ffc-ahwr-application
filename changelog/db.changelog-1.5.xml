@@ -23,6 +23,6 @@
     </createTable>
   </changeSet>
   <changeSet author="Steve Dickinson" id="1">
-    <tagDatabase tag="v1.3.0" />
+    <tagDatabase tag="v1.5.0" />
   </changeSet>
 </databaseChangeLog>

@@ -1,7 +1,7 @@
 const { MessageReceiver } = require('ffc-messaging')
 const config = require('../config')
 const processApplicationMessage = require('./process-message')
-const { processPaymentResponse } = require('./payments')
+const processPaymentResponse = require('./payments/process-payment-response')
 
 let applicationReceiver
 let paymentReceiver

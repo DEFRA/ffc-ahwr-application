@@ -1,5 +1,5 @@
-const util = require('util')
 const { updateByReference } = require('../../repositories/payment-repository')
+const util = require('util')
 
 const processPaymentResponse = async (message, receiver) => {
   try {
@@ -12,7 +12,7 @@ const processPaymentResponse = async (message, receiver) => {
       await updateByReference(agreementNumber, status, paymentRequest)
       await receiver.completeMessage(message)
     } else {
-      console.error('received process payments response with no agreement number', util.inspect(message.body, false, null, true))
+      console.error('Received process payments response with no payment request and agreement number', util.inspect(message.body, false, null, true))
       await receiver.deadLetterMessage(message)
     }
   } catch (err) {
@@ -21,7 +21,7 @@ const processPaymentResponse = async (message, receiver) => {
   }
 }
 
-const failedPaymentRequest = (messageBody) => {
+function failedPaymentRequest (messageBody) {
   console.error('Failed payment request', util.inspect(messageBody, false, null, true))
   return 'failed'
 }

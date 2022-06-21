@@ -18,7 +18,7 @@ const validatePaymentRequest = (paymentRequest) => {
   const validate = paymentRequestSchema.validate(paymentRequest)
 
   if (validate.error) {
-    console.log('payment request validation error', validate.error)
+    console.error('payment request validation error', validate.error)
     return false
   }
 

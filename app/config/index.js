@@ -22,17 +22,6 @@ const schema = Joi.object({
     type: Joi.string(),
     ...sharedConfigSchema
   },
-  paymentRequestTopic: {
-    address: Joi.string().default('paymentRequestTopic'),
-    ...sharedConfigSchema
-  },
-  paymentResponseSubscription: {
-    topic: Joi.string().default('paymentResponseTopic'),
-    address: Joi.string().default('paymentResponseSubscription'),
-    type: Joi.string().default('subscription'),
-    ...sharedConfigSchema
-  },
-  sendPaymentRequest: Joi.boolean().default(true),
   applicationResponseMsgType: Joi.string(),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   fetchApplicationRequestMsgType: Joi.string(),
@@ -47,6 +36,17 @@ const schema = Joi.object({
     templateIdFarmerClaimComplete: Joi.string().uuid(),
     templateIdVetApplicationComplete: Joi.string().uuid()
   },
+  paymentRequestTopic: {
+    address: Joi.string().default('paymentRequestTopic'),
+    ...sharedConfigSchema
+  },
+  paymentResponseSubscription: {
+    topic: Joi.string().default('paymentResponseTopic'),
+    address: Joi.string().default('paymentResponseSubscription'),
+    type: Joi.string().default('subscription'),
+    ...sharedConfigSchema
+  },
+  sendPaymentRequest: Joi.boolean().default(true),
   serviceUri: Joi.string().uri(),
   submitClaimRequestMsgType: Joi.string(),
   submitClaimResponseMsgType: Joi.string(),
@@ -74,17 +74,6 @@ const config = {
     type: 'queue',
     ...sharedConfig
   },
-  paymentRequestTopic: {
-    address: process.env.PAYMENTREQUEST_TOPIC_ADDRESS,
-    ...sharedConfig
-  },
-  paymentResponseSubscription: {
-    topic: process.env.PAYMENTRESPONSE_TOPIC_ADDRESS,
-    address: process.env.PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS,
-    type: 'subscription',
-    ...sharedConfig
-  },
-  sendPaymentRequest: process.env.SEND_PAYMENT_REQUEST,
   applicationResponseMsgType: `${msgTypePrefix}.app.response`,
   env: process.env.NODE_ENV,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
@@ -99,6 +88,17 @@ const config = {
     templateIdFarmerClaimComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE,
     templateIdVetApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE
   },
+  paymentRequestTopic: {
+    address: process.env.PAYMENTREQUEST_TOPIC_ADDRESS,
+    ...sharedConfig
+  },
+  paymentResponseSubscription: {
+    topic: process.env.PAYMENTRESPONSE_TOPIC_ADDRESS,
+    address: process.env.PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS,
+    type: 'subscription',
+    ...sharedConfig
+  },
+  sendPaymentRequest: process.env.SEND_PAYMENT_REQUEST,
   serviceUri: process.env.SERVICE_URI,
   submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,

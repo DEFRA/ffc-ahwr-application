@@ -1,9 +1,10 @@
-const speciesData = require('./species')
-const sendMessage = require('../send-message')
-const validatePaymentRequest = require('./payment-request-schema')
-const { submitPaymentRequestMsgType, paymentRequestTopic } = require('../../config')
-const { get, set } = require('../../repositories/payment-repository')
 const config = require('../../config')
+const { description, paymentRequestNumber, sourceSystem } = require('../../constants/payment-request')
+const { get, set } = require('../../repositories/payment-repository')
+const sendMessage = require('../send-message')
+const speciesData = require('./species')
+const { submitPaymentRequestMsgType, paymentRequestTopic } = require('../../config')
+const validatePaymentRequest = require('./payment-request-schema')
 
 const buildPaymentRequest = (application) => {
   const agreementNumber = application?.reference
@@ -14,15 +15,15 @@ const buildPaymentRequest = (application) => {
   const value = speciesData[species]?.value
 
   return {
-    sourceSystem: 'AHWR',
+    sourceSystem,
     sbi,
     marketingYear,
-    paymentRequestNumber: 1,
+    paymentRequestNumber,
     agreementNumber,
     value,
     invoiceLines: [{
       standardCode,
-      description: 'G00 - Gross value of claim',
+      description,
       value
     }]
   }

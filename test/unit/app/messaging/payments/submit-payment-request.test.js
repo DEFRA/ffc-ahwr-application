@@ -1,4 +1,3 @@
-
 const submitPaymentRequest = require('../../../../../app/messaging/payments/submit-payment-request')
 jest.mock('../../../../../app/repositories/payment-repository')
 const paymentRepository = require('../../../../../app/repositories/payment-repository')
