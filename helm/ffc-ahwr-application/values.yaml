@@ -1,8 +1,8 @@
 environment: development
+image: ffc-ahwr-application
 name: ffc-ahwr-application
 namespace: ffc-ahwr
 workstream: ffc-ahwr
-image: ffc-ahwr-application
 
 labels: {}
 
@@ -35,18 +35,20 @@ deployment:
 container:
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
+  backOfficeRequestQueueAddress: ffc-ahwr-backoffice-request
+  backOfficeResponseQueueAddress: ffc-ahwr-backoffice-response
   imagePullPolicy: IfNotPresent
-  messageQueueHost: namespace.servicebus.windows.net
   limitMemory: 100Mi
   limitCpu: 80m
-  port: 3000
-  requestCpu: 40m
-  requestMemory: 80Mi
+  messageQueueHost: namespace.servicebus.windows.net
   notifyApiKey: example-644a2a30-7487-4e98-a908-b5ecd82d5225-644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdFarmerApplicationComplete: 644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdFarmerApplicationClaim: 644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdFarmerClaimComplete: 644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdVetApplicationComplete: 644a2a30-7487-4e98-a908-b5ecd82d5225
+  port: 3000
+  requestCpu: 40m
+  requestMemory: 80Mi
   serviceUri:
 
 postgresService:
@@ -58,15 +60,15 @@ postgresService:
 
 
 livenessProbe:
-  path: /healthz
-  port: 3000
-  initialDelaySeconds: 10
-  periodSeconds: 10
   failureThreshold: 3
+  initialDelaySeconds: 10
+  path: /healthz
+  periodSeconds: 10
+  port: 3000
 
 readinessProbe:
-  path: /healthy
-  port: 3000
-  initialDelaySeconds: 10
-  periodSeconds: 10
   failureThreshold: 3
+  initialDelaySeconds: 10
+  path: /healthy
+  periodSeconds: 10
+  port: 3000

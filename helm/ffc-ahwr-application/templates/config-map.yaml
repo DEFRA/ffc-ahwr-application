@@ -2,6 +2,8 @@
 {{- define "ffc-ahwr-application.config-map" -}}
 data:
   APPINSIGHTS_CLOUDROLE: {{ quote .Values.name }}
+  BACKOFFICEREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.backOfficeRequestQueueAddress }}
+  BACKOFFICERESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.backOfficeResponseQueueAddress }}
   APPLICATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationRequestQueueAddress }}
   APPLICATIONRESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.applicationResponseQueueAddress }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}

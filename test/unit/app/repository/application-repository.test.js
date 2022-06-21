@@ -4,6 +4,7 @@ const data = require('../../../../app/data')
 data.models.application.create = jest.fn()
 data.models.application.update = jest.fn()
 data.models.application.findAll = jest.fn()
+data.models.application.count = jest.fn()
 data.models.application.findOne = jest.fn()
 
 beforeEach(() => {
@@ -36,17 +37,49 @@ describe('Application Repository test', () => {
   })
 
   test.each([
-    { page: undefined },
-    { page: 1 }
-  ])('getAll returns pages of 20 ordered by createdAt DESC', async ({ page }) => {
-    await repository.getAll(page)
+    { limit: 10, offset: 0, sbi: undefined },
+    { limit: 10, offset: 0, sbi: '444444444' }
+  ])('getAll returns pages of 10 ordered by createdAt DESC', async ({ limit, offset, sbi }) => {
+    await repository.getAll(sbi, offset, limit)
 
     expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
-    expect(data.models.application.findAll).toHaveBeenCalledWith({
-      order: [['createdAt', 'DESC']], limit: 20, offset: page === undefined ? 0 : page
-    })
+    if (sbi) {
+      expect(data.models.application.findAll).toHaveBeenCalledWith({
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        offset,
+        where: {
+          'data.organisation.sbi': '444444444'
+        }
+      })
+    } else {
+      expect(data.models.application.findAll).toHaveBeenCalledWith({
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+        offset: offset
+      })
+    }
   })
 
+  test.each([
+    { sbi: undefined },
+    { sbi: '444444444' },
+    { sbi: '   444444444    ' }
+  ])('getApplicationCount successfully called with SBI', async ({ sbi }) => {
+    await repository.getApplicationCount(sbi)
+
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    if (sbi) {
+      expect(data.models.application.count).toHaveBeenCalledWith({
+        where: {
+          'data.organisation.sbi': sbi
+        }
+      })
+    } else {
+      expect(data.models.application.count).toHaveBeenCalledWith({
+      })
+    }
+  })
   test('getByEmail queries based on lowercased email and orders by createdAt DESC', async () => {
     const email = 'TEST@email.com'
 
