@@ -4,7 +4,10 @@ async function get (reference) {
   return models.application.findOne(
     {
       where: { reference: reference.toUpperCase() },
-      include: [{ model: models.vetVisit }]
+      include: [{ model: models.vetVisit }, {
+        model: models.status,
+        attributes: ['status']
+      }]
     })
 }
 
@@ -19,7 +22,8 @@ async function getByEmail (email) {
     })
 }
 async function searchApplications (searchText, searchType, offset = 0, limit = 10) {
-  let query = {}
+  let query = {
+  }
   let total = 0
   let applications = []
   if (searchText) {
@@ -28,10 +32,15 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
         query.where = { 'data.organisation.sbi': searchText }
         break
       case 'ref':
-        query.where = { 'data.reference': searchText }
+        query.where = { reference: searchText }
         break
       case 'status':
-        query.where = { 'data.status': searchText }
+        query.include = [
+          {
+            model: models.status,
+            attributes: ['status'],
+            where: { status: searchText }
+          }]
         break
     }
   }
@@ -41,7 +50,13 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
       ...query,
       order: [['createdAt', 'DESC']],
       limit,
-      offset
+      offset,
+      include: [
+        {
+          model: models.status,
+          attributes: ['status']
+        }
+      ]
     }
     applications = await models.application.findAll(query)
   }

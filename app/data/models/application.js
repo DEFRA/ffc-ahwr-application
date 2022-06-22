@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
     createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
     updatedAt: { type: DataTypes.DATE, defaultValue: null },
     createdBy: DataTypes.STRING,
-    updatedBy: { type: DataTypes.STRING, defaultValue: null }
+    updatedBy: { type: DataTypes.STRING, defaultValue: null },
+    statusId: DataTypes.SMALLINT
   }, {
     freezeTableName: true,
     tableName: 'application',
@@ -36,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
     application.hasOne(models.vetVisit, {
       sourceKey: 'reference',
       foreignKey: 'applicationReference'
+    })
+    application.hasOne(models.status, {
+      sourceKey: 'statusId',
+      foreignKey: 'statusId'
     })
   }
   return application
