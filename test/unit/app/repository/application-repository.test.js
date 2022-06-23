@@ -7,6 +7,7 @@ data.models.application.update = jest.fn()
 data.models.application.findAll = jest.fn()
 data.models.application.count.mockReturnValue(10)
 data.models.application.findOne = jest.fn()
+data.models.status = jest.fn()
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -67,15 +68,11 @@ describe('Application Repository test', () => {
     }
   })
   test.each([
-    { limit, offset, searchText: undefined, searchType: 'sbi' },
+    { limit, offset, searchText: undefined, searchType: '' },
     { limit, offset, searchText: '333333333', searchType: 'sbi' },
-    { limit, offset, searchText: '', searchType: 'sbi' },
-    { limit, offset, searchText: undefined, searchType: 'ref' },
-    { limit, offset, searchText: '333333333', searchType: 'ref' },
-    { limit, offset, searchText: '', searchType: 'ref' },
-    { limit, offset, searchText: undefined, searchType: 'status' },
-    { limit, offset, searchText: '333333333', searchType: 'status' },
-    { limit, offset, searchText: '', searchType: 'status' }
+    { limit, offset, searchText: '', searchType: '' },
+    { limit, offset, searchText: 'VV-555A-FD4D', searchType: 'ref' },
+    { limit, offset, searchText: 'In Progress', searchType: 'status' }
   ])('getApplications returns pages of 10 ordered by createdAt DESC', async ({ searchText, searchType, limit, offset }) => {
     await repository.searchApplications(searchText, searchType, offset, limit)
 
@@ -87,6 +84,11 @@ describe('Application Repository test', () => {
             order: [['createdAt', 'DESC']],
             limit,
             offset,
+            include: [
+              {
+                model: data.models.status,
+                attributes: ['status']
+              }],
             where: {
               'data.organisation.sbi': searchText
             }
@@ -103,14 +105,19 @@ describe('Application Repository test', () => {
             order: [['createdAt', 'DESC']],
             limit,
             offset,
+            include: [
+              {
+                model: data.models.status,
+                attributes: ['status']
+              }],
             where: {
-              'data.reference': searchText
+              reference: searchText
             }
           })
 
           expect(data.models.application.count).toHaveBeenCalledWith({
             where: {
-              'data.reference': searchText
+              reference: searchText
             }
           })
           break
@@ -119,15 +126,21 @@ describe('Application Repository test', () => {
             order: [['createdAt', 'DESC']],
             limit,
             offset,
-            where: {
-              'data.status': searchText
-            }
+            include: [
+              {
+                model: data.models.status,
+                attributes: ['status'],
+                where: { status: searchText }
+              }]
           })
 
           expect(data.models.application.count).toHaveBeenCalledWith({
-            where: {
-              'data.status': searchText
-            }
+            include: [
+              {
+                model: data.models.status,
+                attributes: ['status'],
+                where: { status: searchText }
+              }]
           })
           break
       }
@@ -135,7 +148,12 @@ describe('Application Repository test', () => {
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
         limit,
-        offset: offset
+        offset,
+        include: [
+          {
+            model: data.models.status,
+            attributes: ['status']
+          }]
       })
     }
   })
@@ -196,7 +214,7 @@ describe('Application Repository test', () => {
     expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
     expect(data.models.application.findOne).toHaveBeenCalledWith({
       where: { reference: reference.toUpperCase() },
-      include: [{ model: data.models.vetVisit }]
+      include: [{ model: data.models.vetVisit }, { attributes: ['status'], model: data.models.status }]
     })
   })
 })

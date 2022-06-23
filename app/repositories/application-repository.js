@@ -50,8 +50,10 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
       ...query,
       order: [['createdAt', 'DESC']],
       limit,
-      offset,
-      include: [
+      offset
+    }
+    if (searchType !== 'status') {
+      query.include = [
         {
           model: models.status,
           attributes: ['status']
