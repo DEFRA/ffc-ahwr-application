@@ -6,6 +6,8 @@ jest.mock('../../../../app/repositories/application-repository')
 const applicationRepository = require('../../../../app/repositories/application-repository')
 jest.mock('../../../../app/messaging/send-message')
 const sendMessage = require('../../../../app/messaging/send-message')
+jest.mock('../../../../app/messaging/payments/submit-payment-request')
+const submitPaymentRequest = require('../../../../app/messaging/payments/submit-payment-request')
 jest.mock('../../../../app/lib/send-email')
 const { sendFarmerClaimConfirmationEmail } = require('../../../../app/lib/send-email')
 
@@ -26,6 +28,7 @@ describe(('Submit claim tests'), () => {
     const applicationMock = { dataValues: { reference: 'VV-1234-5678', data: { organisation: { email } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
+    submitPaymentRequest.mockResolvedValueOnce()
 
     await submitClaim(message)
 

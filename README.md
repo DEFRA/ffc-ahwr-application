@@ -32,6 +32,10 @@ overridden by build and release pipelines.
 | NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE | Id of email template used for farmer application complete                                        |
 | NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE       | Id of email template used to notify farmer for claim being completed                             |
 | NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE    | Id of email template used for veet application complete                                          |
+| PAYMENTREQUEST_TOPIC_ADDRESS                   | Azure Service Bus message request topic for sending to the Payment service                       |
+| PAYMENTRESPONSE_TOPIC_ADDRESS                  | Azure Service Bus message response topic for receiving messages from the Payment service         |
+| PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS           | Azure Service Bus message subscription for receiving messages from the Payment service           |
+| SEND_PAYMENT_REQUEST                           | Enables the sending of a payment request to the payment service                                  |
 | SERVICE_URI                                    | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
 
 ## Running the application

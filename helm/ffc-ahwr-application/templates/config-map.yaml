@@ -6,6 +6,10 @@ data:
   BACKOFFICERESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.backOfficeResponseQueueAddress }}
   APPLICATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationRequestQueueAddress }}
   APPLICATIONRESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.applicationResponseQueueAddress }}
+  SEND_PAYMENT_REQUEST: {{ quote .Values.container.sendPaymentRequest }}
+  PAYMENTREQUEST_TOPIC_ADDRESS: {{ quote .Values.container.paymentRequestTopicAddress }}
+  PAYMENTRESPONSE_TOPIC_ADDRESS: {{ quote .Values.container.paymentResponseTopicAddress }}
+  PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS: {{ quote .Values.container.paymentResponseSubscriptionAddress }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}
   NODE_ENV: {{ quote .Values.environment }}
   PORT: {{ quote .Values.container.port }}
