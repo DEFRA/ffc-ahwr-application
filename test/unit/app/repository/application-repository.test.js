@@ -63,7 +63,7 @@ describe('Application Repository test', () => {
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
         limit,
-        offset: offset
+        offset
       })
     }
   })
@@ -130,7 +130,7 @@ describe('Application Repository test', () => {
               {
                 model: data.models.status,
                 attributes: ['status'],
-                where: { status: searchText }
+                where: { status: undefined }
               }]
           })
 
@@ -139,7 +139,7 @@ describe('Application Repository test', () => {
               {
                 model: data.models.status,
                 attributes: ['status'],
-                where: { status: searchText }
+                where: { status: undefined }
               }]
           })
           break

@@ -1,4 +1,4 @@
-const { models } = require('../data')
+const { models, sequelize } = require('../data')
 
 async function get (reference) {
   return models.application.findOne(
@@ -39,7 +39,7 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
           {
             model: models.status,
             attributes: ['status'],
-            where: { status: searchText }
+            where: { status: sequelize.where(sequelize.fn('LOWER', sequelize.col('status')), ' = ', searchText.toLowerCase()) }
           }]
         break
     }
