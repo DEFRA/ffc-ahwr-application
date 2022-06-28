@@ -37,15 +37,14 @@ describe('processing backOffice request message', () => {
     jest.clearAllMocks()
   })
   test('successfully submits backOffice search request', async () => {
-    applicationRepository.getAll.mockResolvedValue(
-      [{ reference, createdBy: 'admin', createdAt: new Date(), data: message.body }]
-    )
+    applicationRepository.searchApplications.mockResolvedValue({
+      applications: [{ reference, createdBy: 'admin', createdAt: new Date(), data: message.body }],
+      total: 1
+    })
 
-    applicationRepository.getApplicationCount.mockResolvedValue(1)
     await processBackOffice(searchMessage)
 
-    expect(applicationRepository.getAll).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.getApplicationCount).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.searchApplications).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({
       applications: [
@@ -61,10 +60,10 @@ describe('processing backOffice request message', () => {
   })
 
   test('Sends failed state on db error not data found for search', async () => {
-    applicationRepository.getAll.mockResolvedValue(new Error('bust'))
+    applicationRepository.searchApplications.mockResolvedValue(new Error('bust'))
 
     await processBackOffice(searchMessage)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applications: new Error('bust'), total: 1 }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applications: undefined, total: undefined }, backOfficeResponseMsgType, backOfficeResponseQueue, { sessionId })
   })
 })

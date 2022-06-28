@@ -1,10 +1,13 @@
-const { models } = require('../data')
+const { models, sequelize } = require('../data')
 
 async function get (reference) {
   return models.application.findOne(
     {
       where: { reference: reference.toUpperCase() },
-      include: [{ model: models.vetVisit }]
+      include: [{ model: models.vetVisit }, {
+        model: models.status,
+        attributes: ['status']
+      }]
     })
 }
 
@@ -17,6 +20,51 @@ async function getByEmail (email) {
         model: models.vetVisit
       }]
     })
+}
+async function searchApplications (searchText, searchType, offset = 0, limit = 10) {
+  let query = {
+  }
+  let total = 0
+  let applications = []
+  if (searchText) {
+    switch (searchType) {
+      case 'sbi':
+        query.where = { 'data.organisation.sbi': searchText }
+        break
+      case 'ref':
+        query.where = { reference: searchText }
+        break
+      case 'status':
+        query.include = [
+          {
+            model: models.status,
+            attributes: ['status'],
+            where: { status: sequelize.where(sequelize.fn('LOWER', sequelize.col('status')), ' = ', searchText.toLowerCase()) }
+          }]
+        break
+    }
+  }
+  total = await models.application.count(query)
+  if (total > 0) {
+    query = {
+      ...query,
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
+    }
+    if (searchType !== 'status') {
+      query.include = [
+        {
+          model: models.status,
+          attributes: ['status']
+        }
+      ]
+    }
+    applications = await models.application.findAll(query)
+  }
+  return {
+    applications, total
+  }
 }
 
 async function getAll (sbi, offset = 0, limit = 10) {
@@ -31,8 +79,7 @@ async function getAll (sbi, offset = 0, limit = 10) {
   return models.application.findAll(query)
 }
 async function getApplicationCount (sbi) {
-  const query = {
-  }
+  const query = {}
   if (sbi) {
     query.where = { 'data.organisation.sbi': sbi }
   }
@@ -74,5 +121,6 @@ module.exports = {
   getAll,
   set,
   updateById,
-  updateByReference
+  updateByReference,
+  searchApplications
 }
