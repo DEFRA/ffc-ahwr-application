@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       set (val) {
         this.setDataValue('status', val.toUpperCase())
+      },
+      get (val) {
+        this.getDataValue('status', val.toUpperCase())
       }
     }
   }, {
