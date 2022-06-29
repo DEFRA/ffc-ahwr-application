@@ -1,0 +1,43 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Satish Chatap" id="2">
+    <update tableName="status">
+        <column name="status" value="Applied" />
+        <where>"statusId" = '1'</where>
+    </update>
+    <update tableName="status">
+        <column name="status" value="Withdrawn" />
+        <where>"statusId" = '2'</where>
+    </update>
+    <update tableName="status">
+        <column name="status" value="Data Inputted" />
+        <where>"statusId" = '3'</where>
+    </update>    
+    <update tableName="status">
+        <column name="status" value="Claimed" />
+        <where>"statusId" = '4'</where>
+    </update>
+    <insert tableName="status">
+      <column name="statusId" value="5" />
+      <column name="status" value="Check" />
+    </insert>
+    <insert tableName="status">
+      <column name="statusId" value="6" />
+      <column name="status" value="Accepted" />
+    </insert>
+    <insert tableName="status">
+      <column name="statusId" value="7" />
+      <column name="status" value="Rejected" />
+    </insert>
+    <insert tableName="status">
+      <column name="statusId" value="8" />
+      <column name="status" value="Paid" />
+    </insert>
+    <update tableName="status">
+      <column name="status" valueComputed="upper(status)" />
+    </update>
+  </changeSet>
+  <changeSet author="Satish Chatap" id="1">
+    <tagDatabase tag="v1.6.0" />
+  </changeSet>
+</databaseChangeLog>
