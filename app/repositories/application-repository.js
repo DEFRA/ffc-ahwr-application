@@ -1,5 +1,9 @@
-const { models, sequelize } = require('../data')
-
+const { models } = require('../data')
+/**
+ * Get application by reference number
+ * @param {string} reference
+ * @returns application object with vetVisit & status.
+ */
 async function get (reference) {
   return models.application.findOne(
     {
@@ -10,7 +14,11 @@ async function get (reference) {
       }]
     })
 }
-
+/**
+ * Get application by email
+ * @param {string} email
+ * @returns application object with vetVisit data.
+ */
 async function getByEmail (email) {
   return models.application.findOne(
     {
@@ -21,6 +29,16 @@ async function getByEmail (email) {
       }]
     })
 }
+/**
+ * Search application by Search Type and Search Text.
+ * Currently Support Status, SBI number, Application Reference Number
+ *
+ * @param {string} searchText contain status, sbi number or application reference number
+ * @param {*} searchType contain any of keyword ['status','ref','sbi']
+ * @param {*} offset index of row where page should start from
+ * @param {*} limit page limit
+ * @returns all application with page
+ */
 async function searchApplications (searchText, searchType, offset = 0, limit = 10) {
   let query = {
   }
@@ -39,7 +57,7 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
           {
             model: models.status,
             attributes: ['status'],
-            where: { status: sequelize.where(sequelize.fn('LOWER', sequelize.col('status')), ' = ', searchText.toLowerCase()) }
+            where: { status: searchText.toUpperCase() }
           }]
         break
     }
@@ -66,18 +84,24 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
     applications, total
   }
 }
-
-async function getAll (sbi, offset = 0, limit = 10) {
+/**
+ * Get All applicaitons
+ * @param {*} sbi
+ * @param {*} offset
+ * @param {*} limit
+ * @returns
+ */
+async function getAll () {
   const query = {
-    order: [['createdAt', 'DESC']],
-    limit,
-    offset
-  }
-  if (sbi) {
-    query.where = { 'data.organisation.sbi': sbi }
+    order: [['createdAt', 'DESC']]
   }
   return models.application.findAll(query)
 }
+/**
+ *
+ * @param {*} sbi
+ * @returns
+ */
 async function getApplicationCount (sbi) {
   const query = {}
   if (sbi) {
@@ -85,6 +109,11 @@ async function getApplicationCount (sbi) {
   }
   return models.application.count(query)
 }
+/**
+ *
+ * @param {*} data
+ * @returns
+ */
 async function set (data) {
   return models.application.create(data)
 }

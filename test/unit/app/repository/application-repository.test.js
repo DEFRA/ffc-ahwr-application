@@ -43,119 +43,102 @@ describe('Application Repository test', () => {
     expect(data.models.application.update).toHaveBeenCalledWith({ id, reference }, { where: { id } })
   })
 
-  test.each([
-    { limit, offset, sbi: undefined },
-    { limit, offset, sbi: '444444444' }
-  ])('getAll returns pages of 10 ordered by createdAt DESC', async ({ limit, offset, sbi }) => {
-    await repository.getAll(sbi, offset, limit)
+  test('getAll returns pages of 10 ordered by createdAt DESC', async () => {
+    await repository.getAll()
 
     expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
-    if (sbi) {
-      expect(data.models.application.findAll).toHaveBeenCalledWith({
-        order: [['createdAt', 'DESC']],
-        limit,
-        offset,
-        where: {
-          'data.organisation.sbi': '444444444'
-        }
-      })
-    } else {
-      expect(data.models.application.findAll).toHaveBeenCalledWith({
-        order: [['createdAt', 'DESC']],
-        limit,
-        offset
-      })
-    }
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']]
+    })
   })
   test.each([
-    { limit, offset, searchText: undefined, searchType: '' },
-    { limit, offset, searchText: '333333333', searchType: 'sbi' },
-    { limit, offset, searchText: '', searchType: '' },
-    { limit, offset, searchText: 'VV-555A-FD4D', searchType: 'ref' },
-    { limit, offset, searchText: 'In Progress', searchType: 'status' }
-  ])('getApplications returns pages of 10 ordered by createdAt DESC', async ({ searchText, searchType, limit, offset }) => {
+    { searchText: undefined, searchType: '' },
+    { searchText: '', searchType: '' }
+  ])('getApplications for empty search returns call findAll', async ({ searchText, searchType }) => {
     await repository.searchApplications(searchText, searchType, offset, limit)
 
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
-    if (searchText) {
-      switch (searchType) {
-        case 'sbi':
-          expect(data.models.application.findAll).toHaveBeenCalledWith({
-            order: [['createdAt', 'DESC']],
-            limit,
-            offset,
-            include: [
-              {
-                model: data.models.status,
-                attributes: ['status']
-              }],
-            where: {
-              'data.organisation.sbi': searchText
-            }
-          })
 
-          expect(data.models.application.count).toHaveBeenCalledWith({
-            where: {
-              'data.organisation.sbi': searchText
-            }
-          })
-          break
-        case 'ref':
-          expect(data.models.application.findAll).toHaveBeenCalledWith({
-            order: [['createdAt', 'DESC']],
-            limit,
-            offset,
-            include: [
-              {
-                model: data.models.status,
-                attributes: ['status']
-              }],
-            where: {
-              reference: searchText
-            }
-          })
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }]
+    })
+  })
+  test('getApplications for Invalid SBI  call findAll', async () => {
+    const searchText = '333333333'
+    await repository.searchApplications(searchText, 'sbi', offset, limit)
 
-          expect(data.models.application.count).toHaveBeenCalledWith({
-            where: {
-              reference: searchText
-            }
-          })
-          break
-        case 'status':
-          expect(data.models.application.findAll).toHaveBeenCalledWith({
-            order: [['createdAt', 'DESC']],
-            limit,
-            offset,
-            include: [
-              {
-                model: data.models.status,
-                attributes: ['status'],
-                where: { status: undefined }
-              }]
-          })
-
-          expect(data.models.application.count).toHaveBeenCalledWith({
-            include: [
-              {
-                model: data.models.status,
-                attributes: ['status'],
-                where: { status: undefined }
-              }]
-          })
-          break
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }],
+      where: {
+        'data.organisation.sbi': searchText
       }
-    } else {
-      expect(data.models.application.findAll).toHaveBeenCalledWith({
-        order: [['createdAt', 'DESC']],
-        limit,
-        offset,
-        include: [
-          {
-            model: data.models.status,
-            attributes: ['status']
-          }]
-      })
-    }
+    })
+  })
+  test('getApplications for Invalid application reference call findAll', async () => {
+    const searchText = 'VV-555A-FD4D'
+    await repository.searchApplications(searchText, 'ref', offset, limit)
+
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }],
+      where: {
+        reference: searchText
+      }
+    })
+
+    expect(data.models.application.count).toHaveBeenCalledWith({
+      where: {
+        reference: searchText
+      }
+    })
+  })
+  test('getApplications for Status call findAll', async () => {
+    const searchText = 'In Progress'
+    await repository.searchApplications(searchText, 'status')
+
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status'],
+          where: { status: 'IN PROGRESS' }
+        }]
+    })
+
+    expect(data.models.application.count).toHaveBeenCalledWith({
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status'],
+          where: { status: 'IN PROGRESS' }
+        }]
+    })
   })
   test.each([
     { limit, offset, searchText: undefined, searchType: 'sbi' },
@@ -167,12 +150,12 @@ describe('Application Repository test', () => {
     { limit, offset, searchText: undefined, searchType: 'status' },
     { limit, offset, searchText: '333333333', searchType: 'status' },
     { limit, offset, searchText: '', searchType: 'status' }
-  ])('getApplications returns empty array when no application found.', async ({ searchText, searchType, limit, offset }) => {
+  ])('getApplications returns empty array when no application found.', async ({ searchText, searchType }) => {
     data.models.application.count.mockReturnValue(0)
     await repository.searchApplications(searchText, searchType, offset, limit)
 
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
-    expect(data.models.application.findAll).not.toHaveBeenCalled()
+    expect(data.models.application.findAll).not.toHaveBeenCalledTimes(1)
   })
   test.each([
     { sbi: undefined },
