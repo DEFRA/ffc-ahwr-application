@@ -18,8 +18,8 @@ const processVetVisit = async (message) => {
       return sendMessage({ applicationState: states.notFound }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     }
 
-    if (farmerApplication?.vetVisit?.dataValues) {
-      return sendMessage({ applicationState: states.alreadySubmitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
+    if (farmerApplication?.claimed) {
+      return sendMessage({ applicationState: states.alreadyClaimed }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     }
 
     await set({

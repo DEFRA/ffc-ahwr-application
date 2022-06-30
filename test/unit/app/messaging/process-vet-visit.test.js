@@ -24,7 +24,8 @@ applicationRepository.get.mockResolvedValueOnce({
     dataValues: {
       reference: 'VV-1234-5678'
     }
-  }
+  },
+  claimed: true
 }).mockRejectedValueOnce(error)
 
 describe(('Store data in database'), () => {
@@ -75,12 +76,12 @@ describe(('Store data in database'), () => {
     expect(sendVetConfirmationEmail).toHaveBeenCalledTimes(0)
   })
 
-  test('Do not store application if already submitted', async () => {
+  test('Do not store application if already claimed', async () => {
     await processVetVisit(message)
 
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadySubmitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadyClaimed }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(0)
     expect(sendVetConfirmationEmail).toHaveBeenCalledTimes(0)
   })
