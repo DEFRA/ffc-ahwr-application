@@ -19,24 +19,25 @@ Values for development are set in the Docker Compose configuration. Default
 values for production-like deployments are set in the Helm chart and may be
 overridden by build and release pipelines.
 
-| Name                                           | Description                                                                                      |
-| ----                                           | -----------                                                                                      |
-| MESSAGE_QUEUE_HOST                             | Azure Service Bus hostname, e.g. `myservicebus.servicebus.windows.net`                           |
-| MESSAGE_QUEUE_PASSWORD                         | Azure Service Bus SAS policy key                                                                 |
-| MESSAGE_QUEUE_SUFFIX                           | Developer initials                                                                               |
-| MESSAGE_QUEUE_USER                             | Azure Service Bus SAS policy name, e.g. `RootManageSharedAccessKey`                              |
-| APPLICATIONREQUEST_QUEUE_ADDRESS               | Azure Service Bus message request queue name, e.g. `application-request`                         |
-| APPLICATIONRESPONSE_QUEUE_ADDRESS              | Azure Service Bus message response queue name, e.g. `application-response`                       |
-| NOTIFY_API_KEY                                 | GOV.UK Notify API Key                                                                            |
-| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM    | Id of email template used to notify farmer for claim                                             |
-| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE | Id of email template used for farmer application complete                                        |
-| NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE       | Id of email template used to notify farmer for claim being completed                             |
-| NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE    | Id of email template used for veet application complete                                          |
-| PAYMENTREQUEST_TOPIC_ADDRESS                   | Azure Service Bus message request topic for sending to the Payment service                       |
-| PAYMENTRESPONSE_TOPIC_ADDRESS                  | Azure Service Bus message response topic for receiving messages from the Payment service         |
-| PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS           | Azure Service Bus message subscription for receiving messages from the Payment service           |
-| SEND_PAYMENT_REQUEST                           | Enables the sending of a payment request to the payment service                                  |
-| SERVICE_URI                                    | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
+| Name                                            | Description                                                                                      |
+| ----                                            | -----------                                                                                      |
+| MESSAGE_QUEUE_HOST                              | Azure Service Bus hostname, e.g. `myservicebus.servicebus.windows.net`                           |
+| MESSAGE_QUEUE_PASSWORD                          | Azure Service Bus SAS policy key                                                                 |
+| MESSAGE_QUEUE_SUFFIX                            | Developer initials                                                                               |
+| MESSAGE_QUEUE_USER                              | Azure Service Bus SAS policy name, e.g. `RootManageSharedAccessKey`                              |
+| APPLICATIONREQUEST_QUEUE_ADDRESS                | Azure Service Bus message request queue name, e.g. `application-request`                         |
+| APPLICATIONRESPONSE_QUEUE_ADDRESS               | Azure Service Bus message response queue name, e.g. `application-response`                       |
+| NOTIFY_API_KEY                                  | GOV.UK Notify API Key                                                                            |
+| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM     | Id of email template used to notify farmer for claim                                             |
+| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE  | Id of email template used for farmer application complete                                        |
+| NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE        | Id of email template used to notify farmer for claim being completed                             |
+| NOTIFY_TEMPLATE_ID_FARMER_VET_RECORD_INELIGIBLE | Id of email template used to notify farmer when the vet has recorded ineligible animal numbers   |
+| NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE     | Id of email template used for veet application complete                                          |
+| PAYMENTREQUEST_TOPIC_ADDRESS                    | Azure Service Bus message request topic for sending to the Payment service                       |
+| PAYMENTRESPONSE_TOPIC_ADDRESS                   | Azure Service Bus message response topic for receiving messages from the Payment service         |
+| PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS            | Azure Service Bus message subscription for receiving messages from the Payment service           |
+| SEND_PAYMENT_REQUEST                            | Enables the sending of a payment request to the payment service                                  |
+| SERVICE_URI                                     | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
 
 ## Running the application
 

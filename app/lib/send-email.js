@@ -1,5 +1,5 @@
 const notifyClient = require('./notify-client')
-const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete, templateIdFarmerClaimComplete } } = require('../config')
+const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete, templateIdFarmerClaimComplete, templateIdFarmerVetRecordIneligible } } = require('../config')
 
 const sendEmail = async (email, personalisation, reference, templateId) => {
   let success = true
@@ -36,9 +36,15 @@ const sendFarmerClaimInvitationEmail = async (email, reference) => {
   return sendEmail(email, personalisation, reference, templateIdFarmerApplicationClaim)
 }
 
+const sendFarmerVetRecordIneligibleEmail = async (email, reference) => {
+  const personalisation = { reference }
+  return sendEmail(email, personalisation, reference, templateIdFarmerVetRecordIneligible)
+}
+
 module.exports = {
   sendFarmerClaimInvitationEmail,
   sendFarmerConfirmationEmail,
   sendFarmerClaimConfirmationEmail,
+  sendFarmerVetRecordIneligibleEmail,
   sendVetConfirmationEmail
 }
