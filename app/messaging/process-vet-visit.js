@@ -1,7 +1,7 @@
 const util = require('util')
 const states = require('./states')
 const { vetVisitResponseMsgType, applicationResponseQueue } = require('../config')
-const { sendFarmerClaimInvitationEmail, sendVetConfirmationEmail } = require('../lib/send-email')
+const { sendFarmerClaimInvitationEmail, sendFarmerVetRecordIneligibleEmail, sendVetConfirmationEmail } = require('../lib/send-email')
 const sendMessage = require('../messaging/send-message')
 const { get } = require('../repositories/application-repository')
 const { set } = require('../repositories/vet-visit-repository')
@@ -30,7 +30,12 @@ const processVetVisit = async (message) => {
     })
 
     await sendVetConfirmationEmail(msgBody.signup.email, reference)
-    await sendFarmerClaimInvitationEmail(farmerApplication.data.organisation.email, reference)
+    if (msgBody.eligibleSpecies === 'yes') {
+      await sendFarmerClaimInvitationEmail(farmerApplication.data.organisation.email, reference)
+    } else {
+      await sendFarmerVetRecordIneligibleEmail(msgBody.signup.email, reference)
+    }
+
     await sendMessage({ applicationState: states.submitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
   } catch (error) {
     console.error(`failed to process vet visit request ${JSON.stringify(error)}`, error)

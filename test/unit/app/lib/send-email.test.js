@@ -1,5 +1,5 @@
 const sendEmail = require('../../../../app/lib/send-email')
-const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete, templateIdFarmerClaimComplete } } = require('../../../../app/config')
+const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete, templateIdFarmerVetRecordIneligible, templateIdFarmerClaimComplete } } = require('../../../../app/config')
 
 const error = new Error('Test exception')
 error.response = { data: 'failed to send email' }
@@ -80,6 +80,23 @@ describe('Send email test', () => {
     notifyClient.sendEmail.mockRejectedValueOnce(error)
 
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
+
+    expect(response).toBe(false)
+  })
+
+  test('sendFarmerVetRecordIneligibleEmail returns true onsuccessful email', async () => {
+    notifyClient.sendEmail.mockResolvedValueOnce(true)
+
+    const response = await sendEmail.sendFarmerVetRecordIneligibleEmail(email, reference)
+
+    expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerVetRecordIneligible, email, { personalisation: { reference }, reference })
+    expect(response).toBe(true)
+  })
+
+  test('sendFarmerVetRecordIneligibleEmail returns false on error sending email', async () => {
+    notifyClient.sendEmail.mockRejectedValueOnce(error)
+
+    const response = await sendEmail.sendFarmerVetRecordIneligibleEmail(email, reference)
 
     expect(response).toBe(false)
   })
