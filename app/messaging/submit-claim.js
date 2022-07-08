@@ -25,7 +25,7 @@ const submitClaim = async (message) => {
     if (application.dataValues.claimed) {
       return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
     }
-    const res = await updateByReference({ reference, claimed: true, updatedBy: 'admin' })
+    const res = await updateByReference({ reference, claimed: true, statusId: 4, updatedBy: 'admin' })
 
     const updateSuccess = isUpdateSuccessful(res)
 
