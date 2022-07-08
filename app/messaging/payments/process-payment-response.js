@@ -1,4 +1,5 @@
 const { updateByReference } = require('../../repositories/payment-repository')
+const applicationRepository = require('../../repositories/application-repository')
 const util = require('util')
 
 const processPaymentResponse = async (message, receiver) => {
@@ -10,6 +11,11 @@ const processPaymentResponse = async (message, receiver) => {
     if (paymentRequest && agreementNumber) {
       console.log('received process payments response', agreementNumber, status)
       await updateByReference(agreementNumber, status, paymentRequest)
+      await applicationRepository.updateByReference({
+        reference: agreementNumber,
+        statusId: messageBody?.accepted ? 6: 7,
+        updatedBy: 'admin' 
+      })
       await receiver.completeMessage(message)
     } else {
       console.error('Received process payments response with no payment request and agreement number', util.inspect(message.body, false, null, true))

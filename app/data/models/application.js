@@ -42,6 +42,10 @@ module.exports = (sequelize, DataTypes) => {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
+    application.hasOne(models.payment, {
+      sourceKey: 'reference',
+      foreignKey: 'applicationReference'
+    })
   }
   return application
 }
