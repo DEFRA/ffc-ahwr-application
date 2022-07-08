@@ -35,7 +35,7 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, updatedBy: 'admin' })
+    expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId: 4, updatedBy: 'admin' })
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     if (state === success) {
