@@ -90,5 +90,19 @@ describe('Applications test', () => {
       const $ = JSON.parse(res.payload)
       expect($.total).toBe(0)
     })
+
+    test.each([
+      { search: { text: '333333333' }, limit: 'abc', offset: 0 },
+      { search: { text: '444444443' }, offset: 'abc', limit: 20 }
+    ])('returns 400 with error message for invalid input', async ({ search, limit, offset }) => {
+      const options = {
+        method,
+        url,
+        payload: { search, limit, offset }
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+    })
   })
 })
