@@ -11,6 +11,8 @@ jest.mock('../../../../app/repositories/vet-visit-repository')
 const applicationRepository = require('../../../../app/repositories/application-repository')
 jest.mock('../../../../app/repositories/application-repository')
 
+applicationRepository.updateByReference.mockResolvedValue()
+
 const error = new Error('Test exception')
 error.response = { data: 'failed to send email' }
 
@@ -74,6 +76,7 @@ describe(('Store data in database'), () => {
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(1)
     expect(sendVetConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
   })
 
   test('successfully saves application and sends emails when eligibleSpecies is not \'yes\'', async () => {
@@ -100,6 +103,7 @@ describe(('Store data in database'), () => {
     expect(sendFarmerClaimInvitationEmail).not.toHaveBeenCalled()
     expect(sendVetConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendFarmerVetRecordIneligibleEmail).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
   })
 
   test('Do not store application when no farmer application found', async () => {
@@ -110,6 +114,7 @@ describe(('Store data in database'), () => {
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.notFound }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(0)
     expect(sendVetConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(0)
   })
 
   test('Do not store application if already claimed', async () => {
@@ -120,6 +125,7 @@ describe(('Store data in database'), () => {
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.alreadyClaimed }, vetVisitResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendFarmerClaimInvitationEmail).toHaveBeenCalledTimes(0)
     expect(sendVetConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(0)
   })
 
   test('Sends failed state on error', async () => {
