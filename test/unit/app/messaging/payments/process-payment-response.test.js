@@ -2,6 +2,9 @@ const util = require('util')
 const processPaymentResponse = require('../../../../../app/messaging/payments/process-payment-response')
 jest.mock('../../../../../app/repositories/payment-repository')
 const paymentRepository = require('../../../../../app/repositories/payment-repository')
+const applicationRepository = require('../../../../../app/repositories/application-repository')
+
+applicationRepository.updateByReference = jest.fn().mockResolvedValue()
 
 describe(('Process payment response'), () => {
   const consoleError = jest.spyOn(console, 'error')
@@ -30,6 +33,7 @@ describe(('Process payment response'), () => {
     , receiver)
 
     expect(paymentRepository.updateByReference).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 
@@ -46,6 +50,7 @@ describe(('Process payment response'), () => {
     , receiver)
 
     expect(paymentRepository.updateByReference).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
     expect(consoleError).toHaveBeenCalledWith(
       'Failed payment request',
@@ -78,6 +83,7 @@ describe(('Process payment response'), () => {
         false, null, true)
     )
     expect(receiver.deadLetterMessage).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(0)
   })
 
   test('console.error raised due to error thrown in updateByReference', async () => {
@@ -85,5 +91,6 @@ describe(('Process payment response'), () => {
     await processPaymentResponse({}, receiver)
     expect(consoleError).toHaveBeenCalledTimes(1)
     expect(receiver.deadLetterMessage).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(0)
   })
 })
