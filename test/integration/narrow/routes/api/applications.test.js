@@ -5,6 +5,7 @@ describe('Applications test', () => {
   const server = require('../../../../../app/server')
 
   beforeEach(async () => {
+    jest.clearAllMocks()
     await server.start()
   })
 
@@ -26,6 +27,16 @@ describe('Applications test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+    })
+    test('returns 404', async () => {
+      applicationRepository.get.mockResolvedValue({ dataValues: null })
+      const options = {
+        method: 'GET',
+        url: '/api/application/get/ABC-1234'
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     })
   })
@@ -53,7 +64,7 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.searchApplications).toBeCalled()
+      expect(applicationRepository.searchApplications).toHaveBeenCalledTimes(1)
     })
     test.each([
       { search: { text: '333333333' } },
@@ -75,7 +86,7 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.searchApplications).toBeCalled()
+      expect(applicationRepository.searchApplications).toHaveBeenCalledTimes(1)
       const $ = JSON.parse(res.payload)
       expect($.total).toBe(0)
     })
