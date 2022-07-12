@@ -10,9 +10,7 @@ module.exports = [{
       })
     },
     handler: async (request, h) => {
-      console.log(request.params.ref, 'ref')
       const application = (await get(request.params.ref))
-      console.log(application)
       if (application.dataValues) {
         return h.response(application.dataValues).code(200)
       } else {
