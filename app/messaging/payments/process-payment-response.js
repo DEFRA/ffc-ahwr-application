@@ -13,7 +13,7 @@ const processPaymentResponse = async (message, receiver) => {
       await updateByReference(agreementNumber, status, paymentRequest)
       await applicationRepository.updateByReference({
         reference: agreementNumber,
-        statusId: messageBody?.accepted ? 6 : 7,
+        statusId: 6, // use status id 6 for accepted
         updatedBy: 'admin'
       })
       await receiver.completeMessage(message)

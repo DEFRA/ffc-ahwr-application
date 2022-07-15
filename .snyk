@@ -5,5 +5,12 @@ ignore:
   SNYK-JS-ANSIREGEX-1583908:
     - '@pact-foundation/pact > cli-color > ansi-regex':
         reason: Development deps only
-        expires: '2022-07-14T13:37:03.840Z'
+        expires: '2022-08-14T12:21:53.720Z'
+  SNYK-JS-MOMENT-2944238:
+    - sequelize > moment:
+        reason: None given
+        expires: '2022-08-14T12:21:53.720Z'
+    - sequelize > moment-timezone > moment:
+        reason: None given
+        expires: '2022-08-14T12:21:53.720Z'
 patch: {}
