@@ -29,15 +29,20 @@ module.exports = [{
         search: Joi.object({
           text: Joi.string().valid().optional().allow(''),
           type: Joi.string().valid().optional().default('sbi')
-        }).optional()
+        }).optional(),
+        sort: Joi.object({
+          field: Joi.string().valid().optional().default('CREATEDAT'),
+          direction: Joi.string().valid().optional().allow('ASC'),
+        }).optional(),
+        filter: Joi.array().optional()
       }),
       failAction: async (_request, h, err) => {
         return h.response({ err }).code(400).takeover()
       }
     },
     handler: async (request, h) => {
-      const { applications, total } = await searchApplications(request.payload.search.text ?? '', request.payload.search.type, request.payload.offset, request.payload.limit)
-      return h.response({ applications, total }).code(200)
+      const { applications, total, applicationStatus } = await searchApplications(request.payload.search.text ?? '', request.payload.search.type,request.payload.filter, request.payload.offset, request.payload.limit, request.payload.sort)
+      return h.response({ applications, total, applicationStatus }).code(200)
     }
   }
 }]
