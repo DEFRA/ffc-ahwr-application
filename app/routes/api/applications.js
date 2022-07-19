@@ -32,7 +32,7 @@ module.exports = [{
         }).optional(),
         sort: Joi.object({
           field: Joi.string().valid().optional().default('CREATEDAT'),
-          direction: Joi.string().valid().optional().allow('ASC'),
+          direction: Joi.string().valid().optional().allow('ASC')
         }).optional(),
         filter: Joi.array().optional()
       }),
@@ -41,7 +41,7 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const { applications, total, applicationStatus } = await searchApplications(request.payload.search.text ?? '', request.payload.search.type,request.payload.filter, request.payload.offset, request.payload.limit, request.payload.sort)
+      const { applications, total, applicationStatus } = await searchApplications(request.payload.search.text ?? '', request.payload.search.type, request.payload.filter, request.payload.offset, request.payload.limit, request.payload.sort)
       return h.response({ applications, total, applicationStatus }).code(200)
     }
   }

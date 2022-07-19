@@ -34,17 +34,21 @@ async function getByEmail (email) {
  * Currently Support Status, SBI number, Application Reference Number
  *
  * @param {string} searchText contain status, sbi number or application reference number
- * @param {*} searchType contain any of keyword ['status','ref','sbi']
- * @param {*} offset index of row where page should start from
- * @param {*} limit page limit
+ * @param {string} searchType contain any of keyword ['status','ref','sbi']
+ * @param {array} filter contains array of status ['CLAIMED','DATA INPUTED','APPLIED']
+ * @param {integer} offset index of row where page should start from
+ * @param {integer} limit page limit
+ * @param {object} object contain field and direction for sort order
  * @returns all application with page
  */
-async function searchApplications (searchText, searchType,filter, offset = 0, limit = 10, sort = {field:'createdAt', direction:'DESC'}) {
-  let query = {include : [
-    {
-      model: models.status,
-      attributes: ['status']
-    }]
+async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+  let query = {
+    include: [
+      {
+        model: models.status,
+        attributes: ['status']
+      }
+    ]
   }
   let total = 0
   let applications = []
@@ -66,23 +70,26 @@ async function searchApplications (searchText, searchType,filter, offset = 0, li
           }]
         break
     }
-  }   
-  if(filter && filter.length > 0 ){ 
+  }
+
+  if (filter && filter.length > 0) {
     query.include = [
       {
         model: models.status,
         attributes: ['status'],
         where: { status: filter }
-      }]
+      }
+    ]
   }
+
   total = await models.application.count(query)
   if (total > 0) {
     applicationStatus = await models.application.findAll({
-      attributes: ['status.status',  [sequelize.fn('COUNT', 'application.id'), 'total']],
+      attributes: ['status.status', [sequelize.fn('COUNT', 'application.id'), 'total']],
       ...query,
       group: ['status.status'],
-      raw:true
-    });
+      raw: true
+    })
     query = {
       ...query,
       order: [[sort.field ?? 'createdAt', sort.direction ?? 'ASC']],

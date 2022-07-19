@@ -55,7 +55,7 @@ describe('Application Repository test', () => {
     { searchText: undefined, searchType: '' },
     { searchText: '', searchType: '' }
   ])('getApplications for empty search returns call findAll', async ({ searchText, searchType }) => {
-    await repository.searchApplications(searchText, searchType, offset, limit)
+    await repository.searchApplications(searchText, searchType, [], offset, limit)
 
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
 
@@ -72,7 +72,7 @@ describe('Application Repository test', () => {
   })
   test('getApplications for Invalid SBI  call findAll', async () => {
     const searchText = '333333333'
-    await repository.searchApplications(searchText, 'sbi', offset, limit)
+    await repository.searchApplications(searchText, 'sbi', [], offset, limit)
 
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
     expect(data.models.application.findAll).toHaveBeenCalledWith({
@@ -91,7 +91,7 @@ describe('Application Repository test', () => {
   })
   test('getApplications for Invalid application reference call findAll', async () => {
     const searchText = 'VV-555A-FD4D'
-    await repository.searchApplications(searchText, 'ref', offset, limit)
+    await repository.searchApplications(searchText, 'ref', [], offset, limit)
 
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
     expect(data.models.application.findAll).toHaveBeenCalledWith({
@@ -109,6 +109,11 @@ describe('Application Repository test', () => {
     })
 
     expect(data.models.application.count).toHaveBeenCalledWith({
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }],
       where: {
         reference: searchText
       }
@@ -152,7 +157,7 @@ describe('Application Repository test', () => {
     { limit, offset, searchText: '', searchType: 'status' }
   ])('getApplications returns empty array when no application found.', async ({ searchText, searchType }) => {
     data.models.application.count.mockReturnValue(0)
-    await repository.searchApplications(searchText, searchType, offset, limit)
+    await repository.searchApplications(searchText, searchType, [], offset, limit)
 
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
     expect(data.models.application.findAll).not.toHaveBeenCalledTimes(1)
