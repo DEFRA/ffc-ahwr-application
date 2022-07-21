@@ -1,4 +1,4 @@
-const { models } = require('../data')
+const { models, sequelize } = require('../data')
 /**
  * Get application by reference number
  * @param {string} reference
@@ -34,16 +34,25 @@ async function getByEmail (email) {
  * Currently Support Status, SBI number, Application Reference Number
  *
  * @param {string} searchText contain status, sbi number or application reference number
- * @param {*} searchType contain any of keyword ['status','ref','sbi']
- * @param {*} offset index of row where page should start from
- * @param {*} limit page limit
+ * @param {string} searchType contain any of keyword ['status','ref','sbi']
+ * @param {array} filter contains array of status ['CLAIMED','DATA INPUTED','APPLIED']
+ * @param {integer} offset index of row where page should start from
+ * @param {integer} limit page limit
+ * @param {object} object contain field and direction for sort order
  * @returns all application with page
  */
-async function searchApplications (searchText, searchType, offset = 0, limit = 10) {
+async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
   let query = {
+    include: [
+      {
+        model: models.status,
+        attributes: ['status']
+      }
+    ]
   }
   let total = 0
   let applications = []
+  let applicationStatus = []
   if (searchText) {
     switch (searchType) {
       case 'sbi':
@@ -62,26 +71,35 @@ async function searchApplications (searchText, searchType, offset = 0, limit = 1
         break
     }
   }
+
+  if (filter && filter.length > 0) {
+    query.include = [
+      {
+        model: models.status,
+        attributes: ['status'],
+        where: { status: filter }
+      }
+    ]
+  }
+
   total = await models.application.count(query)
   if (total > 0) {
+    applicationStatus = await models.application.findAll({
+      attributes: ['status.status', [sequelize.fn('COUNT', 'application.id'), 'total']],
+      ...query,
+      group: ['status.status'],
+      raw: true
+    })
     query = {
       ...query,
-      order: [['createdAt', 'DESC']],
+      order: [[sort.field ?? 'createdAt', sort.direction ?? 'ASC']],
       limit,
       offset
-    }
-    if (searchType !== 'status') {
-      query.include = [
-        {
-          model: models.status,
-          attributes: ['status']
-        }
-      ]
     }
     applications = await models.application.findAll(query)
   }
   return {
-    applications, total
+    applications, total, applicationStatus
   }
 }
 /**
