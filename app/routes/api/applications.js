@@ -57,7 +57,7 @@ module.exports = [{
         ref: Joi.string().valid()
       }),
       payload: Joi.object({
-        paid: Joi.string().valid('yes', 'no').required(),
+        paid: Joi.string().valid('yes', 'no').required()
       }),
       failAction: async (_request, h, err) => {
         return h.response({ err }).code(400).takeover()
@@ -89,7 +89,7 @@ module.exports = [{
         ref: Joi.string().valid()
       }),
       payload: Joi.object({
-        accepted: Joi.string().valid('yes', 'no').required(),
+        accepted: Joi.string().valid('yes', 'no').required()
       }),
       failAction: async (_request, h, err) => {
         return h.response({ err }).code(400).takeover()
