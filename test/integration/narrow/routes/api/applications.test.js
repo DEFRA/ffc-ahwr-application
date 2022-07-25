@@ -123,7 +123,7 @@ describe('Applications test', () => {
       expect(res.statusCode).toBe(200)
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenLastCalledWith({reference, statusId, updatedBy: 'admin'})
+      expect(applicationRepository.updateByReference).toHaveBeenLastCalledWith({ reference, statusId, updatedBy: 'admin' })
     })
     test('returns 400', async () => {
       const options = {
@@ -163,7 +163,7 @@ describe('Applications test', () => {
       expect(res.statusCode).toBe(200)
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenLastCalledWith({reference, statusId, updatedBy: 'admin'})
+      expect(applicationRepository.updateByReference).toHaveBeenLastCalledWith({ reference, statusId, updatedBy: 'admin' })
       expect(submitPaymentRequest).toHaveBeenCalledTimes(paymentSubmitted)
     })
     test('returns 400', async () => {
