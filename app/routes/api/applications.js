@@ -70,11 +70,11 @@ module.exports = [{
       }
       if (request.payload.paid === 'yes') {
         await submitPaymentRequest(application.dataValues, uuidv4())
-        await updateByReference({ reference: request.params.ref, statusId: 8, updatedBy: 'admin' })
+        updateByReference({ reference: request.params.ref, statusId: 8, updatedBy: 'admin' })
       }
 
       if (request.payload.paid === 'no') {
-        await updateByReference({ reference: request.params.ref, statusId: 7, updatedBy: 'admin' })
+        updateByReference({ reference: request.params.ref, statusId: 7, updatedBy: 'admin' })
       }
 
       return h.response(application.dataValues).code(200)
@@ -101,11 +101,11 @@ module.exports = [{
         return h.response('Not Found').code(404).takeover()
       }
       if (request.payload.accepted === 'yes') {
-        await updateByReference({ reference: request.params.ref, statusId: 6, updatedBy: 'admin' })
+        updateByReference({ reference: request.params.ref, statusId: 6, updatedBy: 'admin' })
       }
 
       if (request.payload.accepted === 'no') {
-        await updateByReference({ reference: request.params.ref, statusId: 7, updatedBy: 'admin' })
+        updateByReference({ reference: request.params.ref, statusId: 7, updatedBy: 'admin' })
       }
 
       return h.response(application.dataValues).code(200)
