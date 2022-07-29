@@ -1,4 +1,6 @@
 const createReference = require('../../lib/create-reference')
+const sendChangedApplicationEvent = require('../../events')
+const applicationChangedState = require('../../lib/application-changed-state')
 
 module.exports = (sequelize, DataTypes) => {
   const application = sequelize.define('application', {
@@ -6,7 +8,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       autoIncrement: true,
-      defaultValue: sequelize.UUIDV4
+      defaultValue: sequelize.UUIDV4,
+      set (val) {
+        if (!this.getDataValue('reference')) {
+          this.setDataValue('reference', createReference(val))
+        }
+      }
     },
     reference: {
       type: DataTypes.STRING,
@@ -16,21 +23,18 @@ module.exports = (sequelize, DataTypes) => {
     },
     data: DataTypes.JSONB,
     claimed: { type: DataTypes.BOOLEAN, defaultValue: false },
-    createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
-    updatedAt: { type: DataTypes.DATE, defaultValue: null },
-    createdBy: DataTypes.STRING,
-    updatedBy: { type: DataTypes.STRING, defaultValue: null },
+    createdBy: { type: DataTypes.STRING, defaultValue: 'admin' },
+    updatedBy: { type: DataTypes.STRING, defaultValue: 'admin' },
     statusId: DataTypes.SMALLINT
   }, {
     freezeTableName: true,
     tableName: 'application',
     hooks: {
-      afterCreate: async (applicationRecord, _) => {
-        applicationRecord.dataValues.reference = createReference(applicationRecord.id)
-        applicationRecord.dataValues.updatedBy = 'admin'
-        applicationRecord.dataValues.updatedAt = new Date()
-        await applicationRecord.update(applicationRecord.dataValues)
+      afterUpdate: async (applicationRecord, _) => {
+        const { originalState, newState } = applicationChangedState(applicationRecord)
+        sendChangedApplicationEvent(applicationRecord.reference, originalState, newState)
       }
+
     }
   })
   application.associate = function (models) {
