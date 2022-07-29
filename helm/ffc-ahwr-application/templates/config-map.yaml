@@ -4,6 +4,7 @@ data:
   APPINSIGHTS_CLOUDROLE: {{ quote .Values.name }}
   BACKOFFICEREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.backOfficeRequestQueueAddress }}
   BACKOFFICERESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.backOfficeResponseQueueAddress }}
+  APPLICATIONEVENT_QUEUE_ADDRESS: {{ quote. .Values.container.applicationEventQueueAddress }}
   APPLICATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationRequestQueueAddress }}
   APPLICATIONRESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.applicationResponseQueueAddress }}
   SEND_PAYMENT_REQUEST: {{ quote .Values.container.sendPaymentRequest }}

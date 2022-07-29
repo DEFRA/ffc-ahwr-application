@@ -33,6 +33,7 @@ deployment:
   replicas: 1
 
 container:
+  applicationEventQueueAddress: ffc-ahwr-event
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
   backOfficeRequestQueueAddress: ffc-ahwr-backoffice-request
