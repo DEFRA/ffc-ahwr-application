@@ -1,24 +1,38 @@
-require('../../../../../db-helper')
+const dbHelper = require('../../../../../db-helper')
 const { models } = require('../../../../../../app/data')
 const sendEvent = require('../../../../../../app/events')
 const getApplicationStateChanges = require('../../../../../../app/lib/application-changed-state')
 jest.mock('../../../../../../app/events')
 
+const initialDataSet = {
+  id: '12345678-1234-1234-1234-1234567890AB',
+  claimed: false,
+  data: {
+    key1: 'value1',
+    key2: 'value2'
+  }
+}
+
 describe('Application model test', () => {
   beforeEach(async () => {
+    await dbHelper.truncate()
     jest.clearAllMocks()
   })
 
-  test('Updating application record should send update message', async () => {
-    const initialDataSet = {
-      id: '12345678-1234-1234-1234-1234567890AB',
-      claimed: false,
-      data: {
-        key1: 'value1',
-        key2: 'value2'
-      }
-    }
+  test('Should only send message if an application record was updated', async () => {
+    const applicationRecord = await models.application.create(initialDataSet)
 
+    const { originalState, newState } = getApplicationStateChanges(applicationRecord)
+
+    expect(originalState).toEqual(null)
+    expect(newState).toEqual(null)
+
+    expect(applicationRecord.reference).toEqual('VV-1234-5678')
+
+    expect(sendEvent).toHaveBeenCalledTimes(0)
+  })
+
+  test('Updating application record should send update message', async () => {
     const applicationRecord = await models.application.create(initialDataSet)
 
     expect(applicationRecord.reference).toEqual('VV-1234-5678')
