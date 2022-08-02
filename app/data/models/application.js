@@ -8,12 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       autoIncrement: true,
-      defaultValue: sequelize.UUIDV4,
-      set (val) {
-        if (!this.getDataValue('reference')) {
-          this.setDataValue('reference', createReference(val))
-        }
-      }
+      defaultValue: sequelize.UUIDV4
     },
     reference: {
       type: DataTypes.STRING,
@@ -30,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
     freezeTableName: true,
     tableName: 'application',
     hooks: {
+      afterCreate: async (applicationRecord, _) => {
+        applicationRecord.dataValues.reference = createReference(applicationRecord.id)
+        await applicationRecord.update(applicationRecord.dataValues)
+      },
       afterUpdate: async (applicationRecord, _) => {
         const { originalState, newState } = applicationChangedState(applicationRecord)
         if (originalState && newState) {
