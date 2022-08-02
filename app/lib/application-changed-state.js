@@ -1,17 +1,26 @@
 const applicationChangedState = (applicationRecord) => {
+  let originalState = null
+  let newState = null
+
+  if (!applicationRecord || !applicationRecord.dataValues) {
+    return { originalState, newState }
+  }
+
+  originalState = {}
+  newState = {}
+
   const attributes = Object.keys(applicationRecord.dataValues)
   const unwantedFields = [
+    'id',
     'createdBy',
     'updatedBy',
     'reference',
+    'createdAt',
     'updatedAt'
   ]
   unwantedFields.forEach(unwantedField => {
     attributes.splice(attributes.indexOf(unwantedField), 1)
   })
-
-  let originalState = {}
-  let newState = {}
 
   attributes.forEach(field => {
     if (applicationRecord.changed(field) && applicationRecord[field] !== applicationRecord.previous(field)) {
