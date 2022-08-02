@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       afterUpdate: async (applicationRecord, _) => {
         const { originalState, newState } = applicationChangedState(applicationRecord)
-        if (originalState && newState) {
+        if (originalState && newState && originalState.data !== undefined) {
           sendChangedApplicationEvent(applicationRecord.reference, originalState, newState)
         }
       }
