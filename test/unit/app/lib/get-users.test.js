@@ -1,5 +1,5 @@
 const { storage: { usersContainer, usersFile } } = require('../../../../app/config')
-const downloadBlobMock = require('../../../../app/lib/download-blob')
+const downloadBlob = require('../../../../app/lib/download-blob')
 const { getUsers } = require('../../../../app/lib/get-users')
 
 jest.mock('../../../../app/lib/download-blob')
@@ -33,28 +33,28 @@ const jsonData = [
 
 const testData = JSON.stringify(jsonData)
 
-beforeEach(() => {
-  jest.resetAllMocks()
-  jest.resetModules()
-})
-
 describe('getUsers', () => {
   beforeEach(() => {
-    downloadBlobMock.mockResolvedValue(testData)
+    downloadBlob.mockResolvedValue(testData)
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    jest.resetModules()
   })
 
   test('makes request to download users blob', async () => {
     await getUsers({})
 
-    expect(downloadBlobMock).toHaveBeenCalledTimes(1)
-    expect(downloadBlobMock).toHaveBeenCalledWith(usersContainer, usersFile)
+    expect(downloadBlob).toHaveBeenCalledTimes(1)
+    expect(downloadBlob).toHaveBeenCalledWith(usersContainer, usersFile)
   })
 
   test.each([
     { fileContent: null },
     { fileContent: undefined }
   ])('return empty users list when blob content is null or undefined', async ({ fileContent }) => {
-    downloadBlobMock.mockResolvedValue(fileContent)
+    downloadBlob.mockResolvedValue(fileContent)
     const res = await getUsers({})
     expect(res).toEqual([])
   })
@@ -86,8 +86,6 @@ describe('getUsers', () => {
   ])('performs a case insensitive partial search and returns the correct data', async ({ args, expectedResult }) => {
     const users = await getUsers(args)
     expect(users.length).toEqual(1)
-
-    // Get the key that the search was performed with and find the user from jsonData to compare
     expect(users[0]).toEqual(expectedResult)
   })
 
@@ -119,9 +117,11 @@ describe('getUsers', () => {
     { text: '__CPH_3__', expectedResult: jsonData[2] }
   ])('text search is performed on farmerName, name, sbi and cph', async ({ text, expectedResult }) => {
     const users = await getUsers({ text })
-    expect(users.length).toEqual(1)
-
-    // Get the key that the search was performed with and find the user from jsonData to compare
     expect(users[0]).toEqual(expectedResult)
+  })
+
+  test('Empty payload returns all the users', async () => {
+    const users = await getUsers({})
+    expect(users).toEqual(jsonData)
   })
 })
