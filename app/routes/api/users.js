@@ -9,18 +9,15 @@ module.exports = [{
   options: {
     validate: {
       payload: userSearchPayload,
-      failAction: async (_request, h, err) => {
-        return h.response({ err }).code(400).takeover()
-      }
+      failAction: async (_request, h, err) =>
+        h.response({ err }).code(400).takeover()
     },
     response: {
       status: {
         200: userSearchResponseSchema
       }
     },
-    handler: async (request, h) => {
-      const users = await getUsers(request.payload)
-      return h.response(users).code(200)
-    }
+    handler: async (request, h) =>
+      h.response(await getUsers(request.payload)).code(200)
   }
 }]
