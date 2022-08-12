@@ -21,7 +21,8 @@ const getUsersBlob = async () => {
  * @returns {boolean} true if there is partial match, false otherwise
 */
 const partialMatch = (stringToSearch, stringsToCompare) =>
-  stringsToCompare.some(str => stringToSearch?.toLowerCase().includes(str?.toLowerCase()))
+  stringsToCompare.some(str => typeof str === 'string' &&
+    stringToSearch?.toLowerCase().includes(str?.toLowerCase()))
 
 /**
  * Determines whether any of the provided strings in the stringsToCompare list
@@ -42,7 +43,7 @@ const exactMatch = (stringToSearch, stringsToCompare) =>
  * @param {object} args all the search parameters
  * @param {string} args.farmerName searches users with a partial match in their farmerName field
  * @param {string} args.name searches users with a partial match in their name field
- * @param {string} args.sbi searches users with the exact sbi match
+ * @param {number} args.sbi searches users with the exact sbi match
  * @param {string} args.cph searches users with the exact cph match
  * @param {string} args.text a string that is matched against farmerName, name, cph and sbi
  * @returns {Object[]} all users that match the fields in args and all available users
@@ -54,7 +55,7 @@ const getUsers = async (args) => {
 
   return users.filter(user => partialMatch(user.farmerName, [args.farmerName, args.text]) ||
     partialMatch(user.name, [args.name, args.text]) ||
-    exactMatch(user.sbi, [args.sbi, args.text]) ||
+    exactMatch(user.sbi, [args.sbi?.toString(), args.text?.toString()]) ||
     exactMatch(user.cph, [args.cph, args.text])
   )
 }

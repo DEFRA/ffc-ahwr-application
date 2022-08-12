@@ -1,40 +1,13 @@
 const server = require('../../../../../app/server')
 const downloadBlob = require('../../../../../app/lib/download-blob')
-// const users = require('../../../../../app/lib/get-users')
+const userData = require('../../../../data/users')
 
 jest.mock('../../../../../app/lib/download-blob')
-
-const jsonData = [
-  {
-    farmerName: '__FARMER_1__',
-    name: '__NAME_1__',
-    sbi: '__SBI_1__',
-    cph: '__CPH_1__',
-    address: '__ADDRESS_1__',
-    email: 'TEST_EMAIL_1@aol.com'
-  },
-  {
-    farmerName: '__farmer_2__',
-    name: '__name_2__',
-    sbi: '__SBI_2__',
-    cph: '__CPH_2__',
-    address: '__ADDRESS_2__',
-    email: 'TEST_EMAIL_2@aol.com'
-  },
-  {
-    farmerName: '__Farmer_3__',
-    name: '__Name_3__',
-    sbi: '__SBI_3__',
-    cph: '__CPH_3__',
-    address: '__ADDRESS_3__',
-    email: 'TEST_EMAIL_3@aol.com'
-  }
-]
 
 describe('Users test', () => {
   beforeAll(async () => {
     server.start()
-    downloadBlob.mockResolvedValue(JSON.stringify(jsonData))
+    downloadBlob.mockResolvedValue(JSON.stringify(userData))
   })
 
   afterAll(async () => {
@@ -50,12 +23,12 @@ describe('Users test', () => {
     })
 
     test.each([
-      { payload: { farmerName: 'farmer_1' }, expectedResult: [jsonData[0]] },
-      { payload: { name: 'name_1' }, expectedResult: [jsonData[0]] },
-      { payload: { sbi: '__SBI_2__' }, expectedResult: [jsonData[1]] },
-      { payload: { cph: '__CPH_3__' }, expectedResult: [jsonData[2]] },
-      { payload: { text: 'farmer_3' }, expectedResult: [jsonData[2]] },
-      { payload: {}, expectedResult: jsonData }
+      { payload: { farmerName: 'farmer_1' }, expectedResult: [userData[0]] },
+      { payload: { name: 'name_1' }, expectedResult: [userData[0]] },
+      { payload: { sbi: 223334444 }, expectedResult: [userData[1]] },
+      { payload: { cph: '11/123/4567' }, expectedResult: [userData[2]] },
+      { payload: { text: 'farmer_3' }, expectedResult: [userData[2]] },
+      { payload: {}, expectedResult: userData }
     ])('individual fields in payloads are valid and relevant search results are returned', async ({ payload, expectedResult }) => {
       const options = {
         method,
@@ -73,9 +46,9 @@ describe('Users test', () => {
     })
 
     test.each([
-      { payload: { farmerName: 'farmer_1', name: 'name_2' }, expectedResult: [jsonData[0], jsonData[1]] },
-      { payload: { name: 'name_1', sbi: '__SBI_2__' }, expectedResult: [jsonData[0], jsonData[1]] },
-      { payload: { farmerName: 'farmer_1', text: 'name_3' }, expectedResult: [jsonData[0], jsonData[2]] }
+      { payload: { farmerName: 'farmer_1', name: 'name_2' }, expectedResult: [userData[0], userData[1]] },
+      { payload: { name: 'name_1', sbi: 223334444 }, expectedResult: [userData[0], userData[1]] },
+      { payload: { farmerName: 'farmer_1', text: 'name_3' }, expectedResult: [userData[0], userData[2]] }
     ])('returns mutliple users for composite searches', async ({ payload, expectedResult }) => {
       const options = {
         method,
@@ -96,9 +69,10 @@ describe('Users test', () => {
       { payload: { farmerName: '' } },
       { payload: { name: '' } },
       { payload: { cph: '' } },
+      { payload: { cph: '22/333/444' } },
       { payload: { sbi: '' } },
       { payload: { text: '' } }
-    ])('empty strings are treated as invalid payload', async ({ payload }) => {
+    ])('invalid payload values return status code 400', async ({ payload }) => {
       const options = {
         method,
         url,
