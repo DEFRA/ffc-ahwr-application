@@ -1,5 +1,5 @@
-const { userSearchPayload } = require('./payload')
-const { userSearchResponseSchema } = require('./schema')
+const { userSearchPayload } = require('./schema/payload')
+const { userSearchResponseSchema } = require('./schema/schema')
 
 const { getUsers } = require('../../lib/get-users')
 
