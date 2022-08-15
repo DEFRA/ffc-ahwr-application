@@ -1,7 +1,6 @@
 const { MessageReceiver } = require('ffc-messaging')
 const config = require('../config')
 const processApplicationMessage = require('./process-message')
-const processBackOfficeMessage = require('./back-office/process-backoffice-message')
 const processPaymentResponse = require('./payments/process-payment-response')
 
 let applicationReceiver
@@ -16,10 +15,6 @@ const start = async () => {
   const paymentAction = message => processPaymentResponse(message, paymentReceiver)
   paymentReceiver = new MessageReceiver(config.paymentResponseSubscription, paymentAction)
   await paymentReceiver.subscribe()
-
-  const backOfficeAction = message => processBackOfficeMessage(message, backOfficeReceiver)
-  backOfficeReceiver = new MessageReceiver(config.backOfficeRequestQueue, backOfficeAction)
-  await backOfficeReceiver.subscribe()
 
   console.info('Ready to receive messages')
 }

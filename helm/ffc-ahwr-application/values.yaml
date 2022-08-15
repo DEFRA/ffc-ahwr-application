@@ -55,6 +55,9 @@ container:
   requestCpu: 40m
   requestMemory: 80Mi
   serviceUri:
+  azureStorageConnectionString:
+  azureStorageUseConnectionString: true
+  azureStorageAccountName:
 
 postgresService:
   postgresDb: ffc_ahwr_application
