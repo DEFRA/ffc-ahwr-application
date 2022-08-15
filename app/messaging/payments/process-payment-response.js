@@ -11,10 +11,10 @@ const processPaymentResponse = async (message, receiver) => {
     if (paymentRequest && agreementNumber) {
       console.log('received process payments response', agreementNumber, status)
       if (paymentRequest?.value) {
-        paymentRequest.value = paymentRequest.value/100;
+        paymentRequest.value = paymentRequest.value / 100
       }
       if (paymentRequest?.invoiceLines?.length > 0 && paymentRequest?.invoiceLines[0]?.value) {
-        paymentRequest.invoiceLines[0].value = paymentRequest.invoiceLines[0].value/100;
+        paymentRequest.invoiceLines[0].value = paymentRequest.invoiceLines[0].value / 100
       }
       await updateByReference(agreementNumber, status, paymentRequest)
       await applicationRepository.updateByReference({
