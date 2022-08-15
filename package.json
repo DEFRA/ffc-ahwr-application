@@ -38,7 +38,8 @@
     "jest": "^27.0.6",
     "jest-junit": "^13.0.0",
     "nodemon": "^2.0.12",
-    "standard": "^17.0.0"
+    "standard": "^17.0.0",
+    "@pact-foundation/pact": "^9.17.3"
   },
   "standard": {
     "env": [

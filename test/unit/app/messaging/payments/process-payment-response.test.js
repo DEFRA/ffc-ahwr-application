@@ -25,7 +25,11 @@ describe(('Process payment response'), () => {
     await processPaymentResponse({
       body: {
         paymentRequest: {
-          agreementNumber
+          agreementNumber,
+          value: 43600,
+          invoiceLines: [{
+            value: 43600
+          }]
         },
         accepted: true
       }
@@ -34,6 +38,13 @@ describe(('Process payment response'), () => {
 
     expect(paymentRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+    expect(paymentRepository.updateByReference).toHaveBeenCalledWith(agreementNumber, 'success', {
+      agreementNumber,
+      value: 436,
+      invoiceLines: [{
+        value: 436
+      }]
+    })
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 
