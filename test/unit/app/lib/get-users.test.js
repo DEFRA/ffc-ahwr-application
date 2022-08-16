@@ -40,7 +40,8 @@ describe('getUsers', () => {
     { cph: '12/345/6789' },
     { text: '__TEXT__' }
   ])('returns empty list when there are no matches for any fields provided on its own', async (args) => {
-    expect(await getUsers(args)).toEqual([])
+    const res = await getUsers(args)
+    expect(res).toEqual([])
   })
 
   test.each([
