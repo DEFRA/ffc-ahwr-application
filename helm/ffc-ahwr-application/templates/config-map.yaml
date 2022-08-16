@@ -2,8 +2,6 @@
 {{- define "ffc-ahwr-application.config-map" -}}
 data:
   APPINSIGHTS_CLOUDROLE: {{ quote .Values.name }}
-  BACKOFFICEREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.backOfficeRequestQueueAddress }}
-  BACKOFFICERESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.backOfficeResponseQueueAddress }}
   APPLICATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationRequestQueueAddress }}
   APPLICATIONRESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.applicationResponseQueueAddress }}
   SEND_PAYMENT_REQUEST: {{ quote .Values.container.sendPaymentRequest }}
@@ -23,4 +21,6 @@ data:
   NOTIFY_TEMPLATE_ID_FARMER_VET_RECORD_INELIGIBLE: {{ quote .Values.container.notifyTemplateIdFarmerVetRecordIneligible }}
   NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE: {{ quote .Values.container.notifyTemplateIdVetApplicationComplete }}
   SERVICE_URI: {{ quote .Values.container.serviceUri }}
+  AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
+  AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
 {{- end -}}

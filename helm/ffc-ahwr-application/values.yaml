@@ -35,8 +35,6 @@ deployment:
 container:
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
-  backOfficeRequestQueueAddress: ffc-ahwr-backoffice-request
-  backOfficeResponseQueueAddress: ffc-ahwr-backoffice-response
   paymentRequestTopicAddress: ffc-pay-request
   paymentResponseTopicAddress: ffc-pay-request-response
   paymentResponseSubscriptionAddress: ffc-ahwr-application
