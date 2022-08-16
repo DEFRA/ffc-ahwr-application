@@ -18,6 +18,6 @@ module.exports = [{
       }
     },
     handler: async (request, h) =>
-      h.response(await getUsers(request.payload)).code(200)
+      h.response(getUsers(request.payload)).code(200)
   }
 }]

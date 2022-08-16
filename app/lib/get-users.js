@@ -7,7 +7,7 @@ const { storage: { usersContainer, usersFile } } = require('../config')
  * @returns {object[]} json parsed list of user objects
 */
 const getUsersBlob = async () => {
-  const contents = await downloadBlob(usersContainer, usersFile) ?? '[]'
+  const contents = downloadBlob(usersContainer, usersFile) ?? '[]'
   return JSON.parse(contents)
 }
 
@@ -50,7 +50,7 @@ const exactMatch = (stringToSearch, stringsToCompare) =>
  * if no fields are provided.
  */
 const getUsers = async (args) => {
-  const users = await getUsersBlob()
+  const users = getUsersBlob()
   if (!Object.keys(args).length) return users
 
   return users.filter(user => partialMatch(user.farmerName, [args.farmerName, args.text]) ||
