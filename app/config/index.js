@@ -63,11 +63,18 @@ const schema = Joi.object({
   },
   sendPaymentRequest: Joi.boolean().default(true),
   serviceUri: Joi.string().uri(),
+  storage: {
+    connectionString: Joi.string().required(),
+    usersContainer: Joi.string().default('users'),
+    usersFile: Joi.string().default('users.json'),
+    storageAccount: Joi.string().required(),
+    useConnectionString: Joi.bool().default(true)
+  },
   submitClaimRequestMsgType: Joi.string(),
   submitClaimResponseMsgType: Joi.string(),
+  submitPaymentRequestMsgType: Joi.string(),
   vetVisitRequestMsgType: Joi.string(),
-  vetVisitResponseMsgType: Joi.string(),
-  submitPaymentRequestMsgType: Joi.string()
+  vetVisitResponseMsgType: Joi.string()
 })
 
 const sharedConfig = {
@@ -130,11 +137,16 @@ const config = {
   },
   sendPaymentRequest: process.env.SEND_PAYMENT_REQUEST,
   serviceUri: process.env.SERVICE_URI,
+  storage: {
+    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
+    useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
+    storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
+  },
   submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
+  submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
   vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
-  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
-  submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`
+  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })
