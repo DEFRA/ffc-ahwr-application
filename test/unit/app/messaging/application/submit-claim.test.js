@@ -1,15 +1,15 @@
-const submitClaim = require('../../../../app/messaging/submit-claim')
-const { submitClaimResponseMsgType, applicationResponseQueue } = require('../../../../app/config')
-const { alreadyClaimed, failed, error, notFound, success } = require('../../../../app/messaging/states')
+const submitClaim = require('../../../../../app/messaging/application/submit-claim')
+const { submitClaimResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
+const { alreadyClaimed, failed, error, notFound, success } = require('../../../../../app/messaging/application/states')
 
-jest.mock('../../../../app/repositories/application-repository')
-const applicationRepository = require('../../../../app/repositories/application-repository')
-jest.mock('../../../../app/messaging/send-message')
-const sendMessage = require('../../../../app/messaging/send-message')
-jest.mock('../../../../app/messaging/payments/submit-payment-request')
-const submitPaymentRequest = require('../../../../app/messaging/payments/submit-payment-request')
-jest.mock('../../../../app/lib/send-email')
-const { sendFarmerClaimConfirmationEmail } = require('../../../../app/lib/send-email')
+jest.mock('../../../../../app/repositories/application-repository')
+const applicationRepository = require('../../../../../app/repositories/application-repository')
+jest.mock('../../../../../app/messaging/send-message')
+const sendMessage = require('../../../../../app/messaging/send-message')
+jest.mock('../../../../../app/messaging/payments/submit-payment-request')
+const submitPaymentRequest = require('../../../../../app/messaging/payments/submit-payment-request')
+jest.mock('../../../../../app/lib/send-email')
+const { sendFarmerClaimConfirmationEmail } = require('../../../../../app/lib/send-email')
 
 describe(('Submit claim tests'), () => {
   const reference = 'VV-1234-5678'

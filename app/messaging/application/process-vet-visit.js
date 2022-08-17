@@ -1,10 +1,10 @@
 const util = require('util')
 const states = require('./states')
-const { vetVisitResponseMsgType, applicationResponseQueue } = require('../config')
-const { sendFarmerClaimInvitationEmail, sendFarmerVetRecordIneligibleEmail, sendVetConfirmationEmail } = require('../lib/send-email')
-const sendMessage = require('../messaging/send-message')
-const { get, updateByReference } = require('../repositories/application-repository')
-const { set } = require('../repositories/vet-visit-repository')
+const { vetVisitResponseMsgType, applicationResponseQueue } = require('../../config')
+const { sendFarmerClaimInvitationEmail, sendFarmerVetRecordIneligibleEmail, sendVetConfirmationEmail } = require('../../lib/send-email')
+const sendMessage = require('../send-message')
+const { get, updateByReference } = require('../../repositories/application-repository')
+const { set } = require('../../repositories/vet-visit-repository')
 
 const processVetVisit = async (message) => {
   const { sessionId } = message

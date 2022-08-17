@@ -1,10 +1,10 @@
 const util = require('util')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
-const { applicationResponseQueue, submitClaimResponseMsgType } = require('../config')
-const { sendFarmerClaimConfirmationEmail } = require('../lib/send-email')
-const sendMessage = require('../messaging/send-message')
-const { get, updateByReference } = require('../repositories/application-repository')
-const submitPaymentRequest = require('./payments/submit-payment-request')
+const { applicationResponseQueue, submitClaimResponseMsgType } = require('../../config')
+const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
+const sendMessage = require('../send-message')
+const { get, updateByReference } = require('../../repositories/application-repository')
+const submitPaymentRequest = require('../payments/submit-payment-request')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
