@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const notifyConfig = require('./notify')
 const uuidRegex = '[0-9a-f]{8}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{12}'
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
 const notifyApiKeyRegex = new RegExp(`.*-${uuidRegex}-${uuidRegex}`)
@@ -43,14 +44,6 @@ const schema = Joi.object({
   fetchClaimRequestMsgType: Joi.string(),
   fetchClaimResponseMsgType: Joi.string(),
   isDev: Joi.boolean().default(false),
-  notify: {
-    apiKey: Joi.string().pattern(notifyApiKeyRegex),
-    templateIdFarmerApplicationComplete: Joi.string().uuid(),
-    templateIdFarmerApplicationClaim: Joi.string().uuid(),
-    templateIdFarmerClaimComplete: Joi.string().uuid(),
-    templateIdFarmerVetRecordIneligible: Joi.string().uuid(),
-    templateIdVetApplicationComplete: Joi.string().uuid()
-  },
   paymentRequestTopic: {
     address: Joi.string().default('paymentRequestTopic'),
     ...sharedConfigSchema
@@ -117,14 +110,6 @@ const config = {
   fetchClaimRequestMsgType: `${msgTypePrefix}.fetch.claim.request`,
   fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
   isDev: process.env.NODE_ENV === 'development',
-  notify: {
-    apiKey: process.env.NOTIFY_API_KEY,
-    templateIdFarmerApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE,
-    templateIdFarmerApplicationClaim: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM,
-    templateIdFarmerClaimComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE,
-    templateIdFarmerVetRecordIneligible: process.env.NOTIFY_TEMPLATE_ID_FARMER_VET_RECORD_INELIGIBLE,
-    templateIdVetApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE
-  },
   paymentRequestTopic: {
     address: process.env.PAYMENTREQUEST_TOPIC_ADDRESS,
     ...sharedConfig
@@ -154,5 +139,7 @@ const { error, value } = schema.validate(config, { abortEarly: false })
 if (error) {
   throw new Error(`The server config is invalid. ${error.message}`)
 }
+
+value.notify = notifyConfig
 
 module.exports = value
