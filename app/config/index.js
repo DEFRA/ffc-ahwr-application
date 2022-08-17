@@ -1,8 +1,6 @@
 const Joi = require('joi')
 const notifyConfig = require('./notify')
-const uuidRegex = '[0-9a-f]{8}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{12}'
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
-const notifyApiKeyRegex = new RegExp(`.*-${uuidRegex}-${uuidRegex}`)
 
 const sharedConfigSchema = {
   appInsights: Joi.object(),
