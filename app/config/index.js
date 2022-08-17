@@ -1,107 +1,54 @@
 const Joi = require('joi')
 const notifyConfig = require('./notify')
+const messageQueueConfig = require('./message-queue')
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
 
-const sharedConfigSchema = {
-  appInsights: Joi.object(),
-  host: Joi.string().default('localhost'),
-  password: Joi.string(),
-  username: Joi.string(),
-  useCredentialChain: Joi.bool().default(false)
-}
 const schema = Joi.object({
-  applicationRequestQueue: {
-    address: Joi.string().default('applicationRequestQueue'),
-    type: Joi.string(),
-    ...sharedConfigSchema
-  },
-  applicationRequestMsgType: Joi.string(),
-  applicationResponseQueue: {
-    address: Joi.string().default('applicationResponseQueue'),
-    type: Joi.string(),
-    ...sharedConfigSchema
-  },
-  applicationResponseMsgType: Joi.string(),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
+  isDev: Joi.boolean().default(false),
+  serviceUri: Joi.string().uri(),
+  applicationRequestMsgType: Joi.string(),
+  applicationResponseMsgType: Joi.string(),
   fetchApplicationRequestMsgType: Joi.string(),
   fetchApplicationResponseMsgType: Joi.string(),
   fetchClaimRequestMsgType: Joi.string(),
   fetchClaimResponseMsgType: Joi.string(),
-  isDev: Joi.boolean().default(false),
-  paymentRequestTopic: {
-    address: Joi.string().default('paymentRequestTopic'),
-    ...sharedConfigSchema
-  },
-  paymentResponseSubscription: {
-    topic: Joi.string().default('paymentResponseTopic'),
-    address: Joi.string().default('paymentResponseSubscription'),
-    type: Joi.string().default('subscription'),
-    ...sharedConfigSchema
-  },
   sendPaymentRequest: Joi.boolean().default(true),
-  serviceUri: Joi.string().uri(),
+  submitClaimRequestMsgType: Joi.string(),
+  submitClaimResponseMsgType: Joi.string(),
+  submitPaymentRequestMsgType: Joi.string(),
+  vetVisitRequestMsgType: Joi.string(),
+  vetVisitResponseMsgType: Joi.string(),
   storage: {
     connectionString: Joi.string().required(),
     usersContainer: Joi.string().default('users'),
     usersFile: Joi.string().default('users.json'),
     storageAccount: Joi.string().required(),
     useConnectionString: Joi.bool().default(true)
-  },
-  submitClaimRequestMsgType: Joi.string(),
-  submitClaimResponseMsgType: Joi.string(),
-  submitPaymentRequestMsgType: Joi.string(),
-  vetVisitRequestMsgType: Joi.string(),
-  vetVisitResponseMsgType: Joi.string()
+  }
 })
 
-const sharedConfig = {
-  appInsights: require('applicationinsights'),
-  host: process.env.MESSAGE_QUEUE_HOST,
-  password: process.env.MESSAGE_QUEUE_PASSWORD,
-  username: process.env.MESSAGE_QUEUE_USER,
-  useCredentialChain: process.env.NODE_ENV === 'production'
-}
 const config = {
-  applicationRequestQueue: {
-    address: process.env.APPLICATIONREQUEST_QUEUE_ADDRESS,
-    type: 'queue',
-    ...sharedConfig
-  },
-  applicationRequestMsgType: `${msgTypePrefix}.app.request`,
-  applicationResponseQueue: {
-    address: process.env.APPLICATIONRESPONSE_QUEUE_ADDRESS,
-    type: 'queue',
-    ...sharedConfig
-  },
-  applicationResponseMsgType: `${msgTypePrefix}.app.response`,
   env: process.env.NODE_ENV,
+  isDev: process.env.NODE_ENV === 'development',
+  serviceUri: process.env.SERVICE_URI,
+  applicationRequestMsgType: `${msgTypePrefix}.app.request`,
+  applicationResponseMsgType: `${msgTypePrefix}.app.response`,
   fetchApplicationRequestMsgType: `${msgTypePrefix}.fetch.app.request`,
   fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
   fetchClaimRequestMsgType: `${msgTypePrefix}.fetch.claim.request`,
   fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
-  isDev: process.env.NODE_ENV === 'development',
-  paymentRequestTopic: {
-    address: process.env.PAYMENTREQUEST_TOPIC_ADDRESS,
-    ...sharedConfig
-  },
-  paymentResponseSubscription: {
-    topic: process.env.PAYMENTRESPONSE_TOPIC_ADDRESS,
-    address: process.env.PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS,
-    type: 'subscription',
-    ...sharedConfig
-  },
   sendPaymentRequest: process.env.SEND_PAYMENT_REQUEST,
-  serviceUri: process.env.SERVICE_URI,
-  storage: {
-    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
-    useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
-    storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
-  },
   submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
   submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
   vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
-  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`
+  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
+  storage: {
+    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
+    useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
+    storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
+  }
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })
@@ -111,5 +58,9 @@ if (error) {
 }
 
 value.notify = notifyConfig
+value.applicationRequestQueue = messageQueueConfig.applicationRequestQueue
+value.applicationResponseQueue = messageQueueConfig.applicationResponseQueue
+value.paymentRequestTopic = messageQueueConfig.paymentRequestTopic
+value.paymentResponseSubscription = messageQueueConfig.paymentResponseSubscription
 
 module.exports = value
