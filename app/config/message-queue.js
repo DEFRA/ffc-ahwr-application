@@ -18,11 +18,10 @@ const schema = Joi.object({
     type: Joi.string(),
     ...sharedConfigSchema
   },
-  applicationEventMsgType: `${msgTypePrefix}.app.event`,
   applicationEventQueue: {
-    address: process.env.APPLICATIONEVENT_QUEUE_ADDRESS,
-    type: 'queue',
-    ...sharedConfig
+    address: Joi.string().default('applicationEventQueue'),
+    type: Joi.string(),
+    ...sharedConfigSchema
   },
   paymentRequestTopic: {
     address: Joi.string().default('paymentRequestTopic'),
@@ -52,6 +51,11 @@ const config = {
   },
   applicationResponseQueue: {
     address: process.env.APPLICATIONRESPONSE_QUEUE_ADDRESS,
+    type: 'queue',
+    ...sharedConfig
+  },
+  applicationEventQueue: {
+    address: process.env.APPLICATIONEVENT_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfig
   },
