@@ -15,9 +15,19 @@ describe(('Store application in database'), () => {
   const name = 'name-on-org'
   const message = {
     body: {
+      confirmCheckDetails: 'yes',
+      whichReview: 'beef',
+      eligibleSpecies: 'yes',
+      reference: null,
+      declaration: true,
       organisation: {
+        farmerName: 'A Farmer',
+        name,
         email,
-        name
+        sbi: '123456789',
+        cph: '123/456/789',
+        address: '1 Some Street',
+        isTest: true
       }
     },
     sessionId
@@ -54,6 +64,14 @@ describe(('Store application in database'), () => {
     await processApplication(message)
 
     expect(sendFarmerConfirmationEmail).not.toHaveBeenCalled()
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+  })
+
+  test('Application submission message validation failed', async () => {
+    delete message.body.organisation.isTest
+    await processApplication(message)
+    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   })

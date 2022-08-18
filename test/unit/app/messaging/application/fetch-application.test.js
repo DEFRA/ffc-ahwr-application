@@ -79,4 +79,11 @@ describe(('Fetch application tests'), () => {
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
+
+  test('Fetch application message validation failed', async () => {
+    message.body.test = 'test'
+    await fetchApplication(message)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+  })
 })

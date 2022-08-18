@@ -1,6 +1,6 @@
 {
   "name": "ffc-ahwr-application",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "description": "Application manager for AHWR",
   "homepage": "https://github.com/DEFRA/ffc-ahwr-application",
   "main": "app/index.js",
@@ -16,7 +16,8 @@
   },
   "author": "Defra",
   "contributors": [
-    "Satish Chatap github.com/govTechSatish"
+    "Satish Chatap github.com/govTechSatish",
+    "Steve Dickinson steve.dickinson@defra.gov.uk"
   ],
   "license": "OGL-UK-3.0",
   "dependencies": {
