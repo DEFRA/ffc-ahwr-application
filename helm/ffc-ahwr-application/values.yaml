@@ -36,8 +36,6 @@ container:
   applicationEventQueueAddress: ffc-ahwr-event
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
-  backOfficeRequestQueueAddress: ffc-ahwr-backoffice-request
-  backOfficeResponseQueueAddress: ffc-ahwr-backoffice-response
   paymentRequestTopicAddress: ffc-pay-request
   paymentResponseTopicAddress: ffc-pay-request-response
   paymentResponseSubscriptionAddress: ffc-ahwr-application
@@ -56,6 +54,9 @@ container:
   requestCpu: 40m
   requestMemory: 80Mi
   serviceUri:
+  azureStorageConnectionString:
+  azureStorageUseConnectionString: true
+  azureStorageAccountName:
 
 postgresService:
   postgresDb: ffc_ahwr_application

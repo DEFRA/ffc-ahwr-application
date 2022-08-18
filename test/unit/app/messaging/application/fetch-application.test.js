@@ -1,11 +1,11 @@
-const fetchApplication = require('../../../../app/messaging/fetch-application')
-const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../../../../app/config')
-const states = require('../../../../app/messaging/states')
+const fetchApplication = require('../../../../../app/messaging/application/fetch-application')
+const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
+const states = require('../../../../../app/messaging/application/states')
 
-jest.mock('../../../../app/repositories/application-repository')
-const applicationRepository = require('../../../../app/repositories/application-repository')
-jest.mock('../../../../app/messaging/send-message')
-const sendMessage = require('../../../../app/messaging/send-message')
+jest.mock('../../../../../app/repositories/application-repository')
+const applicationRepository = require('../../../../../app/repositories/application-repository')
+jest.mock('../../../../../app/messaging/send-message')
+const sendMessage = require('../../../../../app/messaging/send-message')
 
 describe(('Fetch application tests'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
