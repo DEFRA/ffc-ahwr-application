@@ -67,14 +67,4 @@ if (error) {
   throw new Error(`The message queue config is invalid. ${error.message}`)
 }
 
-const applicationRequestQueue = value.applicationRequestQueue
-const applicationResponseQueue = value.applicationResponseQueue
-const paymentRequestTopic = value.paymentRequestTopic
-const paymentResponseSubscription = value.paymentResponseSubscription
-
-module.exports = {
-  applicationRequestQueue,
-  applicationResponseQueue,
-  paymentRequestTopic,
-  paymentResponseSubscription
-}
+module.exports = value

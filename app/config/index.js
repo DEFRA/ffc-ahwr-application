@@ -58,9 +58,5 @@ if (error) {
 }
 
 value.notify = notifyConfig
-value.applicationRequestQueue = messageQueueConfig.applicationRequestQueue
-value.applicationResponseQueue = messageQueueConfig.applicationResponseQueue
-value.paymentRequestTopic = messageQueueConfig.paymentRequestTopic
-value.paymentResponseSubscription = messageQueueConfig.paymentResponseSubscription
 
-module.exports = value
+module.exports = { ...value, ...messageQueueConfig }
