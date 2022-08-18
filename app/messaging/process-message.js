@@ -1,9 +1,9 @@
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType, vetVisitRequestMsgType } = require('../config')
-const fetchApplication = require('./fetch-application')
-const fetchClaim = require('./fetch-claim')
-const processApplication = require('./process-application')
-const processVetVisit = require('./process-vet-visit')
-const submitClaim = require('./submit-claim')
+const fetchApplication = require('./application/fetch-application')
+const fetchClaim = require('./application/fetch-claim')
+const processApplication = require('./application/process-application')
+const processVetVisit = require('./application/process-vet-visit')
+const submitClaim = require('./application/submit-claim')
 
 const processApplicationMessage = async (message, receiver) => {
   try {

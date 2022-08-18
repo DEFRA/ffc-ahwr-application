@@ -1,9 +1,9 @@
 const util = require('util')
 const states = require('./states')
-const { applicationResponseMsgType, applicationResponseQueue } = require('../config')
-const { sendFarmerConfirmationEmail } = require('../lib/send-email')
-const sendMessage = require('../messaging/send-message')
-const { set } = require('../repositories/application-repository')
+const { applicationResponseMsgType, applicationResponseQueue } = require('../../config')
+const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
+const sendMessage = require('../send-message')
+const { set } = require('../../repositories/application-repository')
 
 const processApplication = async (msg) => {
   const { sessionId } = msg

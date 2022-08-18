@@ -1,7 +1,7 @@
 const util = require('util')
-const { getByEmail } = require('../repositories/application-repository')
-const sendMessage = require('../messaging/send-message')
-const { fetchClaimResponseMsgType, applicationResponseQueue } = require('../config')
+const { getByEmail } = require('../../repositories/application-repository')
+const sendMessage = require('../send-message')
+const { fetchClaimResponseMsgType, applicationResponseQueue } = require('../../config')
 const { failed, notFound } = require('./states')
 
 const fetchClaim = async (message) => {
