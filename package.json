@@ -16,7 +16,8 @@
   },
   "author": "Defra",
   "contributors": [
-    "Satish Chatap github.com/govTechSatish"
+    "Satish Chatap github.com/govTechSatish",
+    "Steve Dickinson steve.dickinson@defra.gov.uk"
   ],
   "license": "OGL-UK-3.0",
   "dependencies": {

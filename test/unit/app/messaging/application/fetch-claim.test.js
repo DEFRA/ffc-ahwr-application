@@ -53,4 +53,11 @@ describe(('Fetch claim tests'), () => {
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: failed }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
+
+  test('Fetch claim message validation failed', async () => {
+    message.body.test = 'test'
+    await fetchClaim(message)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: failed }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
+  })
 })
