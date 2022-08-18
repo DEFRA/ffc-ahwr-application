@@ -1,7 +1,7 @@
 const util = require('util')
-const { get } = require('../repositories/application-repository')
-const sendMessage = require('../messaging/send-message')
-const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../config')
+const { get } = require('../../repositories/application-repository')
+const sendMessage = require('../send-message')
+const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../../config')
 const states = require('./states')
 const validateFetchApplication = require('./schema/fetch-application-schema')
 
