@@ -70,4 +70,11 @@ describe(('Submit claim tests'), () => {
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
+
+  test('submit claim message validation failed', async () => {
+    message.body.test = 'test'
+    await submitClaim(message)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+  })
 })

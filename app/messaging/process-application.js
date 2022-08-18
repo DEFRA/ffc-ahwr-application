@@ -4,23 +4,30 @@ const { applicationResponseMsgType, applicationResponseQueue } = require('../con
 const { sendFarmerConfirmationEmail } = require('../lib/send-email')
 const sendMessage = require('../messaging/send-message')
 const { set } = require('../repositories/application-repository')
+const validateApplication = require('./schema/process-application-schema')
 
 const processApplication = async (msg) => {
   const { sessionId } = msg
   try {
-    console.log('Application received:', util.inspect(msg.body, false, null, true))
-    let reference = ''
-    const result = await set({
-      reference,
-      data: msg.body,
-      createdBy: 'admin',
-      createdAt: new Date()
-    })
+    const applicationData = msg.body
+    console.log('Application received:', util.inspect(applicationData, false, null, true))
 
-    const application = result.dataValues
-    reference = application.reference
-    await sendFarmerConfirmationEmail(msg.body.organisation.email, msg.body.organisation.name, reference)
-    await sendMessage({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    if (validateApplication(applicationData)) {
+      let reference = ''
+      const result = await set({
+        reference,
+        data: applicationData,
+        createdBy: 'admin',
+        createdAt: new Date()
+      })
+
+      const application = result.dataValues
+      reference = application.reference
+      await sendFarmerConfirmationEmail(applicationData.organisation.email, applicationData.organisation.name, reference)
+      await sendMessage({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    } else {
+      return sendMessage({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    }
   } catch (error) {
     console.error('failed to process application', error)
     return sendMessage({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
