@@ -3,7 +3,7 @@ const { getByEmail } = require('../../repositories/application-repository')
 const sendMessage = require('../send-message')
 const { fetchClaimResponseMsgType, applicationResponseQueue } = require('../../config')
 const { failed, notFound } = require('./states')
-const validateFetchClaim = require('./schema/fetch-claim-schema')
+const validateFetchClaim = require('../schema/fetch-claim-schema')
 
 const fetchClaim = async (message) => {
   const { sessionId } = message
