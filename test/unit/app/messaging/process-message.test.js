@@ -1,17 +1,17 @@
 const dbHelper = require('../../../db-helper')
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType, vetVisitRequestMsgType } = require('../../../../app/config')
-const fetchApplication = require('../../../../app/messaging/fetch-application')
-const fetchClaim = require('../../../../app/messaging/fetch-claim')
-const processApplication = require('../../../../app/messaging/process-application')
+const fetchApplication = require('../../../../app/messaging/application/fetch-application')
+const fetchClaim = require('../../../../app/messaging/application/fetch-claim')
+const processApplication = require('../../../../app/messaging/application/process-application')
 const processApplicationMessage = require('../../../../app/messaging/process-message')
-const processVetVisit = require('../../../../app/messaging/process-vet-visit')
-const submitClaim = require('../../../../app/messaging/submit-claim')
+const processVetVisit = require('../../../../app/messaging/application/process-vet-visit')
+const submitClaim = require('../../../../app/messaging/application/submit-claim')
 
-jest.mock('../../../../app/messaging/fetch-application')
-jest.mock('../../../../app/messaging/fetch-claim')
-jest.mock('../../../../app/messaging/process-application')
-jest.mock('../../../../app/messaging/process-vet-visit')
-jest.mock('../../../../app/messaging/submit-claim')
+jest.mock('../../../../app/messaging/application/fetch-application')
+jest.mock('../../../../app/messaging/application/fetch-claim')
+jest.mock('../../../../app/messaging/application/process-application')
+jest.mock('../../../../app/messaging/application/process-vet-visit')
+jest.mock('../../../../app/messaging/application/submit-claim')
 
 describe('Process Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'

@@ -1,6 +1,6 @@
 const dbHelper = require('../../../../db-helper')
 const { models } = require('../../../../../app/data')
-const processApplication = require('../../../../../app/messaging/process-application')
+const processApplication = require('../../../../../app/messaging/application/process-application')
 const boom = require('@hapi/boom')
 
 const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
@@ -13,11 +13,19 @@ boom.internal = jest.fn()
 describe('Process Message test', () => {
   const message = {
     body: {
-      cattle: 'yes',
-      pigs: 'yes',
+      confirmCheckDetails: 'yes',
+      whichReview: 'beef',
+      eligibleSpecies: 'yes',
+      reference: null,
+      declaration: true,
       organisation: {
-        name: 'test-org',
-        email: 'test-email'
+        farmerName: 'A Farmer',
+        name: 'A Farm',
+        email: 'email@domain.com',
+        sbi: '123456789',
+        cph: '123/456/789',
+        address: '1 Some Street',
+        isTest: true
       }
     },
     applicationProperties: {
@@ -63,5 +71,14 @@ describe('Process Message test', () => {
     expect(sendMessage).toHaveBeenCalledTimes(1)
     const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
     expect(applications.length).toBe(1)
+  })
+
+  test('Call processApplicationMessage message validation failed', async () => {
+    const consoleSpy = jest.spyOn(console, 'log')
+    delete message.body.organisation.isTest
+    await processApplication(message)
+    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(consoleSpy.mock.calls[1][0]).toBe('Application validation error:')
   })
 })
