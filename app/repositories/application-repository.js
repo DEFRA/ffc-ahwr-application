@@ -30,17 +30,17 @@ async function getByEmail (email) {
     })
 }
 
-function evalSortField (sort){
-  if(sort && sort.field){
-  switch(sort.field.toLowerCase()){
-    case 'status':
-      return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
-    case 'apply date':
-      return ['createdAt', sort.direction ?? 'ASC']
-    case 'sbi':
-      return ['data.organisation.sbi', sort.direction ?? 'ASC']
-  }  
-}
+function evalSortField (sort) {
+  if (sort && sort.field) {
+    switch (sort.field.toLowerCase()) {
+      case 'status':
+        return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
+      case 'apply date':
+        return ['createdAt', sort.direction ?? 'ASC']
+      case 'sbi':
+        return ['data.organisation.sbi', sort.direction ?? 'ASC']
+    }
+  }
   return ['createdAt', sort.direction ?? 'ASC']
 }
 /**
