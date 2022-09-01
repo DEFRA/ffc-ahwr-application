@@ -20,7 +20,7 @@ describe('Message queue Config Test', () => {
       process.env.MESSAGE_QUEUE_HOST = null
       require('../../../../app/config/message-queue')
     } catch (err) {
-      expect(err.message).toBe('The message queue config is invalid. "applicationRequestQueue.host" must be a string. "applicationResponseQueue.host" must be a string.')
+      expect(err.message).toBe('The message queue config is invalid. "applicationRequestQueue.host" must be a string. "applicationResponseQueue.host" must be a string')
     }
   })
 })
