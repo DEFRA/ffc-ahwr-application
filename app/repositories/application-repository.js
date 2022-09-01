@@ -11,7 +11,7 @@ async function get (reference) {
       include: [{ model: models.vetVisit }, {
         model: models.status,
         attributes: ['status']
-      }, { model: models.payment, required: false }]
+      }]
     })
 }
 /**

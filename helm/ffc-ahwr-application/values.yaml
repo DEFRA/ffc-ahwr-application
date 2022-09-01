@@ -35,10 +35,6 @@ deployment:
 container:
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
-  paymentRequestTopicAddress: ffc-pay-request
-  paymentResponseTopicAddress: ffc-pay-request-response
-  paymentResponseSubscriptionAddress: ffc-ahwr-application
-  sendPaymentRequest: "true"
   imagePullPolicy: IfNotPresent
   limitMemory: 100Mi
   limitCpu: 80m

@@ -202,7 +202,7 @@ describe('Application Repository test', () => {
     expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
     expect(data.models.application.findOne).toHaveBeenCalledWith({
       where: { reference: reference.toUpperCase() },
-      include: [{ model: data.models.vetVisit }, { attributes: ['status'], model: data.models.status }, { model: data.models.payment, required: false }]
+      include: [{ model: data.models.vetVisit }, { attributes: ['status'], model: data.models.status }]
     })
   })
 })
