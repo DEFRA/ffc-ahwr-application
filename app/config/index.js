@@ -13,10 +13,8 @@ const schema = Joi.object({
   fetchApplicationResponseMsgType: Joi.string(),
   fetchClaimRequestMsgType: Joi.string(),
   fetchClaimResponseMsgType: Joi.string(),
-  sendPaymentRequest: Joi.boolean().default(true),
   submitClaimRequestMsgType: Joi.string(),
   submitClaimResponseMsgType: Joi.string(),
-  submitPaymentRequestMsgType: Joi.string(),
   vetVisitRequestMsgType: Joi.string(),
   vetVisitResponseMsgType: Joi.string(),
   storage: {
@@ -38,10 +36,8 @@ const config = {
   fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
   fetchClaimRequestMsgType: `${msgTypePrefix}.fetch.claim.request`,
   fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
-  sendPaymentRequest: process.env.SEND_PAYMENT_REQUEST,
   submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
-  submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
   vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
   vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
   storage: {

@@ -17,16 +17,6 @@ const schema = Joi.object({
     address: Joi.string().default('applicationResponseQueue'),
     type: Joi.string(),
     ...sharedConfigSchema
-  },
-  paymentRequestTopic: {
-    address: Joi.string().default('paymentRequestTopic'),
-    ...sharedConfigSchema
-  },
-  paymentResponseSubscription: {
-    topic: Joi.string().default('paymentResponseTopic'),
-    address: Joi.string().default('paymentResponseSubscription'),
-    type: Joi.string().default('subscription'),
-    ...sharedConfigSchema
   }
 })
 
@@ -47,16 +37,6 @@ const config = {
   applicationResponseQueue: {
     address: process.env.APPLICATIONRESPONSE_QUEUE_ADDRESS,
     type: 'queue',
-    ...sharedConfig
-  },
-  paymentRequestTopic: {
-    address: process.env.PAYMENTREQUEST_TOPIC_ADDRESS,
-    ...sharedConfig
-  },
-  paymentResponseSubscription: {
-    topic: process.env.PAYMENTRESPONSE_TOPIC_ADDRESS,
-    address: process.env.PAYMENTRESPONSE_SUBSCRIPTION_ADDRESS,
-    type: 'subscription',
     ...sharedConfig
   }
 }
