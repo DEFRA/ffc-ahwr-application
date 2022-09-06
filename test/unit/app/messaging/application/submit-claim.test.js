@@ -23,7 +23,9 @@ describe(('Submit claim tests'), () => {
     { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed }
   ])('$desc', async ({ updateRes, state }) => {
     const email = 'an@email.com'
-    const applicationMock = { dataValues: { reference: 'VV-1234-5678', data: { organisation: { email } } } }
+    const sbi = '444444444'
+    const whichReview = 'beef'
+    const applicationMock = { dataValues: { reference: 'VV-1234-5678', whichReview, data: { organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
@@ -38,7 +40,7 @@ describe(('Submit claim tests'), () => {
       expect(sendMessage).toHaveBeenCalledTimes(2)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
-      expect(sendMessage).toHaveBeenCalledWith({ reference, sbi: undefined, whichReview: undefined }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
+      expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
     } else {
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)

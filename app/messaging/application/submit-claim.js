@@ -35,8 +35,8 @@ const submitClaim = async (message) => {
         await sendMessage(
           {
             reference,
-            sbi: application.dataValues.sbi,
-            whichReview: application.dataValues.data.whichReview
+            sbi: application.dataValues.data.organisation.sbi,
+            whichReview: application.dataValues.whichReview
           }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: message.sessionId })
       }
 
