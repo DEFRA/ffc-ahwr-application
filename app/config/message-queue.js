@@ -17,6 +17,11 @@ const schema = Joi.object({
     address: Joi.string().default('applicationResponseQueue'),
     type: Joi.string(),
     ...sharedConfigSchema
+  },
+  submitRequestQueue: {
+    address: Joi.string().default('submitRequestQueue'),
+    type: Joi.string(),
+    ...sharedConfigSchema
   }
 })
 
@@ -36,6 +41,11 @@ const config = {
   },
   applicationResponseQueue: {
     address: process.env.APPLICATIONRESPONSE_QUEUE_ADDRESS,
+    type: 'queue',
+    ...sharedConfig
+  },
+  submitRequestQueue: {
+    address: process.env.PAYMENTREQUEST_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfig
   }

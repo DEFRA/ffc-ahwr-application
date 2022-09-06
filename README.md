@@ -25,8 +25,9 @@ overridden by build and release pipelines.
 | MESSAGE_QUEUE_PASSWORD                          | Azure Service Bus SAS policy key                                                                 |
 | MESSAGE_QUEUE_SUFFIX                            | Developer initials                                                                               |
 | MESSAGE_QUEUE_USER                              | Azure Service Bus SAS policy name, e.g. `RootManageSharedAccessKey`                              |
-| APPLICATIONREQUEST_QUEUE_ADDRESS                | Azure Service Bus message request queue name, e.g. `application-request`                         |
-| APPLICATIONRESPONSE_QUEUE_ADDRESS               | Azure Service Bus message response queue name, e.g. `application-response`                       |
+| APPLICATIONREQUEST_QUEUE_ADDRESS                | Azure Service Bus message request queue name, e.g. `application-request`                             |
+| APPLICATIONRESPONSE_QUEUE_ADDRESS               | Azure Service Bus message response queue name, e.g. `application-response`                            |
+| PAYMENTREQUEST_QUEUE_ADDRESS                    | Azure Service Bus message request queue name, e.g. `payment-request`                                 |
 | NOTIFY_API_KEY                                  | GOV.UK Notify API Key                                                                            |
 | NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM     | Id of email template used to notify farmer for claim                                             |
 | NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE  | Id of email template used for farmer application complete                                        |
