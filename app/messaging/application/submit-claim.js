@@ -31,7 +31,7 @@ const submitClaim = async (message) => {
       const updateSuccess = isUpdateSuccessful(res)
 
       if (updateSuccess) {
-        await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)        
+        await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
         await sendMessage(
           {
             reference,

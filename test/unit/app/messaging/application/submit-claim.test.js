@@ -1,5 +1,5 @@
 const submitClaim = require('../../../../../app/messaging/application/submit-claim')
-const { submitClaimResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
+const { submitClaimResponseMsgType, applicationResponseQueue, submitPaymentRequestMsgType, submitRequestQueue } = require('../../../../../app/config')
 const { alreadyClaimed, failed, error, notFound, success } = require('../../../../../app/messaging/application/states')
 
 jest.mock('../../../../../app/repositories/application-repository')
@@ -33,12 +33,14 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId: 4, updatedBy: 'admin' })
-    expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     if (state === success) {
+      expect(sendMessage).toHaveBeenCalledTimes(2)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
+      expect(sendMessage).toHaveBeenCalledWith({ reference, sbi: undefined, whichReview: undefined }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
     } else {
+      expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
     }
   })
