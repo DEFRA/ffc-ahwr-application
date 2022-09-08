@@ -1,6 +1,6 @@
 const util = require('util')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
-const { applicationResponseQueue, submitClaimResponseMsgType } = require('../../config')
+const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const { get, updateByReference } = require('../../repositories/application-repository')
@@ -32,6 +32,12 @@ const submitClaim = async (message) => {
 
       if (updateSuccess) {
         await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
+        await sendMessage(
+          {
+            reference,
+            sbi: application.dataValues.data.organisation.sbi,
+            whichReview: application.dataValues.whichReview
+          }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: message.sessionId })
       }
 
       await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })

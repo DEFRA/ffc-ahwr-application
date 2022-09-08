@@ -1,5 +1,5 @@
 const submitClaim = require('../../../../../app/messaging/application/submit-claim')
-const { submitClaimResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
+const { submitClaimResponseMsgType, applicationResponseQueue, submitPaymentRequestMsgType, submitRequestQueue } = require('../../../../../app/config')
 const { alreadyClaimed, failed, error, notFound, success } = require('../../../../../app/messaging/application/states')
 
 jest.mock('../../../../../app/repositories/application-repository')
@@ -23,7 +23,9 @@ describe(('Submit claim tests'), () => {
     { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed }
   ])('$desc', async ({ updateRes, state }) => {
     const email = 'an@email.com'
-    const applicationMock = { dataValues: { reference: 'VV-1234-5678', data: { organisation: { email } } } }
+    const sbi = '444444444'
+    const whichReview = 'beef'
+    const applicationMock = { dataValues: { reference: 'VV-1234-5678', whichReview, data: { organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
@@ -33,12 +35,14 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId: 4, updatedBy: 'admin' })
-    expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     if (state === success) {
+      expect(sendMessage).toHaveBeenCalledTimes(2)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
+      expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
     } else {
+      expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
     }
   })
