@@ -45,7 +45,7 @@ describe('Applications test', () => {
     const method = 'POST'
     test.each([
       { search: { text: '444444444', type: 'sbi' } },
-      { search: { text: 'VV-555A-FD6E', type: 'ref' } },
+      { search: { text: 'AHWR-555A-FD6E', type: 'ref' } },
       { search: { text: 'applied', type: 'status' } },
       { search: { text: 'data inputed', type: 'status' } },
       { search: { text: 'claimed', type: 'status' } },
@@ -69,7 +69,7 @@ describe('Applications test', () => {
     test.each([
       { search: { text: '333333333' } },
       { search: { text: '444444443' } },
-      { search: { text: 'VV-555A-F5D5' } },
+      { search: { text: 'AHWR-555A-F5D5' } },
       { search: { text: '' } },
       { search: { text: undefined } }
     ])('returns success with error message when no data found', async ({ search }) => {

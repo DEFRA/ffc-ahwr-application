@@ -6,7 +6,7 @@ error.response = { data: 'failed to send email' }
 
 const email = 'test@unit-test.com'
 const name = 'farmer'
-const reference = 'VV-B977-4D0D'
+const reference = 'AHWR-B977-4D0D'
 
 jest.mock('../../../../app/lib/notify-client')
 const notifyClient = require('../../../../app/lib/notify-client')

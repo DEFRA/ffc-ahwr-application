@@ -11,7 +11,7 @@ describe(('Fetch application tests'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const message = {
     body: {
-      applicationReference: 'VV-1234-5678'
+      applicationReference: 'AHWR-1234-5678'
     },
     sessionId
   }
@@ -23,7 +23,7 @@ describe(('Fetch application tests'), () => {
   test('successfully fetched application', async () => {
     const application = {
       dataValues: {
-        reference: 'VV-1234-5678',
+        reference: 'AHWR-1234-5678',
         vetVisit: null
       }
     }
@@ -51,10 +51,10 @@ describe(('Fetch application tests'), () => {
   test('already submitted application', async () => {
     const application = {
       dataValues: {
-        reference: 'VV-1234-5678',
+        reference: 'AHWR-1234-5678',
         vetVisit: {
           dataValues: {
-            reference: 'VV-1234-5678'
+            reference: 'AHWR-1234-5678'
           }
         }
       }
