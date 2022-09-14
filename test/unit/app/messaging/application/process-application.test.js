@@ -54,8 +54,6 @@ describe(('Store application in database'), () => {
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledWith(email, name, reference)
   })
 
   test('Sends failed state on db error and no email is sent', async () => {

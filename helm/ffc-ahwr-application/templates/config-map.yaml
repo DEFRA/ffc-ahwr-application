@@ -2,6 +2,7 @@
 {{- define "ffc-ahwr-application.config-map" -}}
 data:
   APPINSIGHTS_CLOUDROLE: {{ quote .Values.name }}
+  APPLICATIONDOCCREATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationDocCreationRequestQueueAddress }}
   APPLICATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationRequestQueueAddress }}
   APPLICATIONRESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.applicationResponseQueueAddress }}
   PAYMENTREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.paymentRequestQueueAddress }}
