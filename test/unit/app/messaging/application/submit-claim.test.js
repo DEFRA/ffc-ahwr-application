@@ -10,7 +10,7 @@ jest.mock('../../../../../app/lib/send-email')
 const { sendFarmerClaimConfirmationEmail } = require('../../../../../app/lib/send-email')
 
 describe(('Submit claim tests'), () => {
-  const reference = 'VV-1234-5678'
+  const reference = 'AHWR-1234-5678'
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const message = { body: { reference }, sessionId }
 
@@ -25,7 +25,7 @@ describe(('Submit claim tests'), () => {
     const email = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
-    const applicationMock = { dataValues: { reference: 'VV-1234-5678', whichReview, data: { organisation: { email, sbi } } } }
+    const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', whichReview, data: { organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 

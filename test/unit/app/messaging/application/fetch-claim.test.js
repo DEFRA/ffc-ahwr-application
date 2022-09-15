@@ -18,7 +18,7 @@ describe(('Fetch claim tests'), () => {
   test('successfully fetched claim', async () => {
     const claim = {
       dataValues: {
-        reference: 'VV-1234-5678'
+        reference: 'AHWR-1234-5678'
       }
     }
     applicationRepository.getByEmail.mockResolvedValueOnce(claim)
