@@ -13,8 +13,8 @@ const whichSpecies = 'beef'
 jest.mock('../../../../app/lib/notify-client')
 const notifyClient = require('../../../../app/lib/notify-client')
 
-const sendMessage = require('../../../../app/messaging/send-message')
 jest.mock('../../../../app/messaging/send-message')
+const sendMessage = require('../../../../app/messaging/send-message')
 
 describe('Send email test', () => {
   beforeEach(async () => {
@@ -22,6 +22,7 @@ describe('Send email test', () => {
   })
 
   test('sendFarmerConfirmationEmail calls sendMessage', async () => {
+    sendMessage.mockResolvedValueOnce(true)
     await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies)
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
