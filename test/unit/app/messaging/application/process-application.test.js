@@ -20,6 +20,7 @@ describe(('Store application in database'), () => {
       eligibleSpecies: 'yes',
       reference: null,
       declaration: true,
+      offerStatus: 'accepted',
       organisation: {
         farmerName: 'A Farmer',
         name,
@@ -50,7 +51,8 @@ describe(('Store application in database'), () => {
       reference: '',
       data: message.body,
       createdBy: 'admin',
-      createdAt: expect.any(Date)
+      createdAt: expect.any(Date),
+      statusId: 1
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
