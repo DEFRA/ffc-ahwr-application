@@ -65,8 +65,9 @@ describe(('Store application in database'), () => {
       dataValues: { reference }
     })
 
-    await processApplication(message)
     message.body.offerStatus = 'rejected'
+    await processApplication(message)
+
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
       reference: '',
