@@ -18,6 +18,7 @@ describe('Process Message test', () => {
       eligibleSpecies: 'yes',
       reference: null,
       declaration: true,
+      offerStatus: 'accepted',
       organisation: {
         farmerName: 'A Farmer',
         name: 'A Farm',
