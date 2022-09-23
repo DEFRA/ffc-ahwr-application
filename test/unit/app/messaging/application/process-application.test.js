@@ -60,7 +60,7 @@ describe(('Store application in database'), () => {
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledWith(email, name, reference)
   })
 
-  est('successfully submits rejected application', async () => {
+  test('successfully submits rejected application', async () => {
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference }
     })
