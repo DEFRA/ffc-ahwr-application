@@ -13,12 +13,14 @@ const processApplication = async (msg) => {
     console.log('Application received:', util.inspect(applicationData, false, null, true))
 
     if (validateApplication(applicationData)) {
+      const statusId = applicationData.offerStatus === 'rejected' ? 7 : 1;
       let reference = ''
       const result = await set({
         reference,
         data: applicationData,
         createdBy: 'admin',
-        createdAt: new Date()
+        createdAt: new Date(),
+        statusId
       })
 
       const application = result.dataValues
