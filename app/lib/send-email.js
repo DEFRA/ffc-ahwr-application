@@ -18,8 +18,8 @@ const sendEmail = async (email, personalisation, reference, templateId) => {
   return success
 }
 
-const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies) => {
-  await sendMessage({ reference, sbi, whichSpecies }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate) => {
+  await sendMessage({ reference, sbi, whichSpecies, startDate }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
 const sendFarmerClaimConfirmationEmail = async (email, reference) => {
