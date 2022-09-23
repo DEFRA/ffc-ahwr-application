@@ -6,7 +6,7 @@ const error = new Error('Test exception')
 error.response = { data: 'failed to send email' }
 
 const email = 'test@unit-test.com'
-const reference = 'VV-B977-4D0D'
+const reference = 'AHWR-B977-4D0D'
 const sbi = '123456789'
 const whichSpecies = 'beef'
 

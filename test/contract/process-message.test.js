@@ -27,7 +27,7 @@ describe('receiving a new claim', () => {
       .expectsToReceive('a request for new farmer application')
       .withContent({
         email: Matchers.email(),
-        reference: Matchers.like('VV-'),
+        reference: Matchers.like('AHWR-'),
         data: Matchers.like('{pigs: yes}'),
         createdBy: Matchers.like('admin'),
         updatedBy: Matchers.like('admin')

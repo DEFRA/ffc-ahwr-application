@@ -5,5 +5,5 @@
  */
 module.exports = (id) => {
   const appRef = id.split('-').shift().toLocaleUpperCase('en-GB').match(/.{1,4}/g).join('-')
-  return `VV-${appRef}`
+  return `AHWR-${appRef}`
 }

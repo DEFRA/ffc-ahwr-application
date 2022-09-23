@@ -90,7 +90,7 @@ describe('Application Repository test', () => {
     })
   })
   test('getApplications for Invalid application reference call findAll', async () => {
-    const searchText = 'VV-555A-FD4D'
+    const searchText = 'AHWR-555A-FD4D'
     await repository.searchApplications(searchText, 'ref', [], offset, limit)
 
     expect(data.models.application.count).toHaveBeenCalledTimes(1)

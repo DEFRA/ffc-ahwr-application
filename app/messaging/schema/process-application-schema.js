@@ -7,6 +7,7 @@ const applicationSchema = joi.object({
   eligibleSpecies: joi.string().required(),
   reference: joi.string().allow(null).required(),
   declaration: joi.boolean().required(),
+  offerStatus: joi.string().required(),
   organisation: joi.object({
     farmerName: joi.string().required(),
     name: joi.string().required(),

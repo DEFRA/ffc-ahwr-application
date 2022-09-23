@@ -18,21 +18,21 @@ error.response = { data: 'failed to send email' }
 
 applicationRepository.get
   .mockResolvedValueOnce({
-    reference: 'VV-1234-5678',
+    reference: 'AHWR-1234-5678',
     data: { organisation: { email: 'test@farmer.email.com' } },
     vetVisit: null
   })
   .mockResolvedValueOnce({
-    reference: 'VV-1234-5678',
+    reference: 'AHWR-1234-5678',
     data: { organisation: { email: 'test@farmer.email.com' } },
     vetVisit: null
   })
   .mockResolvedValueOnce(null)
   .mockResolvedValueOnce({
-    reference: 'VV-1234-5678',
+    reference: 'AHWR-1234-5678',
     vetVisit: {
       dataValues: {
-        reference: 'VV-1234-5678'
+        reference: 'AHWR-1234-5678'
       }
     },
     claimed: true
@@ -44,8 +44,8 @@ describe(('Store data in database'), () => {
   const message = {
     body: {
       signup: {
-        applicationReference: 'VV-1234-5678',
-        reference: 'VV-1234-5678'
+        applicationReference: 'AHWR-1234-5678',
+        reference: 'AHWR-1234-5678'
       },
       eligibleSpecies: 'yes'
     },
@@ -67,7 +67,7 @@ describe(('Store data in database'), () => {
 
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(1)
     expect(vetVisitRepository.set).toHaveBeenCalledWith(expect.objectContaining({
-      applicationReference: 'VV-1234-5678',
+      applicationReference: 'AHWR-1234-5678',
       data: message.body,
       createdBy: 'admin',
       createdAt: expect.any(Date)
@@ -93,7 +93,7 @@ describe(('Store data in database'), () => {
 
     expect(vetVisitRepository.set).toHaveBeenCalledTimes(1)
     expect(vetVisitRepository.set).toHaveBeenCalledWith(expect.objectContaining({
-      applicationReference: 'VV-1234-5678',
+      applicationReference: 'AHWR-1234-5678',
       data: clone.body,
       createdBy: 'admin',
       createdAt: expect.any(Date)
