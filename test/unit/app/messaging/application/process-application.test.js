@@ -60,6 +60,26 @@ describe(('Store application in database'), () => {
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledWith(email, name, reference)
   })
 
+  est('successfully submits rejected application', async () => {
+    applicationRepository.set.mockResolvedValue({
+      dataValues: { reference }
+    })
+
+    await processApplication(message)
+    message.body.offerStatus = 'rejected'
+    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+      reference: '',
+      data: message.body,
+      createdBy: 'admin',
+      createdAt: expect.any(Date),
+      statusId: 7
+    }))
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
+  })
+
   test('Sends failed state on db error and no email is sent', async () => {
     applicationRepository.set.mockResolvedValue(new Error('bust'))
 
