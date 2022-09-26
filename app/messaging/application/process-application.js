@@ -25,8 +25,9 @@ const processApplication = async (msg) => {
 
       const application = result.dataValues
       reference = application.reference
+
       if (applicationData.offerStatus === 'accepted') {
-        await sendFarmerConfirmationEmail(applicationData.organisation.email, applicationData.organisation.name, reference)
+        await sendFarmerConfirmationEmail(reference, applicationData.organisation.sbi, applicationData.whichReview, application.createdAt)
       }
       await sendMessage({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
     } else {

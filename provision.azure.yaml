@@ -4,3 +4,4 @@ resources:
       enableSessions: true
     - name: applicationResponse
       enableSessions: true
+    - name: documentRequest

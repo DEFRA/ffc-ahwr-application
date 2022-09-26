@@ -33,6 +33,7 @@ deployment:
   replicas: 1
 
 container:
+  applicationDocCreationRequestQueueAddress: ffc-ahwr-document-request
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
   paymentRequestQueueAddress: ffc-ahwr-payment-request

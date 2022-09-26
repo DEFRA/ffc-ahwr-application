@@ -1,36 +1,31 @@
 const sendEmail = require('../../../../app/lib/send-email')
-const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete, templateIdFarmerVetRecordIneligible, templateIdFarmerClaimComplete } } = require('../../../../app/config')
+const { serviceUri, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../../../../app/config')
+const { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerVetRecordIneligible, templateIdFarmerClaimComplete } = require('../../../../app/config').notify
 
 const error = new Error('Test exception')
 error.response = { data: 'failed to send email' }
 
 const email = 'test@unit-test.com'
-const name = 'farmer'
 const reference = 'AHWR-B977-4D0D'
+const sbi = '123456789'
+const whichSpecies = 'beef'
 
 jest.mock('../../../../app/lib/notify-client')
 const notifyClient = require('../../../../app/lib/notify-client')
+
+jest.mock('../../../../app/messaging/send-message')
+const sendMessage = require('../../../../app/messaging/send-message')
 
 describe('Send email test', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
   })
 
-  test('sendFarmerConfirmationEmail returns true onsuccessful email', async () => {
-    notifyClient.sendEmail.mockResolvedValueOnce(true)
-
-    const response = await sendEmail.sendFarmerConfirmationEmail(email, name, reference)
-
-    expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerApplicationComplete, email, { personalisation: { name, reference }, reference })
-    expect(response).toBe(true)
-  })
-
-  test('sendFarmerConfirmationEmail returns false on error sending email', async () => {
-    notifyClient.sendEmail.mockRejectedValueOnce(error)
-
-    const response = await sendEmail.sendFarmerConfirmationEmail(email, name, reference)
-
-    expect(response).toBe(false)
+  test('sendFarmerConfirmationEmail calls sendMessage', async () => {
+    sendMessage.mockResolvedValueOnce(true)
+    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   })
 
   test('sendVetConfirmationEmail returns true onsuccessful email', async () => {

@@ -1,5 +1,7 @@
 const notifyClient = require('./notify-client')
-const { serviceUri, notify: { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerApplicationComplete, templateIdFarmerClaimComplete, templateIdFarmerVetRecordIneligible } } = require('../config')
+const { serviceUri, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../config')
+const { templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerClaimComplete, templateIdFarmerVetRecordIneligible } = require('../config').notify
+const sendMessage = require('../messaging/send-message')
 
 const sendEmail = async (email, personalisation, reference, templateId) => {
   let success = true
@@ -16,9 +18,8 @@ const sendEmail = async (email, personalisation, reference, templateId) => {
   return success
 }
 
-const sendFarmerConfirmationEmail = async (email, name, reference) => {
-  const personalisation = { name, reference }
-  return sendEmail(email, personalisation, reference, templateIdFarmerApplicationComplete)
+const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate) => {
+  await sendMessage({ reference, sbi, whichSpecies, startDate }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
 const sendFarmerClaimConfirmationEmail = async (email, reference) => {
