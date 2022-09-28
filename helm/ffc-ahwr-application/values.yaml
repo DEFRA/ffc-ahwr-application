@@ -36,6 +36,7 @@ container:
   applicationDocCreationRequestQueueAddress: ffc-ahwr-document-request
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
+  carbonCopyEmailAddress:
   paymentRequestQueueAddress: ffc-ahwr-payment-request
   imagePullPolicy: IfNotPresent
   limitMemory: 100Mi

@@ -5,6 +5,7 @@ data:
   APPLICATIONDOCCREATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationDocCreationRequestQueueAddress }}
   APPLICATIONREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.applicationRequestQueueAddress }}
   APPLICATIONRESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.applicationResponseQueueAddress }}
+  CARBON_COPY_EMAIL_ADDRESS: {{ quote .Values.container.carbonCopyEmailAddress }}
   PAYMENTREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.paymentRequestQueueAddress }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}
   NODE_ENV: {{ quote .Values.environment }}
