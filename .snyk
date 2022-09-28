@@ -2,10 +2,6 @@
 version: v1.22.1
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
-  SNYK-JS-ANSIREGEX-1583908:
-    - '@pact-foundation/pact > cli-color > ansi-regex':
-        reason: Development deps only
-        expires: '2022-09-14T12:21:53.720Z'
   SNYK-JS-MOMENT-2944238:
     - sequelize > moment:
         reason: None given
