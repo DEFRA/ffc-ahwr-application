@@ -36,7 +36,7 @@ const submitClaim = async (message) => {
           {
             reference,
             sbi: application.dataValues.data.organisation.sbi,
-            whichReview: application.dataValues.whichReview
+            whichReview: application.dataValues.data.whichReview
           }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: message.sessionId })
       }
 
