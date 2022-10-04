@@ -25,7 +25,7 @@ describe(('Submit claim tests'), () => {
     const email = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
-    const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', whichReview, data: { organisation: { email, sbi } } } }
+    const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
