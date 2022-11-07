@@ -2,7 +2,8 @@ const joi = require('joi')
 const util = require('util')
 
 const submitClaimSchema = joi.object({
-  reference: joi.string().required()
+  reference: joi.string().required(),
+  data: joi.object(),
 })
 
 const validateSubmitClaim = (event) => {
