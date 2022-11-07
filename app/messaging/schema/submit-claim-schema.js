@@ -24,7 +24,7 @@ const submitClaimSchema = joi.object({
       email: joi.string().required(),
       isTest: joi.boolean().optional()
     })
-  }),
+  })
 })
 
 const validateSubmitClaim = (event) => {
