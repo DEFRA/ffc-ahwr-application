@@ -1,0 +1,16 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Shiv Patel" id="2">
+    <update tableName="status">
+        <column name="status" value="AGREED" />
+        <where>"status" = 'APPLIED'</where>
+    </update>
+    <update tableName="status">
+        <column name="status" value="NOT AGREED" />
+        <where>"status" = 'REJECTED'</where>
+    </update>
+  </changeSet>
+  <changeSet author="Shiv Patel" id="1">
+    <tagDatabase tag="v1.9.0" />
+  </changeSet>
+</databaseChangeLog>
