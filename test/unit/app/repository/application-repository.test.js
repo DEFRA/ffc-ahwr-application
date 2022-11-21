@@ -233,4 +233,9 @@ describe('Application Repository test', () => {
       include: [{ model: data.models.vetVisit }, { attributes: ['status'], model: data.models.status }]
     })
   })
+
+  test('get returns single data by uppercased reference', async () => {
+    await repository.getApplicationsCount()
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+  })
 })
