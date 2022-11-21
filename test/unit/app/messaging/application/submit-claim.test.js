@@ -28,6 +28,7 @@ describe(('Submit claim tests'), () => {
     const whichReview = 'beef'
     const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
+    applicationRepository.getApplicationsCount.mockResolvedValueOnce(count)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
     await submitClaim(message)
@@ -35,7 +36,6 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.getApplicationsCount).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
-    expect(applicationRepository.getApplicationCount).toHaveBeenCalledWith(count)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
