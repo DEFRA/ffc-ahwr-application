@@ -1,4 +1,4 @@
 module.exports = {
   readyToPay: 9,
-  inCheck: 5,
+  inCheck: 5
 }
