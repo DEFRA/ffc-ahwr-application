@@ -234,7 +234,7 @@ describe('Application Repository test', () => {
     })
   })
 
-  test('get returns single data by uppercased reference', async () => {
+  test('getApplicationsCount return number of applications count ', async () => {
     await repository.getApplicationsCount()
     expect(data.models.application.count).toHaveBeenCalledTimes(1)
   })
