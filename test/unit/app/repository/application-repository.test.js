@@ -145,7 +145,7 @@ describe('Application Repository test', () => {
         }]
     })
   })
-  test('getApplications for organisation call findAll', async () => {
+  test('getApplications for organisation calls findAll', async () => {
     const searchText = 'Test Farm'
     await repository.searchApplications(searchText, 'organisation')
 
@@ -157,18 +157,18 @@ describe('Application Repository test', () => {
       include: [
         {
           model: data.models.status,
-          attributes: ['status'],
-          where: { 'data.organisation.name': searchText }
-        }]
+          attributes: ['status']
+        }],
+      where: { 'data.organisation.name': searchText }
     })
 
     expect(data.models.application.count).toHaveBeenCalledWith({
       include: [
         {
           model: data.models.status,
-          attributes: ['status'],
-          where: { 'data.organisation.name': searchText }
-        }]
+          attributes: ['status']
+        }],
+      where: { 'data.organisation.name': searchText }
     })
   })
   test.each([
