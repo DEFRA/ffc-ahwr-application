@@ -72,6 +72,9 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
       case 'sbi':
         query.where = { 'data.organisation.sbi': searchText }
         break
+      case 'organisation':
+        query.where = { 'data.organisation.name': searchText }
+        break
       case 'ref':
         query.where = { reference: searchText }
         break

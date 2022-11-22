@@ -145,6 +145,32 @@ describe('Application Repository test', () => {
         }]
     })
   })
+  test('getApplications for organisation calls findAll', async () => {
+    const searchText = 'Test Farm'
+    await repository.searchApplications(searchText, 'organisation')
+
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }],
+      where: { 'data.organisation.name': searchText }
+    })
+
+    expect(data.models.application.count).toHaveBeenCalledWith({
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }],
+      where: { 'data.organisation.name': searchText }
+    })
+  })
   test.each([
     { limit, offset, searchText: undefined, searchType: 'sbi' },
     { limit, offset, searchText: '333333333', searchType: 'sbi' },
@@ -154,7 +180,9 @@ describe('Application Repository test', () => {
     { limit, offset, searchText: '', searchType: 'ref' },
     { limit, offset, searchText: undefined, searchType: 'status' },
     { limit, offset, searchText: '333333333', searchType: 'status' },
-    { limit, offset, searchText: '', searchType: 'status' }
+    { limit, offset, searchText: '', searchType: 'status' },
+    { limit, offset, searchText: 'dodgyorganisation', searchType: 'organisation' },
+    { limit, offset, searchText: '', searchType: 'organisation' }
   ])('getApplications returns empty array when no application found.', async ({ searchText, searchType }) => {
     data.models.application.count.mockReturnValue(0)
     await repository.searchApplications(searchText, searchType, [], offset, limit)
