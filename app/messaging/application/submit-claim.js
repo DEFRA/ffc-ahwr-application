@@ -5,6 +5,7 @@ const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const { get, updateByReference, getApplicationsCount } = require('../../repositories/application-repository')
 const validateSubmitClaim = require('../schema/submit-claim-schema')
+const statusIds = require('../../constants/status')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
@@ -27,11 +28,11 @@ const submitClaim = async (message) => {
         return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
 
-      const applicaitonsCount = await getApplicationsCount()
+      const applicationsCount = await getApplicationsCount()
 
-      let statusId = 9
-      if (applicaitonsCount % 5 === 0) {
-        statusId = 5
+      let statusId = statusIds.readyToPay
+      if (applicationsCount % 5 === 0) {
+        statusId = statusIds.inCheck
       }
 
       const res = await updateByReference({ reference, claimed: true, statusId, updatedBy: 'admin', data })
@@ -42,7 +43,7 @@ const submitClaim = async (message) => {
         await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
       }
 
-      if (updateSuccess && statusId === 9) {
+      if (updateSuccess && statusId === statusIds.readyToPay) {
         await sendMessage(
           {
             reference,
