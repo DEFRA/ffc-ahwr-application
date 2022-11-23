@@ -3,8 +3,9 @@ const { alreadyClaimed, failed, error, notFound, success } = require('./states')
 const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
-const { get, updateByReference } = require('../../repositories/application-repository')
+const { get, updateByReference, getApplicationsCount } = require('../../repositories/application-repository')
 const validateSubmitClaim = require('../schema/submit-claim-schema')
+const statusIds = require('../../constants/status')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
@@ -26,12 +27,23 @@ const submitClaim = async (message) => {
       if (application.dataValues.claimed) {
         return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
-      const res = await updateByReference({ reference, claimed: true, statusId: 4, updatedBy: 'admin', data })
+
+      const applicationsCount = await getApplicationsCount()
+
+      let statusId = statusIds.readyToPay
+      if (applicationsCount % 5 === 0) {
+        statusId = statusIds.inCheck
+      }
+
+      const res = await updateByReference({ reference, claimed: true, statusId, updatedBy: 'admin', data })
 
       const updateSuccess = isUpdateSuccessful(res)
 
       if (updateSuccess) {
         await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
+      }
+
+      if (updateSuccess && statusId === statusIds.readyToPay) {
         await sendMessage(
           {
             reference,

@@ -134,6 +134,13 @@ async function getAll () {
   return models.application.findAll(query)
 }
 /**
+ * Get total number of applications
+ * @returns
+ */
+async function getApplicationsCount () {
+  return models.application.count()
+}
+/**
  *
  * @param {*} sbi
  * @returns
@@ -184,6 +191,7 @@ module.exports = {
   getByEmail,
   getApplicationCount,
   getAll,
+  getApplicationsCount,
   set,
   updateById,
   updateByReference,

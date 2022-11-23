@@ -19,28 +19,34 @@ describe(('Submit claim tests'), () => {
   })
 
   test.each([
-    { desc: 'unclaimed application successfully updated returns success state', updateRes: [1], state: success },
-    { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed }
-  ])('$desc', async ({ updateRes, state }) => {
+    { desc: 'unclaimed application successfully updated returns success state', updateRes: [1], state: success, count: 13, statusId: 9 },
+    { desc: 'unclaimed application compliance check successfully updated returns success state', updateRes: [1], state: success, count: 15, statusId: 5 },
+    { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed, count: 3, statusId: 9 }
+  ])('$desc', async ({ updateRes, state, count, statusId }) => {
     const email = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
     const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
+    applicationRepository.getApplicationsCount.mockResolvedValueOnce(count)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
     await submitClaim(message)
 
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.getApplicationsCount).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId: 4, updatedBy: 'admin' })
+    expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
-    if (state === success) {
+    if (state === success && statusId === 9) {
       expect(sendMessage).toHaveBeenCalledTimes(2)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
       expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
+    } else if (state === success && statusId === 5) {
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     } else {
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
