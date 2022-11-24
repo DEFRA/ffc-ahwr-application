@@ -31,11 +31,13 @@ const submitClaim = async (message) => {
       const applicationsCount = await getApplicationsCount()
 
       let statusId = statusIds.readyToPay
+      let claimed = true
       if (applicationsCount % 5 === 0) {
         statusId = statusIds.inCheck
+        claimed = false
       }
 
-      const res = await updateByReference({ reference, claimed: true, statusId, updatedBy: 'admin', data })
+      const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 
       const updateSuccess = isUpdateSuccessful(res)
 
