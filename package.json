@@ -27,12 +27,13 @@
     "applicationinsights": "^2.1.6",
     "ffc-messaging": "^2.3.4",
     "joi": "^17.6.0",
+    "node-cron": "^3.0.2",
     "notifications-node-client": "^5.1.1",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.16.2",
-    "uuid": "^8.3.2",
-    "standard": "^17.0.0"
+    "standard": "^17.0.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "jest": "^27.0.6",
