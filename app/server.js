@@ -14,4 +14,6 @@ const routes = [].concat(
 
 server.route(routes)
 
+await server.register(require('./plugins/cron'))
+
 module.exports = server
