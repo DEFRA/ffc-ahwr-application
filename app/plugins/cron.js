@@ -4,7 +4,7 @@ const processApplication = require('../messaging/application/process-compliance-
 module.exports = {
   plugin: {
     name: 'processComplianceApplications',
-    register:  async () => {
+    register: async () => {
       cron.schedule('0 9 * * 2-3', async () => {
         await processApplication([])
       })
