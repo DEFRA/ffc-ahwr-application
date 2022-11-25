@@ -8,9 +8,9 @@ const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../../..
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/compliance-application-repository')
 jest.mock('../../../../../app/messaging/send-message')
-jest.mock('uuid', () => ({ v4: () => '123456789' }));
+jest.mock('uuid', () => ({ v4: () => '123456789' }))
 
-const applicationReference = 'AHWR-1234-5678';
+const applicationReference = 'AHWR-1234-5678'
 const id = 'random-test-id'
 
 describe(('Submit claim tests'), () => {
@@ -21,7 +21,7 @@ describe(('Submit claim tests'), () => {
   })
 
   test('Skip update when no application to process', async () => {
-    repository.getPendingApplications.mockReturnValueOnce(null);
+    repository.getPendingApplications.mockReturnValueOnce(null)
     await processComplianceApplications()
     expect(repository.update).toHaveBeenCalledTimes(0)
     expect(consoleLogSpy).toHaveBeenCalledTimes(1)
@@ -33,7 +33,7 @@ describe(('Submit claim tests'), () => {
       applicationReference,
       statusId: statusIds.inCheck,
       id
-    }]);
+    }])
     applicationRepository.get.mockReturnValueOnce(null)
     await processComplianceApplications()
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
@@ -54,7 +54,7 @@ describe(('Submit claim tests'), () => {
       applicationReference,
       statusId: statusIds.inCheck,
       id
-    }]);
+    }])
     applicationRepository.get.mockReturnValueOnce(application)
     await processComplianceApplications()
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
@@ -75,7 +75,7 @@ describe(('Submit claim tests'), () => {
       applicationReference,
       statusId: statusIds.rejected,
       id
-    }]);
+    }])
     applicationRepository.get.mockReturnValueOnce(application)
     await processComplianceApplications()
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
@@ -104,7 +104,7 @@ describe(('Submit claim tests'), () => {
       applicationReference,
       statusId: statusIds.readyToPay,
       id
-    }]);
+    }])
     applicationRepository.get.mockReturnValueOnce(application)
     await processComplianceApplications()
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
@@ -117,7 +117,7 @@ describe(('Submit claim tests'), () => {
     expect(consoleLogSpy).toHaveBeenCalledWith(`application with reference ${applicationReference} successfully updated`)
   })
 
-  test('handle error', async() => {
+  test('handle error', async () => {
     const error = new Error('Test exception')
     repository.getPendingApplications.mockRejectedValueOnce(error)
     await processComplianceApplications()

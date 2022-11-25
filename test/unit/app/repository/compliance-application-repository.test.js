@@ -22,7 +22,7 @@ describe('Compliance Repository test', () => {
     })
   })
   test('update calls model update with id ', async () => {
-    await repository.update({ processed: true, reference}, 'random-id')
+    await repository.update({ processed: true, reference }, 'random-id')
     expect(data.models.complianceApplication.update).toHaveBeenCalledTimes(1)
     expect(data.models.complianceApplication.update).toHaveBeenCalledWith({ processed: true, reference }, {
       where: { id: 'random-id' }
