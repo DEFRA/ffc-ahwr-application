@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Shivanshu Patel" id="2">
+    <createTable tableName="compliance_application">
+      <column name="id" type="UUID" defaultValueComputed="public.uuid_generate_v4()">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="complianceApplicationId_pkey" />
+      </column>
+      <column name="applicationReference" type="VARCHAR(14)">
+        <constraints nullable="false" primaryKey="true" />
+      </column>
+      <column name="statusId" type="SMALLINT" defaultValue="5">
+        <constraints nullable="false" />
+      </column>
+      <column name="processed" type="boolean" defaultValue="false">
+        <constraints nullable="false" />
+      </column>
+      <column defaultValueComputed="now()" name="createdAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="false" />
+      </column>
+      <column defaultValueComputed="now()" name="updatedAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+  </changeSet>
+  <changeSet author="Shivanshu Patel" id="1">
+    <tagDatabase tag="v1.10.0" />
+  </changeSet>
+  <changeSet author="Shivanshu Patel" id="3">
+    <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="compliance_application" constraintName="fk_compliance_application_reference" referencedColumnNames="reference" referencedTableName="application" />
+    <addForeignKeyConstraint baseColumnNames="statusId" baseTableName="compliance_application" constraintName="fk_compliance_application_statusId" referencedColumnNames="statusId" referencedTableName="status" />
+  </changeSet>
+</databaseChangeLog>

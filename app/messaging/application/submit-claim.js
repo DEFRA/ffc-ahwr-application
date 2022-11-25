@@ -1,6 +1,6 @@
 const util = require('util')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
-const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
+const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue, complianceApplicationCount } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const { get, updateByReference, getApplicationsCount } = require('../../repositories/application-repository')
@@ -32,7 +32,7 @@ const submitClaim = async (message) => {
 
       let statusId = statusIds.readyToPay
       let claimed = true
-      if (applicationsCount % 5 === 0) {
+      if (applicationsCount % complianceApplicationCount === 0) {
         statusId = statusIds.inCheck
         claimed = false
       }

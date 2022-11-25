@@ -1,12 +1,13 @@
 const cron = require('node-cron')
-const processApplication = require('../messaging/application/process-compliance-applications')
+const processComplianceApplications = require('../messaging/application/process-compliance-applications')
+const { complianceScheduler } = require('../config')
 
 module.exports = {
   plugin: {
     name: 'processComplianceApplications',
     register: async () => {
-      cron.schedule('0 9 * * 2-3', async () => {
-        await processApplication([])
+      cron.schedule(complianceScheduler, async () => {
+        await processComplianceApplications()
       })
     }
   }
