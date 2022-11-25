@@ -16,7 +16,6 @@ const processComplianceApplications = async () => {
     }
 
     complianceApplicaitons.forEach((application) => {
-      console.log(application)
       applicationsPromise.push(processApplication(application.applicationReference, application.statusId, application.id))
     })
 
