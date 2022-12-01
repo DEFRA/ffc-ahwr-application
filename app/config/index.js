@@ -28,7 +28,7 @@ const schema = Joi.object({
   },
   compliance: {
     applicationCount: Joi.number().default(5),
-    scheduler: Joi.string().default('0 9 * * 2-3'),
+    scheduler: Joi.string().default('0 9 * * 2-3')
   }
 })
 
