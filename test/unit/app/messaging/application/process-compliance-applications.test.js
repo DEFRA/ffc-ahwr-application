@@ -1,7 +1,7 @@
 const processComplianceApplications = require('../../../../../app/messaging/application/process-compliance-applications')
 const repository = require('../../../../../app/repositories/compliance-application-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-const statusIds = require('../../../../../app/constants/status')
+const statusIds = require('../../../../../app/constants/application-status')
 const sendMessage = require('../../../../../app/messaging/send-message')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../../../../app/config')
 

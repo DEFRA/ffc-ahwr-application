@@ -26,8 +26,10 @@ const schema = Joi.object({
     storageAccount: Joi.string().required(),
     useConnectionString: Joi.bool().default(true)
   },
-  complianceApplicationCount: Joi.number().default(5),
-  complianceScheduler: Joi.string()
+  compliance: {
+    applicationCount: Joi.number().default(5),
+    scheduler: Joi.string().default('0 9 * * 2-3'),
+  }
 })
 
 const config = {
@@ -51,8 +53,10 @@ const config = {
     useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
     storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
   },
-  complianceApplicationCount: process.env.COMPLIANCE_APPLICATION_COUNT,
-  complianceScheduler: process.env.COMPLIANCE_SCHEDULER
+  compliance: {
+    applicationCount: process.env.COMPLIANCE_APPLICATION_COUNT,
+    scheduler: process.env.COMPLIANCE_SCHEDULER
+  }
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })

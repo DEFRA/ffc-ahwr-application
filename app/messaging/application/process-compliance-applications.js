@@ -1,7 +1,7 @@
 const { v4: uuid } = require('uuid')
 const { get, updateByReference } = require('../../repositories/application-repository')
 const { getPendingApplications, update } = require('../../repositories/compliance-application-repository')
-const statusIds = require('../../constants/status')
+const statusIds = require('../../constants/application-status')
 const sendMessage = require('../send-message')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 
