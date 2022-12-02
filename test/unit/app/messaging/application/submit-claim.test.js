@@ -37,19 +37,21 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.getApplicationsCount).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     if (state === success && statusId === 9) {
       expect(sendMessage).toHaveBeenCalledTimes(2)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
       expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
+      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     } else if (state === success && statusId === 5) {
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     } else {
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     }
   })
 
