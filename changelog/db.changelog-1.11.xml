@@ -23,7 +23,7 @@
     </createTable>
   </changeSet>
   <changeSet author="Shivanshu Patel" id="1">
-    <tagDatabase tag="v1.11.0" />
+    <tagDatabase tag="v1.10.0" />
   </changeSet>
   <changeSet author="Shivanshu Patel" id="3">
     <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="compliance_application" constraintName="fk_compliance_application_reference" referencedColumnNames="reference" referencedTableName="application" />

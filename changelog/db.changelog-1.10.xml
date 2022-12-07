@@ -11,6 +11,6 @@
     </insert>
   </changeSet>
   <changeSet author="Shiv Patel" id="1">
-    <tagDatabase tag="v1.10.0" />
+    <tagDatabase tag="v1.9.0" />
   </changeSet>
 </databaseChangeLog>
