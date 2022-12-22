@@ -35,6 +35,14 @@
     "standard": "^17.0.0",
     "uuid": "^8.3.2"
   },
+  "overrides": {
+    "notifications-node-client": {
+      "jsonwebtoken": "9.0.0"
+    },
+    "@azure/identity": {
+      "jsonwebtoken": "9.0.0"
+    }
+  },
   "devDependencies": {
     "dotenv": "^16.0.3",
     "jest": "^27.0.6",
