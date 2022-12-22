@@ -17,7 +17,7 @@ async function get (reference) {
 
 /**
  * Get application by Single Business Identifier (SBI)
- * 
+ *
  * @param {number} sbi
  * @returns application object.
  */
