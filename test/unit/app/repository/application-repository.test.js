@@ -209,6 +209,20 @@ describe('Application Repository test', () => {
       })
     }
   })
+
+  test('getBySbi', async () => {
+    const sbi = 123456789
+
+    await repository.getBySbi(sbi)
+
+    expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findOne).toHaveBeenCalledWith({
+      where: {
+        'data.organisation.sbi': sbi
+      }
+    })
+  })
+
   test('getByEmail queries based on lowercased email and orders by createdAt DESC', async () => {
     const email = 'TEST@email.com'
 

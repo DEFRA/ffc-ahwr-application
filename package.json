@@ -36,8 +36,10 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "dotenv": "^16.0.3",
     "jest": "^27.0.6",
     "jest-junit": "^13.0.0",
+    "jest-when": "^3.5.2",
     "nodemon": "^2.0.12",
     "standard": "^17.0.0"
   },
