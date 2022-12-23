@@ -14,6 +14,21 @@ async function get (reference) {
       }]
     })
 }
+
+/**
+ * Get application by Single Business Identifier (SBI)
+ *
+ * @param {number} sbi
+ * @returns application object.
+ */
+async function getBySbi (sbi) {
+  return models.application.findOne({
+    where: {
+      'data.organisation.sbi': sbi
+    }
+  })
+}
+
 /**
  * Get application by email
  * @param {string} email
@@ -188,6 +203,7 @@ async function updateById (data) {
 
 module.exports = {
   get,
+  getBySbi,
   getByEmail,
   getApplicationCount,
   getAll,
