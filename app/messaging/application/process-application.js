@@ -64,7 +64,7 @@ const processApplication = async (msg) => {
     console.error('Failed to process application', error)
     sendMessage(
       {
-        applicationState: error.applicationState ? error.applicationState : states.failed,
+        applicationState: error.applicationState ? error.applicationState : states.failed
       },
       applicationResponseMsgType,
       applicationResponseQueue,
