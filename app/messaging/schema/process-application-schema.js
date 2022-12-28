@@ -12,7 +12,8 @@ const applicationSchema = joi.object({
     farmerName: joi.string().required(),
     name: joi.string().required(),
     sbi: joi.string().required(),
-    cph: joi.string().required(),
+    cph: joi.string().optional(),
+    crn: joi.string().optional(),
     address: joi.string().required(),
     email: joi.string().required(),
     isTest: joi.boolean().optional()
