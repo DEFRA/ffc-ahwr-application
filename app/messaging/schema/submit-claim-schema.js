@@ -19,7 +19,8 @@ const submitClaimSchema = joi.object({
       farmerName: joi.string().required(),
       name: joi.string().required(),
       sbi: joi.string().required(),
-      cph: joi.string().required(),
+      crn: joi.string().optional(),
+      cph: joi.string().optional(),
       address: joi.string().required(),
       email: joi.string().required(),
       isTest: joi.boolean().optional()
