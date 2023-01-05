@@ -46,7 +46,9 @@ const processApplication = async (msg) => {
         application.reference,
         applicationData.organisation.sbi,
         applicationData.whichReview,
-        application.createdAt
+        application.createdAt,
+        applicationData.organisation.email,
+        applicationData.organisation.farmerName
       )
     }
     await sendMessage(

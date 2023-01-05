@@ -9,6 +9,8 @@ const email = 'test@unit-test.com'
 const reference = 'AHWR-B977-4D0D'
 const sbi = '123456789'
 const whichSpecies = 'beef'
+const startDate = Date.now()
+const farmerName = 'farmer'
 
 jest.mock('../../../../app/lib/notify-client')
 const notifyClient = require('../../../../app/lib/notify-client')
@@ -23,9 +25,9 @@ describe('Send email test', () => {
 
   test('sendFarmerConfirmationEmail calls sendMessage', async () => {
     sendMessage.mockResolvedValueOnce(true)
-    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies)
+    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   })
 
   test('sendVetConfirmationEmail returns true onsuccessful email', async () => {
