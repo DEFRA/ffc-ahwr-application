@@ -15,7 +15,31 @@ const processApplication = async (msg) => {
       throw new Error('Application validation error')
     }
 
-    const application = await getOrCreateApplication(applicationData)
+    const existingApplication = await applicationRepository.getBySbi(
+      applicationData.organisation.sbi
+    )
+    if (existingApplication) {
+      throw Object.assign(
+        new Error(
+          `Application already exists: ${JSON.stringify({
+            reference: existingApplication.dataValues.reference,
+            createdAt: existingApplication.dataValues.createdAt
+          })}`
+        ),
+        {
+          applicationState: states.alreadyExists
+        }
+      )
+    }
+
+    const result = await applicationRepository.set({
+      reference: '',
+      data: applicationData,
+      createdBy: 'admin',
+      createdAt: new Date(),
+      statusId: applicationData.offerStatus === 'rejected' ? 7 : 1
+    })
+    const application = result.dataValues
 
     if (applicationData.offerStatus === 'accepted') {
       await sendFarmerConfirmationEmail(
@@ -37,10 +61,10 @@ const processApplication = async (msg) => {
       }
     )
   } catch (error) {
-    console.error('failed to process application', error)
+    console.error('Failed to process application', error)
     sendMessage(
       {
-        applicationState: states.failed
+        applicationState: error.applicationState ? error.applicationState : states.failed
       },
       applicationResponseMsgType,
       applicationResponseQueue,
@@ -48,30 +72,6 @@ const processApplication = async (msg) => {
         sessionId
       }
     )
-  }
-}
-
-const getOrCreateApplication = async (applicationData) => {
-  const existingApplication = await applicationRepository.getBySbi(
-    applicationData.organisation.sbi
-  )
-  if (existingApplication) {
-    return {
-      reference: existingApplication.dataValues.reference,
-      createdAt: existingApplication.dataValues.createdAt
-    }
-  } else {
-    const newApplication = await applicationRepository.set({
-      reference: '',
-      data: applicationData,
-      createdBy: 'admin',
-      createdAt: new Date(),
-      statusId: applicationData.offerStatus === 'rejected' ? 7 : 1
-    })
-    return {
-      reference: newApplication.dataValues.reference,
-      createdAt: newApplication.dataValues.createdAt
-    }
   }
 }
 

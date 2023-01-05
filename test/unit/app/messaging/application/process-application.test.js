@@ -13,6 +13,8 @@ const { applicationResponseMsgType, applicationResponseQueue } = require('../../
 const states = require('../../../../../app/messaging/application/states')
 const processApplication = require('../../../../../app/messaging/application/process-application')
 
+const consoleErrorSpy = jest.spyOn(console, 'error')
+
 describe(('Store application in database'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const email = 'email@domain.com'
@@ -81,18 +83,18 @@ describe(('Store application in database'), () => {
     await processApplication(message)
 
     expect(applicationRepository.set).toHaveBeenCalledTimes(0)
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledWith(
-      MOCK_REFERENCE,
-      message.body.organisation.sbi,
-      message.body.whichReview,
-      MOCK_NOW
+    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to process application',
+      new Error(`Application already exists: ${JSON.stringify({
+        reference: MOCK_REFERENCE,
+        createdAt: MOCK_NOW
+      })}`)
     )
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith(
       {
-        applicationState: states.submitted,
-        applicationReference: MOCK_REFERENCE
+        applicationState: states.alreadyExists
       },
       applicationResponseMsgType,
       applicationResponseQueue,

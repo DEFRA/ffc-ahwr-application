@@ -1,6 +1,7 @@
 module.exports = {
   alreadyClaimed: 'already_claimed',
   alreadySubmitted: 'already_submitted',
+  alreadyExists: 'already_exists',
   error: 'error',
   failed: 'failed',
   notFound: 'not_found',
