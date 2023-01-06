@@ -9,6 +9,7 @@ const validateApplication = require('../schema/process-application-schema')
 const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
+  let existingApplicationReference = null
   console.log('Application received:', util.inspect(applicationData, false, null, true))
   try {
     if (!validateApplication(applicationData)) {
@@ -19,6 +20,7 @@ const processApplication = async (msg) => {
       applicationData.organisation.sbi
     )
     if (existingApplication) {
+      existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
           `Application already exists: ${JSON.stringify({
@@ -66,7 +68,8 @@ const processApplication = async (msg) => {
     console.error('Failed to process application', error)
     sendMessage(
       {
-        applicationState: error.applicationState ? error.applicationState : states.failed
+        applicationState: error.applicationState ? error.applicationState : states.failed,
+        applicationReference: existingApplicationReference
       },
       applicationResponseMsgType,
       applicationResponseQueue,
