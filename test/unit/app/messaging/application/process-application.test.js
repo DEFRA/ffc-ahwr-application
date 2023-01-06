@@ -94,7 +94,8 @@ describe(('Store application in database'), () => {
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith(
       {
-        applicationState: states.alreadyExists
+        applicationState: states.alreadyExists,
+        applicationReference: MOCK_REFERENCE
       },
       applicationResponseMsgType,
       applicationResponseQueue,
@@ -132,7 +133,7 @@ describe(('Store application in database'), () => {
 
     expect(sendFarmerConfirmationEmail).not.toHaveBeenCalled()
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationReference : null, applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('Application submission message validation failed', async () => {
@@ -140,6 +141,6 @@ describe(('Store application in database'), () => {
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationReference : null, applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 })
