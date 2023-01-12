@@ -24,7 +24,7 @@ describe(('Submit claim tests'), () => {
     repository.getPendingApplications.mockReturnValueOnce(null)
     await processComplianceApplications()
     expect(repository.update).toHaveBeenCalledTimes(0)
-    expect(consoleLogSpy).toHaveBeenCalledTimes(1)
+    expect(consoleLogSpy).toHaveBeenCalledTimes(2)
     expect(consoleLogSpy).toHaveBeenCalledWith('No compliance applications to process')
   })
 
@@ -39,7 +39,7 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(applicationReference)
     expect(repository.update).toHaveBeenCalledTimes(0)
-    expect(consoleLogSpy).toHaveBeenCalledTimes(2)
+    expect(consoleLogSpy).toHaveBeenCalledTimes(3)
     expect(consoleLogSpy).toHaveBeenCalledWith(`application with reference ${applicationReference} not found`)
   })
 
@@ -60,7 +60,7 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(applicationReference)
     expect(repository.update).toHaveBeenCalledTimes(0)
-    expect(consoleLogSpy).toHaveBeenCalledTimes(2)
+    expect(consoleLogSpy).toHaveBeenCalledTimes(3)
     expect(consoleLogSpy).toHaveBeenCalledWith(`application with reference ${applicationReference} has same status`)
   })
 
@@ -83,7 +83,7 @@ describe(('Submit claim tests'), () => {
     expect(sendMessage).toHaveBeenCalledTimes(0)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(repository.update).toHaveBeenCalledTimes(1)
-    expect(consoleLogSpy).toHaveBeenCalledTimes(2)
+    expect(consoleLogSpy).toHaveBeenCalledTimes(3)
     expect(consoleLogSpy).toHaveBeenCalledWith(`application with reference ${applicationReference} successfully updated`)
   })
 
@@ -113,7 +113,7 @@ describe(('Submit claim tests'), () => {
     expect(sendMessage).toHaveBeenCalledWith({ reference: applicationReference, sbi: '111123333', whichReview: 'sheep' }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: '123456789' })
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(repository.update).toHaveBeenCalledTimes(1)
-    expect(consoleLogSpy).toHaveBeenCalledTimes(2)
+    expect(consoleLogSpy).toHaveBeenCalledTimes(3)
     expect(consoleLogSpy).toHaveBeenCalledWith(`application with reference ${applicationReference} successfully updated`)
   })
 
