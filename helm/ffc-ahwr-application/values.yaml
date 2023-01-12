@@ -72,6 +72,7 @@ livenessProbe:
   path: /healthz
   periodSeconds: 10
   port: 3000
+  timeoutSeconds: 30
 
 readinessProbe:
   failureThreshold: 3
@@ -79,3 +80,4 @@ readinessProbe:
   path: /healthy
   periodSeconds: 10
   port: 3000
+  timeoutSeconds: 30
