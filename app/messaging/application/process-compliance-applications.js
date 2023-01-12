@@ -7,6 +7,7 @@ const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../confi
 
 const processComplianceApplications = async () => {
   try {
+    console.log('processing compliance application')
     const complianceApplicaitons = await getPendingApplications()
     const applicationsPromise = []
 
