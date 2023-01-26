@@ -1,3 +1,4 @@
+const { Op } = require('sequelize')
 const { models, sequelize } = require('../data')
 /**
  * Get application by reference number
@@ -13,6 +14,28 @@ async function get (reference) {
         attributes: ['status']
       }]
     })
+}
+
+/**
+ * Get all applications by Single Business Identifier (SBI) numbers.
+ *
+ * @param {number} sbiNumbers
+ * @returns an array of application objects.
+ */
+async function getAllBySbiNumbers (sbiNumbers) {
+  return models.application.findAll({
+    attributes: [
+      [sequelize.json('data.organisation.sbi'), 'sbi'],
+      [sequelize.json('data.offerStatus'), 'offerStatus'],
+      'statusId',
+      'claimed',
+    ],
+    where: {
+      'data.organisation.sbi': {
+        [Op.in]: sbiNumbers
+      }
+    }
+  })
 }
 
 /**
@@ -204,6 +227,7 @@ async function updateById (data) {
 module.exports = {
   get,
   getBySbi,
+  getAllBySbiNumbers,
   getByEmail,
   getApplicationCount,
   getAll,
