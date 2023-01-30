@@ -1,10 +1,10 @@
 const Joi = require('joi')
-const { getAllBySbiNumbers } = require('../../repositories/application-repository')
+const { getAllGroupedBySbiNumbers } = require('../../repositories/application-repository')
 
 module.exports = [
   {
     method: 'GET',
-    path: '/api/application/statuses',
+    path: '/api/application/getAllGroupedBySbiNumbers',
     options: {
       validate: {
         options: {
@@ -22,7 +22,7 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        const statuses = await getAllBySbiNumbers(request.query.sbi)
+        const statuses = await getAllGroupedBySbiNumbers(request.query.sbi)
         return h
           .response(JSON.stringify(statuses, null, 2))
           .code(200)

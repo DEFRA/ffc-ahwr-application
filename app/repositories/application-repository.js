@@ -17,12 +17,37 @@ async function get (reference) {
 }
 
 /**
- * Get all applications by Single Business Identifier (SBI) numbers.
+ * Get all applications grouped by Single Business Identifier (SBI) number.
  *
  * @param {number} sbiNumbers
- * @returns an array of application objects.
+ * @returns Example result:
+  [
+    {
+        sbi: '123456789',
+        applications: [
+          {
+            reference: 'AHWR-5C1C-DD6A',
+            status: 'AGREED'
+          },
+          {
+            reference: 'AHWR-5C1C-DD6A',
+            status: 'WITHDRAWN'
+          }
+        ]
+      },
+      {
+        sbi: '555555555',
+        applications: [
+          {
+            reference: 'AHWR-4FFF-1530',
+            status: 'IN CHECK'
+          }
+        ]
+      }
+    }
+  ]
  */
-async function getAllBySbiNumbers (sbiNumbers) {
+async function getAllGroupedBySbiNumbers (sbiNumbers) {
   console.log(`${new Date().toISOString()} Getting by SBI numbers: ${JSON.stringify(sbiNumbers)}`)
   let result = await models.application
     .findAll({
@@ -256,7 +281,7 @@ async function updateById (data) {
 module.exports = {
   get,
   getBySbi,
-  getAllBySbiNumbers,
+  getAllGroupedBySbiNumbers,
   getByEmail,
   getApplicationCount,
   getAll,
