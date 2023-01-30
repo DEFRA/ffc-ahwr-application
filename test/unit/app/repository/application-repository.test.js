@@ -230,8 +230,112 @@ describe('Application Repository test', () => {
   })
 
   describe('getAllBySbiNumbers', () => {
-    test('getAllBySbiNumbers successfully called with SBI numbers', async () => {
-      const sbiNumbers = [123456789, 555555555]
+    test.each([
+      {
+        toString: () => 'no applications found',
+        given: {
+          sbiNumbers: [123456789, 555555555]
+        },
+        when: {
+          foundApplications: []
+        },
+        expect: {
+          result: [
+            {
+              sbi: '123456789',
+              applications: []
+            },
+            {
+              sbi: '555555555',
+              applications: []
+            }
+          ]
+        }
+      },
+      {
+        toString: () => 'one application found',
+        given: {
+          sbiNumbers: [123456789, 555555555]
+        },
+        when: {
+          foundApplications: [
+            {
+              sbi: '123456789',
+              'application.reference': 'AHWR-5C1C-DD6A',
+              'application.status': 'AGREED'
+            }
+          ]
+        },
+        expect: {
+          result: [
+            {
+              sbi: '123456789',
+              applications: [
+                {
+                  reference: 'AHWR-5C1C-DD6A',
+                  status: 'AGREED'
+                }
+              ]
+            },
+            {
+              sbi: '555555555',
+              applications: []
+            }
+          ]
+        }
+      },
+      {
+        toString: () => 'many application found',
+        given: {
+          sbiNumbers: [123456789, 555555555]
+        },
+        when: {
+          foundApplications: [
+            {
+              sbi: '123456789',
+              'application.reference': 'AHWR-5C1C-DD6A',
+              'application.status': 'AGREED'
+            },
+            {
+              sbi: '123456789',
+              'application.reference': 'AHWR-5C1C-DD6A',
+              'application.status': 'WITHDRAWN'
+            },
+            {
+              sbi: '555555555',
+              'application.reference': 'AHWR-4FFF-1530',
+              'application.status': 'IN CHECK'
+            }
+          ]
+        },
+        expect: {
+          result: [
+            {
+              sbi: '123456789',
+              applications: [
+                {
+                  reference: 'AHWR-5C1C-DD6A',
+                  status: 'AGREED'
+                },
+                {
+                  reference: 'AHWR-5C1C-DD6A',
+                  status: 'WITHDRAWN'
+                }
+              ]
+            },
+            {
+              sbi: '555555555',
+              applications: [
+                {
+                  reference: 'AHWR-4FFF-1530',
+                  status: 'IN CHECK'
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ])('%s', async (testCase) => {
       when(data.sequelize.json)
         .calledWith('data.organisation.sbi')
         .mockReturnValue('JSON_SBI')
@@ -250,7 +354,7 @@ describe('Application Repository test', () => {
           ],
           where: {
             'data.organisation.sbi': {
-              [Op.in]: sbiNumbers
+              [Op.in]: testCase.given.sbiNumbers
             }
           },
           include: [
@@ -261,9 +365,9 @@ describe('Application Repository test', () => {
           ],
           raw: true
         })
-        .mockResolvedValue([])
+        .mockResolvedValue(testCase.when.foundApplications)
 
-      await repository.getAllBySbiNumbers(sbiNumbers)
+      const result = await repository.getAllBySbiNumbers(testCase.given.sbiNumbers)
 
       expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
@@ -274,7 +378,7 @@ describe('Application Repository test', () => {
         ],
         where: {
           'data.organisation.sbi': {
-            [Op.in]: sbiNumbers
+            [Op.in]: testCase.given.sbiNumbers
           }
         },
         include: [
@@ -285,6 +389,7 @@ describe('Application Repository test', () => {
         ],
         raw: true
       })
+      expect(result).toEqual(testCase.expect.result)
     })
   })
 
