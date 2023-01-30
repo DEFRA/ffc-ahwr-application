@@ -61,9 +61,9 @@ describe('Application Repository test', () => {
       { searchText: '', searchType: '' }
     ])('searchApplications for empty search returns call findAll', async ({ searchText, searchType }) => {
       await repository.searchApplications(searchText, searchType, [], offset, limit)
-  
+
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
-  
+
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
         limit,
@@ -79,7 +79,7 @@ describe('Application Repository test', () => {
     test('searchApplications for Invalid SBI  call findAll', async () => {
       const searchText = '333333333'
       await repository.searchApplications(searchText, 'sbi', [], offset, limit)
-  
+
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
@@ -99,7 +99,7 @@ describe('Application Repository test', () => {
     test('searchApplications for Invalid application reference call findAll', async () => {
       const searchText = 'AHWR-555A-FD4D'
       await repository.searchApplications(searchText, 'ref', [], offset, limit)
-  
+
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
@@ -114,7 +114,7 @@ describe('Application Repository test', () => {
           reference: searchText
         }
       })
-  
+
       expect(data.models.application.count).toHaveBeenCalledWith({
         include: [
           {
@@ -130,7 +130,7 @@ describe('Application Repository test', () => {
     test('searchApplications for Status call findAll', async () => {
       const searchText = 'In Progress'
       await repository.searchApplications(searchText, 'status')
-  
+
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
@@ -143,7 +143,7 @@ describe('Application Repository test', () => {
             where: { status: 'IN PROGRESS' }
           }]
       })
-  
+
       expect(data.models.application.count).toHaveBeenCalledWith({
         include: [
           {
@@ -157,7 +157,7 @@ describe('Application Repository test', () => {
     test('searchApplications for organisation calls findAll', async () => {
       const searchText = 'Test Farm'
       await repository.searchApplications(searchText, 'organisation')
-  
+
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         order: [['createdAt', 'DESC']],
@@ -170,7 +170,7 @@ describe('Application Repository test', () => {
           }],
         where: { 'data.organisation.name': searchText }
       })
-  
+
       expect(data.models.application.count).toHaveBeenCalledWith({
         include: [
           {
@@ -196,12 +196,12 @@ describe('Application Repository test', () => {
     ])('searchApplications returns empty array when no application found.', async ({ searchText, searchType }) => {
       data.models.application.count.mockReturnValue(0)
       await repository.searchApplications(searchText, searchType, [], offset, limit)
-  
+
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).not.toHaveBeenCalledTimes(1)
     })
   })
-  
+
   describe('getApplicationCount', () => {
     test.each([
       { sbi: undefined },
@@ -209,7 +209,7 @@ describe('Application Repository test', () => {
       { sbi: '   444444444    ' }
     ])('getApplicationCount successfully called with SBI', async ({ sbi }) => {
       await repository.getApplicationCount(sbi)
-  
+
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
       if (sbi) {
         expect(data.models.application.count).toHaveBeenCalledWith({
@@ -235,25 +235,55 @@ describe('Application Repository test', () => {
       when(data.sequelize.json)
         .calledWith('data.organisation.sbi')
         .mockReturnValue('JSON_SBI')
-      when(data.sequelize.json)
-        .calledWith('data.offerStatus')
-        .mockReturnValue('JSON_OFFER_STATUS')
-  
+      when(data.sequelize.col)
+        .calledWith('reference')
+        .mockReturnValue('COL_REFERENCE')
+      when(data.sequelize.col)
+        .calledWith('status.status')
+        .mockReturnValue('COL_STATUS')
+      when(data.models.application.findAll)
+        .calledWith({
+          attributes: [
+            ['JSON_SBI', 'sbi'],
+            ['COL_REFERENCE', 'application.reference'],
+            ['COL_STATUS', 'application.status']
+          ],
+          where: {
+            'data.organisation.sbi': {
+              [Op.in]: sbiNumbers
+            }
+          },
+          include: [
+            {
+              model: data.models.status,
+              attributes: []
+            }
+          ],
+          raw: true
+        })
+        .mockResolvedValue([])
+
       await repository.getAllBySbiNumbers(sbiNumbers)
-  
+
       expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
         attributes: [
-          [ 'JSON_SBI', 'sbi'],
-          [ 'JSON_OFFER_STATUS', 'offerStatus'],
-          'statusId',
-          'claimed',
+          ['JSON_SBI', 'sbi'],
+          ['COL_REFERENCE', 'application.reference'],
+          ['COL_STATUS', 'application.status']
         ],
         where: {
           'data.organisation.sbi': {
             [Op.in]: sbiNumbers
           }
-        }
+        },
+        include: [
+          {
+            model: data.models.status,
+            attributes: []
+          }
+        ],
+        raw: true
       })
     })
   })

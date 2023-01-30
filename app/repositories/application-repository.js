@@ -23,19 +23,41 @@ async function get (reference) {
  * @returns an array of application objects.
  */
 async function getAllBySbiNumbers (sbiNumbers) {
-  return models.application.findAll({
-    attributes: [
-      [sequelize.json('data.organisation.sbi'), 'sbi'],
-      [sequelize.json('data.offerStatus'), 'offerStatus'],
-      'statusId',
-      'claimed',
-    ],
-    where: {
-      'data.organisation.sbi': {
-        [Op.in]: sbiNumbers
-      }
+  console.log(`${new Date().toISOString()} Getting by SBI numbers: ${JSON.stringify(
+    Array.isArray(sbiNumbers) ? sbiNumbers : [sbiNumbers]
+  )}`)
+  const result = await models.application
+    .findAll({
+      attributes: [
+        [sequelize.json('data.organisation.sbi'), 'sbi'],
+        [sequelize.col('reference'), 'application.reference'],
+        [sequelize.col('status.status'), 'application.status']
+      ],
+      where: {
+        'data.organisation.sbi': {
+          [Op.in]: Array.isArray(sbiNumbers) ? sbiNumbers : [sbiNumbers]
+        }
+      },
+      include: [
+        {
+          model: models.status,
+          attributes: []
+        }
+      ],
+      raw: true
+    })
+  return Object.values(result.reduce((group, row) => {
+    const { sbi } = row
+    group[sbi] = group[sbi] ?? {
+      sbi,
+      applications: []
     }
-  })
+    group[sbi].applications.push({
+      reference: row['application.reference'],
+      status: row['application.status']
+    })
+    return group
+  }, {}))
 }
 
 /**
