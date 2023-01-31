@@ -32,7 +32,7 @@ module.exports = [
             .response(applications)
             .code(200)
         } catch (error) {
-          console.error(error)
+          console.error(`${new Date().toISOString()} Error while getting all applicatinos grouped by SBI numbers: `, error)
           throw Boom.internal(error)
         }
       }
