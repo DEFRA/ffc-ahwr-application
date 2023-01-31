@@ -1,6 +1,5 @@
 const Joi = require('joi')
 const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
-const statusIds = require('../../constants/application-status')
 
 module.exports = [{
   method: 'GET',
@@ -56,7 +55,7 @@ module.exports = [{
         ref: Joi.string().valid()
       }),
       payload: Joi.object({
-        status: Joi.string(),
+        status: Joi.number().valid(2),
         user: Joi.string()
       }),
       failAction: async (_request, h, err) => {
@@ -69,7 +68,7 @@ module.exports = [{
         return h.response('Not Found').code(404).takeover()
       }
 
-      await updateByReference({ reference: request.params.ref, statusId: statusIds.withdrawn, updatedBy: req.payload.user })
+      await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
 
       return h.response().code(200)
     }
