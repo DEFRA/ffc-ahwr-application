@@ -164,7 +164,7 @@ describe('getAllGroupedBySbiNumbers', () => {
           )}`
         ],
         errorLogs: [
-          `${MOCK_NOW.toISOString()} Error while getting all applicatinos grouped by SBI numbers: `
+          `${MOCK_NOW.toISOString()} Error while getting all applications grouped by SBI numbers: `
         ]
       }
     }
