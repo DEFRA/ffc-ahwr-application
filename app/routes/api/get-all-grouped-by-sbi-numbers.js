@@ -8,19 +8,18 @@ module.exports = [
     path: '/api/application/getAllGroupedBySbiNumbers',
     options: {
       validate: {
-        options: {
-          validate: {
-            query: Joi
-              .object({
-                sbi: Joi
-                  .array()
-                  .single()
-                  .items(Joi.string())
-              })
-              .options({
-                stripUnknown: true
-              })
-          }
+        query: Joi.object({
+          sbi: Joi
+            .array()
+            .min(1)
+            .required()
+            .single()
+            .items(Joi.string().required())
+        }).options({
+          stripUnknown: true
+        }),
+        failAction (request, h, err) {
+          throw Boom.badRequest('At least one query param "sbi" must be provided.')
         }
       },
       handler: async (request, h) => {

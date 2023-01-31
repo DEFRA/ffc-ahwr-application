@@ -155,7 +155,7 @@ describe('getAllGroupedBySbiNumbers', () => {
         sbiNumbers: ['123456789']
       },
       when: {
-        error: new Error('ECONNREFUSED')
+        error: new Error('BOOM')
       },
       expect: {
         consoleLogs: [
@@ -205,7 +205,6 @@ describe('getAllGroupedBySbiNumbers', () => {
       .mockRejectedValue(testCase.when.error)
 
     const response = await server.inject(options)
-    const payload = JSON.parse(response.payload)
 
     expect(response.statusCode).toBe(500)
     testCase.expect.consoleLogs.forEach(
@@ -214,5 +213,32 @@ describe('getAllGroupedBySbiNumbers', () => {
     testCase.expect.errorLogs.forEach(
       (errorLog, idx) => expect(errorSpy).toHaveBeenNthCalledWith(idx + 1, errorLog, testCase.when.error)
     )
+  })
+
+  test.each([
+    {
+      toString: () => 'empty query string',
+      given: {
+        queryString: ''
+      }
+    },
+    {
+      toString: () => 'no SBI number provided',
+      given: {
+        queryString: '?sbi='
+      }
+    }
+  ])('%s', async (testCase) => {
+    const options = {
+      method: 'GET',
+      url: `${API_URL}${testCase.given.queryString}`
+    }
+
+    const response = await server.inject(options)
+    const payload = JSON.parse(response.payload)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.statusMessage).toEqual('Bad Request')
+    expect(payload.message).toEqual('At least one query param "sbi" must be provided.')
   })
 })
