@@ -50,7 +50,7 @@ async function get (reference) {
   ]
  */
 async function getAllGroupedBySbiNumbers (sbiNumbers) {
-  console.log(`${new Date().toISOString()} Getting all grouped by SBI numbers: ${JSON.stringify(sbiNumbers)}`)
+  console.log(`${new Date().toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(sbiNumbers)}`)
   let result = await models.application
     .findAll({
       attributes: [

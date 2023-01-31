@@ -57,7 +57,7 @@ describe('getAllGroupedBySbiNumbers', () => {
           }
         ],
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting all grouped by SBI numbers: ${JSON.stringify(
+          `${MOCK_NOW.toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(
             ['123456789']
           )}`
         ]
@@ -95,7 +95,7 @@ describe('getAllGroupedBySbiNumbers', () => {
           }
         ],
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting all grouped by SBI numbers: ${JSON.stringify(
+          `${MOCK_NOW.toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(
             ['123456789', '555555555']
           )}`
         ]
@@ -159,7 +159,7 @@ describe('getAllGroupedBySbiNumbers', () => {
       },
       expect: {
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting all grouped by SBI numbers: ${JSON.stringify(
+          `${MOCK_NOW.toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(
             ['123456789']
           )}`
         ],
