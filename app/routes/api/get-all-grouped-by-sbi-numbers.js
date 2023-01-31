@@ -11,7 +11,6 @@ module.exports = [
         query: Joi.object({
           sbi: Joi
             .array()
-            //min(1)
             .required()
             .single()
             .items(Joi.string().required())
@@ -24,7 +23,6 @@ module.exports = [
       },
       handler: async (request, h) => {
         try {
-          //const sbiNumbers = Array.isArray(request.query.sbi) ? request.query.sbi : [request.query.sbi]
           const applications = await getAllGroupedBySbiNumbers(request.query.sbi)
           return h.response(applications).code(200)
         } catch (error) {
