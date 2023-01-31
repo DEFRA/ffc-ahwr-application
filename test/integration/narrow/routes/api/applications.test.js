@@ -105,4 +105,44 @@ describe('Applications test', () => {
       expect(res.statusCode).toBe(400)
     })
   })
+  describe(`PUT ${url} route`, () => {
+    const method = 'PUT'
+    test('returns 200', async () => {
+      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      const options = {
+        method,
+        url: '/api/application/ABC-1234',
+        payload: { status: 2, user: 'test' }
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+    })
+    test('returns 404', async () => {
+      applicationRepository.get.mockResolvedValue({ dataValues: null })
+      const options = {
+        method,
+        url: '/api/application/ABC-1234',
+        payload: { status: 2, user: 'test' }
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+    })
+    test.each([
+      { status: 'abc', user: null },
+      { status: 'abc', user: 0 },
+      { status: 5000, user: 'test' }
+    ])('returns 400 with error message for invalid input', async ({ status, user }) => {
+      const options = {
+        method,
+        url,
+        payload: { status, user }
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+    })
+  })
 })
