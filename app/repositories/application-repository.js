@@ -17,10 +17,12 @@ async function get (reference) {
 }
 
 /**
- * Get all applications grouped by Single Business Identifier (SBI) number.
+ * Get all applications grouped by Single Business Identifier (SBI) numbers.
  *
  * @param {number} sbiNumbers
- * @returns Example result:
+ * @returns all applications grouped by SBI numbers.
+ *
+ * Example result:
   [
     {
         sbi: '123456789',
@@ -48,7 +50,7 @@ async function get (reference) {
   ]
  */
 async function getAllGroupedBySbiNumbers (sbiNumbers) {
-  console.log(`${new Date().toISOString()} Getting by SBI numbers: ${JSON.stringify(sbiNumbers)}`)
+  console.log(`${new Date().toISOString()} Getting all grouped by SBI numbers: ${JSON.stringify(sbiNumbers)}`)
   let result = await models.application
     .findAll({
       attributes: [

@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const Boom = require('@hapi/boom')
 const { getAllGroupedBySbiNumbers } = require('../../repositories/application-repository')
 
 module.exports = [
@@ -9,12 +10,13 @@ module.exports = [
       validate: {
         options: {
           validate: {
-            query: Joi.object({
-              sbi: Joi
-                .array()
-                .single()
-                .items(Joi.string())
-            })
+            query: Joi
+              .object({
+                sbi: Joi
+                  .array()
+                  .single()
+                  .items(Joi.string())
+              })
               .options({
                 stripUnknown: true
               })
@@ -22,10 +24,17 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        const statuses = await getAllGroupedBySbiNumbers(request.query.sbi)
-        return h
-          .response(JSON.stringify(statuses, null, 2))
-          .code(200)
+        try {
+          const applications = await getAllGroupedBySbiNumbers(
+            Array.isArray(request.query.sbi) ? request.query.sbi : [request.query.sbi]
+          )
+          return h
+            .response(applications)
+            .code(200)
+        } catch (error) {
+          console.error(error)
+          throw Boom.internal(error)
+        }
       }
     }
   }
