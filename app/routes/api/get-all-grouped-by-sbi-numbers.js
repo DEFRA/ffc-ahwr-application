@@ -24,12 +24,9 @@ module.exports = [
       },
       handler: async (request, h) => {
         try {
-          const applications = await getAllGroupedBySbiNumbers(
-            Array.isArray(request.query.sbi) ? request.query.sbi : [request.query.sbi]
-          )
-          return h
-            .response(applications)
-            .code(200)
+          const sbiNumbers = Array.isArray(request.query.sbi) ? request.query.sbi : [request.query.sbi]
+          const applications = await getAllGroupedBySbiNumbers(sbiNumbers)
+          return h.response(applications).code(200)
         } catch (error) {
           console.error(`${new Date().toISOString()} Error while getting all applications grouped by SBI numbers: `, error)
           throw Boom.internal(error)
