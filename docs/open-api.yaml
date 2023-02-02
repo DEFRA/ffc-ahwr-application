@@ -28,7 +28,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getApplicationByRef'
+                $ref: '#/components/schemas/Application'
         '404':
           description: The reference is ineligible or was not found.
         '5XX':
@@ -45,7 +45,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/applicationSearch'
+              $ref: '#/components/schemas/ApplicationSearchParams'
         required: true
       responses:
         '200':
@@ -53,14 +53,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/applicationSearchResponse'
+                $ref: '#/components/schemas/ApplicationSearchResponse'
         '5XX':
           description: Unexpected error.
   /api/application/getAllGroupedBySbiNumbers:
     get:
       tags:
         - application
-      summary: Get application by SBI number
+      summary: Get applications by SBI number
       description: Get all applications grouped by Single Business Identifier (SBI) numbers.
       operationId: getApplicationBySBI
       parameters:
@@ -79,12 +79,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/getApplicationBySbi'
+                $ref: '#/components/schemas/ApplicationGroupedBySbi'
         '5XX':
           description: Unexpected error.
 components:
   schemas:
-    getApplicationByRef:
+    Application:
       type: object
       properties:
         id:
@@ -118,7 +118,7 @@ components:
         status:
           type: string
           example: "AGREED"
-    getApplicationBySbi:
+    ApplicationGroupedBySbi:
       type: object
       properties:
         sbi:
@@ -135,7 +135,7 @@ components:
               status: 
                 type: string
                 example: AGREED
-    applicationSearch:
+    ApplicationSearchParams:
       type: object
       properties:
         offset:
@@ -171,7 +171,7 @@ components:
         filter: 
           type: array
           items: {}
-    applicationSearchResponse:
+    ApplicationSearchResponse:
       type: object
       properties:
         applications:
