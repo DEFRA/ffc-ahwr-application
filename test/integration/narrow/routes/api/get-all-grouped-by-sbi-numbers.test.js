@@ -6,8 +6,8 @@ jest.mock('../../../../../app/plugins/process-compliance-application')
 
 const server = require('../../../../../app/server')
 
-describe('getAllGroupedBySbiNumbers', () => {
-  const API_URL = '/api/application/getAllGroupedBySbiNumbers'
+describe('getLatestGroupedBySbiNumbers', () => {
+  const API_URL = '/api/application/getLatestGroupedBySbiNumbers'
   const MOCK_NOW = new Date()
   let logSpy
   let errorSpy

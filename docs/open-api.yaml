@@ -228,6 +228,9 @@ components:
           updatedBy:
             type: string
             example: "David Jones"
+          statusId:
+            type: integer
+            example: 1
     ApplicationSearchParams:
       type: object
       properties:

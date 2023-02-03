@@ -1,6 +1,6 @@
 const Joi = require('joi')
 const Boom = require('@hapi/boom')
-const { getAllGroupedBySbiNumbers } = require('../../repositories/application-repository')
+const { getLatestGroupedBySbiNumbers } = require('../../repositories/application-repository')
 
 module.exports = [
   {
@@ -8,25 +8,22 @@ module.exports = [
     path: '/api/application/getLatestByEmail/{email}',
     options: {
       validate: {
-        query: Joi.object({
-          sbi: Joi
-            .array()
+        params: Joi.object({
+          email: Joi
+            .string()
             .required()
-            .single()
-            .items(Joi.string().required())
-        }).options({
-          stripUnknown: true
+            .email()
         }),
         failAction (request, h, err) {
-          throw Boom.badRequest('At least one query param "sbi" must be provided.')
+          throw Boom.badRequest('At least one query param "email" must be provided.')
         }
       },
       handler: async (request, h) => {
         try {
-          const applications = await getAllGroupedBySbiNumbers(request.query.sbi)
+          const applications = await getLatestGroupedBySbiNumbers(request.params.email)
           return h.response(applications).code(200)
         } catch (error) {
-          console.error(`${new Date().toISOString()} Error while getting all applications grouped by SBI numbers: `, error)
+          console.error(`${new Date().toISOString()} Error while getting latest application grouped by SBI numbers: `, error)
           throw Boom.internal(error)
         }
       }

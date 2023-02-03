@@ -19,7 +19,7 @@ async function get (reference) {
 /**
  * Get latest application for each Single Business Identifier (SBI) number linked to the business email
  *
- * @param {string} businessEmail
+ * @param {string} email
  * @returns latest application for each SBI number linked to the business email.
  *
  * Example result:
@@ -48,52 +48,34 @@ async function get (reference) {
       "updatedAt": "2023-01-17 13:55:20",
       "createdBy": "David Jones",
       "updatedBy": "David Jones"
+      "statusId": 1
     }
   ]
  */
-async function getAllGroupedBySbiNumbers (sbiNumbers) {
-  console.log(`${new Date().toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(sbiNumbers)}`)
+async function getLatestGroupedBySbiNumbers (email) {
+  let parsedApplications = []
+  console.log(`${new Date().toISOString()} Getting latest applications for email: ${JSON.stringify(email)}`)
   let result = await models.application
-    .findAll({
-      attributes: [
-        [sequelize.json('data.organisation.sbi'), 'sbi'],
-        [sequelize.col('reference'), 'application.reference'],
-        [sequelize.col('status.status'), 'application.status']
-      ],
-      where: {
-        'data.organisation.sbi': {
-          [Op.in]: sbiNumbers
-        }
-      },
-      include: [
-        {
-          model: models.status,
-          attributes: []
-        }
-      ],
+    .findAll(
+    {
+      order: [['createdAt', 'DESC']],
+      where: { 'data.organisation.email': email.toLowerCase() },
       raw: true
     })
-  result = Object.values(result.reduce((group, row) => {
-    const { sbi } = row
-    group[sbi] = group[sbi] ?? {
-      sbi,
-      applications: []
-    }
-    group[sbi].applications.push({
-      reference: row['application.reference'],
-      status: row['application.status']
-    })
-    return group
-  }, {}))
-  sbiNumbers.forEach(sbi => {
-    if (result.map(row => row.sbi).indexOf(sbi.toString()) === -1) {
-      result.push({
-        sbi: `${sbi}`,
-        applications: []
+
+  let resultsGroupedBySbi = Array.from(result.reduce(
+    (resultMap, e) => resultMap.set(e.data.organisation.sbi, [...resultMap.get(e.data.organisation.sbi)||[], e]),
+    new Map()
+  ).values())
+  for(let i = 0; i < resultsGroupedBySbi.length; i++){
+    parsedApplications.push(
+      resultsGroupedBySbi[i].reduce((a, b) => {
+        return new Date(a.createdAt) > new Date(b.createdAt) ? a : b;
       })
-    }
-  })
-  return result
+    )
+  }
+  
+  return parsedApplications
 }
 
 /**
@@ -285,7 +267,7 @@ async function updateById (data) {
 module.exports = {
   get,
   getBySbi,
-  getAllGroupedBySbiNumbers,
+  getLatestGroupedBySbiNumbers,
   getByEmail,
   getApplicationCount,
   getAll,

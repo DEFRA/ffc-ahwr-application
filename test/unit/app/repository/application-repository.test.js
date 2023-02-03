@@ -229,7 +229,7 @@ describe('Application Repository test', () => {
     })
   })
 
-  describe('getAllGroupedBySbiNumbers', () => {
+  describe('getLatestGroupedBySbiNumbers', () => {
     test.each([
       {
         toString: () => 'no applications found',
@@ -367,7 +367,7 @@ describe('Application Repository test', () => {
         })
         .mockResolvedValue(testCase.when.foundApplications)
 
-      const result = await repository.getAllGroupedBySbiNumbers(testCase.given.sbiNumbers)
+      const result = await repository.getLatestGroupedBySbiNumbers(testCase.given.sbiNumbers)
 
       expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
