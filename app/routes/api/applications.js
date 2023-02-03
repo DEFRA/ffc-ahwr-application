@@ -101,14 +101,14 @@ module.exports = [{
         statusId = statusIds.readyToPay
         await sendMessage(
           {
-            reference,
+            reference: request.payload.reference,
             sbi: application.dataValues.data.organisation.sbi,
             whichReview: application.dataValues.data.whichReview
           }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: uuid() }
         )
       }
 
-      await updateByReference({ reference: request.params.ref, statusId, updatedBy: request.payload.user })
+      await updateByReference({ reference: request.payload.reference, statusId, updatedBy: request.payload.user })
 
       return h.response().code(200)
     }
