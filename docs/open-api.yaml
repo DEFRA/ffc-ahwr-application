@@ -56,30 +56,29 @@ paths:
                 $ref: '#/components/schemas/ApplicationSearchResponse'
         '5XX':
           description: Unexpected error.
-  /api/application/getAllGroupedBySbiNumbers:
+  /api/application/getLatestByEmail/{email}:
     get:
       tags:
         - application
-      summary: Get applications by SBI number
-      description: Get all applications grouped by Single Business Identifier (SBI) numbers.
-      operationId: getApplicationBySBI
+      summary: Get latest application of each SBI number
+      description: Get latest application for each Single Business Identifier (SBI) number linked to the business email.
+      operationId: getLatestByEmail
       parameters:
-        - name: sbi
-          in: query
-          description: The sbi numbers that you want to query with.
+        - name: email
+          in: path
+          description: The business email that is linked to the SBI numbers you want to return
           required: true
           schema:
-            type: array
-            items:
-              type: string
-              example: "123456789"
+            type: string
+            example: "business@email.com"
+            format: email
       responses:
         '200':
-          description: The applications were found.
+          description: The email is valid and the latest applications are returned
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationGroupedBySbi'
+                $ref: '#/components/schemas/LatestApplicationByEmail'
         '5XX':
           description: Unexpected error.
 components:
@@ -95,8 +94,47 @@ components:
           type: string
           example: "AHWR-5C1C-DD6A"
         data:
-          type: string
-          example: "Placeholder Data"
+          type: object
+          properties:
+            reference:
+              type: string
+            declaration:
+              type: boolean
+              example: true
+            offerStatus: 
+              type: string
+              example: "accepted"
+            whichReview: 
+              type: string
+              example: "sheep"
+            organisation:
+              type: object
+              properties:
+                crn:
+                  type: integer
+                  example: 112222
+                sbi: 
+                  type: integer
+                  example: 112222
+                name:
+                  type: string
+                  example: "My Amazing Farm"
+                email:
+                  type: string
+                  format: email
+                  example: "business@email.com"
+                address: 
+                  type: string
+                  example: "1 Example Road"
+                farmerName:
+                  type: string
+                  example: "Mr Farmer"
+            eligibleSpecies: 
+              type: string
+              example: "yes"
+            confirmCheckDetails: 
+              type: string
+              example: "yes"
         claimed:
           type: boolean
           example: false
@@ -115,26 +153,81 @@ components:
         statusId:
           type: integer
           example: 123
+        vetVisit:
+          type: object
+          nullable: true
         status:
           type: string
           example: "AGREED"
-    ApplicationGroupedBySbi:
-      type: object
-      properties:
-        sbi:
-          type: integer
-          example: 123456789
-        applications:
-          type: array
-          items:
+    LatestApplicationByEmail:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+            example: "eaf9b180-9993-4f3f-a1ec-4422d48edf92"
+          reference:
+            type: string
+            example: "AHWR-5C1C-DD6A"
+          data:
             type: object
-            properties: 
+            properties:
               reference:
                 type: string
-                example: "AHWR-5C1C-DD6A"
-              status: 
+              declaration:
+                type: boolean
+                example: true
+              offerStatus: 
                 type: string
-                example: AGREED
+                example: "accepted"
+              whichReview: 
+                type: string
+                example: "sheep"
+              organisation:
+                type: object
+                properties:
+                  crn:
+                    type: integer
+                    example: 112222
+                  sbi: 
+                    type: integer
+                    example: 112222
+                  name:
+                    type: string
+                    example: "My Amazing Farm"
+                  email:
+                    type: string
+                    format: email
+                    example: "business@email.com"
+                  address: 
+                    type: string
+                    example: "1 Example Road"
+                  farmerName:
+                    type: string
+                    example: "Mr Farmer"
+              eligibleSpecies: 
+                type: string
+                example: "yes"
+              confirmCheckDetails: 
+                type: string
+                example: "yes"
+          claimed:
+            type: boolean
+            example: false
+          createdAt:
+            type: string
+            example: "2023-01-17 13:55:20"
+          updatedAt:
+            type: string
+            example: "2023-01-17 13:55:20"
+          createdBy:
+            type: string
+            example: "David Jones"
+          updatedBy:
+            type: string
+            example: "David Jones"
     ApplicationSearchParams:
       type: object
       properties:

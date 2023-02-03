@@ -5,7 +5,7 @@ const { getAllGroupedBySbiNumbers } = require('../../repositories/application-re
 module.exports = [
   {
     method: 'GET',
-    path: '/api/application/getAllGroupedBySbiNumbers',
+    path: '/api/application/getLatestByEmail/{email}',
     options: {
       validate: {
         query: Joi.object({

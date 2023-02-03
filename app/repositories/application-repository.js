@@ -17,35 +17,37 @@ async function get (reference) {
 }
 
 /**
- * Get all applications grouped by Single Business Identifier (SBI) numbers.
+ * Get latest application for each Single Business Identifier (SBI) number linked to the business email
  *
- * @param {number} sbiNumbers
- * @returns all applications grouped by SBI numbers.
+ * @param {string} businessEmail
+ * @returns latest application for each SBI number linked to the business email.
  *
  * Example result:
   [
     {
-        sbi: '123456789',
-        applications: [
-          {
-            reference: 'AHWR-5C1C-DD6A',
-            status: 'AGREED'
-          },
-          {
-            reference: 'AHWR-5C1C-DD6A',
-            status: 'WITHDRAWN'
-          }
-        ]
+      "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
+      "reference": "AHWR-5C1C-DD6A",
+      "data": {
+        "reference": "string",
+        "declaration": true,
+        "offerStatus": "accepted",
+        "whichReview": "sheep",
+        "organisation": {
+          "crn": 112222,
+          "sbi": 112222,
+          "name": "My Amazing Farm",
+          "email": "business@email.com",
+          "address": "1 Example Road",
+          "farmerName": "Mr Farmer"
+        },
+        "eligibleSpecies": "yes",
+        "confirmCheckDetails": "yes"
       },
-      {
-        sbi: '555555555',
-        applications: [
-          {
-            reference: 'AHWR-4FFF-1530',
-            status: 'IN CHECK'
-          }
-        ]
-      }
+      "claimed": false,
+      "createdAt": "2023-01-17 13:55:20",
+      "updatedAt": "2023-01-17 13:55:20",
+      "createdBy": "David Jones",
+      "updatedBy": "David Jones"
     }
   ]
  */
