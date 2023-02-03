@@ -5,7 +5,7 @@ const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('uuid', () => ({ v4: () => '123456789' }))
 
-const data = { organisation: { sbi: '1231' }, whichReview: 'sheep'}
+const data = { organisation: { sbi: '1231' }, whichReview: 'sheep' }
 describe('Applications test', () => {
   const server = require('../../../../../app/server')
 
@@ -155,7 +155,7 @@ describe('Applications test', () => {
     const method = 'POST'
     test.each([
       { approved: false, user: 'test', reference, payment: 0, statusId: statusIds.rejected },
-      { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay },
+      { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay }
     ])('returns 200 for valid input', async ({ approved, user, reference, payment, statusId }) => {
       applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
       const options = {
