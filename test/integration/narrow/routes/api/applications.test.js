@@ -1,6 +1,11 @@
+const statusIds = require('../../../../../app/constants/application-status')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/application-repository')
-const data = {}
+const sendMessage = require('../../../../../app/messaging/send-message')
+jest.mock('../../../../../app/messaging/send-message')
+jest.mock('uuid', () => ({ v4: () => '123456789' }))
+
+const data = { organisation: { sbi: '1231' }, whichReview: 'sheep'}
 describe('Applications test', () => {
   const server = require('../../../../../app/server')
 
@@ -139,6 +144,52 @@ describe('Applications test', () => {
         method,
         url,
         payload: { status, user }
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+    })
+  })
+
+  describe(`POST ${url} route`, () => {
+    const method = 'POST'
+    test.each([
+      { approved: false, user: 'test', reference, payment: 0, statusId: statusIds.rejected },
+      { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay },
+    ])('returns 200 for valid input', async ({ approved, user, reference, payment, statusId }) => {
+      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      const options = {
+        method,
+        url: '/api/application/claim',
+        payload: { approved, user, reference }
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, statusId, updatedBy: user })
+      expect(sendMessage).toHaveBeenCalledTimes(payment)
+    })
+    test('returns 404', async () => {
+      applicationRepository.get.mockResolvedValue({ dataValues: null })
+      const options = {
+        method,
+        url: '/api/application/claim',
+        payload: { approved: true, user: 'test', reference }
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+    })
+    test.each([
+      { approved: false, user: 'test', reference: false },
+      { approved: true, user: 0, reference: true },
+      { approved: 'wrong', user: 'test', reference }
+    ])('returns 400 with error message for invalid input', async ({ approved, user, reference }) => {
+      const options = {
+        method,
+        url: '/api/application/claim',
+        payload: { approved, user, reference }
       }
       const res = await server.inject(options)
 
