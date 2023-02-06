@@ -19,7 +19,7 @@ async function get (reference) {
 /**
  * Get latest application for each Single Business Identifier (SBI) number linked to the business email
  *
- * @param {string} email
+ * @param {string} businessEmail
  * @returns latest application for each SBI number linked to the business email.
  *
  * Example result:
@@ -47,35 +47,34 @@ async function get (reference) {
       "createdAt": "2023-01-17 13:55:20",
       "updatedAt": "2023-01-17 13:55:20",
       "createdBy": "David Jones",
-      "updatedBy": "David Jones"
+      "updatedBy": "David Jones",
       "statusId": 1
     }
   ]
  */
-async function getLatestGroupedBySbiNumbers (email) {
-  const parsedApplications = []
-  console.log(`${new Date().toISOString()} Getting latest applications for email: ${JSON.stringify(email)}`)
+getLatestApplicationForEachSbiNumberBy(businessEmail)
+async function getLatestGroupedBySbiNumbers (businessEmail) {
+  console.log(`${new Date().toISOString()} Getting latest applications: ${JSON.stringify({
+    businessEmail: businessEmail.toLowerCase()
+  })}`)
   const result = await models.application
     .findAll(
       {
+        where: { 'data.organisation.email': businessEmail.toLowerCase() },
         order: [['createdAt', 'DESC']],
-        where: { 'data.organisation.email': email.toLowerCase() },
         raw: true
       })
-
-  const resultsGroupedBySbi = Array.from(result.reduce(
+  const groupedBySbi = Array.from(result.reduce(
     (resultMap, e) => resultMap.set(e.data.organisation.sbi, [...resultMap.get(e.data.organisation.sbi) || [], e]),
     new Map()
   ).values())
-  for (let i = 0; i < resultsGroupedBySbi.length; i++) {
-    parsedApplications.push(
-      resultsGroupedBySbi[i].reduce((a, b) => {
-        return new Date(a.createdAt) > new Date(b.createdAt) ? a : b
-      })
+  const latestApplications = []
+  for (let i = 0; i < groupedBySbi.length; i++) {
+    latestApplications.push(
+      groupedBySbi[i].reduce((a, b) => new Date(a.createdAt) > new Date(b.createdAt) ? a : b)
     )
   }
-
-  return parsedApplications
+  return latestApplications
 }
 
 /**

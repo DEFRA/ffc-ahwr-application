@@ -1,5 +1,4 @@
 const { when, resetAllWhenMocks } = require('jest-when')
-const { Op } = require('sequelize')
 const repository = require('../../../../app/repositories/application-repository')
 const data = require('../../../../app/data')
 jest.mock('../../../../app/data')
@@ -234,52 +233,77 @@ describe('Application Repository test', () => {
       {
         toString: () => 'no applications found',
         given: {
-          sbiNumbers: [123456789, 555555555]
+          businessEmail: 'Business@email.com'
         },
         when: {
           foundApplications: []
         },
         expect: {
-          result: [
-            {
-              sbi: '123456789',
-              applications: []
-            },
-            {
-              sbi: '555555555',
-              applications: []
-            }
-          ]
+          result: []
         }
       },
       {
         toString: () => 'one application found',
         given: {
-          sbiNumbers: [123456789, 555555555]
+          businessEmail: 'business@email.com'
         },
         when: {
           foundApplications: [
             {
-              sbi: '123456789',
-              'application.reference': 'AHWR-5C1C-DD6A',
-              'application.status': 'AGREED'
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-DD6A',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 111111111,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 13:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
             }
           ]
         },
         expect: {
           result: [
             {
-              sbi: '123456789',
-              applications: [
-                {
-                  reference: 'AHWR-5C1C-DD6A',
-                  status: 'AGREED'
-                }
-              ]
-            },
-            {
-              sbi: '555555555',
-              applications: []
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-DD6A',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 111111111,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 13:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
             }
           ]
         }
@@ -287,106 +311,218 @@ describe('Application Repository test', () => {
       {
         toString: () => 'many application found',
         given: {
-          sbiNumbers: [123456789, 555555555]
+          businessEmail: 'business@email.com'
         },
         when: {
           foundApplications: [
             {
-              sbi: '123456789',
-              'application.reference': 'AHWR-5C1C-DD6A',
-              'application.status': 'AGREED'
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-AAAA',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 1111111111,
+                  sbi: 111111111,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 14:55:20',
+              updatedAt: '2023-01-17 14:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
             },
             {
-              sbi: '123456789',
-              'application.reference': 'AHWR-5C1C-DD6A',
-              'application.status': 'WITHDRAWN'
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-BBBB',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 1111111111,
+                  sbi: 111111111,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 13:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
             },
             {
-              sbi: '555555555',
-              'application.reference': 'AHWR-4FFF-1530',
-              'application.status': 'IN CHECK'
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-CCCC',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 222222222,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 15:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
+            },
+            {
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-DDDD',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 222222222,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 16:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
+            },
+            {
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-EEEE',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 222222222,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 13:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
             }
           ]
         },
         expect: {
           result: [
             {
-              sbi: '123456789',
-              applications: [
-                {
-                  reference: 'AHWR-5C1C-DD6A',
-                  status: 'AGREED'
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-AAAA',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 1111111111,
+                  sbi: 111111111,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
                 },
-                {
-                  reference: 'AHWR-5C1C-DD6A',
-                  status: 'WITHDRAWN'
-                }
-              ]
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 14:55:20',
+              updatedAt: '2023-01-17 14:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
             },
             {
-              sbi: '555555555',
-              applications: [
-                {
-                  reference: 'AHWR-4FFF-1530',
-                  status: 'IN CHECK'
-                }
-              ]
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-DDDD',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 222222222,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 16:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
             }
           ]
         }
       }
     ])('%s', async (testCase) => {
-      when(data.sequelize.json)
-        .calledWith('data.organisation.sbi')
-        .mockReturnValue('JSON_SBI')
-      when(data.sequelize.col)
-        .calledWith('reference')
-        .mockReturnValue('COL_REFERENCE')
-      when(data.sequelize.col)
-        .calledWith('status.status')
-        .mockReturnValue('COL_STATUS')
       when(data.models.application.findAll)
         .calledWith({
-          attributes: [
-            ['JSON_SBI', 'sbi'],
-            ['COL_REFERENCE', 'application.reference'],
-            ['COL_STATUS', 'application.status']
-          ],
           where: {
-            'data.organisation.sbi': {
-              [Op.in]: testCase.given.sbiNumbers
-            }
+            'data.organisation.email': testCase.given.businessEmail.toLowerCase()
           },
-          include: [
-            {
-              model: data.models.status,
-              attributes: []
-            }
-          ],
+          order: [['createdAt', 'DESC']],
           raw: true
         })
         .mockResolvedValue(testCase.when.foundApplications)
 
-      const result = await repository.getLatestGroupedBySbiNumbers(testCase.given.sbiNumbers)
+      const result = await repository.getLatestGroupedBySbiNumbers(testCase.given.businessEmail)
 
       expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({
-        attributes: [
-          ['JSON_SBI', 'sbi'],
-          ['COL_REFERENCE', 'application.reference'],
-          ['COL_STATUS', 'application.status']
-        ],
         where: {
-          'data.organisation.sbi': {
-            [Op.in]: testCase.given.sbiNumbers
-          }
+          'data.organisation.email': testCase.given.businessEmail.toLowerCase()
         },
-        include: [
-          {
-            model: data.models.status,
-            attributes: []
-          }
-        ],
+        order: [['createdAt', 'DESC']],
         raw: true
       })
       expect(result).toEqual(testCase.expect.result)
