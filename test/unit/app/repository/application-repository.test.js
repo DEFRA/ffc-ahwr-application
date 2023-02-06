@@ -515,7 +515,7 @@ describe('Application Repository test', () => {
         })
         .mockResolvedValue(testCase.when.foundApplications)
 
-      const result = await repository.getLatestGroupedBySbiNumbers(testCase.given.businessEmail)
+      const result = await repository.getLatestApplicationForEachSbiBy(testCase.given.businessEmail)
 
       expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
       expect(data.models.application.findAll).toHaveBeenCalledWith({

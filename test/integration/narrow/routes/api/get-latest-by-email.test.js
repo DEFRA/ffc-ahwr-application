@@ -6,8 +6,8 @@ jest.mock('../../../../../app/plugins/process-compliance-application')
 
 const server = require('../../../../../app/server')
 
-describe('getLatestGroupedBySbiNumbers', () => {
-  const API_URL = '/api/application/getLatestGroupedBySbiNumbers'
+describe('API getLatestApplicationForEachSbiBy', () => {
+  const API_URL = '/api/application/getLatestApplicationForEachSbiBy'
   const MOCK_NOW = new Date()
   let logSpy
   let errorSpy
@@ -43,61 +43,90 @@ describe('getLatestGroupedBySbiNumbers', () => {
     {
       toString: () => 'no applications found',
       given: {
-        queryString: '?sbi=123456789',
-        sbiNumbers: ['123456789']
+        queryString: '?businessEmail=business@email.com',
+        businessEmail: 'business@email.com'
       },
       when: {
         foundApplications: []
       },
       expect: {
-        payload: [
-          {
-            sbi: '123456789',
-            applications: []
-          }
-        ],
+        payload: [],
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(
-            ['123456789']
-          )}`
+          `${MOCK_NOW.toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
+            businessEmail: 'business@email.com'
+          })}`
         ]
       }
     },
     {
       toString: () => 'one application found',
       given: {
-        queryString: '?sbi=123456789&sbi=555555555',
-        sbiNumbers: ['123456789', '555555555']
+        queryString: '?businessEmail=business@email.com',
+        businessEmail: 'business@email.com'
       },
       when: {
         foundApplications: [
           {
-            sbi: '123456789',
-            'application.reference': 'AHWR-5C1C-DD6A',
-            'application.status': 'AGREED'
+            "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
+            "reference": "AHWR-5C1C-DD6A",
+            "data": {
+              "reference": "string",
+              "declaration": true,
+              "offerStatus": "accepted",
+              "whichReview": "sheep",
+              "organisation": {
+                "crn": 112222,
+                "sbi": 112222,
+                "name": "My Amazing Farm",
+                "email": "business@email.com",
+                "address": "1 Example Road",
+                "farmerName": "Mr Farmer"
+              },
+              "eligibleSpecies": "yes",
+              "confirmCheckDetails": "yes"
+            },
+            "claimed": false,
+            "createdAt": "2023-01-17 13:55:20",
+            "updatedAt": "2023-01-17 13:55:20",
+            "createdBy": "David Jones",
+            "updatedBy": "David Jones",
+            "statusId": 1
           }
         ]
       },
       expect: {
         payload: [
           {
-            sbi: '123456789',
-            applications: [
-              {
-                reference: 'AHWR-5C1C-DD6A',
-                status: 'AGREED'
-              }
-            ]
-          },
-          {
-            sbi: '555555555',
-            applications: []
+            "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
+            "reference": "AHWR-5C1C-DD6A",
+            "data": {
+              "reference": "string",
+              "declaration": true,
+              "offerStatus": "accepted",
+              "whichReview": "sheep",
+              "organisation": {
+                "crn": 112222,
+                "sbi": 112222,
+                "name": "My Amazing Farm",
+                "email": "business@email.com",
+                "address": "1 Example Road",
+                "farmerName": "Mr Farmer"
+              },
+              "eligibleSpecies": "yes",
+              "confirmCheckDetails": "yes"
+            },
+            "claimed": false,
+            "createdAt": "2023-01-17 13:55:20",
+            "updatedAt": "2023-01-17 13:55:20",
+            "createdBy": "David Jones",
+            "updatedBy": "David Jones",
+            "statusId": 1
           }
         ],
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(
-            ['123456789', '555555555']
-          )}`
+          `${MOCK_NOW.toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
+            businessEmail: 'business@email.com'
+          })}`
         ]
       }
     }
@@ -106,33 +135,10 @@ describe('getLatestGroupedBySbiNumbers', () => {
       method: 'GET',
       url: `${API_URL}${testCase.given.queryString}`
     }
-    when(db.sequelize.json)
-      .calledWith('data.organisation.sbi')
-      .mockReturnValue('JSON_SBI')
-    when(db.sequelize.col)
-      .calledWith('reference')
-      .mockReturnValue('COL_REFERENCE')
-    when(db.sequelize.col)
-      .calledWith('status.status')
-      .mockReturnValue('COL_STATUS')
     when(db.models.application.findAll)
       .calledWith({
-        attributes: [
-          ['JSON_SBI', 'sbi'],
-          ['COL_REFERENCE', 'application.reference'],
-          ['COL_STATUS', 'application.status']
-        ],
-        where: {
-          'data.organisation.sbi': {
-            [Op.in]: testCase.given.sbiNumbers
-          }
-        },
-        include: [
-          {
-            model: db.models.status,
-            attributes: []
-          }
-        ],
+        where: { 'data.organisation.email': testCase.given.businessEmail.toLowerCase() },
+        order: [['createdAt', 'DESC']],
         raw: true
       })
       .mockResolvedValue(testCase.when.foundApplications)
@@ -151,20 +157,22 @@ describe('getLatestGroupedBySbiNumbers', () => {
     {
       toString: () => 'error thrown while accessing the db',
       given: {
-        queryString: '?sbi=123456789',
-        sbiNumbers: ['123456789']
+        queryString: '?businessEmail=business@email.com',
+        businessEmail: 'business@email.com'
       },
       when: {
         error: new Error('BOOM')
       },
       expect: {
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting all applications grouped by SBI numbers: ${JSON.stringify(
-            ['123456789']
-          )}`
+          `${MOCK_NOW.toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
+            businessEmail: 'business@email.com'
+          })}`
         ],
         errorLogs: [
-          `${MOCK_NOW.toISOString()} Error while getting all applications grouped by SBI numbers: `
+          `${MOCK_NOW.toISOString()} Error while getting latest application for each SBI by ${JSON.stringify({
+            businessEmail: 'business@email.com'
+          })}`
         ]
       }
     }
@@ -173,33 +181,10 @@ describe('getLatestGroupedBySbiNumbers', () => {
       method: 'GET',
       url: `${API_URL}${testCase.given.queryString}`
     }
-    when(db.sequelize.json)
-      .calledWith('data.organisation.sbi')
-      .mockReturnValue('JSON_SBI')
-    when(db.sequelize.col)
-      .calledWith('reference')
-      .mockReturnValue('COL_REFERENCE')
-    when(db.sequelize.col)
-      .calledWith('status.status')
-      .mockReturnValue('COL_STATUS')
     when(db.models.application.findAll)
       .calledWith({
-        attributes: [
-          ['JSON_SBI', 'sbi'],
-          ['COL_REFERENCE', 'application.reference'],
-          ['COL_STATUS', 'application.status']
-        ],
-        where: {
-          'data.organisation.sbi': {
-            [Op.in]: testCase.given.sbiNumbers
-          }
-        },
-        include: [
-          {
-            model: db.models.status,
-            attributes: []
-          }
-        ],
+        where: { 'data.organisation.email': testCase.given.businessEmail.toLowerCase() },
+        order: [['createdAt', 'DESC']],
         raw: true
       })
       .mockRejectedValue(testCase.when.error)
@@ -223,9 +208,9 @@ describe('getLatestGroupedBySbiNumbers', () => {
       }
     },
     {
-      toString: () => 'no SBI number provided',
+      toString: () => 'no "businessEmail" provided',
       given: {
-        queryString: '?sbi='
+        queryString: '?businessEmail='
       }
     }
   ])('%s', async (testCase) => {
@@ -239,6 +224,6 @@ describe('getLatestGroupedBySbiNumbers', () => {
 
     expect(response.statusCode).toBe(400)
     expect(response.statusMessage).toEqual('Bad Request')
-    expect(payload.message).toEqual('At least one query param "sbi" must be provided.')
+    expect(payload.message).toEqual('"businessEmail" query param must be provided.')
   })
 })

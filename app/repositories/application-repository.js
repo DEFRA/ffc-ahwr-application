@@ -52,9 +52,8 @@ async function get (reference) {
     }
   ]
  */
-getLatestApplicationForEachSbiNumberBy(businessEmail)
-async function getLatestGroupedBySbiNumbers (businessEmail) {
-  console.log(`${new Date().toISOString()} Getting latest applications: ${JSON.stringify({
+async function getLatestApplicationForEachSbiBy (businessEmail) {
+  console.log(`${new Date().toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
     businessEmail: businessEmail.toLowerCase()
   })}`)
   const result = await models.application
@@ -266,7 +265,7 @@ async function updateById (data) {
 module.exports = {
   get,
   getBySbi,
-  getLatestGroupedBySbiNumbers,
+  getLatestApplicationForEachSbiBy,
   getByEmail,
   getApplicationCount,
   getAll,
