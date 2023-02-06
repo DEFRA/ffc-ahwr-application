@@ -52,7 +52,7 @@ async function get (reference) {
     }
   ]
  */
-async function getLatestApplicationForEachSbiBy (businessEmail) {
+async function getLatestApplicationsBy (businessEmail) {
   console.log(`${new Date().toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
     businessEmail: businessEmail.toLowerCase()
   })}`)
@@ -265,7 +265,7 @@ async function updateById (data) {
 module.exports = {
   get,
   getBySbi,
-  getLatestApplicationForEachSbiBy,
+  getLatestApplicationsBy,
   getByEmail,
   getApplicationCount,
   getAll,

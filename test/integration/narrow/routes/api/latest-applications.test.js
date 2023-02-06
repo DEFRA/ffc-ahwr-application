@@ -5,8 +5,8 @@ jest.mock('../../../../../app/plugins/process-compliance-application')
 
 const server = require('../../../../../app/server')
 
-describe('API getLatestApplicationForEachSbiBy', () => {
-  const API_URL = '/api/application/getLatestApplicationForEachSbiBy'
+describe('/api/applications/latest', () => {
+  const API_URL = '/api/applications/latest'
   const MOCK_NOW = new Date()
   let logSpy
   let errorSpy
@@ -58,7 +58,7 @@ describe('API getLatestApplicationForEachSbiBy', () => {
       }
     },
     {
-      toString: () => 'one application found',
+      toString: () => 'one latest application found',
       given: {
         queryString: '?businessEmail=business@email.com',
         businessEmail: 'business@email.com'
@@ -223,6 +223,6 @@ describe('API getLatestApplicationForEachSbiBy', () => {
 
     expect(response.statusCode).toBe(400)
     expect(response.statusMessage).toEqual('Bad Request')
-    expect(payload.message).toEqual('"businessEmail" query param must be provided.')
+    expect(payload.message).toEqual('"businessEmail" query param must be provided')
   })
 })

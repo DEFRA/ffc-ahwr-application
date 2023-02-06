@@ -1,11 +1,11 @@
 const Joi = require('joi')
 const Boom = require('@hapi/boom')
-const { getLatestApplicationForEachSbiBy } = require('../../repositories/application-repository')
+const { getLatestApplicationsBy } = require('../../repositories/application-repository')
 
 module.exports = [
   {
     method: 'GET',
-    path: '/api/application/getLatestApplicationForEachSbiBy',
+    path: '/api/applications/latest',
     options: {
       validate: {
         query: Joi.object({
@@ -17,12 +17,12 @@ module.exports = [
             .email()
         }),
         failAction (request, h, err) {
-          throw Boom.badRequest('"businessEmail" query param must be provided.')
+          throw Boom.badRequest('"businessEmail" query param must be provided')
         }
       },
       handler: async (request, h) => {
         try {
-          const applications = await getLatestApplicationForEachSbiBy(request.query.businessEmail)
+          const applications = await getLatestApplicationsBy(request.query.businessEmail)
           return h.response(applications).code(200)
         } catch (error) {
           console.error(`${new Date().toISOString()} Error while getting latest application for each SBI by ${JSON.stringify({
