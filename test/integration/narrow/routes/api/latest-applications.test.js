@@ -51,7 +51,7 @@ describe('/api/applications/latest', () => {
       expect: {
         payload: [],
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
+          `${MOCK_NOW.toISOString()} Getting latest applications by: ${JSON.stringify({
             businessEmail: 'business@email.com'
           })}`
         ]
@@ -123,7 +123,7 @@ describe('/api/applications/latest', () => {
           }
         ],
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
+          `${MOCK_NOW.toISOString()} Getting latest applications by: ${JSON.stringify({
             businessEmail: 'business@email.com'
           })}`
         ]
@@ -164,12 +164,12 @@ describe('/api/applications/latest', () => {
       },
       expect: {
         consoleLogs: [
-          `${MOCK_NOW.toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
+          `${MOCK_NOW.toISOString()} Getting latest applications by: ${JSON.stringify({
             businessEmail: 'business@email.com'
           })}`
         ],
         errorLogs: [
-          `${MOCK_NOW.toISOString()} Error while getting latest application for each SBI by ${JSON.stringify({
+          `${MOCK_NOW.toISOString()} Error while getting latest applications ${JSON.stringify({
             businessEmail: 'business@email.com'
           })}`
         ]

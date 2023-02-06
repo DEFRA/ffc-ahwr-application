@@ -53,7 +53,7 @@ async function get (reference) {
   ]
  */
 async function getLatestApplicationsBy (businessEmail) {
-  console.log(`${new Date().toISOString()} Getting latest application for each SBI by: ${JSON.stringify({
+  console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
     businessEmail: businessEmail.toLowerCase()
   })}`)
   const result = await models.application
