@@ -169,7 +169,7 @@ describe('/api/applications/latest', () => {
           })}`
         ],
         errorLogs: [
-          `${MOCK_NOW.toISOString()} Error while getting latest applications ${JSON.stringify({
+          `${MOCK_NOW.toISOString()} Error while getting latest applications by ${JSON.stringify({
             businessEmail: 'business@email.com'
           })}`
         ]
