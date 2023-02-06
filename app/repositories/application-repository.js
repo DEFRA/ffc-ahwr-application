@@ -1,5 +1,5 @@
-const { Op } = require('sequelize')
 const { models, sequelize } = require('../data')
+
 /**
  * Get application by reference number
  * @param {string} reference
@@ -53,28 +53,28 @@ async function get (reference) {
   ]
  */
 async function getLatestGroupedBySbiNumbers (email) {
-  let parsedApplications = []
+  const parsedApplications = []
   console.log(`${new Date().toISOString()} Getting latest applications for email: ${JSON.stringify(email)}`)
-  let result = await models.application
+  const result = await models.application
     .findAll(
-    {
-      order: [['createdAt', 'DESC']],
-      where: { 'data.organisation.email': email.toLowerCase() },
-      raw: true
-    })
+      {
+        order: [['createdAt', 'DESC']],
+        where: { 'data.organisation.email': email.toLowerCase() },
+        raw: true
+      })
 
-  let resultsGroupedBySbi = Array.from(result.reduce(
-    (resultMap, e) => resultMap.set(e.data.organisation.sbi, [...resultMap.get(e.data.organisation.sbi)||[], e]),
+  const resultsGroupedBySbi = Array.from(result.reduce(
+    (resultMap, e) => resultMap.set(e.data.organisation.sbi, [...resultMap.get(e.data.organisation.sbi) || [], e]),
     new Map()
   ).values())
-  for(let i = 0; i < resultsGroupedBySbi.length; i++){
+  for (let i = 0; i < resultsGroupedBySbi.length; i++) {
     parsedApplications.push(
       resultsGroupedBySbi[i].reduce((a, b) => {
-        return new Date(a.createdAt) > new Date(b.createdAt) ? a : b;
+        return new Date(a.createdAt) > new Date(b.createdAt) ? a : b
       })
     )
   }
-  
+
   return parsedApplications
 }
 
