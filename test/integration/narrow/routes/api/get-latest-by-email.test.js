@@ -1,5 +1,4 @@
 const { when, resetAllWhenMocks } = require('jest-when')
-const { Op } = require('sequelize')
 
 jest.mock('../../../../../app/data')
 jest.mock('../../../../../app/plugins/process-compliance-application')
@@ -67,60 +66,60 @@ describe('API getLatestApplicationForEachSbiBy', () => {
       when: {
         foundApplications: [
           {
-            "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
-            "reference": "AHWR-5C1C-DD6A",
-            "data": {
-              "reference": "string",
-              "declaration": true,
-              "offerStatus": "accepted",
-              "whichReview": "sheep",
-              "organisation": {
-                "crn": 112222,
-                "sbi": 112222,
-                "name": "My Amazing Farm",
-                "email": "business@email.com",
-                "address": "1 Example Road",
-                "farmerName": "Mr Farmer"
+            id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+            reference: 'AHWR-5C1C-DD6A',
+            data: {
+              reference: 'string',
+              declaration: true,
+              offerStatus: 'accepted',
+              whichReview: 'sheep',
+              organisation: {
+                crn: 112222,
+                sbi: 112222,
+                name: 'My Amazing Farm',
+                email: 'business@email.com',
+                address: '1 Example Road',
+                farmerName: 'Mr Farmer'
               },
-              "eligibleSpecies": "yes",
-              "confirmCheckDetails": "yes"
+              eligibleSpecies: 'yes',
+              confirmCheckDetails: 'yes'
             },
-            "claimed": false,
-            "createdAt": "2023-01-17 13:55:20",
-            "updatedAt": "2023-01-17 13:55:20",
-            "createdBy": "David Jones",
-            "updatedBy": "David Jones",
-            "statusId": 1
+            claimed: false,
+            createdAt: '2023-01-17 13:55:20',
+            updatedAt: '2023-01-17 13:55:20',
+            createdBy: 'David Jones',
+            updatedBy: 'David Jones',
+            statusId: 1
           }
         ]
       },
       expect: {
         payload: [
           {
-            "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
-            "reference": "AHWR-5C1C-DD6A",
-            "data": {
-              "reference": "string",
-              "declaration": true,
-              "offerStatus": "accepted",
-              "whichReview": "sheep",
-              "organisation": {
-                "crn": 112222,
-                "sbi": 112222,
-                "name": "My Amazing Farm",
-                "email": "business@email.com",
-                "address": "1 Example Road",
-                "farmerName": "Mr Farmer"
+            id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+            reference: 'AHWR-5C1C-DD6A',
+            data: {
+              reference: 'string',
+              declaration: true,
+              offerStatus: 'accepted',
+              whichReview: 'sheep',
+              organisation: {
+                crn: 112222,
+                sbi: 112222,
+                name: 'My Amazing Farm',
+                email: 'business@email.com',
+                address: '1 Example Road',
+                farmerName: 'Mr Farmer'
               },
-              "eligibleSpecies": "yes",
-              "confirmCheckDetails": "yes"
+              eligibleSpecies: 'yes',
+              confirmCheckDetails: 'yes'
             },
-            "claimed": false,
-            "createdAt": "2023-01-17 13:55:20",
-            "updatedAt": "2023-01-17 13:55:20",
-            "createdBy": "David Jones",
-            "updatedBy": "David Jones",
-            "statusId": 1
+            claimed: false,
+            createdAt: '2023-01-17 13:55:20',
+            updatedAt: '2023-01-17 13:55:20',
+            createdBy: 'David Jones',
+            updatedBy: 'David Jones',
+            statusId: 1
           }
         ],
         consoleLogs: [
