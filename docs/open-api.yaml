@@ -1,0 +1,223 @@
+openapi: 3.0.3
+info:
+  title: Application API
+  description: |-
+    Application API for Animal Health and Welfare Review
+  version: 0.30.3
+tags:
+  - name: application
+    description: Everything about applications.
+paths:
+  /api/application/get/{ref}:
+    get:
+      tags:
+        - application
+      summary: Get application by reference number
+      description: Returns an application object when given a valid reference number
+      operationId: getApplicationByReference
+      parameters:
+        - name: ref
+          in: path
+          description: The reference number for the application.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The application was found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '404':
+          description: The reference is ineligible or was not found.
+        '5XX':
+          description: Unexpected error.
+  /api/application/search:
+    post:
+      tags:
+        - application
+      summary: Search application by Search Type and Search Text.
+      description: Currently Support Status, SBI number, Application Reference Number
+      operationId: searchApplication
+      requestBody:
+        description: Create a new pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationSearchParams'
+        required: true
+      responses:
+        '200':
+          description: The search was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationSearchResponse'
+        '5XX':
+          description: Unexpected error.
+  /api/applications/latest:
+    get:
+      tags:
+        - application
+      summary: Get latest application of each SBI number
+      description: Get latest application for each Single Business Identifier (SBI) number linked to the business email.
+      operationId: getLatestByBusinessEmail
+      parameters:
+        - name: businessEmail
+          in: query
+          description: The business email that is linked to the SBI numbers you want to return
+          required: true
+          schema:
+            type: string
+            example: "business@email.com"
+            format: email
+      responses:
+        '200':
+          description: The email is valid and the latest applications are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestApplicationByBusinessEmail'
+        '400':
+          description: The email is invalid
+        '5XX':
+          description: Unexpected error.
+components:
+  schemas:
+    Application:
+      allOf:
+        - $ref: '#/components/schemas/application'
+        - type: object
+          properties:
+            vetVisit:
+              type: object
+              nullable: true
+            status:
+              type: string
+              example: "AGREED"
+    LatestApplicationByBusinessEmail:
+      type: array
+      items:
+          $ref: '#/components/schemas/application'
+    ApplicationSearchParams:
+      type: object
+      properties:
+        offset:
+          type: number
+          example: 0
+          default: 0     
+        limit:
+          type: number
+          example: 1
+          default: 20   
+          minimum: 0
+        search:
+          type: object
+          properties:
+            text: 
+              type: string
+              example: "Search Query"
+            type:
+              type: string
+              example: "sbi"
+              default: "sbi"   
+        sort:
+          type: object
+          properties:
+            field: 
+              type: string
+              example: "CREATEDAT"
+              default: "CREATEDAT"
+            direction:
+              type: string
+              example: "ASC"
+              enum: ["ASC"]
+        filter: 
+          type: array
+          items: {}
+    ApplicationSearchResponse:
+      type: array
+      items:
+        allOf:
+          - $ref: '#/components/schemas/application'
+          - type: object
+            properties:
+              total:
+                type: integer
+                example: 10
+              applicationStatus:
+                type: array
+                items:
+                  type: string
+                  example: "AGREED"
+    application:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "eaf9b180-9993-4f3f-a1ec-4422d48edf92"
+        reference:
+          type: string
+          example: "AHWR-5C1C-DD6A"
+        data:
+          type: object
+          properties:
+            reference:
+              type: string
+            declaration:
+              type: boolean
+              example: true
+            offerStatus: 
+              type: string
+              example: "accepted"
+            whichReview: 
+              type: string
+              example: "sheep"
+            organisation:
+              type: object
+              properties:
+                crn:
+                  type: integer
+                  example: 112222
+                sbi: 
+                  type: integer
+                  example: 112222
+                name:
+                  type: string
+                  example: "My Amazing Farm"
+                email:
+                  type: string
+                  format: email
+                  example: "business@email.com"
+                address: 
+                  type: string
+                  example: "1 Example Road"
+                farmerName:
+                  type: string
+                  example: "Mr Farmer"
+            eligibleSpecies: 
+              type: string
+              example: "yes"
+            confirmCheckDetails: 
+              type: string
+              example: "yes"
+        claimed:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          example: "2023-01-17 13:55:20"
+        updatedAt:
+          type: string
+          example: "2023-01-17 13:55:20"
+        createdBy:
+          type: string
+          example: "David Jones"
+        updatedBy:
+          type: string
+          example: "David Jones"
+        statusId:
+          type: integer
+          example: 1

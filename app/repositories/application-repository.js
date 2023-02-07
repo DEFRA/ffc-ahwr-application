@@ -1,4 +1,5 @@
 const { models, sequelize } = require('../data')
+
 /**
  * Get application by reference number
  * @param {string} reference
@@ -13,6 +14,66 @@ async function get (reference) {
         attributes: ['status']
       }]
     })
+}
+
+/**
+ * Get latest application for each Single Business Identifier (SBI) number linked to the business email
+ *
+ * @param {string} businessEmail
+ * @returns latest application for each SBI number linked to the business email.
+ *
+ * Example result:
+  [
+    {
+      "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
+      "reference": "AHWR-5C1C-DD6A",
+      "data": {
+        "reference": "string",
+        "declaration": true,
+        "offerStatus": "accepted",
+        "whichReview": "sheep",
+        "organisation": {
+          "crn": 112222,
+          "sbi": 112222,
+          "name": "My Amazing Farm",
+          "email": "business@email.com",
+          "address": "1 Example Road",
+          "farmerName": "Mr Farmer"
+        },
+        "eligibleSpecies": "yes",
+        "confirmCheckDetails": "yes"
+      },
+      "claimed": false,
+      "createdAt": "2023-01-17 13:55:20",
+      "updatedAt": "2023-01-17 13:55:20",
+      "createdBy": "David Jones",
+      "updatedBy": "David Jones",
+      "statusId": 1
+    }
+  ]
+ */
+async function getLatestApplicationsBy (businessEmail) {
+  console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
+    businessEmail: businessEmail.toLowerCase()
+  })}`)
+  const result = await models.application
+    .findAll(
+      {
+        where: { 'data.organisation.email': businessEmail.toLowerCase() },
+        order: [['createdAt', 'DESC']],
+        raw: true
+      })
+  const groupedBySbi = Array.from(result.reduce(
+    (resultMap, e) => resultMap.set(e.data.organisation.sbi, [...resultMap.get(e.data.organisation.sbi) || [], e]),
+    new Map()
+  ).values())
+  const latestApplications = []
+  for (let i = 0; i < groupedBySbi.length; i++) {
+    latestApplications.push(
+      groupedBySbi[i].reduce((a, b) => new Date(a.createdAt) > new Date(b.createdAt) ? a : b)
+    )
+  }
+  return latestApplications
 }
 
 /**
@@ -204,6 +265,7 @@ async function updateById (data) {
 module.exports = {
   get,
   getBySbi,
+  getLatestApplicationsBy,
   getByEmail,
   getApplicationCount,
   getAll,
