@@ -79,6 +79,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LatestApplicationByBusinessEmail'
+        '400':
+          description: The email is invalid
         '5XX':
           description: Unexpected error.
 components:
