@@ -114,7 +114,9 @@ describe(('Store application in database'), () => {
   test('submits an existing application with statusId 2', async () => {
     const MOCK_REFERENCE = 'MOCK_REFERENCE'
     const MOCK_NOW = new Date()
-
+    applicationRepository.set.mockResolvedValue({
+      dataValues: { reference }
+    })
     when(applicationRepository.getBySbi)
       .calledWith(
         message.body.organisation.sbi
@@ -127,13 +129,15 @@ describe(('Store application in database'), () => {
         statusId: WITHDRAWN
       })
 
+    await processApplication(message)
+
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
       reference: '',
       data: message.body,
       createdBy: 'admin',
       createdAt: expect.any(Date),
-      statusId: WITHDRAWN
+      statusId: AGREED
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
@@ -143,6 +147,9 @@ describe(('Store application in database'), () => {
     const MOCK_REFERENCE = 'MOCK_REFERENCE'
     const MOCK_NOW = new Date()
 
+    applicationRepository.set.mockResolvedValue({
+      dataValues: { reference }
+    })
     when(applicationRepository.getBySbi)
       .calledWith(
         message.body.organisation.sbi
@@ -155,13 +162,15 @@ describe(('Store application in database'), () => {
         statusId: NOT_AGREED
       })
 
+    await processApplication(message)
+
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
       reference: '',
       data: message.body,
       createdBy: 'admin',
       createdAt: expect.any(Date),
-      statusId: NOT_AGREED
+      statusId: AGREED
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })

@@ -25,7 +25,6 @@ const processApplication = async (msg) => {
       existingApplication.statusId !== applicationStatus.withdrawn &&
       existingApplication.statusId !== applicationStatus.notAgreed
     ) {
-      console.log(existingApplication)
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
