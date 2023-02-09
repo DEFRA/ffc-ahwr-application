@@ -28,4 +28,9 @@ describe('Compliance Repository test', () => {
       where: { id: 'random-id' }
     })
   })
+  test('set calls model set with data ', async () => {
+    await repository.set({ processed: true, reference, statusId: 1 })
+    expect(data.models.complianceApplication.set).toHaveBeenCalledTimes(1)
+    expect(data.models.complianceApplication.set).toHaveBeenCalledWith({ processed: true, reference, statusId: 1 })
+  })
 })
