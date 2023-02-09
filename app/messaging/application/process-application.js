@@ -1,5 +1,6 @@
 const util = require('util')
 const states = require('./states')
+const applicationStatus = require('../../constants/application-status')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../../config')
 const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
@@ -19,7 +20,10 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
-    if (existingApplication) {
+    if (
+      existingApplication.statusId !== applicationStatus.withdrawn &&
+      existingApplication.statusId !== applicationStatus.notAgreed
+    ) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(

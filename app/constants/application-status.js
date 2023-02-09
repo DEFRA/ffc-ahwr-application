@@ -1,6 +1,7 @@
 module.exports = {
+  withdrawn: 2,
   inCheck: 5,
-  rejected: 10,
+  notAgreed: 7,
   readyToPay: 9,
-  withdrawn: 2
+  rejected: 10
 }
