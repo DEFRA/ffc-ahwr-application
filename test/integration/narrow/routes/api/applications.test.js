@@ -1,8 +1,8 @@
 const statusIds = require('../../../../../app/constants/application-status')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
+const complianceRepository = require('../../../../../app/repositories/compliance-application-repository')
 jest.mock('../../../../../app/repositories/application-repository')
-const sendMessage = require('../../../../../app/messaging/send-message')
-jest.mock('../../../../../app/messaging/send-message')
+jest.mock('../../../../../app/repositories/compliance-application-repository')
 jest.mock('uuid', () => ({ v4: () => '123456789' }))
 
 const data = { organisation: { sbi: '1231' }, whichReview: 'sheep' }
@@ -154,9 +154,9 @@ describe('Applications test', () => {
   describe(`POST ${url} route`, () => {
     const method = 'POST'
     test.each([
-      { approved: false, user: 'test', reference, payment: 0, statusId: statusIds.rejected },
-      { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay }
-    ])('returns 200 for valid input', async ({ approved, user, reference, payment, statusId }) => {
+      { approved: false, user: 'test', reference, statusId: statusIds.rejected },
+      { approved: true, user: 'test', reference, statusId: statusIds.readyToPay }
+    ])('returns 200 for valid input', async ({ approved, user, reference, statusId }) => {
       applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
       const options = {
         method,
@@ -166,9 +166,8 @@ describe('Applications test', () => {
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, statusId, updatedBy: user })
-      expect(sendMessage).toHaveBeenCalledTimes(payment)
+      expect(complianceRepository.set).toHaveBeenCalledTimes(1)
+      expect(complianceRepository.set).toHaveBeenCalledWith({ applicationReference: reference, statusId })
     })
     test('returns 404', async () => {
       applicationRepository.get.mockResolvedValue({ dataValues: null })

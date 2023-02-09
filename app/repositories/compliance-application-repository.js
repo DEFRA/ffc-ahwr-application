@@ -14,4 +14,13 @@ async function update (data, id) {
   })
 }
 
-module.exports = { getPendingApplications, update }
+/**
+ *
+ * @param {*} data
+ * @returns
+ */
+async function set (data) {
+  return models.application.create(data)
+}
+
+module.exports = { getPendingApplications, update, set }
