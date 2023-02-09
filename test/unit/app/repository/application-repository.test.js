@@ -538,7 +538,9 @@ describe('Application Repository test', () => {
     expect(data.models.application.findOne).toHaveBeenCalledWith({
       where: {
         'data.organisation.sbi': sbi
-      }
+      },
+      order: [['createdAt', 'DESC']],
+      raw: true
     })
   })
 
