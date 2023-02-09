@@ -20,7 +20,7 @@ async function update (data, id) {
  * @returns
  */
 async function set (data) {
-  return models.application.create(data)
+  return models.complianceApplication.create(data)
 }
 
 module.exports = { getPendingApplications, update, set }

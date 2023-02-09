@@ -4,6 +4,7 @@ jest.mock('../../../../app/data')
 
 data.models.complianceApplication.update = jest.fn()
 data.models.complianceApplication.findAll = jest.fn()
+data.models.complianceApplication.create = jest.fn()
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -30,7 +31,7 @@ describe('Compliance Repository test', () => {
   })
   test('set calls model set with data ', async () => {
     await repository.set({ processed: true, reference, statusId: 1 })
-    expect(data.models.complianceApplication.set).toHaveBeenCalledTimes(1)
-    expect(data.models.complianceApplication.set).toHaveBeenCalledWith({ processed: true, reference, statusId: 1 })
+    expect(data.models.complianceApplication.create).toHaveBeenCalledTimes(1)
+    expect(data.models.complianceApplication.create).toHaveBeenCalledWith({ processed: true, reference, statusId: 1 })
   })
 })
