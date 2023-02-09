@@ -15,6 +15,10 @@ const processApplication = require('../../../../../app/messaging/application/pro
 
 const consoleErrorSpy = jest.spyOn(console, 'error')
 
+const WITHDRAWN = 2
+const NOT_AGREED = 7
+const AGREED = 1
+
 describe(('Store application in database'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const email = 'email@domain.com'
@@ -50,6 +54,7 @@ describe(('Store application in database'), () => {
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference }
     })
+    applicationRepository.getBySbi.mockResolvedValue()
 
     await processApplication(message)
 
@@ -65,7 +70,7 @@ describe(('Store application in database'), () => {
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
-  test('submits an existing application', async () => {
+  test('submits an existing application with statusId 1', async () => {
     const MOCK_REFERENCE = 'MOCK_REFERENCE'
     const MOCK_NOW = new Date()
 
@@ -77,7 +82,8 @@ describe(('Store application in database'), () => {
         dataValues: {
           reference: MOCK_REFERENCE,
           createdAt: MOCK_NOW
-        }
+        },
+        statusId: AGREED
       })
 
     await processApplication(message)
@@ -103,6 +109,62 @@ describe(('Store application in database'), () => {
         sessionId
       }
     )
+  })
+
+  test('submits an existing application with statusId 2', async () => {
+    const MOCK_REFERENCE = 'MOCK_REFERENCE'
+    const MOCK_NOW = new Date()
+
+    when(applicationRepository.getBySbi)
+      .calledWith(
+        message.body.organisation.sbi
+      )
+      .mockResolvedValue({
+        dataValues: {
+          reference: MOCK_REFERENCE,
+          createdAt: MOCK_NOW
+        },
+        statusId: WITHDRAWN
+      })
+
+    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+      reference: '',
+      data: message.body,
+      createdBy: 'admin',
+      createdAt: expect.any(Date),
+      statusId: WITHDRAWN
+    }))
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+  })
+
+  test('submits an existing application with statusId 7', async () => {
+    const MOCK_REFERENCE = 'MOCK_REFERENCE'
+    const MOCK_NOW = new Date()
+
+    when(applicationRepository.getBySbi)
+      .calledWith(
+        message.body.organisation.sbi
+      )
+      .mockResolvedValue({
+        dataValues: {
+          reference: MOCK_REFERENCE,
+          createdAt: MOCK_NOW
+        },
+        statusId: NOT_AGREED
+      })
+
+    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+      reference: '',
+      data: message.body,
+      createdBy: 'admin',
+      createdAt: expect.any(Date),
+      statusId: NOT_AGREED
+    }))
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('successfully submits rejected application', async () => {
