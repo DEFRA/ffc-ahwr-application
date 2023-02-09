@@ -1,6 +1,6 @@
 const Joi = require('joi')
 const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
-const { set } = require('../../repositories/vet-visit-repository')
+const { set } = require('../../repositories/compliance-application-repository')
 const statusIds = require('../../constants/application-status')
 
 module.exports = [{
