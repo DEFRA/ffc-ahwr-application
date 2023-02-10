@@ -3,5 +3,6 @@ module.exports = {
   inCheck: 5,
   notAgreed: 7,
   readyToPay: 9,
-  rejected: 10
+  rejected: 10,
+  agreed: 1
 }
