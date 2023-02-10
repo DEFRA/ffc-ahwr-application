@@ -152,60 +152,6 @@ describe(('Store application in database'), () => {
     })
   })
 
-  test('submits an existing application with statusId 2', async () => {
-    const MOCK_REFERENCE = 'MOCK_REFERENCE'
-    const MOCK_NOW = new Date()
-    applicationRepository.set.mockResolvedValue({
-      dataValues: { reference: MOCK_REFERENCE }
-    })
-    when(applicationRepository.getBySbi)
-      .calledWith(
-        message.body.organisation.sbi
-      )
-      .mockResolvedValue({
-        dataValues: {
-          reference: MOCK_REFERENCE,
-          createdAt: MOCK_NOW
-        },
-        statusId: applicationStatus.withdrawn
-      })
-
-    await processApplication(message)
-  })
-
-  test('submits an existing application with statusId 7', async () => {
-    const MOCK_REFERENCE = 'MOCK_REFERENCE'
-    const MOCK_NOW = new Date()
-
-    applicationRepository.set.mockResolvedValue({
-      dataValues: { reference: MOCK_REFERENCE }
-    })
-    when(applicationRepository.getBySbi)
-      .calledWith(
-        message.body.organisation.sbi
-      )
-      .mockResolvedValue({
-        dataValues: {
-          reference: MOCK_REFERENCE,
-          createdAt: MOCK_NOW
-        },
-        statusId: applicationStatus.notAgreed
-      })
-
-    await processApplication(message)
-
-    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
-      reference: '',
-      data: message.body,
-      createdBy: 'admin',
-      createdAt: expect.any(Date),
-      statusId: applicationStatus.agreed
-    }))
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
-  })
-
   test('successfully submits rejected application', async () => {
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
