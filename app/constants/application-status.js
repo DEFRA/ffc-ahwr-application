@@ -1,8 +1,8 @@
 module.exports = {
-  withdrawn: 2,
+  agreed: 1,
   inCheck: 5,
   notAgreed: 7,
   readyToPay: 9,
   rejected: 10,
-  agreed: 1
+  withdrawn: 2
 }
