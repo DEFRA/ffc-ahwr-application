@@ -537,8 +537,7 @@ describe('Application Repository test', () => {
         where: {
           'data.organisation.sbi': sbi
         },
-        order: [['createdAt', 'DESC']],
-        raw: true
+        order: [['createdAt', 'DESC']]
       })
       .mockResolvedValue({
         application: 'MockApplication'
@@ -555,8 +554,7 @@ describe('Application Repository test', () => {
       where: {
         'data.organisation.sbi': sbi
       },
-      order: [['createdAt', 'DESC']],
-      raw: true
+      order: [['createdAt', 'DESC']]
     })
   })
 
