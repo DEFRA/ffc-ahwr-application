@@ -87,8 +87,7 @@ async function getBySbi (sbi) {
     where: {
       'data.organisation.sbi': sbi
     },
-    order: [['createdAt', 'DESC']],
-    raw: true
+    order: [['createdAt', 'DESC']]
   })
 }
 
