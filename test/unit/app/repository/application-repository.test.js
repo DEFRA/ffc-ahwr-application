@@ -532,13 +532,31 @@ describe('Application Repository test', () => {
   test('getBySbi', async () => {
     const sbi = 123456789
 
-    await repository.getBySbi(sbi)
+    when(data.models.application.findOne)
+      .calledWith({
+        where: {
+          'data.organisation.sbi': sbi
+        },
+        order: [['createdAt', 'DESC']],
+        raw: true
+      })
+      .mockResolvedValue({
+        application: 'MockApplication'
+      })
+
+    const result = await repository.getBySbi(sbi)
+
+    expect(result).toEqual({
+      application: 'MockApplication'
+    })
 
     expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
     expect(data.models.application.findOne).toHaveBeenCalledWith({
       where: {
         'data.organisation.sbi': sbi
-      }
+      },
+      order: [['createdAt', 'DESC']],
+      raw: true
     })
   })
 
