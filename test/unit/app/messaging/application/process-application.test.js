@@ -41,17 +41,19 @@ describe(('Store application in database'), () => {
     sessionId
   }
 
+  beforeEach(() => {
+    applicationRepository.set.mockResolvedValue({
+      dataValues: { reference: MOCK_REFERENCE }
+    })
+    applicationRepository.getBySbi.mockResolvedValue()
+  })
+
   afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
   })
 
   test('successfully submits application', async () => {
-    applicationRepository.set.mockResolvedValue({
-      dataValues: { reference: MOCK_REFERENCE }
-    })
-    applicationRepository.getBySbi.mockResolvedValue()
-
     await processApplication(message)
 
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
@@ -184,7 +186,7 @@ describe(('Store application in database'), () => {
   })
 
   test('Application submission message validation failed', async () => {
-    delete message.body.organisation.isTest
+    delete message.body.organisation.email
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
