@@ -1,8 +1,8 @@
 const statusIds = require('../../../../../app/constants/application-status')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-const complianceRepository = require('../../../../../app/repositories/compliance-application-repository')
+const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
-jest.mock('../../../../../app/repositories/compliance-application-repository')
+jest.mock('../../../../../app/messaging/send-message')
 jest.mock('uuid', () => ({ v4: () => '123456789' }))
 
 const data = { organisation: { sbi: '1231' }, whichReview: 'sheep' }
@@ -153,10 +153,12 @@ describe('Applications test', () => {
 
   describe(`POST ${url} route`, () => {
     const method = 'POST'
+    const consoleLogSpy = jest.spyOn(console, 'log')
+    const consoleErrorSpy = jest.spyOn(console, 'error')
     test.each([
-      { approved: false, user: 'test', reference, statusId: statusIds.rejected },
-      { approved: true, user: 'test', reference, statusId: statusIds.readyToPay }
-    ])('returns 200 for valid input', async ({ approved, user, reference, statusId }) => {
+      { approved: false, user: 'test', reference, payment: 0, statusId: statusIds.rejected },
+      { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay }
+    ])('returns 200 for valid input', async ({ approved, user, reference, payment, statusId }) => {
       applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
       const options = {
         method,
@@ -166,8 +168,27 @@ describe('Applications test', () => {
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-      expect(complianceRepository.set).toHaveBeenCalledTimes(1)
-      expect(complianceRepository.set).toHaveBeenCalledWith({ applicationReference: reference, statusId })
+      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, statusId, updatedBy: user })
+      expect(sendMessage).toHaveBeenCalledTimes(payment)
+      expect(consoleLogSpy).toHaveBeenCalledTimes(1)
+      expect(consoleLogSpy).toHaveBeenCalledWith(`Status of application with reference ${reference} successfully updated`)
+    })
+    test('returns a 200, payment failure & status not updated', async () => {
+      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      sendMessage.mockImplementation(() => { throw new Error() })
+      const options = {
+        method,
+        url: '/api/application/claim',
+        payload: { approved: true, user: 'test', reference }
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.updateByReference).not.toBeCalled()
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
+      expect(consoleErrorSpy).toHaveBeenCalledWith(`Status of application with reference ${reference} failed to update`)
     })
     test('returns 404', async () => {
       applicationRepository.get.mockResolvedValue({ dataValues: null })

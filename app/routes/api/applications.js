@@ -1,6 +1,8 @@
 const Joi = require('joi')
+const { v4: uuid } = require('uuid')
 const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
-const { set } = require('../../repositories/compliance-application-repository')
+const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
+const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
 
 module.exports = [{
@@ -95,12 +97,25 @@ module.exports = [{
         return h.response('Not Found').code(404).takeover()
       }
 
-      let statusId = statusIds.rejected
-      if (request.payload.approved) {
-        statusId = statusIds.readyToPay
-      }
+      try {
+        let statusId = statusIds.rejected
+        if (request.payload.approved) {
+          statusId = statusIds.readyToPay
+          
+          await sendMessage(
+            {
+              reference: request.payload.reference,
+              sbi: application.dataValues.data.organisation.sbi,
+              whichReview: application.dataValues.data.whichReview
+            }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: uuid() }
+          )
+        }
 
-      await set({ applicationReference: request.payload.reference, statusId })
+        await updateByReference({ reference: request.payload.reference, statusId, updatedBy: request.payload.user })
+        console.log(`Status of application with reference ${request.payload.reference} successfully updated`)
+      } catch (error) {
+        console.error(`Status of application with reference ${request.payload.reference} failed to update`)
+      }
 
       return h.response().code(200)
     }

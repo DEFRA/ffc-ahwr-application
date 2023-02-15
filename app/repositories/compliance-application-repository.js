@@ -14,13 +14,4 @@ async function update (data, id) {
   })
 }
 
-/**
- *
- * @param {*} data
- * @returns
- */
-async function set (data) {
-  return models.complianceApplication.create(data)
-}
-
-module.exports = { getPendingApplications, update, set }
+module.exports = { getPendingApplications, update }
