@@ -77,7 +77,7 @@ async function getLatestApplicationsBy (businessEmail) {
 }
 
 /**
- * Get application by Single Business Identifier (SBI)
+ * Get the latest application by Single Business Identifier (SBI) number.
  *
  * @param {number} sbi
  * @returns application object.
@@ -86,7 +86,8 @@ async function getBySbi (sbi) {
   return models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
-    }
+    },
+    order: [['createdAt', 'DESC']]
   })
 }
 

@@ -1,19 +1,20 @@
 const { when, resetAllWhenMocks } = require('jest-when')
-
-jest.mock('../../../../../app/lib/send-email')
 const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
-
-jest.mock('../../../../../app/messaging/send-message')
 const sendMessage = require('../../../../../app/messaging/send-message')
-
-jest.mock('../../../../../app/repositories/application-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-
 const { applicationResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
 const states = require('../../../../../app/messaging/application/states')
 const processApplication = require('../../../../../app/messaging/application/process-application')
+const applicationStatus = require('../../../../../app/constants/application-status')
 
 const consoleErrorSpy = jest.spyOn(console, 'error')
+
+const MOCK_REFERENCE = 'MOCK_REFERENCE'
+const MOCK_NOW = new Date()
+
+jest.mock('../../../../../app/lib/send-email')
+jest.mock('../../../../../app/messaging/send-message')
+jest.mock('../../../../../app/repositories/application-repository')
 
 describe(('Store application in database'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
@@ -40,17 +41,19 @@ describe(('Store application in database'), () => {
     sessionId
   }
 
+  beforeEach(() => {
+    applicationRepository.set.mockResolvedValue({
+      dataValues: { reference: MOCK_REFERENCE }
+    })
+    applicationRepository.getBySbi.mockResolvedValue()
+  })
+
   afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
   })
 
-  const reference = '23D13'
   test('successfully submits application', async () => {
-    applicationRepository.set.mockResolvedValue({
-      dataValues: { reference }
-    })
-
     await processApplication(message)
 
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
@@ -59,55 +62,101 @@ describe(('Store application in database'), () => {
       data: message.body,
       createdBy: 'admin',
       createdAt: expect.any(Date),
-      statusId: 1
+      statusId: applicationStatus.agreed
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
-  test('submits an existing application', async () => {
-    const MOCK_REFERENCE = 'MOCK_REFERENCE'
-    const MOCK_NOW = new Date()
+  describe('Submits an existing application', () => {
+    test.each([
+      {
+        toString: () => ' with statusId 2 (withdrawn)',
+        given: {
+          sbi: 123456789
+        },
+        when: {
+          statusId: applicationStatus.withdrawn
+        }
+      },
+      {
+        toString: () => ' with statusId 7 (not agreed)',
+        given: {
+          sbi: 123456789
+        },
+        when: {
+          statusId: applicationStatus.notAgreed
+        }
+      }
+    ])('%s', async (testCase) => {
+      when(applicationRepository.getBySbi)
+        .calledWith(
+          testCase.given.sbi
+        )
+        .mockResolvedValue({
+          dataValues: {
+            reference: MOCK_REFERENCE,
+            createdAt: MOCK_NOW
+          },
+          statusId: testCase.when.statusId
+        })
 
-    when(applicationRepository.getBySbi)
-      .calledWith(
-        message.body.organisation.sbi
-      )
-      .mockResolvedValue({
-        dataValues: {
+      await processApplication(message)
+
+      expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+        reference: '',
+        data: message.body,
+        createdBy: 'admin',
+        createdAt: expect.any(Date),
+        statusId: applicationStatus.agreed
+      }))
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    })
+
+    test(' with statusId 1 (agreed)', async () => {
+      when(applicationRepository.getBySbi)
+        .calledWith(
+          message.body.organisation.sbi
+        )
+        .mockResolvedValue({
+          dataValues: {
+            reference: MOCK_REFERENCE,
+            createdAt: MOCK_NOW
+          },
+          statusId: applicationStatus.agreed
+        })
+
+      await processApplication(message)
+
+      expect(applicationRepository.set).toHaveBeenCalledTimes(0)
+      expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to process application',
+        new Error(`Application already exists: ${JSON.stringify({
           reference: MOCK_REFERENCE,
           createdAt: MOCK_NOW
+        })}`)
+      )
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledWith(
+        {
+          applicationState: states.alreadyExists,
+          applicationReference: MOCK_REFERENCE
+        },
+        applicationResponseMsgType,
+        applicationResponseQueue,
+        {
+          sessionId
         }
-      })
-
-    await processApplication(message)
-
-    expect(applicationRepository.set).toHaveBeenCalledTimes(0)
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Failed to process application',
-      new Error(`Application already exists: ${JSON.stringify({
-        reference: MOCK_REFERENCE,
-        createdAt: MOCK_NOW
-      })}`)
-    )
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(
-      {
-        applicationState: states.alreadyExists,
-        applicationReference: MOCK_REFERENCE
-      },
-      applicationResponseMsgType,
-      applicationResponseQueue,
-      {
-        sessionId
-      }
-    )
+      )
+    })
   })
 
   test('successfully submits rejected application', async () => {
     applicationRepository.set.mockResolvedValue({
-      dataValues: { reference }
+      dataValues: { reference: MOCK_REFERENCE }
     })
 
     message.body.offerStatus = 'rejected'
@@ -119,10 +168,10 @@ describe(('Store application in database'), () => {
       data: message.body,
       createdBy: 'admin',
       createdAt: expect.any(Date),
-      statusId: 7
+      statusId: applicationStatus.notAgreed
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: reference }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
   })
 
@@ -137,7 +186,7 @@ describe(('Store application in database'), () => {
   })
 
   test('Application submission message validation failed', async () => {
-    delete message.body.organisation.isTest
+    delete message.body.organisation.email
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
