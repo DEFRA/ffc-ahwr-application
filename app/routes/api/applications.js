@@ -101,7 +101,7 @@ module.exports = [{
         let statusId = statusIds.rejected
         if (request.payload.approved) {
           statusId = statusIds.readyToPay
-          
+
           await sendMessage(
             {
               reference: request.payload.reference,
