@@ -1,5 +1,9 @@
 const Joi = require('joi')
+const { v4: uuid } = require('uuid')
 const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
+const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
+const sendMessage = require('../../messaging/send-message')
+const statusIds = require('../../constants/application-status')
 
 module.exports = [{
   method: 'GET',
@@ -69,6 +73,49 @@ module.exports = [{
       }
 
       await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
+
+      return h.response().code(200)
+    }
+  }
+}, {
+  method: 'POST',
+  path: '/api/application/claim',
+  options: {
+    validate: {
+      payload: Joi.object({
+        approved: Joi.boolean().required(),
+        reference: Joi.string().valid(),
+        user: Joi.string().required()
+      }),
+      failAction: async (_request, h, err) => {
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      const application = (await get(request.payload.reference))
+      if (!application.dataValues) {
+        return h.response('Not Found').code(404).takeover()
+      }
+
+      try {
+        let statusId = statusIds.rejected
+        if (request.payload.approved) {
+          statusId = statusIds.readyToPay
+
+          await sendMessage(
+            {
+              reference: request.payload.reference,
+              sbi: application.dataValues.data.organisation.sbi,
+              whichReview: application.dataValues.data.whichReview
+            }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: uuid() }
+          )
+        }
+
+        await updateByReference({ reference: request.payload.reference, statusId, updatedBy: request.payload.user })
+        console.log(`Status of application with reference ${request.payload.reference} successfully updated`)
+      } catch (error) {
+        console.error(`Status of application with reference ${request.payload.reference} failed to update`)
+      }
 
       return h.response().code(200)
     }
