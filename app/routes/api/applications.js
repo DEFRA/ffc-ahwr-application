@@ -4,6 +4,17 @@ const { get, searchApplications, updateByReference } = require('../../repositori
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
+const { sendSessionEvent } = require('../../event')
+
+function isUpdateSuccessful (res) {
+  return res[0] === 1
+}
+
+const sendEvent = async (reference, entryKey, key) => {
+  const updatedApplication = await get(reference)
+  sendSessionEvent(updatedApplication.dataValues.data.organisation, uuid(), entryKey, key,
+    { user: updatedApplication.updatedBy, updatedAt: updatedApplication.updatedAt })
+}
 
 module.exports = [{
   method: 'GET',
@@ -72,7 +83,12 @@ module.exports = [{
         return h.response('Not Found').code(404).takeover()
       }
 
-      await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
+      const res = await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
+
+      const updateSuccess = isUpdateSuccessful(res)
+      if (updateSuccess && application.statusId !== statusIds.withdrawn && request.payload.status === statusIds.withdrawn) {
+        sendEvent(request.params.ref, 'application', 'withdrawn')
+      }
 
       return h.response().code(200)
     }
@@ -111,7 +127,16 @@ module.exports = [{
           )
         }
 
-        await updateByReference({ reference: request.payload.reference, statusId, updatedBy: request.payload.user })
+        const res = await updateByReference({ reference: request.payload.reference, statusId, updatedBy: request.payload.user })
+
+        const updateSuccess = isUpdateSuccessful(res)
+        if (updateSuccess && (application.statusId === statusIds.inCheck && (statusId === statusIds.readyToPay || statusId === statusIds.rejected))) {
+          if (statusId === statusIds.readyToPay) {
+            sendEvent(request.payload.reference, 'claim', 'approved')
+          } else {
+            sendEvent(request.payload.reference, 'claim', 'rejected')
+          }
+        }
         console.log(`Status of application with reference ${request.payload.reference} successfully updated`)
       } catch (error) {
         console.error(`Status of application with reference ${request.payload.reference} failed to update`)

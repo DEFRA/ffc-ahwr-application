@@ -23,7 +23,7 @@ describe('Applications test', () => {
     applications: [{ reference, createdBy: 'admin', createdAt: new Date(), data }],
     total: 1
   })
-  applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+  applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), updatedAt: new Date(), data } })
   describe(`GET ${url} route`, () => {
     test('returns 200', async () => {
       const options = {
@@ -113,7 +113,8 @@ describe('Applications test', () => {
   describe(`PUT ${url} route`, () => {
     const method = 'PUT'
     test('returns 200', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), updatedAt: new Date(), data } })
+      applicationRepository.updateByReference.mockResolvedValueOnce([1])
       const options = {
         method,
         url: '/api/application/ABC-1234',
@@ -121,7 +122,7 @@ describe('Applications test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(2)
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     })
     test('returns 404', async () => {
@@ -159,7 +160,8 @@ describe('Applications test', () => {
       { approved: false, user: 'test', reference, payment: 0, statusId: statusIds.rejected },
       { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay }
     ])('returns 200 for valid input', async ({ approved, user, reference, payment, statusId }) => {
-      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'test', createdAt: new Date(), updatedBy: 'test', updatedAt: new Date(), data } })
+      applicationRepository.updateByReference.mockResolvedValueOnce([1])
       const options = {
         method,
         url: '/api/application/claim',
@@ -175,7 +177,7 @@ describe('Applications test', () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(`Status of application with reference ${reference} successfully updated`)
     })
     test('returns a 200, payment failure & status not updated', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), updatedAt: new Date(), data } })
       sendMessage.mockImplementation(() => { throw new Error() })
       const options = {
         method,
