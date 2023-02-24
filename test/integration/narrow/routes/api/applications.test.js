@@ -122,7 +122,7 @@ describe('Applications test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(2)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     })
     test('returns 404', async () => {
