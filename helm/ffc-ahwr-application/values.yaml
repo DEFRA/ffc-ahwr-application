@@ -57,6 +57,7 @@ container:
   azureStorageAccountName:
   complianceApplicationCount: 5
   complianceApplicationScheduler:
+  eventQueueAddress: ffc-ahwr-event
 
 postgresService:
   postgresDb: ffc_ahwr_application

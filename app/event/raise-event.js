@@ -1,9 +1,9 @@
-// const { PublishEvent } = require('ffc-ahwr-event-publisher')
-// const { eventQueue } = require('../config').mqConfig
+const { PublishEvent } = require('ffc-ahwr-event-publisher')
+const { eventQueue } = require('../config')
 const util = require('util')
 
 const raiseEvent = async (event, status = 'success') => {
-  // const eventPublisher = new PublishEvent(eventQueue)
+  const eventPublisher = new PublishEvent(eventQueue)
 
   const eventMessage = {
     name: event.name,
@@ -24,7 +24,7 @@ const raiseEvent = async (event, status = 'success') => {
 
   console.log('Event data:', util.inspect(eventMessage, false, null, true))
 
-  // await eventPublisher.sendEvent(eventMessage)
+  await eventPublisher.sendEvent(eventMessage)
 }
 
 module.exports = raiseEvent

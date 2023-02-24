@@ -27,6 +27,10 @@ const schema = Joi.object({
     address: Joi.string().default('submitRequestQueue'),
     type: Joi.string(),
     ...sharedConfigSchema
+  },
+  eventQueue: {
+    address: process.env.EVENT_QUEUE_ADDRESS,
+    type: 'queue'
   }
 })
 
@@ -58,6 +62,10 @@ const config = {
     address: process.env.PAYMENTREQUEST_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfig
+  },
+  eventQueue: {
+    address: process.env.EVENT_QUEUE_ADDRESS,
+    type: 'queue'
   }
 }
 
