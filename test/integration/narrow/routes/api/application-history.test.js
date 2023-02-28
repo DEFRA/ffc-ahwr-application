@@ -1,3 +1,6 @@
+const applicationStatusRepository = require('../../../../../app/repositories/azure-storage/application-status-repository')
+jest.mock('../../../../../app/repositories/azure-storage/application-status-repository')
+
 describe('Application history test', () => {
   const server = require('../../../../../app/server')
 
@@ -14,6 +17,11 @@ describe('Application history test', () => {
 
   describe(`GET ${url} route`, () => {
     test('returns 200', async () => {
+      applicationStatusRepository.getApplicationHistory.mockResolvedValue({
+        historyRecords: [{ date: '23/03/2023', time: '10:00:12', statusId: 9, user: 'Daniel Jones' },
+          { date: '24/03/2023', time: '09:30:00', statusId: 2, user: 'Daniel Jones' },
+          { date: '25/03/2023', time: '11:10:15', statusId: 10, user: 'Amanda Hassan' }]
+      })
       const options = {
         method: 'GET',
         url: '/api/application/history/ABC-1234'
@@ -21,14 +29,16 @@ describe('Application history test', () => {
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
     })
-    test.skip('returns 404', async () => {
-      // applicationRepository.get.mockResolvedValue({ dataValues: null })
+    test('returns 404', async () => {
+      applicationStatusRepository.getApplicationHistory.mockResolvedValue({ historyRecords: null })
+
       const options = {
         method: 'GET',
         url: '/api/application/history/ABC-1234'
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(404)
+      expect(applicationStatusRepository.getApplicationHistory).toHaveBeenCalledTimes(1)
     })
   })
 })

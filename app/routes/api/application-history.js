@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const { getApplicationHistory } = require('../../repositories/azure-storage/application-status-repository')
 
 module.exports = [
   {
@@ -11,9 +12,8 @@ module.exports = [
         })
       },
       handler: async (request, h) => {
-        const historyRecords = [{ date: '23/03/2023', time: '10:00:12', statusId: 9, user: 'Daniel Jones' },
-          { date: '24/03/2023', time: '09:30:00', statusId: 2, user: 'Daniel Jones' },
-          { date: '25/03/2023', time: '11:10:15', statusId: 10, user: 'Amanda Hassan' }]
+        const { historyRecords } = await getApplicationHistory(request.params.ref)
+
         if (historyRecords) {
           return h.response({ historyRecords }).code(200)
         } else {
