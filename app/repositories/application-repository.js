@@ -237,10 +237,12 @@ async function getApplicationCount (sbi) {
  */
 async function set (data) {
   const result = await models.application.create(data)
-  await raiseApplicationStateEvent(result.dataValues)(
-    'application-created',
-    'New application has been created'
-  )
+  await raiseApplicationStateEvent({
+    type: 'application-created',
+    message: 'New application has been created',
+    application: result.dataValues,
+    raisedBy: result.dataValues.createdBy
+  })
   return result
 }
 
@@ -253,20 +255,24 @@ async function set (data) {
  * to failure.
  */
 async function updateByReference (data) {
-  return models.application.update(data,
-    { where: { reference: data.reference } })
-}
-
-/**
- * Update the record by Id.
- *
- * @param {object} data must contain the `id` of the record to be updated.
- * @return {Array} contains a single element, 1 equates to success, 0 equates
- * to failure.
- */
-async function updateById (data) {
-  return models.application.update(data,
-    { where: { id: data.id } })
+  const result = await models.application.update(
+    data,
+    {
+      where: {
+        reference: data.reference
+      },
+      returning: true
+    }
+  )
+  if (result.length > 0) {
+    await raiseApplicationStateEvent({
+      type: 'application-updated',
+      message: 'Application has been updated',
+      application: result[1][0].dataValues,
+      raisedBy: result[1][0].dataValues.updatedBy
+    })
+  }
+  return result
 }
 
 module.exports = {
@@ -278,7 +284,6 @@ module.exports = {
   getAll,
   getApplicationsCount,
   set,
-  updateById,
   updateByReference,
   searchApplications
 }
