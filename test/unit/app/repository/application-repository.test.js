@@ -1,6 +1,7 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/application-repository')
 const data = require('../../../../app/data')
+
 jest.mock('../../../../app/data')
 
 data.models.application.create = jest.fn()
@@ -10,29 +11,107 @@ data.models.application.count.mockReturnValue(10)
 data.models.application.findOne = jest.fn()
 data.models.status = jest.fn()
 
-beforeEach(() => {
-  jest.clearAllMocks()
-  resetAllWhenMocks()
+const MOCK_SEND_EVENT = jest.fn()
+
+jest.mock('ffc-ahwr-event-publisher', () => {
+  return {
+    PublishEvent: jest.fn().mockImplementation(() => {
+      return {
+        sendEvent: MOCK_SEND_EVENT
+      }
+    })
+  }
 })
+
 const limit = 10
 const offset = 0
+
 describe('Application Repository test', () => {
-  const id = 1
+  const id = '7c728871-28a4-4f1d-a114-0256e1b684ed'
   const reference = 'abdcd'
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    resetAllWhenMocks()
+  })
 
   test('Application Repository returns Function', () => {
     expect(repository).toBeDefined()
   })
 
   test('Set creates record for data', async () => {
-    await repository.set({ id, reference })
+    when(data.models.application.create)
+      .calledWith({
+        id,
+        reference,
+        data: {
+          organisation: {
+            sbi: '123456789',
+            email: 'business@email.com'
+          }
+        },
+        createdBy: 'test'
+      })
+      .mockResolvedValue({
+        dataValues: {
+          reference: 'AHWR-7C72-8871',
+          statusId: 1,
+          data: {
+            organisation: {
+              sbi: '123456789',
+              email: 'business@email.com'
+            }
+          }
+        }
+      })
+
+    await repository.set({
+      id,
+      reference,
+      data: {
+        organisation: {
+          sbi: '123456789',
+          email: 'business@email.com'
+        }
+      },
+      createdBy: 'test'
+    })
 
     expect(data.models.application.create).toHaveBeenCalledTimes(1)
-    expect(data.models.application.create).toHaveBeenCalledWith({ id, reference })
+    expect(data.models.application.create).toHaveBeenCalledWith({
+      id,
+      reference,
+      data: {
+        organisation: {
+          sbi: '123456789',
+          email: 'business@email.com'
+        }
+      },
+      createdBy: 'test'
+    })
+    expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(1)
+    expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
+      name: 'application-state-event',
+      properties: {
+        id: '123456789_AHWR-7C72-8871',
+        sbi: '123456789',
+        cph: 'n/a',
+        checkpoint: 'unit_test',
+        status: 'success',
+        action: {
+          type: 'application-created',
+          message: 'New application has been created',
+          data: {
+            statusId: 1
+          },
+          raisedBy: 'business@email.com'
+        }
+      }
+    })
   })
 
   test('Update record for data by reference', async () => {
-    await repository.updateByReference({ id: 1, reference })
+    await repository.updateByReference({ id, reference })
 
     expect(data.models.application.update).toHaveBeenCalledTimes(1)
     expect(data.models.application.update).toHaveBeenCalledWith({ id, reference }, { where: { reference } })
