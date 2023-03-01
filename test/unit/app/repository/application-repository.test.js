@@ -27,12 +27,14 @@ const limit = 10
 const offset = 0
 
 describe('Application Repository test', () => {
+  const env = process.env
   const id = '7c728871-28a4-4f1d-a114-0256e1b684ed'
   const reference = 'abdcd'
 
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
+    process.env = { ...env }
   })
 
   test('Application Repository returns Function', () => {
@@ -40,6 +42,8 @@ describe('Application Repository test', () => {
   })
 
   test('Set creates record for data', async () => {
+    process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+
     when(data.models.application.create)
       .calledWith({
         id,
@@ -96,7 +100,7 @@ describe('Application Repository test', () => {
         id: '123456789_AHWR-7C72-8871',
         sbi: '123456789',
         cph: 'n/a',
-        checkpoint: 'unit_test',
+        checkpoint: 'cloud_role',
         status: 'success',
         action: {
           type: 'application-created',
