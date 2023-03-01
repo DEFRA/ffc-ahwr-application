@@ -1,4 +1,5 @@
 const Joi = require('joi')
+
 const sharedConfigSchema = {
   appInsights: Joi.object(),
   host: Joi.string().default('localhost'),
@@ -26,6 +27,11 @@ const schema = Joi.object({
   submitRequestQueue: {
     address: Joi.string().default('submitRequestQueue'),
     type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  eventQueue: {
+    address: process.env.EVENT_QUEUE_ADDRESS,
+    type: 'queue',
     ...sharedConfigSchema
   }
 })
@@ -56,6 +62,11 @@ const config = {
   },
   submitRequestQueue: {
     address: process.env.PAYMENTREQUEST_QUEUE_ADDRESS,
+    type: 'queue',
+    ...sharedConfig
+  },
+  eventQueue: {
+    address: process.env.EVENT_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfig
   }
