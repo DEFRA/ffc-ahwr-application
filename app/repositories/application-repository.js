@@ -1,5 +1,5 @@
 const { models, sequelize } = require('../data')
-const raiseApplicationStateEvent = require('../event-publisher/raise-application-state-event')
+const raiseApplicationStateEvent = require('../event-publisher/raise-application-status-event')
 
 /**
  * Get application by reference number
