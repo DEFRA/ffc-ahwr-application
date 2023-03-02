@@ -1,5 +1,5 @@
 const { models, sequelize } = require('../data')
-const raiseApplicationStateEvent = require('../event-publisher/raise-application-status-event')
+const raiseApplicationStatusEvent = require('../event-publisher/raise-application-status-event')
 
 /**
  * Get application by reference number
@@ -237,7 +237,7 @@ async function getApplicationCount (sbi) {
  */
 async function set (data) {
   const result = await models.application.create(data)
-  await raiseApplicationStateEvent({
+  await raiseApplicationStatusEvent({
     type: 'application-created',
     message: 'New application has been created',
     application: result.dataValues,
@@ -265,7 +265,7 @@ async function updateByReference (data) {
     }
   )
   if (result.length > 0) {
-    await raiseApplicationStateEvent({
+    await raiseApplicationStatusEvent({
       type: 'application-updated',
       message: 'Application has been updated',
       application: result[1][0].dataValues,
