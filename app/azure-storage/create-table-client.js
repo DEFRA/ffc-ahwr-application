@@ -1,6 +1,6 @@
 const { DefaultAzureCredential } = require('@azure/identity')
 const { TableClient } = require('@azure/data-tables')
-const { storage: { connectionString, useConnectionString, storageAccount } } = require('../../config')
+const { storage: { connectionString, useConnectionString, storageAccount } } = require('../config')
 
 const createTableClient = (tableName) => {
   if (useConnectionString) {
