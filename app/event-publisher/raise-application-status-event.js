@@ -3,7 +3,7 @@ const config = require('../config')
 
 module.exports = async (event) => {
   await new PublishEvent(config.eventQueue).sendEvent({
-    name: 'application-state-event',
+    name: 'application-status-event',
     properties: {
       id: `${event.application.data.organisation.sbi}_${event.application.reference}`,
       sbi: `${event.application.data.organisation.sbi}`,

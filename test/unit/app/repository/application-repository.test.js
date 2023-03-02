@@ -96,7 +96,7 @@ describe('Application Repository test', () => {
     })
     expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(1)
     expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
-      name: 'application-state-event',
+      name: 'application-status-event',
       properties: {
         id: '123456789_AHWR-7C72-8871',
         sbi: '123456789',
@@ -173,7 +173,7 @@ describe('Application Repository test', () => {
     )
     expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(1)
     expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
-      name: 'application-state-event',
+      name: 'application-status-event',
       properties: {
         id: '123456789_AHWR-7C72-8871',
         sbi: '123456789',
