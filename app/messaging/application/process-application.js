@@ -21,7 +21,7 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
-    
+
     if (
       existingApplication &&
       existingApplication.statusId !== applicationStatus.withdrawn &&
