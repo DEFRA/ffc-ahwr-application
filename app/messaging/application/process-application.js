@@ -10,8 +10,9 @@ const validateApplication = require('../schema/process-application-schema')
 const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
+  const messageId = msg.messageId
   let existingApplicationReference = null
-  console.log(`Application received : ${util.inspect(JSON.stringify(applicationData), false, null, true)} with sessionID ${sessionId}.`)
+  console.log(`Application received : ${util.inspect(JSON.stringify(applicationData), false, null, true)} with sessionID ${sessionId} and messageID ${messageId}.`)
   try {
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
