@@ -1,5 +1,5 @@
 const { odata } = require('@azure/data-tables')
-const createTableClient = require('../azure-storage/create-table-client')
+const createTableClient = require('./create-table-client')
 
 const queryEntitiesByPartitionKey = async (tableName, partitionKey) => {
   const events = []

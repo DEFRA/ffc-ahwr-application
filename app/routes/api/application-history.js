@@ -1,5 +1,5 @@
 const Joi = require('joi')
-const { getApplicationHistory } = require('../../repositories/azure-storage/application-status-repository')
+const { getApplicationHistory } = require('../../azure-storage/application-status-repository')
 
 module.exports = [
   {

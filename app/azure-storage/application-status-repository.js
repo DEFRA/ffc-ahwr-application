@@ -1,4 +1,4 @@
-const queryEntitiesByPartitionKey = require('../azure-storage/query-entities')
+const queryEntitiesByPartitionKey = require('./query-entities')
 
 const getApplicationHistory = async (reference) => {
   let historyRecords = []
