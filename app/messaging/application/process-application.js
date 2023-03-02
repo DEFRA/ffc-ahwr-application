@@ -11,7 +11,7 @@ const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
   let existingApplicationReference = null
-  console.log('Application received:', util.inspect(applicationData, false, null, true))
+  console.log(`Application received : ${util.inspect(JSON.stringify(applicationData), false, null, true)} with sessionID ${sessionId}.`)
   try {
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
@@ -20,10 +20,12 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
+    
     if (
       existingApplication &&
       existingApplication.statusId !== applicationStatus.withdrawn &&
       existingApplication.statusId !== applicationStatus.notAgreed
+      // todo consider being able to apply again within 10 months
     ) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
