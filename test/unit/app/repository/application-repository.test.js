@@ -98,13 +98,13 @@ describe('Application Repository test', () => {
     expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
       name: 'application-status-event',
       properties: {
-        id: '123456789_AHWR-7C72-8871',
+        id: 'AHWR-7C72-8871',
         sbi: '123456789',
         cph: 'n/a',
         checkpoint: 'cloud_role',
         status: 'success',
         action: {
-          type: 'application-created',
+          type: 'status-updated',
           message: 'New application has been created',
           data: {
             statusId: 1
@@ -175,13 +175,13 @@ describe('Application Repository test', () => {
     expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
       name: 'application-status-event',
       properties: {
-        id: '123456789_AHWR-7C72-8871',
+        id: 'AHWR-7C72-8871',
         sbi: '123456789',
         cph: 'n/a',
         checkpoint: 'cloud_role',
         status: 'success',
         action: {
-          type: 'application-updated',
+          type: 'status-updated',
           message: 'Application has been updated',
           data: {
             statusId: 3
