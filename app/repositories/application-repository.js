@@ -238,7 +238,6 @@ async function getApplicationCount (sbi) {
 async function set (data) {
   const result = await models.application.create(data)
   await raiseApplicationStatusEvent({
-    type: 'application-created',
     message: 'New application has been created',
     application: result.dataValues,
     raisedBy: result.dataValues.createdBy
@@ -266,7 +265,6 @@ async function updateByReference (data) {
   )
   if (result.length > 0) {
     await raiseApplicationStatusEvent({
-      type: 'application-updated',
       message: 'Application has been updated',
       application: result[1][0].dataValues,
       raisedBy: result[1][0].dataValues.updatedBy
