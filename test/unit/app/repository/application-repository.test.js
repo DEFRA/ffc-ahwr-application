@@ -58,6 +58,7 @@ describe('Application Repository test', () => {
       })
       .mockResolvedValue({
         dataValues: {
+          id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
           reference: 'AHWR-7C72-8871',
           statusId: 1,
           data: {
@@ -98,7 +99,7 @@ describe('Application Repository test', () => {
     expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
       name: 'application-status-event',
       properties: {
-        id: 'AHWR-7C72-8871',
+        id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
         sbi: '123456789',
         cph: 'n/a',
         checkpoint: 'cloud_role',
@@ -107,6 +108,7 @@ describe('Application Repository test', () => {
           type: 'status-updated',
           message: 'New application has been created',
           data: {
+            reference: 'AHWR-7C72-8871',
             statusId: 1
           },
           raisedBy: 'test'
@@ -137,6 +139,7 @@ describe('Application Repository test', () => {
         [
           {
             dataValues: {
+              id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
               reference: 'AHWR-7C72-8871',
               statusId: 3,
               data: {
@@ -175,7 +178,7 @@ describe('Application Repository test', () => {
     expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
       name: 'application-status-event',
       properties: {
-        id: 'AHWR-7C72-8871',
+        id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
         sbi: '123456789',
         cph: 'n/a',
         checkpoint: 'cloud_role',
@@ -184,6 +187,7 @@ describe('Application Repository test', () => {
           type: 'status-updated',
           message: 'Application has been updated',
           data: {
+            reference: 'AHWR-7C72-8871',
             statusId: 3
           },
           raisedBy: 'admin'
