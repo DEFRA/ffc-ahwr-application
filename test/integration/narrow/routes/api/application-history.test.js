@@ -18,9 +18,9 @@ describe('Application history test', () => {
   describe(`GET ${url} route`, () => {
     test('returns 200', async () => {
       applicationStatusRepository.getApplicationHistory.mockResolvedValue({
-        historyRecords: [{ date: '23/03/2023', time: '10:00:12', statusId: 9, user: 'Daniel Jones' },
-          { date: '24/03/2023', time: '09:30:00', statusId: 2, user: 'Daniel Jones' },
-          { date: '25/03/2023', time: '11:10:15', statusId: 10, user: 'Amanda Hassan' }]
+        historyRecords: [{ ChangedOn: '2023-03-23T10:00:12.000Z', Payload: '{\n  "reference": "AHWR-7C72-8871",\n  "statusId": 91\n}', ChangedBy: 'Daniel Jones' },
+          { ChangedOn: '2023-03-24T09:30:00.000Z', Payload: '{\n  "reference": "AHWR-7C72-8871",\n  "statusId": 2\n}', ChangedBy: 'Daniel Jones' },
+          { ChangedOn: '2023-03-25T11:10:15:12.000Z', Payload: '{\n  "reference": "AHWR-7C72-8871",\n  "statusId": 10\n}', ChangedBy: 'Amanda Hassan' }]
       })
       const options = {
         method: 'GET',
@@ -30,7 +30,7 @@ describe('Application history test', () => {
       expect(res.statusCode).toBe(200)
     })
     test('returns 404', async () => {
-      applicationStatusRepository.getApplicationHistory.mockResolvedValue({ historyRecords: null })
+      applicationStatusRepository.getApplicationHistory.mockResolvedValue(null)
 
       const options = {
         method: 'GET',
