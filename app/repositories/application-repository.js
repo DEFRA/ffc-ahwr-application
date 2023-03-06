@@ -240,7 +240,8 @@ async function set (data) {
   await eventPublisher.raise({
     message: 'New application has been created',
     application: result.dataValues,
-    raisedBy: result.dataValues.createdBy
+    raisedBy: result.dataValues.createdBy,
+    raisedOn: result.dataValues.createdAt
   })
   return result
 }
@@ -267,7 +268,8 @@ async function updateByReference (data) {
     await eventPublisher.raise({
       message: 'Application has been updated',
       application: result[1][i].dataValues,
-      raisedBy: result[1][i].dataValues.updatedBy
+      raisedBy: result[1][i].dataValues.updatedBy,
+      raisedOn: result[1][i].dataValues.updatedAt
     })
   }
   return result

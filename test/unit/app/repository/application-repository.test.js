@@ -42,6 +42,7 @@ describe('Application Repository test', () => {
   })
 
   test('Set creates record for data', async () => {
+    const mockNow = new Date()
     process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
 
     when(data.models.application.create)
@@ -67,7 +68,8 @@ describe('Application Repository test', () => {
               email: 'business@email.com'
             }
           },
-          createdBy: 'test'
+          createdBy: 'test',
+          createdAt: mockNow
         }
       })
 
@@ -112,7 +114,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-7C72-8871',
               statusId: 1
             },
-            raisedBy: 'test'
+            raisedBy: 'test',
+            raisedOn: mockNow.toISOString()
           }
         }
       },
@@ -131,7 +134,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-7C72-8871',
               statusId: 1
             },
-            raisedBy: 'test'
+            raisedBy: 'test',
+            raisedOn: mockNow.toISOString()
           }
         }
       }
@@ -141,6 +145,7 @@ describe('Application Repository test', () => {
   describe('updateByReference', () => {
     test('Update record for data by reference - 2 records updated', async () => {
       process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const mockNow = new Date()
       const reference = 'AHWR-7C72-8871'
 
       when(data.models.application.update)
@@ -170,7 +175,8 @@ describe('Application Repository test', () => {
                     email: 'business@email.com'
                   }
                 },
-                updatedBy: 'admin'
+                updatedBy: 'admin',
+                updatedAt: mockNow
               }
             },
             {
@@ -184,7 +190,8 @@ describe('Application Repository test', () => {
                     email: 'business@email.com'
                   }
                 },
-                updatedBy: 'admin'
+                updatedBy: 'admin',
+                updatedAt: mockNow
               }
             }
           ]
@@ -226,7 +233,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-7C72-8871',
               statusId: 3
             },
-            raisedBy: 'admin'
+            raisedBy: 'admin',
+            raisedOn: mockNow.toISOString()
           }
         }
       }, {
@@ -244,7 +252,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-7C72-8871',
               statusId: 3
             },
-            raisedBy: 'admin'
+            raisedBy: 'admin',
+            raisedOn: mockNow.toISOString()
           }
         }
       }])
@@ -264,7 +273,8 @@ describe('Application Repository test', () => {
                 reference: 'AHWR-7C72-8872',
                 statusId: 3
               },
-              raisedBy: 'admin'
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
             }
           }
         },
@@ -283,7 +293,8 @@ describe('Application Repository test', () => {
                 reference: 'AHWR-7C72-8872',
                 statusId: 3
               },
-              raisedBy: 'admin'
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
             }
           }
         }
