@@ -4,10 +4,6 @@ const { storage: { connectionString, useConnectionString, storageAccount } } = r
 
 const createTableClient = (tableName) => {
   if (useConnectionString) {
-    console.log(`${new Date().toISOString()} Creating the table client using the connection string: ${JSON.stringify({
-      connectionString,
-      tableName
-    })}`)
     return TableClient.fromConnectionString(
       connectionString,
       tableName,
@@ -16,10 +12,6 @@ const createTableClient = (tableName) => {
       }
     )
   } else {
-    console.log(`${new Date().toISOString()} Creating the table client using the DefaultAzureCredential: ${JSON.stringify({
-      accountName: storageAccount,
-      tableName
-    })}`)
     return new TableClient(
       `https://${storageAccount}.table.core.windows.net`,
       tableName,

@@ -1,8 +1,6 @@
 const MOCK_NOW = new Date()
 
 describe('queryEntitiesByPartitionKey', () => {
-  let logSpy
-
   beforeAll(() => {
     jest.useFakeTimers('modern')
     jest.setSystemTime(MOCK_NOW)
@@ -12,8 +10,6 @@ describe('queryEntitiesByPartitionKey', () => {
         useConnectionString: false
       }
     }))
-
-    logSpy = jest.spyOn(console, 'log')
   })
 
   afterAll(() => {
@@ -130,8 +126,5 @@ describe('queryEntitiesByPartitionKey', () => {
     )
 
     expect(events).toEqual(testCase.expect.events)
-    testCase.expect.consoleLogs.forEach(
-      (consoleLog, idx) => expect(logSpy).toHaveBeenNthCalledWith(idx + 1, consoleLog)
-    )
   })
 })
