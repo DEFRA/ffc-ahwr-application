@@ -263,14 +263,12 @@ async function updateByReference (data) {
       returning: true
     }
   )
-  if (result.length > 0) {
-    for (let i = 0; i < result[0]; i++) {
-      await eventPublisher.raise({
-        message: 'Application has been updated',
-        application: result[1][i].dataValues,
-        raisedBy: result[1][i].dataValues.updatedBy
-      })
-    }
+  for (let i = 0; i < result[0]; i++) {
+    await eventPublisher.raise({
+      message: 'Application has been updated',
+      application: result[1][i].dataValues,
+      raisedBy: result[1][i].dataValues.updatedBy
+    })
   }
   return result
 }
