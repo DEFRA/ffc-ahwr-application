@@ -95,7 +95,7 @@ describe('Application Repository test', () => {
       },
       createdBy: 'test'
     })
-    expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(1)
+    expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(2)
     expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
       name: 'application-status-event',
       properties: {
@@ -115,14 +115,87 @@ describe('Application Repository test', () => {
         }
       }
     })
+    expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      properties: {
+        id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
+        sbi: '123456789',
+        cph: 'n/a',
+        checkpoint: 'cloud_role',
+        status: 'success',
+        action: {
+          type: 'application:status-updated',
+          message: 'New application has been created',
+          data: {
+            reference: 'AHWR-7C72-8871',
+            statusId: 1
+          },
+          raisedBy: 'test'
+        }
+      }
+    })
   })
 
-  test('Update record for data by reference', async () => {
-    process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
-    const reference = 'AHWR-7C72-8871'
+  describe('updateByReference', () => {
+    test('Update record for data by reference - 2 records updated', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const reference = 'AHWR-7C72-8871'
 
-    when(data.models.application.update)
-      .calledWith(
+      when(data.models.application.update)
+        .calledWith(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          {
+            where: {
+              reference
+            },
+            returning: true
+          })
+        .mockResolvedValue([
+          2,
+          [
+            {
+              dataValues: {
+                id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+                reference: 'AHWR-7C72-8871',
+                statusId: 3,
+                data: {
+                  organisation: {
+                    sbi: '123456789',
+                    email: 'business@email.com'
+                  }
+                },
+                updatedBy: 'admin'
+              }
+            },
+            {
+              dataValues: {
+                id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+                reference: 'AHWR-7C72-8872',
+                statusId: 3,
+                data: {
+                  organisation: {
+                    sbi: '123456789',
+                    email: 'business@email.com'
+                  }
+                },
+                updatedBy: 'admin'
+              }
+            }
+          ]
+        ])
+
+      await repository.updateByReference({
+        reference,
+        statusId: 3,
+        updatedBy: 'admin'
+      })
+
+      expect(data.models.application.update).toHaveBeenCalledTimes(1)
+      expect(data.models.application.update).toHaveBeenCalledWith(
         {
           reference,
           statusId: 3,
@@ -133,66 +206,130 @@ describe('Application Repository test', () => {
             reference
           },
           returning: true
-        })
-      .mockResolvedValue([
-        1,
-        [
-          {
-            dataValues: {
-              id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+        }
+      )
+      expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(4)
+      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(1, {
+        name: 'application-status-event',
+        properties: {
+          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+          sbi: '123456789',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'status-updated',
+            message: 'Application has been updated',
+            data: {
               reference: 'AHWR-7C72-8871',
-              statusId: 3,
-              data: {
-                organisation: {
-                  sbi: '123456789',
-                  email: 'business@email.com'
-                }
-              },
-              updatedBy: 'admin'
-            }
+              statusId: 3
+            },
+            raisedBy: 'admin'
           }
-        ]
-      ])
-
-    await repository.updateByReference({
-      reference,
-      statusId: 3,
-      updatedBy: 'admin'
+        }
+      })
+      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(2, {
+        name: 'send-session-event',
+        properties: {
+          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+          sbi: '123456789',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'application:status-updated',
+            message: 'Application has been updated',
+            data: {
+              reference: 'AHWR-7C72-8871',
+              statusId: 3
+            },
+            raisedBy: 'admin'
+          }
+        }
+      })
+      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(3, {
+        name: 'application-status-event',
+        properties: {
+          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+          sbi: '123456789',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'status-updated',
+            message: 'Application has been updated',
+            data: {
+              reference: 'AHWR-7C72-8872',
+              statusId: 3
+            },
+            raisedBy: 'admin'
+          }
+        }
+      })
+      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(4, {
+        name: 'send-session-event',
+        properties: {
+          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+          sbi: '123456789',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'application:status-updated',
+            message: 'Application has been updated',
+            data: {
+              reference: 'AHWR-7C72-8872',
+              statusId: 3
+            },
+            raisedBy: 'admin'
+          }
+        }
+      })
     })
 
-    expect(data.models.application.update).toHaveBeenCalledTimes(1)
-    expect(data.models.application.update).toHaveBeenCalledWith(
-      {
+    test('Update record for data by reference - 0 records updated', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const reference = 'AHWR-7C72-8871'
+
+      when(data.models.application.update)
+        .calledWith(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          {
+            where: {
+              reference
+            },
+            returning: true
+          })
+        .mockResolvedValue([
+          0,
+          []
+        ])
+
+      await repository.updateByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
-      },
-      {
-        where: {
-          reference
+      })
+
+      expect(data.models.application.update).toHaveBeenCalledTimes(1)
+      expect(data.models.application.update).toHaveBeenCalledWith(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
         },
-        returning: true
-      }
-    )
-    expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(1)
-    expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
-      name: 'application-status-event',
-      properties: {
-        id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-        sbi: '123456789',
-        cph: 'n/a',
-        checkpoint: 'cloud_role',
-        status: 'success',
-        action: {
-          type: 'status-updated',
-          message: 'Application has been updated',
-          data: {
-            reference: 'AHWR-7C72-8871',
-            statusId: 3
+        {
+          where: {
+            reference
           },
-          raisedBy: 'admin'
+          returning: true
         }
-      }
+      )
+      expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(0)
     })
   })
 
