@@ -11,13 +11,13 @@ data.models.application.count.mockReturnValue(10)
 data.models.application.findOne = jest.fn()
 data.models.status = jest.fn()
 
-const MOCK_SEND_EVENT = jest.fn()
+const MOCK_SEND_EVENTS = jest.fn()
 
 jest.mock('ffc-ahwr-event-publisher', () => {
   return {
-    PublishEvent: jest.fn().mockImplementation(() => {
+    PublishEventBatch: jest.fn().mockImplementation(() => {
       return {
-        sendEvent: MOCK_SEND_EVENT
+        sendEvents: MOCK_SEND_EVENTS
       }
     })
   }
@@ -42,6 +42,7 @@ describe('Application Repository test', () => {
   })
 
   test('Set creates record for data', async () => {
+    const mockNow = new Date()
     process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
 
     when(data.models.application.create)
@@ -67,8 +68,8 @@ describe('Application Repository test', () => {
               email: 'business@email.com'
             }
           },
-          createdBy: 'test'
-
+          createdBy: 'test',
+          createdAt: mockNow
         }
       })
 
@@ -96,50 +97,55 @@ describe('Application Repository test', () => {
       },
       createdBy: 'test'
     })
-    expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(2)
-    expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
-      name: 'application-status-event',
-      properties: {
-        id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
-        sbi: '123456789',
-        cph: 'n/a',
-        checkpoint: 'cloud_role',
-        status: 'success',
-        action: {
-          type: 'status-updated',
-          message: 'New application has been created',
-          data: {
-            reference: 'AHWR-7C72-8871',
-            statusId: 1
-          },
-          raisedBy: 'test'
+    expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
+    expect(MOCK_SEND_EVENTS).toHaveBeenCalledWith([
+      {
+        name: 'application-status-event',
+        properties: {
+          id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
+          sbi: '123456789',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'status-updated',
+            message: 'New application has been created',
+            data: {
+              reference: 'AHWR-7C72-8871',
+              statusId: 1
+            },
+            raisedBy: 'test',
+            raisedOn: mockNow.toISOString()
+          }
+        }
+      },
+      {
+        name: 'send-session-event',
+        properties: {
+          id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
+          sbi: '123456789',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'application:status-updated(1)',
+            message: 'New application has been created',
+            data: {
+              reference: 'AHWR-7C72-8871',
+              statusId: 1
+            },
+            raisedBy: 'test',
+            raisedOn: mockNow.toISOString()
+          }
         }
       }
-    })
-    expect(MOCK_SEND_EVENT).toHaveBeenCalledWith({
-      name: 'send-session-event',
-      properties: {
-        id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
-        sbi: '123456789',
-        cph: 'n/a',
-        checkpoint: 'cloud_role',
-        status: 'success',
-        action: {
-          type: 'application:status-updated(1)',
-          message: 'New application has been created',
-          data: {
-            reference: 'AHWR-7C72-8871',
-            statusId: 1
-          },
-          raisedBy: 'test'
-        }
-      }
-    })
+    ])
   })
 
   describe('updateByReference', () => {
     test('Update record for data by reference - 2 records updated', async () => {
       process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const mockNow = new Date()
       const reference = 'AHWR-7C72-8871'
 
       when(data.models.application.update)
@@ -169,7 +175,8 @@ describe('Application Repository test', () => {
                     email: 'business@email.com'
                   }
                 },
-                updatedBy: 'admin'
+                updatedBy: 'admin',
+                updatedAt: mockNow
               }
             },
             {
@@ -183,7 +190,8 @@ describe('Application Repository test', () => {
                     email: 'business@email.com'
                   }
                 },
-                updatedBy: 'admin'
+                updatedBy: 'admin',
+                updatedAt: mockNow
               }
             }
           ]
@@ -209,8 +217,8 @@ describe('Application Repository test', () => {
           returning: true
         }
       )
-      expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(4)
-      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(1, {
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(2)
+      expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(1, [{
         name: 'application-status-event',
         properties: {
           id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
@@ -225,11 +233,11 @@ describe('Application Repository test', () => {
               reference: 'AHWR-7C72-8871',
               statusId: 3
             },
-            raisedBy: 'admin'
+            raisedBy: 'admin',
+            raisedOn: mockNow.toISOString()
           }
         }
-      })
-      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(2, {
+      }, {
         name: 'send-session-event',
         properties: {
           id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
@@ -244,48 +252,53 @@ describe('Application Repository test', () => {
               reference: 'AHWR-7C72-8871',
               statusId: 3
             },
-            raisedBy: 'admin'
+            raisedBy: 'admin',
+            raisedOn: mockNow.toISOString()
           }
         }
-      })
-      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(3, {
-        name: 'application-status-event',
-        properties: {
-          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-          sbi: '123456789',
-          cph: 'n/a',
-          checkpoint: 'cloud_role',
-          status: 'success',
-          action: {
-            type: 'status-updated',
-            message: 'Application has been updated',
-            data: {
-              reference: 'AHWR-7C72-8872',
-              statusId: 3
-            },
-            raisedBy: 'admin'
+      }])
+      expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(2, [
+        {
+          name: 'application-status-event',
+          properties: {
+            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+            sbi: '123456789',
+            cph: 'n/a',
+            checkpoint: 'cloud_role',
+            status: 'success',
+            action: {
+              type: 'status-updated',
+              message: 'Application has been updated',
+              data: {
+                reference: 'AHWR-7C72-8872',
+                statusId: 3
+              },
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
+            }
+          }
+        },
+        {
+          name: 'send-session-event',
+          properties: {
+            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+            sbi: '123456789',
+            cph: 'n/a',
+            checkpoint: 'cloud_role',
+            status: 'success',
+            action: {
+              type: 'application:status-updated(3)',
+              message: 'Application has been updated',
+              data: {
+                reference: 'AHWR-7C72-8872',
+                statusId: 3
+              },
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
+            }
           }
         }
-      })
-      expect(MOCK_SEND_EVENT).toHaveBeenNthCalledWith(4, {
-        name: 'send-session-event',
-        properties: {
-          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-          sbi: '123456789',
-          cph: 'n/a',
-          checkpoint: 'cloud_role',
-          status: 'success',
-          action: {
-            type: 'application:status-updated(3)',
-            message: 'Application has been updated',
-            data: {
-              reference: 'AHWR-7C72-8872',
-              statusId: 3
-            },
-            raisedBy: 'admin'
-          }
-        }
-      })
+      ])
     })
 
     test('Update record for data by reference - 0 records updated', async () => {
@@ -330,7 +343,7 @@ describe('Application Repository test', () => {
           returning: true
         }
       )
-      expect(MOCK_SEND_EVENT).toHaveBeenCalledTimes(0)
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
     })
   })
 
