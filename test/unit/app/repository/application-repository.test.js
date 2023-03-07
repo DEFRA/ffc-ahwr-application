@@ -125,7 +125,7 @@ describe('Application Repository test', () => {
         checkpoint: 'cloud_role',
         status: 'success',
         action: {
-          type: 'application:status-updated(1)',
+          type: 'application:status-updated:1',
           message: 'New application has been created',
           data: {
             reference: 'AHWR-7C72-8871',
@@ -238,7 +238,7 @@ describe('Application Repository test', () => {
           checkpoint: 'cloud_role',
           status: 'success',
           action: {
-            type: 'application:status-updated(3)',
+            type: 'application:status-updated:3',
             message: 'Application has been updated',
             data: {
               reference: 'AHWR-7C72-8871',
@@ -276,7 +276,7 @@ describe('Application Repository test', () => {
           checkpoint: 'cloud_role',
           status: 'success',
           action: {
-            type: 'application:status-updated(3)',
+            type: 'application:status-updated:3',
             message: 'Application has been updated',
             data: {
               reference: 'AHWR-7C72-8872',

@@ -33,7 +33,7 @@ const raise = async (event) => {
       checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
       status: 'success',
       action: {
-        type: `application:status-updated(${event.application.statusId})`,
+        type: `application:status-updated:${event.application.statusId}`,
         message: event.message,
         data: {
           reference: event.application.reference,
