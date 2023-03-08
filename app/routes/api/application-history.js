@@ -13,12 +13,7 @@ module.exports = [
       },
       handler: async (request, h) => {
         const historyRecords = await getApplicationHistory(request.params.ref)
-
-        if (historyRecords) {
-          return h.response({ historyRecords }).code(200)
-        } else {
-          return h.response('Not Found').code(404).takeover()
-        }
+        return h.response({ historyRecords }).code(200)
       }
     }
   }
