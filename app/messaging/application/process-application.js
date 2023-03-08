@@ -12,7 +12,7 @@ const processApplication = async (msg) => {
   const applicationData = msg.body
   const messageId = msg.messageId
   let existingApplicationReference = null
-  console.log(`Application received : ${util.inspect(JSON.stringify(applicationData), false, null, true)} with sessionID ${sessionId} and messageID ${messageId}.`)
+  console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
   try {
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
