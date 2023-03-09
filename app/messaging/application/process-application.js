@@ -1,4 +1,3 @@
-const util = require('util')
 const states = require('./states')
 const applicationStatus = require('../../constants/application-status')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../../config')
