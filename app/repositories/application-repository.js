@@ -1,4 +1,5 @@
 const { models, sequelize } = require('../data')
+const eventPublisher = require('../event-publisher')
 
 /**
  * Get application by reference number
@@ -235,7 +236,14 @@ async function getApplicationCount (sbi) {
  * @returns
  */
 async function set (data) {
-  return models.application.create(data)
+  const result = await models.application.create(data)
+  await eventPublisher.raise({
+    message: 'New application has been created',
+    application: result.dataValues,
+    raisedBy: result.dataValues.createdBy,
+    raisedOn: result.dataValues.createdAt
+  })
+  return result
 }
 
 /**
@@ -247,20 +255,24 @@ async function set (data) {
  * to failure.
  */
 async function updateByReference (data) {
-  return models.application.update(data,
-    { where: { reference: data.reference } })
-}
-
-/**
- * Update the record by Id.
- *
- * @param {object} data must contain the `id` of the record to be updated.
- * @return {Array} contains a single element, 1 equates to success, 0 equates
- * to failure.
- */
-async function updateById (data) {
-  return models.application.update(data,
-    { where: { id: data.id } })
+  const result = await models.application.update(
+    data,
+    {
+      where: {
+        reference: data.reference
+      },
+      returning: true
+    }
+  )
+  for (let i = 0; i < result[0]; i++) {
+    await eventPublisher.raise({
+      message: 'Application has been updated',
+      application: result[1][i].dataValues,
+      raisedBy: result[1][i].dataValues.updatedBy,
+      raisedOn: result[1][i].dataValues.updatedAt
+    })
+  }
+  return result
 }
 
 module.exports = {
@@ -272,7 +284,6 @@ module.exports = {
   getAll,
   getApplicationsCount,
   set,
-  updateById,
   updateByReference,
   searchApplications
 }

@@ -8,6 +8,7 @@ data:
   CARBON_COPY_EMAIL_ADDRESS: {{ quote .Values.container.carbonCopyEmailAddress }}
   PAYMENTREQUEST_QUEUE_ADDRESS: {{ quote .Values.container.paymentRequestQueueAddress }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}
+  EVENT_QUEUE_ADDRESS: {{ quote .Values.container.eventQueueAddress }}
   NODE_ENV: {{ quote .Values.environment }}
   PORT: {{ quote .Values.container.port }}
   POSTGRES_DB: {{ quote .Values.postgresService.postgresDb }}
