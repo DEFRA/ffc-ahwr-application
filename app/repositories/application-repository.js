@@ -53,7 +53,7 @@ async function get (reference) {
     }
   ]
  */
-async function getLatestApplicationsBy (businessEmail) {
+async function getLatestApplicationsByBusinessEmail (businessEmail) {
   console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
     businessEmail: businessEmail.toLowerCase()
   })}`)
@@ -75,6 +75,56 @@ async function getLatestApplicationsBy (businessEmail) {
     )
   }
   return latestApplications
+}
+
+/**
+ * Get latest application for each Single Business Identifier (SBI)
+ *
+ * @param {string} businessEmail
+ * @returns latest application for each SBI number
+ *
+ * Example result:
+  [
+    {
+      "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
+      "reference": "AHWR-5C1C-DD6A",
+      "data": {
+        "reference": "string",
+        "declaration": true,
+        "offerStatus": "accepted",
+        "whichReview": "sheep",
+        "organisation": {
+          "crn": 112222,
+          "sbi": 112222,
+          "name": "My Amazing Farm",
+          "email": "business@email.com",
+          "address": "1 Example Road",
+          "farmerName": "Mr Farmer"
+        },
+        "eligibleSpecies": "yes",
+        "confirmCheckDetails": "yes"
+      },
+      "claimed": false,
+      "createdAt": "2023-01-17 13:55:20",
+      "updatedAt": "2023-01-17 13:55:20",
+      "createdBy": "David Jones",
+      "updatedBy": "David Jones",
+      "statusId": 1
+    }
+  ]
+ */
+async function getLatestApplicationsBySbi (sbi) {
+  console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
+    sbi
+  })}`)
+  const result = await models.application
+    .findAll(
+      {
+        where: { 'data.organisation.sbi': sbi },
+        order: [['createdAt', 'DESC']],
+        raw: true
+      })
+  return result.sort((a, b) => new Date(a.createdAt) > new Date(b.createdAt) ? a : b)
 }
 
 /**
@@ -278,7 +328,8 @@ async function updateByReference (data) {
 module.exports = {
   get,
   getBySbi,
-  getLatestApplicationsBy,
+  getLatestApplicationsByBusinessEmail,
+  getLatestApplicationsBySbi,
   getByEmail,
   getApplicationCount,
   getAll,
