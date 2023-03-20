@@ -1,11 +1,20 @@
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
-const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
+const { get, searchApplications, updateByReference, getAll } = require('../../repositories/application-repository')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
 
 module.exports = [{
+  method: 'GET',
+  path: '/api/application/get',
+  options: {
+    handler: async (request, h) => {
+      const applications = (await getAll())
+      return h.response(applications).code(200)
+    }
+  }
+}, {
   method: 'GET',
   path: '/api/application/get/{ref}',
   options: {

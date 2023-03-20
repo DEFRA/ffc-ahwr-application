@@ -45,6 +45,36 @@ describe('Applications test', () => {
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     })
   })
+  url = '/api/application/get'
+  describe(`GET ${url} route`, () => {
+    test('returns 200', async () => {
+      applicationRepository.getAll.mockResolvedValue({
+        applications: [{ reference: 'REF-A1B2', createdBy: 'admin', createdAt: new Date(), data: { organisation: { sbi: '1234' }, whichReview: 'sheep' } },
+          { reference: 'REF-C3D4', createdBy: 'admin2', createdAt: new Date(), data: { organisation: { sbi: '5678' }, whichReview: 'pigs' } }]
+      })
+      const options = {
+        method: 'GET',
+        url: '/api/application/get'
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(applicationRepository.getAll).toHaveBeenCalledTimes(1)
+      const $ = JSON.parse(res.payload)
+      expect($.applications.length).toBe(2)
+    })
+    test('returns 200 - no data found', async () => {
+      applicationRepository.getAll.mockResolvedValue({ applications: [] })
+      const options = {
+        method: 'GET',
+        url: '/api/application/get'
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(applicationRepository.getAll).toHaveBeenCalledTimes(1)
+      const $ = JSON.parse(res.payload)
+      expect($.applications.length).toBe(0)
+    })
+  })
   url = '/api/application/search'
   describe(`POST ${url} route`, () => {
     const method = 'POST'
