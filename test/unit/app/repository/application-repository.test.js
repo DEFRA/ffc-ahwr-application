@@ -833,84 +833,84 @@ describe('Application Repository test', () => {
 
   describe('getLatestApplicationsBySbi', () => {
     test.each([
-      // {
-      //   toString: () => 'no applications found',
-      //   given: {
-      //     sbi: 105110298
-      //   },
-      //   when: {
-      //     foundApplications: []
-      //   },
-      //   expect: {
-      //     result: []
-      //   }
-      // },
-      // {
-      //   toString: () => 'one application found',
-      //   given: {
-      //     sbi: 105110298
-      //   },
-      //   when: {
-      //     foundApplications: [
-      //       {
-      //         id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
-      //         reference: 'AHWR-5C1C-DD6A',
-      //         data: {
-      //           reference: 'string',
-      //           declaration: true,
-      //           offerStatus: 'accepted',
-      //           whichReview: 'sheep',
-      //           organisation: {
-      //             crn: 2222222222,
-      //             sbi: 111111111,
-      //             name: 'My Amazing Farm',
-      //             email: 'business@email.com',
-      //             address: '1 Example Road',
-      //             farmerName: 'Mr Farmer'
-      //           },
-      //           eligibleSpecies: 'yes',
-      //           confirmCheckDetails: 'yes'
-      //         },
-      //         claimed: false,
-      //         createdAt: '2023-01-17 13:55:20',
-      //         updatedAt: '2023-01-17 13:55:20',
-      //         createdBy: 'David Jones',
-      //         updatedBy: 'David Jones',
-      //         statusId: 1
-      //       }
-      //     ]
-      //   },
-      //   expect: {
-      //     result: [
-      //       {
-      //         id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
-      //         reference: 'AHWR-5C1C-DD6A',
-      //         data: {
-      //           reference: 'string',
-      //           declaration: true,
-      //           offerStatus: 'accepted',
-      //           whichReview: 'sheep',
-      //           organisation: {
-      //             crn: 2222222222,
-      //             sbi: 111111111,
-      //             name: 'My Amazing Farm',
-      //             email: 'business@email.com',
-      //             address: '1 Example Road',
-      //             farmerName: 'Mr Farmer'
-      //           },
-      //           eligibleSpecies: 'yes',
-      //           confirmCheckDetails: 'yes'
-      //         },
-      //         claimed: false,
-      //         createdAt: '2023-01-17 13:55:20',
-      //         updatedAt: '2023-01-17 13:55:20',
-      //         createdBy: 'David Jones',
-      //         updatedBy: 'David Jones',
-      //         statusId: 1
-      //       }
-      //     ]
-      //   }
-      // },
+      {
+        toString: () => 'no applications found',
+        given: {
+          sbi: 105110298
+        },
+        when: {
+          foundApplications: []
+        },
+        expect: {
+          result: []
+        }
+      },
+      {
+        toString: () => 'one application found',
+        given: {
+          sbi: 105110298
+        },
+        when: {
+          foundApplications: [
+            {
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-DD6A',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 111111111,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 13:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
+            }
+          ]
+        },
+        expect: {
+          result: [
+            {
+              id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+              reference: 'AHWR-5C1C-DD6A',
+              data: {
+                reference: 'string',
+                declaration: true,
+                offerStatus: 'accepted',
+                whichReview: 'sheep',
+                organisation: {
+                  crn: 2222222222,
+                  sbi: 111111111,
+                  name: 'My Amazing Farm',
+                  email: 'business@email.com',
+                  address: '1 Example Road',
+                  farmerName: 'Mr Farmer'
+                },
+                eligibleSpecies: 'yes',
+                confirmCheckDetails: 'yes'
+              },
+              claimed: false,
+              createdAt: '2023-01-17 13:55:20',
+              updatedAt: '2023-01-17 13:55:20',
+              createdBy: 'David Jones',
+              updatedBy: 'David Jones',
+              statusId: 1
+            }
+          ]
+        }
+      },
       {
         toString: () => 'many application found',
         given: {

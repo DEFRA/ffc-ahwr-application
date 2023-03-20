@@ -1,7 +1,9 @@
 const Joi = require('joi')
 const Boom = require('@hapi/boom')
 const { getLatestApplicationsByBusinessEmail, getLatestApplicationsBySbi } = require('../../repositories/application-repository')
-const SBI_SCHEMA = require('../../schemas/sbi.schema.js')
+const SBI_SCHEMA = require('./schema/sbi.schema.js')
+const BUSINESS_EMAIL_SCHEMA = require('./schema/business-email.schema')
+
 const ERROR_MESSAGE = {
   enterSbiNumberThatHas9Digits: 'The SBI number must have 9 digits',
   sbiNumberOutOfRange: 'The single business identifier (SBI) number is not recognised'
@@ -14,12 +16,7 @@ module.exports = [
     options: {
       validate: {
         query: Joi.object({
-          businessEmail: Joi
-            .string()
-            .trim()
-            .lowercase()
-            .optional()
-            .email(),
+          businessEmail: BUSINESS_EMAIL_SCHEMA,
           sbi: SBI_SCHEMA
         }).min(1).messages({
           'object.min': '"businessEmail" or "sbi" query param must be provided',
