@@ -5,6 +5,7 @@ const SBI_SCHEMA = require('./schema/sbi.schema.js')
 const BUSINESS_EMAIL_SCHEMA = require('./schema/business-email.schema')
 
 const ERROR_MESSAGE = {
+  mandatoryQueryParameters: '"businessEmail" or "sbi" query param must be provided',
   enterSbiNumberThatHas9Digits: 'The SBI number must have 9 digits',
   sbiNumberOutOfRange: 'The single business identifier (SBI) number is not recognised'
 }
@@ -19,7 +20,7 @@ module.exports = [
           businessEmail: BUSINESS_EMAIL_SCHEMA,
           sbi: SBI_SCHEMA
         }).min(1).messages({
-          'object.min': '"businessEmail" or "sbi" query param must be provided',
+          'object.min': ERROR_MESSAGE.mandatoryQueryParameters,
           'number.base': ERROR_MESSAGE.enterSbiNumberThatHas9Digits,
           'number.integer': ERROR_MESSAGE.enterSbiNumberThatHas9Digits,
           'number.less': ERROR_MESSAGE.enterSbiNumberThatHas9Digits,
