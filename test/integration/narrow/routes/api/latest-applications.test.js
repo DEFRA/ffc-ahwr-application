@@ -204,12 +204,27 @@ describe('/api/applications/latest', () => {
       toString: () => 'empty query string',
       given: {
         queryString: ''
+      },
+      then: {
+        errorMessage: '"businessEmail" or "sbi" query param must be provided'
       }
     },
     {
       toString: () => 'no "businessEmail" provided',
       given: {
         queryString: '?businessEmail='
+      },
+      then: {
+        errorMessage: '"businessEmail" is not allowed to be empty'
+      }
+    },
+    {
+      toString: () => 'no "sbi" provided',
+      given: {
+        queryString: '?sbi='
+      },
+      then: {
+        errorMessage: 'The SBI number must have 9 digits'
       }
     }
   ])('%s', async (testCase) => {
@@ -223,6 +238,6 @@ describe('/api/applications/latest', () => {
 
     expect(response.statusCode).toBe(400)
     expect(response.statusMessage).toEqual('Bad Request')
-    expect(payload.message).toEqual('"businessEmail" query param must be provided')
+    expect(payload.message).toEqual(testCase.then.errorMessage)
   })
 })

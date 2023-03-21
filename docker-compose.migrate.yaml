@@ -43,6 +43,8 @@ services:
   ffc-ahwr-application-postgres:
     image: postgres:11.4-alpine
     environment: *common-postgres
+    ports:
+      - "5432:5432"    
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
