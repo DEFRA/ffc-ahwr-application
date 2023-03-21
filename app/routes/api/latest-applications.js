@@ -38,7 +38,8 @@ module.exports = [
           return h.response(applications).code(200)
         } catch (error) {
           console.error(`${new Date().toISOString()} Error while getting latest applications by ${JSON.stringify({
-            businessEmail: request.query.businessEmail
+            businessEmail: request.query.businessEmail,
+            sbi: request.query.sbi
           })}`, error)
           throw Boom.internal(error)
         }
