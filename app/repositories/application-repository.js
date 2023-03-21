@@ -80,7 +80,7 @@ async function getLatestApplicationsByBusinessEmail (businessEmail) {
 /**
  * Get latest applications for Single Business Identifier (SBI)
  *
- * @param {string} businessEmail
+ * @param {string} sbi
  * @returns latest applications for each SBI number
  *
  * Example result:

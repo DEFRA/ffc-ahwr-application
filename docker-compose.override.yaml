@@ -8,7 +8,9 @@ services:
     build:
       target: development
     image: ffc-ahwr-application-development
-    container_name: ffc-ahwr-application-development 
+    container_name: ffc-ahwr-application-development
+    environment:
+      NODE_TLS_REJECT_UNAUTHORIZED: 0      
     ports:
       - "3001:3000"
       - "9230:9229"
