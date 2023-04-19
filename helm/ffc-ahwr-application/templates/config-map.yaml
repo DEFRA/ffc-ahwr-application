@@ -24,5 +24,4 @@ data:
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
   COMPLIANCE_APPLICATION_COUNT: {{ quote .Values.container.complianceApplicationCount }}
-  COMPLIANCE_SCHEDULER: {{ quote .Values.container.complianceApplicationScheduler }}
 {{- end -}}
