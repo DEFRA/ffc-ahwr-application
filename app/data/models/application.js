@@ -41,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
     application.hasOne(models.status, {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
+    }) 
+    application.hasMany(models.stageExecution, {
+      sourceKey: 'reference',
+      foreignKey: 'applicationReference'
     })
   }
   return application
