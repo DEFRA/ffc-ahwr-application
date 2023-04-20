@@ -1,6 +1,6 @@
 {
   "name": "ffc-ahwr-application",
-  "version": "0.35.0",
+  "version": "0.36.0",
   "description": "Application manager for AHWR",
   "homepage": "https://github.com/DEFRA/ffc-ahwr-application",
   "main": "app/index.js",
@@ -35,7 +35,8 @@
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.16.2",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "xml2js": "^0.5.0"
   },
   "overrides": {
     "notifications-node-client": {
