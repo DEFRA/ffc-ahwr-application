@@ -15,7 +15,7 @@ const applicationSchema = joi.object({
     cph: joi.string().optional(),
     crn: joi.string().optional(),
     address: joi.string().required(),
-    email: joi.string().required().lowercase().email(),
+    email: joi.string().required().lowercase().email({ tlds: false }),
     isTest: joi.boolean().optional()
   })
 })
