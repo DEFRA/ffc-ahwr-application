@@ -57,7 +57,6 @@ container:
   azureStorageUseConnectionString: true
   azureStorageAccountName:
   complianceApplicationCount: 5
-  complianceApplicationScheduler:
 
 postgresService:
   postgresDb: ffc_ahwr_application

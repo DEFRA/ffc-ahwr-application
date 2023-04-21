@@ -16,6 +16,4 @@ const routes = [].concat(
 
 server.route(routes)
 
-server.register(require('./plugins/process-compliance-application'))
-
 module.exports = server

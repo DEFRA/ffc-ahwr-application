@@ -1,7 +1,6 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 
 jest.mock('../../../../../app/data')
-jest.mock('../../../../../app/plugins/process-compliance-application')
 
 const server = require('../../../../../app/server')
 
