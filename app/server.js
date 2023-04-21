@@ -11,7 +11,8 @@ const routes = [].concat(
   require('./routes/api/applications'),
   require('./routes/api/users'),
   require('./routes/api/latest-applications'),
-  require('./routes/api/application-history')
+  require('./routes/api/application-history'),
+  require('./routes/api/stages')
 )
 
 server.route(routes)

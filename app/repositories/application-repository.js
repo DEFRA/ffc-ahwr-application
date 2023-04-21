@@ -1,12 +1,13 @@
 const { models, sequelize } = require('../data')
 const eventPublisher = require('../event-publisher')
+const { QueryTypes } = require('sequelize')
 
 /**
  * Get application by reference number
  * @param {string} reference
  * @returns application object with vetVisit & status.
  */
-async function get (reference) {
+async function get(reference) {
   return models.application.findOne(
     {
       where: { reference: reference.toUpperCase() },
@@ -53,7 +54,7 @@ async function get (reference) {
     }
   ]
  */
-async function getLatestApplicationsByBusinessEmail (businessEmail) {
+async function getLatestApplicationsByBusinessEmail(businessEmail) {
   console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
     businessEmail: businessEmail.toLowerCase()
   })}`)
@@ -113,7 +114,7 @@ async function getLatestApplicationsByBusinessEmail (businessEmail) {
     }
   ]
  */
-async function getLatestApplicationsBySbi (sbi) {
+async function getLatestApplicationsBySbi(sbi) {
   console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
     sbi
   })}`)
@@ -133,7 +134,7 @@ async function getLatestApplicationsBySbi (sbi) {
  * @param {number} sbi
  * @returns application object.
  */
-async function getBySbi (sbi) {
+async function getBySbi(sbi) {
   return models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
@@ -147,7 +148,7 @@ async function getBySbi (sbi) {
  * @param {string} email
  * @returns application object with vetVisit data.
  */
-async function getByEmail (email) {
+async function getByEmail(email) {
   return models.application.findOne(
     {
       order: [['createdAt', 'DESC']],
@@ -158,7 +159,7 @@ async function getByEmail (email) {
     })
 }
 
-function evalSortField (sort) {
+function evalSortField(sort) {
   if (sort && sort.field) {
     switch (sort.field.toLowerCase()) {
       case 'status':
@@ -183,7 +184,7 @@ function evalSortField (sort) {
  * @param {object} object contain field and direction for sort order
  * @returns all application with page
  */
-async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+async function searchApplications(searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
   let query = {
     include: [
       {
@@ -255,7 +256,7 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
  * @param {*} limit
  * @returns
  */
-async function getAll () {
+async function getAll() {
   const query = {
     order: [['createdAt', 'DESC']]
   }
@@ -265,7 +266,7 @@ async function getAll () {
  * Get total number of applications
  * @returns
  */
-async function getApplicationsCount () {
+async function getApplicationsCount() {
   return models.application.count()
 }
 /**
@@ -273,7 +274,7 @@ async function getApplicationsCount () {
  * @param {*} sbi
  * @returns
  */
-async function getApplicationCount (sbi) {
+async function getApplicationCount(sbi) {
   const query = {}
   if (sbi) {
     query.where = { 'data.organisation.sbi': sbi }
@@ -285,7 +286,7 @@ async function getApplicationCount (sbi) {
  * @param {*} data
  * @returns
  */
-async function set (data) {
+async function set(data) {
   const result = await models.application.create(data)
   await eventPublisher.raise({
     message: 'New application has been created',
@@ -304,7 +305,7 @@ async function set (data) {
  * @return {Array} contains a single element, 1 equates to success, 0 equates
  * to failure.
  */
-async function updateByReference (data) {
+async function updateByReference(data) {
   const result = await models.application.update(
     data,
     {
@@ -325,6 +326,50 @@ async function updateByReference (data) {
   return result
 }
 
+async function getStageConfiguration() {
+  console.log(`${new Date().toISOString()} Getting stage configuration`)
+  const query = {
+    attributes: [
+      'id',
+      'stage',
+      'role',
+      'stepNumber',
+      'action'
+    ],
+    order: [['id', 'ASC']],
+    raw: true
+  }
+  return models.stageConfiguration.findAll(query)
+}
+
+async function getStageExecution() {
+  console.log(`${new Date().toISOString()} Getting stage execution`)
+  const query = {
+    attributes: [
+      'id',
+      'applicationReference',
+      'stageConfigurationId',
+      'executedAt',
+      'executedBy',
+      'processedAt',
+      'action'
+    ],
+    order: [['executedAt', 'ASC']],
+    raw: true
+  }
+  return models.stageExecution.findAll(query)
+}
+
+async function addStageExecution(data) {  
+  return await models.stageExecution.create({
+    applicationReference: data.applicationReference,
+    stageConfigurationId: data.stageConfigurationId,
+    executedBy: data.user,
+    executedAt: new Date(),
+    action: data.action
+  }, { fields: ['applicationReference', 'stageConfigurationId', 'executedBy', 'executedAt', 'action'] })
+}
+
 module.exports = {
   get,
   getBySbi,
@@ -336,5 +381,8 @@ module.exports = {
   getApplicationsCount,
   set,
   updateByReference,
-  searchApplications
+  searchApplications,
+  getStageConfiguration,
+  getStageExecution,
+  addStageExecution
 }
