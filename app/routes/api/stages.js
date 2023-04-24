@@ -1,5 +1,5 @@
 const Joi = require('joi')
-const { getStageConfiguration, getStageExecution, addStageExecution } = require('../../repositories/application-repository')
+const { getStageConfiguration, getStageExecution, addStageExecution, updateStageExecutionById } = require('../../repositories/application-repository')
 
 module.exports = [{
   method: 'GET',
@@ -43,7 +43,25 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      await addStageExecution(request.payload)
+      const row = await addStageExecution(request.payload)
+      return h.response(row).code(200)
+    }
+  }
+}, {
+  method: 'PUT',
+  path: '/api/stageexecution/{id}',
+  options: {
+    validate: {
+      params: Joi.object({
+        id: Joi.number().valid()
+      }),
+      failAction: async (_request, h, err) => {
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      await updateStageExecutionById({ id: request.params.id })
+
       return h.response().code(200)
     }
   }

@@ -1,7 +1,7 @@
 const { PublishEventBatch } = require('ffc-ahwr-event-publisher')
 const config = require('../config')
 
-const raise = async (event) => {
+const raise = async (event, eventType) => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
       name: 'application-status-event',
@@ -12,12 +12,9 @@ const raise = async (event) => {
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
         status: 'success',
         action: {
-          type: 'status-updated',
+          type: `${eventType}`,
           message: event.message,
-          data: {
-            reference: event.application.reference,
-            statusId: event.application.statusId
-          },
+          data: event.eventData,
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
         }
@@ -32,12 +29,9 @@ const raise = async (event) => {
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
         status: 'success',
         action: {
-          type: `application:status-updated:${event.application.statusId}`,
+          type: `application:${eventType}:${event.application.statusId}`,
           message: event.message,
-          data: {
-            reference: event.application.reference,
-            statusId: event.application.statusId
-          },
+          data: event.eventData,
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
         }
