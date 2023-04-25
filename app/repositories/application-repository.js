@@ -394,7 +394,11 @@ async function updateStageExecutionById (data) {
   await eventPublisher.raise({
     message: 'Application stage has been executed',
     application: application.dataValues,
-    eventData: updatedEntry,
+    eventData: {
+      reference: application.dataValues.reference,
+      statusId: application.dataValues.statusId,
+      data: updatedEntry
+    },
     raisedBy: updatedEntry.executedBy,
     raisedOn: updatedEntry.processedAt
   }, 'application-stage-executed')
