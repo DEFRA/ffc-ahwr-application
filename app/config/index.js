@@ -29,6 +29,9 @@ const schema = Joi.object({
   compliance: {
     applicationCount: Joi.number().default(5),
     scheduler: Joi.string().default('0 9 * * 2-3')
+  },
+  rbac: {
+    enabled: Joi.boolean().default(false)
   }
 })
 
@@ -56,6 +59,9 @@ const config = {
   compliance: {
     applicationCount: process.env.COMPLIANCE_APPLICATION_COUNT,
     scheduler: process.env.COMPLIANCE_SCHEDULER
+  },
+  rbac: {
+    enabled: process.env.RBAC_ENABLED
   }
 }
 

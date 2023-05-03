@@ -25,4 +25,5 @@ data:
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
   COMPLIANCE_APPLICATION_COUNT: {{ quote .Values.container.complianceApplicationCount }}
   COMPLIANCE_SCHEDULER: {{ quote .Values.container.complianceApplicationScheduler }}
+  RBAC_ENABLED: {{ quote .Values.container.rbacEnabled }}
 {{- end -}}

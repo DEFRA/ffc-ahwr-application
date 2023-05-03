@@ -38,6 +38,7 @@ services:
       AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
       COMPLIANCE_APPLICATION_COUNT: 5
       COMPLIANCE_SCHEDULER: "0 9 * * 2-3"
+      RBAC_ENABLED: ${RBAC_ENABLED:-false}
 
   ffc-ahwr-application-postgres:
     image: postgres:11.4-alpine
