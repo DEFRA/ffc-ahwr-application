@@ -57,6 +57,7 @@ container:
   azureStorageUseConnectionString: true
   azureStorageAccountName:
   complianceApplicationCount: 5
+  rbacEnabled:
 
 postgresService:
   postgresDb: ffc_ahwr_application

@@ -28,6 +28,9 @@ const schema = Joi.object({
   },
   compliance: {
     applicationCount: Joi.number().default(5)
+  },
+  rbac: {
+    enabled: Joi.boolean().default(false)
   }
 })
 
@@ -54,6 +57,9 @@ const config = {
   },
   compliance: {
     applicationCount: process.env.COMPLIANCE_APPLICATION_COUNT
+  },
+  rbac: {
+    enabled: process.env.RBAC_ENABLED
   }
 }
 
