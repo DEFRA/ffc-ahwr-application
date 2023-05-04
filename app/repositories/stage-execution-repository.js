@@ -5,7 +5,7 @@ const { models } = require('../data')
  * @returns stage execution object
  */
 async function get (id) {
-  return models.stage - execution.findAll(
+  return models.stage-execution.findAll(
     {
       where: { id }
     })
@@ -17,7 +17,7 @@ async function get (id) {
  * @returns
  */
 async function set (data) {
-  const result = await models.stage - execution.create(data)
+  const result = await models.stage-execution.create(data)
   return result
 }
 
