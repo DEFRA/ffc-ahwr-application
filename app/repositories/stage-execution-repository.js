@@ -1,14 +1,10 @@
 const { models } = require('../data')
 /**
  * Get stage execution by id
- * @param {integer} id
  * @returns stage execution object
  */
-async function get (id) {
-  return models.stage_execution.findAll(
-    {
-      where: { id }
-    })
+async function get () {
+  return models.stage_execution.findAll()
 }
 
 /**
@@ -17,11 +13,28 @@ async function get (id) {
  * @returns
  */
 async function set (data) {
-  const result = await models.stage_execution.create(data)
+  return models.stage_execution.create(data)
+}
+
+/**
+ * Update stage execution
+ * @param {*} data - stage execution data
+ * @returns stage execution object
+ * @example
+*/
+async function update (data) {
+  const result = await models.stage_execution.update(
+    { processedAt: new Date() },
+    {
+      where: { id: data.id },
+      returning: true
+    }
+  )
   return result
 }
 
 module.exports = {
   get,
-  set
+  set,
+  update
 }

@@ -32,14 +32,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     freezeTableName: true,
-    tableName: 'stage_execution'
+    tableName: 'stage_execution',
+    timestamps: false
   })
   stageExecution.associate = function (models) {
-    stageExecution.hasOne(models.application, {
+    stageExecution.hasMany(models.application, {
       sourceKey: 'applicationReference',
       foreignKey: 'reference'
     })
-    stageExecution.hasOne(models.stage_configuration, {
+    stageExecution.hasMany(models.stage_configuration, {
       sourceKey: 'stageConfigurationId',
       foreignKey: 'id'
     })

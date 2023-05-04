@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
   },
   {
     freezeTableName: true,
-    tableName: 'stage_configuration'
+    tableName: 'stage_configuration',
+    timestamps: false
   })
   return stageConfiguration
 }
