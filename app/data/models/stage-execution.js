@@ -1,6 +1,3 @@
-const application = require('./application')
-const stageConfiguration = require('./stage-configuration')
-
 module.exports = (sequelize, DataTypes) => {
   const stageExecution = sequelize.define('stage_execution', {
     id: {
@@ -33,20 +30,20 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.JSONB,
       allowNull: true
     }
+  }, {
+    freezeTableName: true,
+    tableName: 'stage_execution'
   })
+  stageExecution.associate = function (models) {
+    stageExecution.hasOne(models.application, {
+      sourceKey: 'applicationReference',
+      foreignKey: 'reference'
+    })
+    stageExecution.hasOne(models.stage_configuration, {
+      sourceKey: 'stageConfigurationId',
+      foreignKey: 'id'
+    })
+  }
 
-  // Define foreign key relationships
-  stageExecution.belongsTo(application, {
-    foreignKey: 'applicationReference',
-    targetKey: 'reference',
-    as: 'application'
-  })
-
-  stageExecution.belongsTo(stageConfiguration, {
-    foreignKey: 'stageConfigurationId',
-    targetKey: 'id',
-    as: 'stageConfiguration'
-  })
-
-  module.exports = stageExecution
+  return stageExecution
 }
