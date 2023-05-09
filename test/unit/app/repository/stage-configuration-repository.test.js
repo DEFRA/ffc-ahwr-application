@@ -35,7 +35,7 @@ describe('Stage Configuration Repository test', () => {
       .calledWith()
       .mockResolvedValue(mockData)
 
-    await repository.get()
+    await repository.getAll()
 
     expect(data.models.stage_configuration.findAll).toHaveBeenCalledTimes(1)
     expect(data.models.stage_configuration.findAll).toHaveBeenCalledWith()

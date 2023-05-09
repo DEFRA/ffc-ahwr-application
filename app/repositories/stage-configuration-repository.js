@@ -1,12 +1,12 @@
 const { models } = require('../data')
 /**
- * Get stage configuration by id
+ * Get stage configuration
  * @returns stage configuration object
  */
-async function get () {
+async function getAll () {
   return models.stage_configuration.findAll()
 }
 
 module.exports = {
-  get
+  getAll
 }

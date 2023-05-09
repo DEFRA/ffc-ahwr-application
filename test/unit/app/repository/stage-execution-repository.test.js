@@ -37,7 +37,7 @@ describe('Stage Exection Repository test', () => {
       .calledWith()
       .mockResolvedValue(mockData)
 
-    await repository.get()
+    await repository.getAll()
 
     expect(data.models.stage_execution.findAll).toHaveBeenCalledTimes(1)
     expect(data.models.stage_execution.findAll).toHaveBeenCalledWith()
