@@ -1,0 +1,54 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Jason Hamilton" id="2">
+    <createTable tableName="stage_configuration">
+      <column name="id" type="SMALLINT">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="stageConfigurationId_pkey" />
+      </column>
+      <column name="stage" type="VARCHAR(50)">
+        <constraints nullable="false" />
+      </column>
+      <column name="role" type="JSONB">
+        <constraints nullable="false" />
+      </column>
+      <column name="stepNumber" type="smallint">
+        <constraints nullable="false" />
+      </column>
+      <column name="action" type="jsonb">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+  </changeSet>
+  <changeSet author="Jason Hamilton" id="3">
+    <createTable tableName="stage_execution">
+      <column name="id" type="SMALLINT">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="stageExecutionId_pkey" />
+      </column>
+      <column name="applicationReference" type="VARCHAR(14)">
+        <constraints nullable="false" />
+      </column>
+      <column name="stageConfigurationId" type="smallint">
+        <constraints nullable="false" />
+      </column>
+      <column name="executedAt" defaultValueComputed="now()" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="false" />
+      </column>
+      <column name="executedBy" type="varchar(50)">
+        <constraints nullable="true" />
+      </column>
+      <column name="processedAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="true" />
+      </column>
+      <column name="action" type="JSONB">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+  </changeSet>
+  <changeSet author="Jason Hamilton" id="4">
+    <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="stage_execution" constraintName="fk_application_reference" referencedColumnNames="reference" referencedTableName="application" />
+    <addForeignKeyConstraint baseColumnNames="stageConfigurationId" baseTableName="stage_execution" constraintName="fk_stage_configuration_id" referencedColumnNames="id" referencedTableName="stage_configuration" />
+  </changeSet>
+  <changeSet author="Jason Hamilton" id="1">
+    <tagDatabase tag="v1.14.0" />
+  </changeSet>
+</databaseChangeLog>
