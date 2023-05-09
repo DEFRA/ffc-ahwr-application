@@ -1,10 +1,22 @@
 const { models } = require('../data')
 /**
- * Get stage execution
- * @returns stage execution object
+ * Get stage executions
+ * @returns array of stage execution objects
  */
 async function getAll () {
   return models.stage_execution.findAll()
+}
+
+/**
+ * Get stage execution by id
+ * @param {number} id
+ * @returns stage execution object
+ */
+async function getById (id) {
+  return models.stage_execution.findOne(
+    {
+      where: { id }
+    })
 }
 
 /**
@@ -35,6 +47,7 @@ async function update (data) {
 
 module.exports = {
   getAll,
+  getById,
   set,
   update
 }

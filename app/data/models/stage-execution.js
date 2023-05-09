@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.SMALLINT,
       primaryKey: true,
+      autoIncrement: true,
       allowNull: false
     },
     applicationReference: {
