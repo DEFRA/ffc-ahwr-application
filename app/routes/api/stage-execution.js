@@ -15,6 +15,27 @@ module.exports = [{
     }
   }
 }, {
+  method: 'GET',
+  path: '/api/stageexecution/{id}',
+  options: {
+    validate: {
+      params: Joi.object({
+        id: Joi.number().greater(0).required()
+      }),
+      failAction: async (_request, h, err) => {
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      const stageExecution = await getById(request.params.id)
+      if (stageExecution) {
+        return h.response(stageExecution).code(200)
+      } else {
+        return h.response('Not Found').code(404).takeover()
+      }
+    }
+  }
+}, {
   method: 'POST',
   path: '/api/stageexecution',
   options: {
