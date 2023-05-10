@@ -43,7 +43,7 @@ describe('Stage Exection Repository test', () => {
     expect(data.models.stage_execution.findAll).toHaveBeenCalledWith()
   })
 
-  test('Get a single stage execution object', async () => {
+  test('Get by id', async () => {
     when(data.models.stage_execution.findOne)
       .calledWith(1)
       .mockResolvedValue(mockData)
@@ -52,6 +52,17 @@ describe('Stage Exection Repository test', () => {
 
     expect(data.models.stage_execution.findOne).toHaveBeenCalledTimes(1)
     expect(data.models.stage_execution.findOne).toHaveBeenCalledWith({ where: { id: 1 } })
+  })
+
+  test('Get by application', async () => {
+    when(data.models.stage_execution.findAll)
+      .calledWith('AHWR-0000-0000')
+      .mockResolvedValue(mockData)
+
+    await repository.getByApplicationReference('AHWR-0000-0000')
+
+    expect(data.models.stage_execution.findAll).toHaveBeenCalledTimes(1)
+    expect(data.models.stage_execution.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'AHWR-0000-0000' } })
   })
 
   test('Set creates record for data', async () => {
