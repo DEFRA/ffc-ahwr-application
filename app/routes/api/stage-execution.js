@@ -52,7 +52,7 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const stageExecution = (await getById(request.params.id))
+      const stageExecution = await getById(request.params.id)
       if (!stageExecution) {
         return h.response('Not Found').code(404).takeover()
       }

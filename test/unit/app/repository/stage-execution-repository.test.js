@@ -43,6 +43,17 @@ describe('Stage Exection Repository test', () => {
     expect(data.models.stage_execution.findAll).toHaveBeenCalledWith()
   })
 
+  test('Get a single stage execution object', async () => {
+    when(data.models.stage_execution.findOne)
+      .calledWith(1)
+      .mockResolvedValue(mockData)
+
+    await repository.getById(1)
+
+    expect(data.models.stage_execution.findOne).toHaveBeenCalledTimes(1)
+    expect(data.models.stage_execution.findOne).toHaveBeenCalledWith({ where: { id: 1 } })
+  })
+
   test('Set creates record for data', async () => {
     when(data.models.stage_execution.create)
       .calledWith(mockData)
