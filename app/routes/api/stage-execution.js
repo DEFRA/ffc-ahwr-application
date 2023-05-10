@@ -6,7 +6,7 @@ module.exports = [{
   path: '/api/stageexecution',
   options: {
     handler: async (request, h) => {
-      const stageExecution = (await getAll())
+      const stageExecution = await getAll()
       if (stageExecution) {
         return h.response(stageExecution).code(200)
       } else {

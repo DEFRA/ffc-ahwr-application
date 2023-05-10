@@ -25,9 +25,20 @@ describe('Stage configuration test', () => {
     resetAllWhenMocks()
   })
   const url = '/api/stageconfiguration'
-  stageConfigurationRepository.getAll.mockResolvedValue([mockResponse])
+  stageConfigurationRepository.getAll.mockResolvedValueOnce().mockResolvedValue([mockResponse])
 
   describe(`GET ${url} route`, () => {
+    test('returns 404', async () => {
+      const options = {
+        method: 'GET',
+        url
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
+      expect(stageConfigurationRepository.getAll).toHaveBeenCalledTimes(1)
+      expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
+      expect(res.result).toEqual('Not Found')
+    })
     test('returns 200', async () => {
       const options = {
         method: 'GET',
