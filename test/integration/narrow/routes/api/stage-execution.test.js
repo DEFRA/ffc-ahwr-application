@@ -1,7 +1,6 @@
 const stageExecutionRepository = require('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/stage-execution-repository')
 const { when, resetAllWhenMocks } = require('jest-when')
-MOCK_NOW = new Date()
 
 const data = {
   applicationReference: 'AHWR-0000-0000',

@@ -1,7 +1,6 @@
 const stageConfigurationRepository = require('../../../../../app/repositories/stage-configuration-repository')
 jest.mock('../../../../../app/repositories/stage-configuration-repository')
 const { resetAllWhenMocks } = require('jest-when')
-MOCK_NOW = new Date()
 
 const mockResponse = {
   id: 13,
