@@ -1,5 +1,5 @@
 const Joi = require('joi')
-const { getAll, set, getById, update } = require('../../repositories/stage-execution-repository')
+const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
 
 module.exports = [{
   method: 'GET',
@@ -16,20 +16,20 @@ module.exports = [{
   }
 }, {
   method: 'GET',
-  path: '/api/stageexecution/{id}',
+  path: '/api/stageexecution/{applicationReference}',
   options: {
     validate: {
       params: Joi.object({
-        id: Joi.number().greater(0).required()
+        applicationReference: Joi.string().required()
       }),
       failAction: async (_request, h, err) => {
         return h.response({ err }).code(400).takeover()
       }
     },
     handler: async (request, h) => {
-      const stageExecution = await getById(request.params.id)
-      if (stageExecution) {
-        return h.response(stageExecution).code(200)
+      const stageExecutions = await getByApplicationReference(request.params.applicationReference)
+      if (stageExecutions) {
+        return h.response(stageExecutions).code(200)
       } else {
         return h.response('Not Found').code(404).takeover()
       }
