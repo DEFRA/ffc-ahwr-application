@@ -123,7 +123,7 @@ describe('Stage execution test', () => {
       expect(res.result).toEqual(mockResponse)
     })
 
-    test('returns 200', async () => {
+    test('returns 404', async () => {
       when(stageExecutionRepository.getById)
         .calledWith(2)
         .mockResolvedValue()
