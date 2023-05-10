@@ -1,3 +1,4 @@
+const Joi = require('joi')
 const { getAll, getById } = require('../../repositories/stage-configuration-repository')
 
 module.exports = [{
