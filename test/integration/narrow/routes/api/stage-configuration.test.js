@@ -26,10 +26,13 @@ describe('Stage configuration test', () => {
     resetAllWhenMocks()
   })
   const url = '/api/stageconfiguration'
-  stageConfigurationRepository.getAll.mockResolvedValueOnce().mockResolvedValue([mockResponse])
+  stageConfigurationRepository.getAll.mockResolvedValue([mockResponse])
 
   describe(`GET ${url} route`, () => {
     test('returns 404', async () => {
+      when(stageConfigurationRepository.getAll)
+        .calledWith()
+        .mockResolvedValue()
       const options = {
         method: 'GET',
         url
@@ -50,6 +53,20 @@ describe('Stage configuration test', () => {
       expect(stageConfigurationRepository.getAll).toHaveBeenCalledTimes(1)
       expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual([mockResponse])
+    })
+    test('returns 400', async () => {
+      when(stageConfigurationRepository.getAll)
+        .calledWith()
+        .mockRejectedValue(new ValidationError('Invalid'))
+      const options = {
+        method: 'GET',
+        url
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(stageConfigurationRepository.getAll).toHaveBeenCalledTimes(1)
+      expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
+      expect(res.result).toEqual({ err: new ValidationError('Invalid') })
     })
   })
 
@@ -92,6 +109,22 @@ describe('Stage configuration test', () => {
       expect(res.statusCode).toBe(400)
       expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(0)
       expect(res.result).toEqual({ err: new ValidationError('"id" must be a number') })
+    })
+
+    test('returns 400', async () => {
+      when(stageConfigurationRepository.getById)
+        .calledWith(2)
+        .mockRejectedValue(new ValidationError('Invalid'))
+
+      const options = {
+        method: 'GET',
+        url: `${url}/2`
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(1)
+      expect(stageConfigurationRepository.getById).toHaveBeenCalledWith(2)
+      expect(res.result).toEqual({ err: new ValidationError('Invalid') })
     })
   })
 })

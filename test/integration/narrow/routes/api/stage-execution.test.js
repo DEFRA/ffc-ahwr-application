@@ -63,6 +63,21 @@ describe('Stage execution test', () => {
       expect(stageExecutionRepository.getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual(mockResponse)
     })
+
+    test('returns 400', async () => {
+      when(stageExecutionRepository.getAll)
+        .calledWith()
+        .mockRejectedValue(new ValidationError('Invalid'))
+      const options = {
+        method: 'GET',
+        url
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(stageExecutionRepository.getAll).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.getAll).toHaveBeenCalledWith()
+      expect(res.result).toEqual({ err: new ValidationError('Invalid') })
+    })
   })
 
   describe(`GET ${url}/AHWR-0000-0000 route`, () => {
@@ -79,6 +94,21 @@ describe('Stage execution test', () => {
       expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
       expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 400', async () => {
+      when(stageExecutionRepository.getByApplicationReference)
+        .calledWith('AHWR-0000-0000')
+        .mockRejectedValue(new ValidationError('Invalid'))
+      const options = {
+        method: 'GET',
+        url: `${url}/AHWR-0000-0000`
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(res.result).toEqual({ err: new ValidationError('Invalid') })
     })
 
     test('returns 404', async () => {
@@ -109,6 +139,22 @@ describe('Stage execution test', () => {
       expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) })
       expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 400', async () => {
+      when(stageExecutionRepository.set)
+        .calledWith({ ...data, executedAt: expect.any(Date) })
+        .mockRejectedValue(new ValidationError('Invalid'))
+      const options = {
+        method: 'POST',
+        url,
+        payload: data
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) })
+      expect(res.result).toEqual({ err: new ValidationError('Invalid') })
     })
 
     test.each([
@@ -156,6 +202,25 @@ describe('Stage execution test', () => {
       expect(stageExecutionRepository.update).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.update).toHaveBeenCalledWith({ id: 2 })
       expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 400 when error thrown', async () => {
+      when(stageExecutionRepository.update)
+        .calledWith({ id: 2 })
+        .mockRejectedValue(new ValidationError('Invalid'))
+      when(stageExecutionRepository.getById)
+        .calledWith(2)
+        .mockResolvedValue(mockResponse)
+      const options = {
+        method: 'PUT',
+        url: `${url}/2`
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+      expect(stageExecutionRepository.update).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.update).toHaveBeenCalledWith({ id: 2 })
+      expect(res.result).toEqual({ err: new ValidationError('Invalid') })
     })
 
     test('returns 404', async () => {
