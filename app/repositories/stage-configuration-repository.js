@@ -4,7 +4,10 @@ const { models } = require('../data')
  * @returns stage configuration object
  */
 async function getAll () {
-  return models.stage_configuration.findAll()
+  console.log(`${new Date().toISOString()} Getting all stage configurations`)
+  const response = models.stage_configuration.findAll()
+  console.log(`${new Date().toISOString()} Got all stage configurations: ${JSON.stringify(response)}`)
+  return response
 }
 
 /**
@@ -13,10 +16,13 @@ async function getAll () {
  * @returns stage configuration object
  */
 async function getById (id) {
-  return models.stage_configuration.findOne(
+  console.log(`${new Date().toISOString()} Getting stage configuration by id: ${id}`)
+  const response = models.stage_configuration.findOne(
     {
       where: { id }
     })
+  console.log(`${new Date().toISOString()} Got stage configuration by id: ${JSON.stringify(response)}`)
+  return response
 }
 
 module.exports = {

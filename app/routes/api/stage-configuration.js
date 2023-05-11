@@ -6,11 +6,15 @@ module.exports = [{
   path: '/api/stageconfiguration',
   options: {
     handler: async (request, h) => {
-      const stageConfiguration = await getAll()
-      if (stageConfiguration) {
-        return h.response(stageConfiguration).code(200)
-      } else {
-        return h.response('Not Found').code(404).takeover()
+      try {
+        const stageConfiguration = await getAll()
+        if (stageConfiguration) {
+          return h.response(stageConfiguration).code(200)
+        } else {
+          return h.response('Not Found').code(404).takeover()
+        }
+      } catch (err) {
+        return h.response({ err }).code(400).takeover()
       }
     }
   }
@@ -27,11 +31,15 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const stageConfiguration = await getById(request.params.id)
-      if (stageConfiguration) {
-        return h.response(stageConfiguration).code(200)
-      } else {
-        return h.response('Not Found').code(404).takeover()
+      try {
+        const stageConfiguration = await getById(request.params.id)
+        if (stageConfiguration) {
+          return h.response(stageConfiguration).code(200)
+        } else {
+          return h.response('Not Found').code(404).takeover()
+        }
+      } catch (err) {
+        return h.response({ err }).code(400).takeover()
       }
     }
   }

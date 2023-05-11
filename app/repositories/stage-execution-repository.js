@@ -4,7 +4,10 @@ const { models } = require('../data')
  * @returns array of stage execution objects
  */
 async function getAll () {
-  return models.stage_execution.findAll()
+  console.log(`${new Date().toISOString()} Getting all stage executions`)
+  const response = models.stage_execution.findAll()
+  console.log(`${new Date().toISOString()} Got all stage executions: ${JSON.stringify(response)}`)
+  return response
 }
 
 /**
@@ -13,10 +16,13 @@ async function getAll () {
  * @returns stage execution object
  */
 async function getById (id) {
-  return models.stage_execution.findOne(
+  console.log(`${new Date().toISOString()} Getting stage executions by id: ${id}`)
+  const response = models.stage_execution.findOne(
     {
       where: { id }
     })
+  console.log(`${new Date().toISOString()} Getting stage executions by id: ${JSON.stringify(response)}`)
+  return response
 }
 
 /**
@@ -25,10 +31,13 @@ async function getById (id) {
  * @returns stage execution array
  */
 async function getByApplicationReference (applicationReference) {
-  return models.stage_execution.findAll(
+  console.log(`${new Date().toISOString()} Getting stage executions by application reference: ${applicationReference}`)
+  const response = models.stage_execution.findAll(
     {
       where: { applicationReference }
     })
+  console.log(`${new Date().toISOString()} Got stage executions by application reference: ${JSON.stringify(response)}`)
+  return response
 }
 
 /**
@@ -37,7 +46,10 @@ async function getByApplicationReference (applicationReference) {
  * @returns
  */
 async function set (data) {
-  return models.stage_execution.create(data)
+  console.log(`${new Date().toISOString()} Creating stage execution: ${JSON.stringify(data)}`)
+  const response = models.stage_execution.create(data)
+  console.log(`${new Date().toISOString()} Created stage execution: ${JSON.stringify(response)}`)
+  return response
 }
 
 /**
@@ -47,6 +59,7 @@ async function set (data) {
  * @example
 */
 async function update (data) {
+  console.log(`${new Date().toISOString()} Updating stage execution: ${JSON.stringify(data)}`)
   const result = await models.stage_execution.update(
     { processedAt: new Date() },
     {
@@ -54,6 +67,7 @@ async function update (data) {
       returning: true
     }
   )
+  console.log(`${new Date().toISOString()} Updated stage execution: ${JSON.stringify(result)}`)
   return result
 }
 

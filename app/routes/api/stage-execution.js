@@ -6,11 +6,15 @@ module.exports = [{
   path: '/api/stageexecution',
   options: {
     handler: async (request, h) => {
-      const stageExecution = await getAll()
-      if (stageExecution) {
-        return h.response(stageExecution).code(200)
-      } else {
-        return h.response('Not Found').code(404).takeover()
+      try {
+        const stageExecution = await getAll()
+        if (stageExecution) {
+          return h.response(stageExecution).code(200)
+        } else {
+          return h.response('Not Found').code(404).takeover()
+        }
+      } catch (err) {
+        return h.response({ err }).code(400).takeover()
       }
     }
   }
@@ -27,11 +31,15 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const stageExecutions = await getByApplicationReference(request.params.applicationReference)
-      if (stageExecutions) {
-        return h.response(stageExecutions).code(200)
-      } else {
-        return h.response('Not Found').code(404).takeover()
+      try {
+        const stageExecutions = await getByApplicationReference(request.params.applicationReference)
+        if (stageExecutions) {
+          return h.response(stageExecutions).code(200)
+        } else {
+          return h.response('Not Found').code(404).takeover()
+        }
+      } catch (err) {
+        return h.response({ err }).code(400).takeover()
       }
     }
   }
@@ -55,9 +63,13 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const response = await set(request.payload)
-      console.log('Stage execution inserted: ', response.dataValues)
-      return h.response(response).code(200)
+      try {
+        const response = await set(request.payload)
+        console.log('Stage execution inserted: ', response.dataValues)
+        return h.response(response).code(200)
+      } catch (err) {
+        return h.response({ err }).code(400).takeover()
+      }
     }
   }
 }, {
@@ -73,14 +85,18 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const stageExecution = await getById(request.params.id)
-      if (!stageExecution) {
-        return h.response('Not Found').code(404).takeover()
+      try {
+        const stageExecution = await getById(request.params.id)
+        if (!stageExecution) {
+          return h.response('Not Found').code(404).takeover()
+        }
+
+        const response = await update(request.params)
+
+        return h.response(response).code(200)
+      } catch (err) {
+        return h.response({ err }).code(400).takeover()
       }
-
-      const response = await update(request.params)
-
-      return h.response(response).code(200)
     }
   }
 }]
