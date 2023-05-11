@@ -6,7 +6,7 @@ const { models } = require('../data')
 async function getAll () {
   console.log(`${new Date().toISOString()} Getting all stage executions`)
   const response = models.stage_execution.findAll()
-  console.log(`${new Date().toISOString()} Got all stage executions: ${JSON.stringify(response.result)}`)
+  console.log(`${new Date().toISOString()} Got all stage executions: ${JSON.stringify(response)}`)
   return response
 }
 
@@ -21,7 +21,7 @@ async function getById (id) {
     {
       where: { id }
     })
-  console.log(`${new Date().toISOString()} Getting stage executions by id: ${JSON.stringify(response.result)}`)
+  console.log(`${new Date().toISOString()} Getting stage executions by id: ${JSON.stringify(response)}`)
   return response
 }
 
@@ -36,7 +36,7 @@ async function getByApplicationReference (applicationReference) {
     {
       where: { applicationReference }
     })
-  console.log(`${new Date().toISOString()} Got stage executions by application reference: ${JSON.stringify(response.result)}`)
+  console.log(`${new Date().toISOString()} Got stage executions by application reference: ${JSON.stringify(response)}`)
   return response
 }
 
@@ -48,7 +48,7 @@ async function getByApplicationReference (applicationReference) {
 async function set (data) {
   console.log(`${new Date().toISOString()} Creating stage execution: ${JSON.stringify(data)}`)
   const response = models.stage_execution.create(data)
-  console.log(`${new Date().toISOString()} Created stage execution: ${JSON.stringify(response.result)}`)
+  console.log(`${new Date().toISOString()} Created stage execution: ${JSON.stringify(response)}`)
   return response
 }
 
@@ -67,7 +67,7 @@ async function update (data) {
       returning: true
     }
   )
-  console.log(`${new Date().toISOString()} Updated stage execution: ${JSON.stringify(result.result)}`)
+  console.log(`${new Date().toISOString()} Updated stage execution: ${JSON.stringify(result)}`)
   return result
 }
 

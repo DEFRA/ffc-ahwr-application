@@ -6,7 +6,7 @@ const { models } = require('../data')
 async function getAll () {
   console.log(`${new Date().toISOString()} Getting all stage configurations`)
   const response = models.stage_configuration.findAll()
-  console.log(`${new Date().toISOString()} Got all stage configurations: ${JSON.stringify(response.result)}`)
+  console.log(`${new Date().toISOString()} Got all stage configurations: ${JSON.stringify(response)}`)
   return response
 }
 
@@ -21,7 +21,7 @@ async function getById (id) {
     {
       where: { id }
     })
-  console.log(`${new Date().toISOString()} Got stage configuration by id: ${JSON.stringify(response.result)}`)
+  console.log(`${new Date().toISOString()} Got stage configuration by id: ${JSON.stringify(response)}`)
   return response
 }
 
