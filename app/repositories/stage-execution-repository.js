@@ -20,6 +20,18 @@ async function getById (id) {
 }
 
 /**
+ * Get stage execution by application reference
+ * @param {string} applicationReference
+ * @returns stage execution array
+ */
+async function getByApplicationReference (applicationReference) {
+  return models.stage_execution.findAll(
+    {
+      where: { applicationReference }
+    })
+}
+
+/**
  *
  * @param {*} data
  * @returns
@@ -48,6 +60,7 @@ async function update (data) {
 module.exports = {
   getAll,
   getById,
+  getByApplicationReference,
   set,
   update
 }

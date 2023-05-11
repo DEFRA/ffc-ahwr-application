@@ -1,6 +1,7 @@
+const { ValidationError } = require('joi')
 const stageConfigurationRepository = require('../../../../../app/repositories/stage-configuration-repository')
 jest.mock('../../../../../app/repositories/stage-configuration-repository')
-const { resetAllWhenMocks } = require('jest-when')
+const { when, resetAllWhenMocks } = require('jest-when')
 
 const mockResponse = {
   id: 13,
@@ -49,6 +50,48 @@ describe('Stage configuration test', () => {
       expect(stageConfigurationRepository.getAll).toHaveBeenCalledTimes(1)
       expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual([mockResponse])
+    })
+  })
+
+  describe(`GET ${url}/2 route`, () => {
+    test('returns 404', async () => {
+      when(stageConfigurationRepository.getById)
+        .calledWith(2)
+        .mockResolvedValue()
+      const options = {
+        method: 'GET',
+        url: `${url}/2`
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
+      expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(1)
+      expect(stageConfigurationRepository.getById).toHaveBeenCalledWith(2)
+      expect(res.result).toEqual('Not Found')
+    })
+    test('returns 200', async () => {
+      when(stageConfigurationRepository.getById)
+        .calledWith(2)
+        .mockResolvedValue(mockResponse)
+      const options = {
+        method: 'GET',
+        url: `${url}/2`
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(1)
+      expect(stageConfigurationRepository.getById).toHaveBeenCalledWith(2)
+      expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 400', async () => {
+      const options = {
+        method: 'GET',
+        url: `${url}/invalid`
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(0)
+      expect(res.result).toEqual({ err: new ValidationError('"id" must be a number') })
     })
   })
 })

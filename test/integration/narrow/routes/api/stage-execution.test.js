@@ -33,12 +33,15 @@ describe('Stage execution test', () => {
     resetAllWhenMocks()
   })
   const url = '/api/stageexecution'
-  stageExecutionRepository.getAll.mockResolvedValueOnce().mockResolvedValue(mockResponse)
+  stageExecutionRepository.getAll.mockResolvedValue(mockResponse)
   stageExecutionRepository.set.mockResolvedValue(mockResponse)
   stageExecutionRepository.update.mockResolvedValue(mockResponse)
 
   describe(`GET ${url} route`, () => {
     test('returns 404', async () => {
+      when(stageExecutionRepository.getAll)
+        .calledWith()
+        .mockResolvedValue()
       const options = {
         method: 'GET',
         url
@@ -59,6 +62,38 @@ describe('Stage execution test', () => {
       expect(stageExecutionRepository.getAll).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual(mockResponse)
+    })
+  })
+
+  describe(`GET ${url}/AHWR-0000-0000 route`, () => {
+    test('returns 200', async () => {
+      when(stageExecutionRepository.getByApplicationReference)
+        .calledWith('AHWR-0000-0000')
+        .mockResolvedValue(mockResponse)
+      const options = {
+        method: 'GET',
+        url: `${url}/AHWR-0000-0000`
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 404', async () => {
+      when(stageExecutionRepository.getByApplicationReference)
+        .calledWith('AHWR-0000-0000')
+        .mockResolvedValue()
+      const options = {
+        method: 'GET',
+        url: `${url}/AHWR-0000-0000`
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
+      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(res.result).toEqual('Not Found')
     })
   })
 

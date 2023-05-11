@@ -30,7 +30,7 @@ describe('Stage Configuration Repository test', () => {
     expect(repository).toBeDefined()
   })
 
-  test('Get all stage execution data', async () => {
+  test('Get all stage configuration data', async () => {
     when(data.models.stage_configuration.findAll)
       .calledWith()
       .mockResolvedValue(mockData)
@@ -39,5 +39,16 @@ describe('Stage Configuration Repository test', () => {
 
     expect(data.models.stage_configuration.findAll).toHaveBeenCalledTimes(1)
     expect(data.models.stage_configuration.findAll).toHaveBeenCalledWith()
+  })
+
+  test('Get all stage configuration data', async () => {
+    when(data.models.stage_configuration.findOne)
+      .calledWith(1)
+      .mockResolvedValue(mockData)
+
+    await repository.getById(1)
+
+    expect(data.models.stage_configuration.findOne).toHaveBeenCalledTimes(1)
+    expect(data.models.stage_configuration.findOne).toHaveBeenCalledWith({ where: { id: 1 } })
   })
 })
