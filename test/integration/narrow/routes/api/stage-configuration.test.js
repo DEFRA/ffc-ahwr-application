@@ -54,7 +54,7 @@ describe('Stage configuration test', () => {
       expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual([mockResponse])
     })
-    test('returns 400', async () => {
+    test('returns 500', async () => {
       when(stageConfigurationRepository.getAll)
         .calledWith()
         .mockRejectedValue(new ValidationError('Invalid'))
@@ -63,7 +63,7 @@ describe('Stage configuration test', () => {
         url
       }
       const res = await server.inject(options)
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(500)
       expect(stageConfigurationRepository.getAll).toHaveBeenCalledTimes(1)
       expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual({ err: new ValidationError('Invalid') })
@@ -111,7 +111,7 @@ describe('Stage configuration test', () => {
       expect(res.result).toEqual({ err: new ValidationError('"id" must be a number') })
     })
 
-    test('returns 400', async () => {
+    test('returns 500', async () => {
       when(stageConfigurationRepository.getById)
         .calledWith(2)
         .mockRejectedValue(new ValidationError('Invalid'))
@@ -121,7 +121,7 @@ describe('Stage configuration test', () => {
         url: `${url}/2`
       }
       const res = await server.inject(options)
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(500)
       expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(1)
       expect(stageConfigurationRepository.getById).toHaveBeenCalledWith(2)
       expect(res.result).toEqual({ err: new ValidationError('Invalid') })

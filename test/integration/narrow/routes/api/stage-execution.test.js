@@ -64,7 +64,7 @@ describe('Stage execution test', () => {
       expect(res.result).toEqual(mockResponse)
     })
 
-    test('returns 400', async () => {
+    test('returns 500', async () => {
       when(stageExecutionRepository.getAll)
         .calledWith()
         .mockRejectedValue(new ValidationError('Invalid'))
@@ -73,7 +73,7 @@ describe('Stage execution test', () => {
         url
       }
       const res = await server.inject(options)
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(500)
       expect(stageExecutionRepository.getAll).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual({ err: new ValidationError('Invalid') })
@@ -96,7 +96,7 @@ describe('Stage execution test', () => {
       expect(res.result).toEqual(mockResponse)
     })
 
-    test('returns 400', async () => {
+    test('returns 500', async () => {
       when(stageExecutionRepository.getByApplicationReference)
         .calledWith('AHWR-0000-0000')
         .mockRejectedValue(new ValidationError('Invalid'))
@@ -105,7 +105,7 @@ describe('Stage execution test', () => {
         url: `${url}/AHWR-0000-0000`
       }
       const res = await server.inject(options)
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(500)
       expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
       expect(res.result).toEqual({ err: new ValidationError('Invalid') })
@@ -141,7 +141,7 @@ describe('Stage execution test', () => {
       expect(res.result).toEqual(mockResponse)
     })
 
-    test('returns 400', async () => {
+    test('returns 500', async () => {
       when(stageExecutionRepository.set)
         .calledWith({ ...data, executedAt: expect.any(Date) })
         .mockRejectedValue(new ValidationError('Invalid'))
@@ -151,7 +151,7 @@ describe('Stage execution test', () => {
         payload: data
       }
       const res = await server.inject(options)
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(500)
       expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) })
       expect(res.result).toEqual({ err: new ValidationError('Invalid') })
@@ -204,7 +204,7 @@ describe('Stage execution test', () => {
       expect(res.result).toEqual(mockResponse)
     })
 
-    test('returns 400 when error thrown', async () => {
+    test('returns 500 when error thrown', async () => {
       when(stageExecutionRepository.update)
         .calledWith({ id: 2 })
         .mockRejectedValue(new ValidationError('Invalid'))
@@ -217,7 +217,7 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(500)
       expect(stageExecutionRepository.update).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.update).toHaveBeenCalledWith({ id: 2 })
       expect(res.result).toEqual({ err: new ValidationError('Invalid') })

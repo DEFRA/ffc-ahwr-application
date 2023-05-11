@@ -14,7 +14,7 @@ module.exports = [{
           return h.response('Not Found').code(404).takeover()
         }
       } catch (err) {
-        return h.response({ err }).code(400).takeover()
+        return h.response({ err }).code(500).takeover()
       }
     }
   }
@@ -39,7 +39,7 @@ module.exports = [{
           return h.response('Not Found').code(404).takeover()
         }
       } catch (err) {
-        return h.response({ err }).code(400).takeover()
+        return h.response({ err }).code(500).takeover()
       }
     }
   }
@@ -68,7 +68,7 @@ module.exports = [{
         console.log('Stage execution inserted: ', response.dataValues)
         return h.response(response).code(200)
       } catch (err) {
-        return h.response({ err }).code(400).takeover()
+        return h.response({ err }).code(500).takeover()
       }
     }
   }
@@ -95,7 +95,7 @@ module.exports = [{
 
         return h.response(response).code(200)
       } catch (err) {
-        return h.response({ err }).code(400).takeover()
+        return h.response({ err }).code(500).takeover()
       }
     }
   }
