@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Jason Hamilton" id="2">
+    <insert tableName="stage_configuration">
+        <column name="id" valueNumeric="1" />
+        <column name="stage" value="Claim Approve/Reject" />
+        <column name="role" value='{"roles": ["Recommender", "Administrator"]}' />
+        <column name="stepNumber" valueNumeric="1" />
+        <column name="action" value='{"actions": ["addStageExecutionEntry", "updateStageExecutionEntry"]}' />
+    </insert>
+    <insert tableName="stage_configuration">
+        <column name="id" valueNumeric="2" />
+        <column name="stage" value="Claim Approve/Reject" />
+        <column name="role" value='{"roles": ["Authoriser", "Administrator"]}' />
+        <column name="stepNumber" valueNumeric="2" />
+        <column name="action" value='{"actions": ["addStageExecutionEntry", "processApplicationClaim", "updateStageExecutionEntry"]}' />
+    </insert>
+  </changeSet>
+  <changeSet author="Jason Hamilton" id="1">
+    <tagDatabase tag="v1.16.0" />
+  </changeSet>
+</databaseChangeLog>

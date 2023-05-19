@@ -51,6 +51,7 @@ module.exports = [{
         }).allow(null).optional()
       }),
       failAction: async (_request, h, err) => {
+        console.log('Error when validating payload: ', err)
         return h.response({ err }).code(400).takeover()
       }
     },
