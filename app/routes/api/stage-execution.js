@@ -51,7 +51,7 @@ module.exports = [{
         }).allow(null).optional()
       }),
       failAction: async (_request, h, err) => {
-        console.log('Error when validating payload: ', err)
+        console.log(`Error when validating payload: ${JSON.stringify({ errorMessage: err.message, payload: _request.payload })}`)
         return h.response({ err }).code(400).takeover()
       }
     },
