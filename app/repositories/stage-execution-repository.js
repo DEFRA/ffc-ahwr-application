@@ -39,7 +39,23 @@ async function getByApplicationReference (applicationReference) {
  * @returns
  */
 async function set (data) {
-  return models.stage_execution.create(data)
+  const result = await models.stage_execution.create(data)
+  await eventPublisher.raise({
+    message: 'New stage execution has been created',
+    application: {
+      id: result.dataValues.id,
+      reference: result.dataValues.applicationReference,
+      statusId: result.dataValues.action.action,
+      data: {
+        organisation: {
+          sbi: 'n/a'
+        }
+      }
+    },
+    raisedBy: result.dataValues.executedBy,
+    raisedOn: result.dataValues.executedAt
+  })
+  return result
 }
 
 /**
@@ -56,21 +72,23 @@ async function update (data) {
       returning: true
     }
   )
-  await eventPublisher.raise({
-    message: 'New stage execution has been created',
-    application: {
-      id: result[1][0].dataValues.id,
-      reference: result[1][0].dataValues.applicationReference,
-      statusId: result[1][0].dataValues.action.action,
-      data: {
-        organisation: {
-          sbi: 'n/a'
+  for (let i = 0; i < result[0]; i++) {
+    await eventPublisher.raise({
+      message: 'Stage execution has been updated',
+      application: {
+        id: result[1][i].dataValues.id,
+        reference: result[1][i].dataValues.applicationReference,
+        statusId: result[1][i].dataValues.action.action,
+        data: {
+          organisation: {
+            sbi: 'n/a'
+          }
         }
-      }
-    },
-    raisedBy: result[1][0].dataValues.executedBy,
-    raisedOn: result[1][0].dataValues.executedAt
-  })
+      },
+      raisedBy: result[1][i].dataValues.executedBy,
+      raisedOn: result[1][i].dataValues.executedAt
+    })
+  }
   return result
 }
 
