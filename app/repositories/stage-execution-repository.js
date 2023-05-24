@@ -1,4 +1,6 @@
 const { models } = require('../data')
+const eventPublisher = require('../event-publisher')
+
 /**
  * Get stage executions
  * @returns array of stage execution objects
@@ -54,6 +56,18 @@ async function update (data) {
       returning: true
     }
   )
+  console.log('result', result[1].dataValues)
+  await eventPublisher.raise({
+    message: 'New stage execution has been created',
+    application: {
+      id: result[1].id,
+      sbi: 'n/a',
+      reference: result[1].applicationReference,
+      statusId: result[1].action.action
+    },
+    raisedBy: result[1].executedBy,
+    raisedOn: result[1].executedAt
+  })
   return result
 }
 
