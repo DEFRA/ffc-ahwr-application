@@ -1,5 +1,5 @@
 const Joi = require('joi')
-const { get } = require('../../repositories/stage-execution-repository')
+const { get } = require('../../repositories/application-repository')
 const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
 
 module.exports = [{
