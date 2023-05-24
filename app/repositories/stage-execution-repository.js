@@ -1,5 +1,6 @@
 const { models } = require('../data')
 const eventPublisher = require('../event-publisher')
+const { get } = require('./application-repository')
 
 /**
  * Get stage executions
@@ -48,7 +49,9 @@ async function set (data) {
       statusId: result.dataValues.action.action,
       data: {
         organisation: {
-          sbi: 'n/a'
+          sbi: await get(result.dataValues.applicationReference).then((application) => {
+            return application.dataValues.data.organisation.sbi
+          })
         }
       }
     },
@@ -81,7 +84,9 @@ async function update (data) {
         statusId: result[1][i].dataValues.action.action,
         data: {
           organisation: {
-            sbi: 'n/a'
+            sbi: await get(result[1][i].dataValues.applicationReference).then((application) => {
+              return application.dataValues.data.organisation.sbi
+            })
           }
         }
       },
