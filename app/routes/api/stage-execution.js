@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const { get } = require('../../repositories/stage-execution-repository')
 const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
 
 module.exports = [{
@@ -64,7 +65,14 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const response = await set(request.payload)
+      const application = await get(request.payload.applicationReference)
+      if (!application.dataValues) {
+        return h.response('Not Found').code(404).takeover()
+      }
+      const response = await set(
+        request.payload,
+        application.dataValues.data.organisation.sbi
+      )
       console.log('Stage execution inserted: ', response.dataValues)
       return h.response(response).code(200)
     }

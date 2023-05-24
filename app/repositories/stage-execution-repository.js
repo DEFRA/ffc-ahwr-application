@@ -1,6 +1,5 @@
 const { models } = require('../data')
 const eventPublisher = require('../event-publisher')
-const { get } = require('./application-repository')
 
 /**
  * Get stage executions
@@ -39,7 +38,7 @@ async function getByApplicationReference (applicationReference) {
  * @param {*} data
  * @returns
  */
-async function set (data) {
+async function set (data, sbi) {
   const result = await models.stage_execution.create(data)
   await eventPublisher.raise({
     message: 'New stage execution has been created',
@@ -49,9 +48,7 @@ async function set (data) {
       statusId: result.dataValues.action.action,
       data: {
         organisation: {
-          sbi: await get(result.dataValues.applicationReference).then((application) => {
-            return application.dataValues.data.organisation.sbi
-          })
+          sbi
         }
       }
     },
@@ -75,25 +72,6 @@ async function update (data) {
       returning: true
     }
   )
-  for (let i = 0; i < result[0]; i++) {
-    await eventPublisher.raise({
-      message: 'Stage execution has been updated',
-      application: {
-        id: result[1][i].dataValues.id,
-        reference: result[1][i].dataValues.applicationReference,
-        statusId: result[1][i].dataValues.action.action,
-        data: {
-          organisation: {
-            sbi: await get(result[1][i].dataValues.applicationReference).then((application) => {
-              return application.dataValues.data.organisation.sbi
-            })
-          }
-        }
-      },
-      raisedBy: result[1][i].dataValues.executedBy,
-      raisedOn: result[1][i].dataValues.executedAt
-    })
-  }
   return result
 }
 
