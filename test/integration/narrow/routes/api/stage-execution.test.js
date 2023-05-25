@@ -110,6 +110,9 @@ describe('Stage execution test', () => {
           }
         }
       })
+      when(stageExecutionRepository.set)
+        .calledWith({ ...data, executedAt: expect.any(Date) }, 123)
+        .mockResolvedValue(mockResponse)
 
       const options = {
         method: 'POST',
