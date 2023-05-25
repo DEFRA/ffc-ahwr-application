@@ -2,7 +2,6 @@ const { models } = require('../data')
 const eventPublisher = require('../event-publisher')
 const stageExecutionActions = require('../constants/application-stage-execution-actions')
 const applicationStatus = require('../constants/application-status')
-const { app } = require('../server')
 
 /**
  * Get stage executions
