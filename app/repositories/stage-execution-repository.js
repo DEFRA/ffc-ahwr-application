@@ -1,5 +1,8 @@
 const { models } = require('../data')
 const eventPublisher = require('../event-publisher')
+const stageExecutionActions = require('../constants/application-stage-execution-actions')
+const applicationStatus = require('../constants/application-status')
+const { app } = require('../server')
 
 /**
  * Get stage executions
@@ -40,12 +43,14 @@ async function getByApplicationReference (applicationReference) {
  */
 async function set (data, sbi) {
   const result = await models.stage_execution.create(data)
+  const status = getStatusId(result.dataValues.action.action)
   await eventPublisher.raise({
     message: 'New stage execution has been created',
     application: {
       id: result.dataValues.id,
       reference: result.dataValues.applicationReference,
-      statusId: result.dataValues.action.action,
+      statusId: status.statusId,
+      subStatus: status.subStatus,
       data: {
         organisation: {
           sbi
@@ -56,6 +61,33 @@ async function set (data, sbi) {
     raisedOn: result.dataValues.executedAt
   })
   return result
+}
+
+const getStatusId = (status) => {
+  switch (status) {
+    case stageExecutionActions.recommendToPay:
+      return {
+        statusId: applicationStatus.inCheck,
+        subStatus: stageExecutionActions.recommendToPay
+      }
+    case stageExecutionActions.recommendToReject:
+      return {
+        statusId: applicationStatus.inCheck,
+        subStatus: stageExecutionActions.recommendToReject
+      }
+    case stageExecutionActions.authorisePayment:
+      return {
+        statusId: applicationStatus.readyToPay,
+        subStatus: 'Authorise to pay'
+      }
+    case stageExecutionActions.authoriseRejection:
+      return {
+        statusId: applicationStatus.rejected,
+        subStatus: 'Authorise to reject'
+      }
+    default:
+      return ''
+  }
 }
 
 /**
