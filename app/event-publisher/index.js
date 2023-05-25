@@ -16,7 +16,8 @@ const raise = async (event) => {
           message: event.message,
           data: {
             reference: event.application.reference,
-            statusId: event.application.statusId
+            statusId: event.application.statusId,
+            subStatus: event.application.subStatus
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
@@ -36,7 +37,8 @@ const raise = async (event) => {
           message: event.message,
           data: {
             reference: event.application.reference,
-            statusId: event.application.statusId
+            statusId: event.application.statusId,
+            subStatus: event.application.subStatus
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()

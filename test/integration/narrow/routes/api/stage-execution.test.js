@@ -1,6 +1,8 @@
 const { ValidationError } = require('joi')
 const stageExecutionRepository = require('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/stage-execution-repository')
+jest.mock('../../../../../app/repositories/application-repository')
+const { get } = require('../../../../../app/repositories/application-repository')
 const { when, resetAllWhenMocks } = require('jest-when')
 
 const data = {
@@ -99,6 +101,19 @@ describe('Stage execution test', () => {
 
   describe(`POST ${url} route`, () => {
     test('returns 200', async () => {
+      when(get).calledWith('AHWR-0000-0000').mockResolvedValue({
+        dataValues: {
+          data: {
+            organisation: {
+              sbi: 123
+            }
+          }
+        }
+      })
+      when(stageExecutionRepository.set)
+        .calledWith({ ...data, executedAt: expect.any(Date) }, 123)
+        .mockResolvedValue(mockResponse)
+
       const options = {
         method: 'POST',
         url,
@@ -107,8 +122,23 @@ describe('Stage execution test', () => {
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
       expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) })
+      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, 123)
       expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 404', async () => {
+      when(get).calledWith('AHWR-0000-0000').mockResolvedValue({})
+
+      const options = {
+        method: 'POST',
+        url,
+        payload: data
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(res.result).toEqual('Reference not found')
     })
 
     test.each([

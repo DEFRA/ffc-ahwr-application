@@ -1,8 +1,11 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/stage-execution-repository')
 const data = require('../../../../app/data')
+const eventPublisher = require('../../../../app/event-publisher')
+const stageExecutionActions = require('../../../../app/constants/stage-execution-actions')
 
 jest.mock('../../../../app/data')
+jest.mock('../../../../app/event-publisher')
 
 data.models.stage_execution.create = jest.fn()
 data.models.stage_execution.update = jest.fn()
@@ -11,7 +14,12 @@ data.models.stage_execution.findAll = jest.fn()
 const MOCK_NOW = new Date()
 
 const mockData = {
-  id: 123
+  id: 123,
+  dataValues: {
+    action: {
+      action: 'action'
+    }
+  }
 }
 
 describe('Stage Exection Repository test', () => {
@@ -65,15 +73,81 @@ describe('Stage Exection Repository test', () => {
     expect(data.models.stage_execution.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'AHWR-0000-0000' } })
   })
 
-  test('Set creates record for data', async () => {
+  test.each([
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.recommendToPay
+          }
+        }
+      }
+    },
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.recommendToReject
+          }
+        }
+      }
+    },
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.authorisePayment
+          }
+        }
+      }
+    },
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.authoriseRejection
+          }
+        }
+      }
+    }
+  ])('Set creates record for data', async (testCase) => {
+    when(data.models.stage_execution.create)
+      .calledWith(testCase.mockData)
+      .mockResolvedValue(testCase.mockData)
+
+    await repository.set(testCase.mockData)
+
+    expect(data.models.stage_execution.create).toHaveBeenCalledTimes(1)
+    expect(data.models.stage_execution.create).toHaveBeenCalledWith(testCase.mockData)
+    expect(eventPublisher.raise).toHaveBeenCalledTimes(1)
+  })
+
+  test('Throws error on invalid action', async () => {
+    const mockData = {
+      id: 123,
+      dataValues: {
+        action: {
+          action: 'Wrong action'
+        }
+      }
+    }
     when(data.models.stage_execution.create)
       .calledWith(mockData)
       .mockResolvedValue(mockData)
 
-    await repository.set(mockData)
+    try {
+      await repository.set(mockData)
+    } catch (error) {
+      expect(error.message).toEqual('Unrecognised action: Wrong action')
+    }
 
     expect(data.models.stage_execution.create).toHaveBeenCalledTimes(1)
     expect(data.models.stage_execution.create).toHaveBeenCalledWith(mockData)
+    expect(eventPublisher.raise).toHaveBeenCalledTimes(0)
   })
 
   test('Update record for data', async () => {
