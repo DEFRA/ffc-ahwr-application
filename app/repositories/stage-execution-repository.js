@@ -42,14 +42,12 @@ async function getByApplicationReference (applicationReference) {
  */
 async function set (data, sbi) {
   const result = await models.stage_execution.create(data)
-  const status = getStatusId(result.dataValues.action.action)
   await eventPublisher.raise({
     message: 'New stage execution has been created',
     application: {
       id: result.dataValues.id,
       reference: result.dataValues.applicationReference,
-      statusId: status.statusId,
-      subStatus: status.subStatus,
+      ...getStatus(result.dataValues.action.action),
       data: {
         organisation: {
           sbi
@@ -62,8 +60,8 @@ async function set (data, sbi) {
   return result
 }
 
-const getStatusId = (status) => {
-  switch (status) {
+const getStatus = (action) => {
+  switch (action) {
     case stageExecutionActions.recommendToPay:
       return {
         statusId: applicationStatus.inCheck,
@@ -85,7 +83,7 @@ const getStatusId = (status) => {
         subStatus: 'Authorise to reject'
       }
     default:
-      return ''
+      throw new Error(`Unrecognised action: ${action}`)
   }
 }
 

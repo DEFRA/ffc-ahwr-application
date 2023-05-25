@@ -113,16 +113,6 @@ describe('Stage Exection Repository test', () => {
           }
         }
       }
-    },
-    {
-      mockData: {
-        id: 123,
-        dataValues: {
-          action: {
-            action: 'unknown'
-          }
-        }
-      }
     }
   ])('Set creates record for data', async (testCase) => {
     when(data.models.stage_execution.create)
