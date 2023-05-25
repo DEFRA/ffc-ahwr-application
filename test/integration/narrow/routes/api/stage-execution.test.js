@@ -135,10 +135,10 @@ describe('Stage execution test', () => {
         payload: data
       }
       const res = await server.inject(options)
-      expect(res.statusCode).toBe(404)
+      expect(res.statusCode).toBe(400)
       expect(get).toHaveBeenCalledTimes(1)
       expect(get).toHaveBeenCalledWith('AHWR-0000-0000')
-      expect(res.result).toEqual('Not Found')
+      expect(res.result).toEqual('Reference not found')
     })
 
     test.each([
