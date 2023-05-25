@@ -126,6 +126,30 @@ describe('Stage Exection Repository test', () => {
     expect(eventPublisher.raise).toHaveBeenCalledTimes(1)
   })
 
+  test('Throws error on invalid action', async () => {
+    const mockData = {
+      id: 123,
+      dataValues: {
+        action: {
+          action: 'Wrong action'
+        }
+      }
+    }
+    when(data.models.stage_execution.create)
+      .calledWith(mockData)
+      .mockResolvedValue(mockData)
+
+    try {
+      await repository.set(mockData)
+    } catch (error) {
+      expect(error.message).toEqual('Unrecognised action: Wrong action')
+    }
+
+    expect(data.models.stage_execution.create).toHaveBeenCalledTimes(1)
+    expect(data.models.stage_execution.create).toHaveBeenCalledWith(mockData)
+    expect(eventPublisher.raise).toHaveBeenCalledTimes(0)
+  })
+
   test('Update record for data', async () => {
     when(data.models.stage_execution.update)
       .calledWith(
