@@ -67,7 +67,7 @@ module.exports = [{
     handler: async (request, h) => {
       const application = await get(request.payload.applicationReference)
       if (!application.dataValues) {
-        return h.response('Not Found').code(404).takeover()
+        return h.response('Reference not found').code(400).takeover()
       }
       const response = await set(
         request.payload,
