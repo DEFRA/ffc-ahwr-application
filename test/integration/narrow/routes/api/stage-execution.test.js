@@ -126,6 +126,21 @@ describe('Stage execution test', () => {
       expect(res.result).toEqual(mockResponse)
     })
 
+    test('returns 404', async () => {
+      when(get).calledWith('AHWR-0000-0000').mockResolvedValue({})
+
+      const options = {
+        method: 'POST',
+        url,
+        payload: data
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
+      expect(get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(res.result).toEqual('Not Found')
+    })
+
     test.each([
       {
         data: { ...data, applicationReference: null },
