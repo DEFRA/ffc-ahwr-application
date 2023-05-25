@@ -1,8 +1,10 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/stage-execution-repository')
 const data = require('../../../../app/data')
+const eventPublisher = require('../../../../app/event-publisher')
 
 jest.mock('../../../../app/data')
+jest.mock('../../../../app/event-publisher')
 
 data.models.stage_execution.create = jest.fn()
 data.models.stage_execution.update = jest.fn()
@@ -11,7 +13,12 @@ data.models.stage_execution.findAll = jest.fn()
 const MOCK_NOW = new Date()
 
 const mockData = {
-  id: 123
+  id: 123,
+  dataValues: {
+    action: {
+      action: 'action'
+    }
+  }
 }
 
 describe('Stage Exection Repository test', () => {
@@ -74,6 +81,7 @@ describe('Stage Exection Repository test', () => {
 
     expect(data.models.stage_execution.create).toHaveBeenCalledTimes(1)
     expect(data.models.stage_execution.create).toHaveBeenCalledWith(mockData)
+    expect(eventPublisher.raise).toHaveBeenCalledTimes(1)
   })
 
   test('Update record for data', async () => {
