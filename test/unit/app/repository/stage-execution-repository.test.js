@@ -2,6 +2,7 @@ const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/stage-execution-repository')
 const data = require('../../../../app/data')
 const eventPublisher = require('../../../../app/event-publisher')
+const stageExecutionActions = require('../../../../app/constants/application-stage-execution-actions')
 
 jest.mock('../../../../app/data')
 jest.mock('../../../../app/event-publisher')
@@ -72,15 +73,66 @@ describe('Stage Exection Repository test', () => {
     expect(data.models.stage_execution.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'AHWR-0000-0000' } })
   })
 
-  test('Set creates record for data', async () => {
+  test.each([
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.recommendToPay
+          }
+        }
+      }
+    },
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.recommendToReject
+          }
+        }
+      }
+    },
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.authorisePayment
+          }
+        }
+      }
+    },
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: stageExecutionActions.authoriseRejection
+          }
+        }
+      }
+    },
+    {
+      mockData: {
+        id: 123,
+        dataValues: {
+          action: {
+            action: 'unknown'
+          }
+        }
+      }
+    }
+  ])('Set creates record for data', async (testCase) => {
     when(data.models.stage_execution.create)
-      .calledWith(mockData)
-      .mockResolvedValue(mockData)
+      .calledWith(testCase.mockData)
+      .mockResolvedValue(testCase.mockData)
 
-    await repository.set(mockData)
+    await repository.set(testCase.mockData)
 
     expect(data.models.stage_execution.create).toHaveBeenCalledTimes(1)
-    expect(data.models.stage_execution.create).toHaveBeenCalledWith(mockData)
+    expect(data.models.stage_execution.create).toHaveBeenCalledWith(testCase.mockData)
     expect(eventPublisher.raise).toHaveBeenCalledTimes(1)
   })
 
