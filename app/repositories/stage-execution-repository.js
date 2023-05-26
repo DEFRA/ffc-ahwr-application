@@ -40,17 +40,17 @@ async function getByApplicationReference (applicationReference) {
  * @param {*} data
  * @returns
  */
-async function set (data, sbi) {
+async function set (data, application) {
   const result = await models.stage_execution.create(data)
   await eventPublisher.raise({
     message: 'New stage execution has been created',
     application: {
-      id: result.dataValues.id,
+      id: application.dataValues.id,
       reference: result.dataValues.applicationReference,
       ...getStatus(result.dataValues.action.action),
       data: {
         organisation: {
-          sbi
+          sbi: application.dataValues.data.organisation.sbi
         }
       }
     },

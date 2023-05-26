@@ -71,7 +71,7 @@ module.exports = [{
       }
       const response = await set(
         request.payload,
-        application.dataValues.data.organisation.sbi
+        application
       )
       console.log('Stage execution inserted: ', response.dataValues)
       return h.response(response).code(200)
