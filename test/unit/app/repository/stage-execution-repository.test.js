@@ -115,11 +115,21 @@ describe('Stage Exection Repository test', () => {
       }
     }
   ])('Set creates record for data', async (testCase) => {
+    const mockApplication = {
+      dataValues: {
+        id: 1,
+        data: {
+          organisation: {
+            sbi: 123
+          }
+        }
+      }
+    }
     when(data.models.stage_execution.create)
       .calledWith(testCase.mockData)
       .mockResolvedValue(testCase.mockData)
 
-    await repository.set(testCase.mockData)
+    await repository.set(testCase.mockData, mockApplication)
 
     expect(data.models.stage_execution.create).toHaveBeenCalledTimes(1)
     expect(data.models.stage_execution.create).toHaveBeenCalledWith(testCase.mockData)
@@ -135,12 +145,22 @@ describe('Stage Exection Repository test', () => {
         }
       }
     }
+    const mockApplication = {
+      dataValues: {
+        id: 1,
+        data: {
+          organisation: {
+            sbi: 123
+          }
+        }
+      }
+    }
     when(data.models.stage_execution.create)
       .calledWith(mockData)
       .mockResolvedValue(mockData)
 
     try {
-      await repository.set(mockData)
+      await repository.set(mockData, mockApplication)
     } catch (error) {
       expect(error.message).toEqual('Unrecognised action: Wrong action')
     }

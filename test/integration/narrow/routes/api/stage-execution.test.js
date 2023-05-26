@@ -101,15 +101,17 @@ describe('Stage execution test', () => {
 
   describe(`POST ${url} route`, () => {
     test('returns 200', async () => {
-      when(get).calledWith('AHWR-0000-0000').mockResolvedValue({
+      const mockGet = {
         dataValues: {
+          id: 1,
           data: {
             organisation: {
               sbi: 123
             }
           }
         }
-      })
+      }
+      when(get).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
       when(stageExecutionRepository.set)
         .calledWith({ ...data, executedAt: expect.any(Date) }, 123)
         .mockResolvedValue(mockResponse)
@@ -122,7 +124,7 @@ describe('Stage execution test', () => {
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
       expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, 123)
+      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, mockGet)
       expect(res.result).toEqual(mockResponse)
     })
 
