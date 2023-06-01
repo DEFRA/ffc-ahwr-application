@@ -23,24 +23,26 @@ containerSecret:
   type: Opaque
 
 deployment:
-  cpuThreshold: 40
+  cpuThreshold: 80
   memoryThreshold: 80
   minReadySeconds: 0
   minReplicas: 1
-  maxReplicas: 2
+  maxReplicas: 4
   priorityClassName: default
   restartPolicy: Always
   replicas: 1
 
 container:
+  requestCpu: 100m
+  requestMemory: 100Mi
+  limitMemory: 400Mi
+  limitCpu: 400m
   applicationDocCreationRequestQueueAddress: ffc-ahwr-document-request
   applicationRequestQueueAddress: ffc-ahwr-application-request
   applicationResponseQueueAddress: ffc-ahwr-application-response
   carbonCopyEmailAddress:
   paymentRequestQueueAddress: ffc-ahwr-payment-request
   imagePullPolicy: IfNotPresent
-  limitMemory: 100Mi
-  limitCpu: 80m
   messageQueueHost: namespace.servicebus.windows.net
   notifyApiKey: example-644a2a30-7487-4e98-a908-b5ecd82d5225-644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdFarmerApplicationComplete: 644a2a30-7487-4e98-a908-b5ecd82d5225
@@ -49,8 +51,6 @@ container:
   notifyTemplateIdFarmerVetRecordIneligible: 644a2a30-7487-4e98-a908-b5ecd82d5225
   notifyTemplateIdVetApplicationComplete: 644a2a30-7487-4e98-a908-b5ecd82d5225
   port: 3000
-  requestCpu: 40m
-  requestMemory: 80Mi
   eventQueueAddress: ffc-ahwr-event
   serviceUri:
   azureStorageConnectionString:
