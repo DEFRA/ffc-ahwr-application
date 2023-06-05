@@ -1,4 +1,3 @@
-
 const { MessageReceiver } = require('ffc-messaging')
 const service = require('../../../../app/messaging/service')
 

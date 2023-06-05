@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const status = sequelize.define('status', {
     statusId: {
