@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const stageConfiguration = sequelize.define('stage_configuration', {
     id: {
