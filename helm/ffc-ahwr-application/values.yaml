@@ -30,7 +30,7 @@ deployment:
   maxReplicas: 4
   priorityClassName: default
   restartPolicy: Always
-  replicas: 1
+  replicas: 4
 
 container:
   requestCpu: 100m
