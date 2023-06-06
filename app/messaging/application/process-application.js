@@ -48,10 +48,24 @@ const processApplication = async (msg) => {
       createdAt: new Date(),
       statusId: applicationData.offerStatus === 'rejected' ? 7 : 1
     })
+
     const application = result.dataValues
+    const responseMessage = {
+      applicationState: states.submitted,
+      applicationReference: application.reference
+    }
+    
+    sendMessage(
+      responseMessage,
+      applicationResponseMsgType,
+      applicationResponseQueue,
+      {
+        sessionId
+      }
+    )
 
     if (applicationData.offerStatus === 'accepted') {
-      await sendFarmerConfirmationEmail(
+      sendFarmerConfirmationEmail(
         application.reference,
         applicationData.organisation.sbi,
         applicationData.whichReview,
@@ -60,17 +74,7 @@ const processApplication = async (msg) => {
         applicationData.organisation.farmerName
       )
     }
-    await sendMessage(
-      {
-        applicationState: states.submitted,
-        applicationReference: application.reference
-      },
-      applicationResponseMsgType,
-      applicationResponseQueue,
-      {
-        sessionId
-      }
-    )
+    console.log(`Completed processing of messageID ${messageId}.`)
   } catch (error) {
     console.error('Failed to process application', error)
     sendMessage(

@@ -13,21 +13,23 @@ function isUpdateSuccessful (res) {
 
 const submitClaim = async (message) => {
   try {
-    const msgBody = message.body
-    console.log('received claim submit request', util.inspect(msgBody, false, null, true))
+    const messageBody = message.body
+    const sessionId = message.sessionId
+    const messageId = message.messageId
+    console.log(`Claim received : ${JSON.stringify(messageBody)} with sessionID ${sessionId} and messageID ${messageId}.`)
 
-    if (validateSubmitClaim(msgBody)) {
-      const { reference, data } = msgBody
+    if (validateSubmitClaim(messageBody)) {
+      const { reference, data } = messageBody
       const application = await get(reference)
 
       if (!application.dataValues) {
-        return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+        return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
       }
 
       const claimStatusIds = [5, 10, 9]
 
       if (application.dataValues.claimed || claimStatusIds.includes(application.dataValues.statusId)) {
-        return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+        return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
       }
 
       const applicationsCount = await getApplicationsCount()
@@ -53,16 +55,16 @@ const submitClaim = async (message) => {
             reference,
             sbi: application.dataValues.data.organisation.sbi,
             whichReview: application.dataValues.data.whichReview
-          }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: message.sessionId })
+          }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
       }
 
-      await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+      await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     } else {
-      return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+      return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     }
   } catch (err) {
-    console.error(`failed to submit claim for request ${JSON.stringify(message.body)}`, err)
-    return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+    console.error(`failed to submit claim for request ${JSON.stringify(messageBody)}`, err)
+    return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   }
 }
 
