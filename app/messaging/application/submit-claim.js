@@ -1,4 +1,3 @@
-const util = require('util')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
 const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue, compliance } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
@@ -12,10 +11,10 @@ function isUpdateSuccessful (res) {
 }
 
 const submitClaim = async (message) => {
+  const messageBody = message.body
+  const sessionId = message.sessionId
+  const messageId = message.messageId
   try {
-    const messageBody = message.body
-    const sessionId = message.sessionId
-    const messageId = message.messageId
     console.log(`Claim received : ${JSON.stringify(messageBody)} with sessionID ${sessionId} and messageID ${messageId}.`)
 
     if (validateSubmitClaim(messageBody)) {

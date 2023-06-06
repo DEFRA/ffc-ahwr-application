@@ -54,7 +54,7 @@ const processApplication = async (msg) => {
       applicationState: states.submitted,
       applicationReference: application.reference
     }
-    
+
     sendMessage(
       responseMessage,
       applicationResponseMsgType,
