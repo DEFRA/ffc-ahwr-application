@@ -1,8 +1,7 @@
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType, vetVisitRequestMsgType } = require('../config')
+const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../config')
 const fetchApplication = require('./application/fetch-application')
 const fetchClaim = require('./application/fetch-claim')
 const processApplication = require('./application/process-application')
-const processVetVisit = require('./application/process-vet-visit')
 const submitClaim = require('./application/submit-claim')
 
 const processApplicationMessage = async (message, receiver) => {
@@ -20,9 +19,6 @@ const processApplicationMessage = async (message, receiver) => {
         break
       case submitClaimRequestMsgType:
         await submitClaim(message)
-        break
-      case vetVisitRequestMsgType:
-        await processVetVisit(message)
         break
     }
     await receiver.completeMessage(message)

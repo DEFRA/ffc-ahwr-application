@@ -17,7 +17,7 @@ describe('Send Message test', () => {
   test('Call SendMessage success', () => {
     jest.mock('../../../../../app/messaging/create-message')
     const sendMessage = require('../../../../../app/messaging/send-message')
-    sendMessage()
+    sendMessage({ foo: 'bar' }, 'message-type', { address: 'someaddress' }, { sessionId: 'somesessionId' })
     expect(sendMessage).toBeDefined()
   })
 })
