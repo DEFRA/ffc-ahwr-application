@@ -37,7 +37,6 @@ const sendCarbonCopy = async (templateId, personalisation) => {
 
 const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate, email, farmerName) => {
   const message = { reference, sbi, whichSpecies, startDate, email, farmerName }
-  //console.log(`Sending document creation message: ${JSON.stringify(message)} to queue ${applicationdDocCreationRequestQueue.address}.`)
   sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
