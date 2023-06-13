@@ -1,6 +1,6 @@
 {
   "name": "ffc-ahwr-application",
-  "version": "0.39.2",
+  "version": "0.39.3",
   "description": "Application manager for AHWR",
   "homepage": "https://github.com/DEFRA/ffc-ahwr-application",
   "main": "app/index.js",
