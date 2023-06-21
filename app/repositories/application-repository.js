@@ -287,7 +287,7 @@ async function getApplicationCount (sbi) {
  */
 async function set (data) {
   const result = await models.application.create(data)
-  await eventPublisher.raise({
+  eventPublisher.raise({
     message: 'New application has been created',
     application: result.dataValues,
     raisedBy: result.dataValues.createdBy,
