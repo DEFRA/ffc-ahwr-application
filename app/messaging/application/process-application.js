@@ -50,16 +50,6 @@ const processApplication = async (msg) => {
     })
     const application = result.dataValues
 
-    if (applicationData.offerStatus === 'accepted') {
-      await sendFarmerConfirmationEmail(
-        application.reference,
-        applicationData.organisation.sbi,
-        applicationData.whichReview,
-        application.createdAt,
-        applicationData.organisation.email,
-        applicationData.organisation.farmerName
-      )
-    }
     await sendMessage(
       {
         applicationState: states.submitted,
@@ -71,6 +61,17 @@ const processApplication = async (msg) => {
         sessionId
       }
     )
+
+    if (applicationData.offerStatus === 'accepted') {
+      await sendFarmerConfirmationEmail(
+        application.reference,
+        applicationData.organisation.sbi,
+        applicationData.whichReview,
+        application.createdAt,
+        applicationData.organisation.email,
+        applicationData.organisation.farmerName
+      )
+    }
   } catch (error) {
     console.error('Failed to process application', error)
     sendMessage(
