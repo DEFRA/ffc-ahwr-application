@@ -50,6 +50,7 @@ const processApplication = async (msg) => {
     })
     const application = result.dataValues
 
+    console.time('performance:sendMessage')
     await sendMessage(
       {
         applicationState: states.submitted,
@@ -61,6 +62,7 @@ const processApplication = async (msg) => {
         sessionId
       }
     )
+    console.timeEnd('performance:sendMessage')
 
     if (applicationData.offerStatus === 'accepted') {
       await sendFarmerConfirmationEmail(
