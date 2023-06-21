@@ -57,7 +57,6 @@ async function getLatestApplicationsByBusinessEmail (businessEmail) {
   console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
     businessEmail: businessEmail.toLowerCase()
   })}`)
-  console.time('getLatestApplicationsByBusinessEmail')
   const result = await models.application
     .findAll(
       {
@@ -65,7 +64,6 @@ async function getLatestApplicationsByBusinessEmail (businessEmail) {
         order: [['createdAt', 'DESC']],
         raw: true
       })
-  console.timeEnd('getLatestApplicationsByBusinessEmail')
   const groupedBySbi = Array.from(result.reduce(
     (resultMap, e) => resultMap.set(e.data.organisation.sbi, [...resultMap.get(e.data.organisation.sbi) || [], e]),
     new Map()
@@ -119,7 +117,6 @@ async function getLatestApplicationsBySbi (sbi) {
   console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
     sbi
   })}`)
-  console.time('getLatestApplicationsBySbi')
   const result = await models.application
     .findAll(
       {
@@ -127,7 +124,6 @@ async function getLatestApplicationsBySbi (sbi) {
         order: [['createdAt', 'DESC']],
         raw: true
       })
-  console.timeEnd('getLatestApplicationsBySbi')
   return result.sort((a, b) => new Date(a.createdAt) > new Date(b.createdAt) ? a : b)
 }
 
@@ -138,14 +134,12 @@ async function getLatestApplicationsBySbi (sbi) {
  * @returns application object.
  */
 async function getBySbi (sbi) {
-  console.time('getBySbi')
   const result = await models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
     },
     order: [['createdAt', 'DESC']]
   })
-  console.timeEnd('getBySbi')
   return result
 }
 
@@ -285,9 +279,7 @@ async function getApplicationCount (sbi) {
   if (sbi) {
     query.where = { 'data.organisation.sbi': sbi }
   }
-  console.time('getApplicationCount')
   const result = models.application.count(query)
-  console.timeEnd('getApplicationCount')
   return result
 }
 /**
