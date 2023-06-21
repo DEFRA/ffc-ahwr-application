@@ -134,13 +134,12 @@ async function getLatestApplicationsBySbi (sbi) {
  * @returns application object.
  */
 async function getBySbi (sbi) {
-  const result = await models.application.findOne({
+  return await models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
     },
     order: [['createdAt', 'DESC']]
   })
-  return result
 }
 
 /**
@@ -279,8 +278,7 @@ async function getApplicationCount (sbi) {
   if (sbi) {
     query.where = { 'data.organisation.sbi': sbi }
   }
-  const result = models.application.count(query)
-  return result
+  return models.application.count(query)
 }
 /**
  *
