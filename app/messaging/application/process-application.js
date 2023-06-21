@@ -13,9 +13,9 @@ const processApplication = async (msg) => {
   let existingApplicationReference = null
   console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
   try {
-    const now = Date.now()
+    const timestamp = Date.now()
 
-    console.time(`performance:${now}:processApplication`)
+    console.time(`performance:${timestamp}:processApplication`)
 
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
@@ -54,7 +54,7 @@ const processApplication = async (msg) => {
     })
     const application = result.dataValues
 
-    console.time(`performance:${now}:sendMessage`)
+    console.time(`performance:${timestamp}:sendMessage`)
     await sendMessage(
       {
         applicationState: states.submitted,
@@ -66,9 +66,8 @@ const processApplication = async (msg) => {
         sessionId
       }
     )
-    console.timeEnd(`performance:${now}:sendMessage`)
-
-    console.timeEnd(`performance:${now}:processApplication`)
+    console.timeEnd(`performance:${timestamp}:sendMessage`)
+    console.timeEnd(`performance:${timestamp}:processApplication`)
 
     if (applicationData.offerStatus === 'accepted') {
       await sendFarmerConfirmationEmail(
