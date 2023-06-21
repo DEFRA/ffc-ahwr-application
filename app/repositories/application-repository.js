@@ -134,7 +134,7 @@ async function getLatestApplicationsBySbi (sbi) {
  * @returns application object.
  */
 async function getBySbi (sbi) {
-  return await models.application.findOne({
+  return models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
     },
