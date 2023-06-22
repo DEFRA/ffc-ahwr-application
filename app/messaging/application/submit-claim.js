@@ -12,8 +12,10 @@ function isUpdateSuccessful (res) {
 }
 
 const submitClaim = async (message) => {
+  const timestamp = Date.now()
   try {
     const msgBody = message.body
+    console.time(`performance:${timestamp}:submitClaim`)
     console.log('received claim submit request', util.inspect(msgBody, false, null, true))
 
     if (validateSubmitClaim(msgBody)) {
@@ -43,10 +45,6 @@ const submitClaim = async (message) => {
 
       const updateSuccess = isUpdateSuccessful(res)
 
-      if (updateSuccess) {
-        await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
-      }
-
       if (updateSuccess && statusId === statusIds.readyToPay) {
         await sendMessage(
           {
@@ -57,6 +55,12 @@ const submitClaim = async (message) => {
       }
 
       await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+
+      console.timeEnd(`performance:${timestamp}:submitClaim`)
+
+      if (updateSuccess) {
+        await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
+      }
     } else {
       return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
     }
