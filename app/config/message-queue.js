@@ -5,7 +5,9 @@ const sharedConfigSchema = {
   host: Joi.string().default('localhost'),
   password: Joi.string(),
   username: Joi.string(),
-  useCredentialChain: Joi.bool().default(false)
+  useCredentialChain: Joi.bool().default(false),
+  retries: 50,
+  retryWaitInMs: 100
 }
 
 const schema = Joi.object({
