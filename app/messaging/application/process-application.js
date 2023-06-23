@@ -21,9 +21,11 @@ const processApplication = async (msg) => {
       throw new Error('Application validation error')
     }
 
+    console.time(`performance:${timestamp}:applicationRepository.getBySbi`)
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
+    console.timeEnd(`performance:${timestamp}:applicationRepository.getBySbi`)
 
     if (
       existingApplication &&
@@ -45,6 +47,7 @@ const processApplication = async (msg) => {
       )
     }
 
+    console.time(`performance:${timestamp}:applicationRepository.set`)
     const result = await applicationRepository.set({
       reference: '',
       data: applicationData,
@@ -53,6 +56,7 @@ const processApplication = async (msg) => {
       statusId: applicationData.offerStatus === 'rejected' ? 7 : 1
     })
     const application = result.dataValues
+    console.timeEnd(`performance:${timestamp}:applicationRepository.set`)
 
     console.time(`performance:${timestamp}:sendMessage`)
     await sendMessage(
