@@ -13,19 +13,17 @@ const processApplication = async (msg) => {
   let existingApplicationReference = null
   console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
   try {
-    const timestamp = Date.now()
-
-    console.time(`performance:${timestamp}:processApplication`)
+    console.time(`[Performance] [processApplication] [${messageId}] in total`)
 
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
     }
 
-    console.time(`performance:${timestamp}:applicationRepository.getBySbi`)
+    console.time(`[Performance] [processApplication] [${messageId}] applicationRepository.getBySbi`)
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
-    console.timeEnd(`performance:${timestamp}:applicationRepository.getBySbi`)
+    console.timeEnd(`[Performance] [processApplication] [${messageId}] applicationRepository.getBySbi`)
 
     if (
       existingApplication &&
@@ -47,7 +45,7 @@ const processApplication = async (msg) => {
       )
     }
 
-    console.time(`performance:${timestamp}:applicationRepository.set`)
+    console.time(`[Performance] [processApplication] [${messageId}] applicationRepository.set`)
     const result = await applicationRepository.set({
       reference: '',
       data: applicationData,
@@ -56,9 +54,9 @@ const processApplication = async (msg) => {
       statusId: applicationData.offerStatus === 'rejected' ? 7 : 1
     })
     const application = result.dataValues
-    console.timeEnd(`performance:${timestamp}:applicationRepository.set`)
+    console.timeEnd(`[Performance] [processApplication] [${messageId}] applicationRepository.set`)
 
-    console.time(`performance:${timestamp}:sendMessage`)
+    console.time(`[Performance] [processApplication] [${messageId}] sendMessage`)
     await sendMessage(
       {
         applicationState: states.submitted,
@@ -70,8 +68,8 @@ const processApplication = async (msg) => {
         sessionId
       }
     )
-    console.timeEnd(`performance:${timestamp}:sendMessage`)
-    console.timeEnd(`performance:${timestamp}:processApplication`)
+    console.timeEnd(`[Performance] [processApplication] [${messageId}] sendMessage`)
+    console.timeEnd(`[Performance] [processApplication] [${messageId}] in total`)
 
     if (applicationData.offerStatus === 'accepted') {
       await sendFarmerConfirmationEmail(
