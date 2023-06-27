@@ -1,4 +1,5 @@
 const { MessageReceiver } = require('ffc-messaging')
+const { closeAllConnections } = require('../messaging/create-message-sender')
 const config = require('../config')
 const processApplicationMessage = require('./process-message')
 
@@ -14,6 +15,7 @@ const start = async () => {
 
 const stop = async () => {
   await applicationReceiver.closeConnection()
+  await closeAllConnections()
 }
 
 module.exports = { start, stop }
