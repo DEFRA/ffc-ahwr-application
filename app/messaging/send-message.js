@@ -1,4 +1,4 @@
-const createMessageSender = require('./create-message-sender')
+const { createMessageSender } = require('./create-message-sender')
 const createMessage = require('./create-message')
 
 const sendMessage = async (body, type, config, options) => {
