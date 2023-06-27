@@ -1,23 +1,22 @@
-const memoize = require('fast-memoize')
 const { MessageSender } = require('ffc-messaging')
 
 const cachedSenders = {}
 
-const createMessageSender = memoize((config) => new MessageSender(config), {
-  cache: {
-    create () {
-      const store = cachedSenders
-      return {
-        has (key) { return (key in store) },
-        get (key) { return store[key] },
-        set (key, value) { store[key] = value }
-      }
-    }
+const createMessageSender = (config) => {
+  if (cachedSenders[JSON.stringify(config)]) {
+    return cachedSenders[JSON.stringify(config)]
   }
-})
+
+  const sender = new MessageSender(config)
+  cachedSenders[JSON.stringify(config)] = sender
+
+  return sender
+}
 
 const closeAllConnections = async () => {
-  for (const key of Object.keys(cachedSenders)) {
+  const senderKeys = Object.keys(cachedSenders)
+
+  for (const key of senderKeys) {
     const sender = cachedSenders[key]
     await sender.closeConnection()
     delete cachedSenders[key]
