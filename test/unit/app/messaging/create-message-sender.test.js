@@ -20,18 +20,18 @@ describe('closeAllConnections', () => {
 
   test('should close all connections and clear cachedSenders', async () => {
     createMessageSender({
-      prop1: 'abc'
+      address: 'abc'
     })
     createMessageSender({
-      prop1: 'abcd'
+      address: 'abcd'
     })
     expect(Object.keys(cachedSenders)).toHaveLength(2)
     createMessageSender({
-      prop1: 'abcde'
+      address: 'abcde'
     })
     expect(Object.keys(cachedSenders)).toHaveLength(3)
     createMessageSender({
-      prop1: 'abcde'
+      address: 'abcde'
     })
     expect(Object.keys(cachedSenders)).toHaveLength(3)
 

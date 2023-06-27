@@ -3,12 +3,12 @@ const { MessageSender } = require('ffc-messaging')
 const cachedSenders = {}
 
 const createMessageSender = (config) => {
-  if (cachedSenders[JSON.stringify(config)]) {
-    return cachedSenders[JSON.stringify(config)]
+  if (cachedSenders[config.address]) {
+    return cachedSenders[config.address]
   }
 
   const sender = new MessageSender(config)
-  cachedSenders[JSON.stringify(config)] = sender
+  cachedSenders[config.address] = sender
 
   return sender
 }
