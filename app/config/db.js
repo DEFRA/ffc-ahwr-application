@@ -44,7 +44,11 @@ const dbConfig = {
   port: process.env.POSTGRES_PORT,
   retry,
   schema: process.env.POSTGRES_SCHEMA_NAME,
-  username: process.env.POSTGRES_USERNAME
+  username: process.env.POSTGRES_USERNAME,
+  pool: {
+    max: 20,
+    min: 5
+  }
 }
 
 module.exports = {
