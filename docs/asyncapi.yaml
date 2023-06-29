@@ -1,0 +1,52 @@
+asyncapi: '2.5.0'
+info:
+  title: Application Service
+  version: 0.5.0
+  description: Application API for Animal Health and Welfare Review
+channels:
+  ffc-ahwr-document-request:
+    subscribe:
+      message:
+        $ref: '#/components/messages/ApplicationDocCreationRequest'
+  ffc-ahwr-application-request:
+    subscribe:
+      message:
+        $ref: '#/components/messages/ApplicationRequest'
+  ffc-ahwr-application-response:
+    subscribe:
+      message:
+        $ref: '#/components/messages/ApplicationResponse'
+  ffc-ahwr-payment-request:
+    subscribe:
+      message:
+        $ref: '#/components/messages/PaymentRequest'
+components:
+  messages:
+    ApplicationDocCreationRequest:
+      payload:
+        type: object
+        properties:
+          sbi:
+            type: string
+            description: Single Business Indentifier    
+    ApplicationRequest:
+      payload:
+        type: object
+        properties:
+          sbi:
+            type: string
+            description: Single Business Indentifier   
+    ApplicationResponse:
+      payload:
+        type: object
+        properties:
+          sbi:
+            type: string
+            description: Single Business Indentifier             
+    PaymentRequest:
+      payload:
+        type: object
+        properties:
+          sbi:
+            type: string
+            description: Single Business Indentifier  
