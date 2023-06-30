@@ -40,7 +40,8 @@ const submitClaim = async (message) => {
         statusId = statusIds.inCheck
         claimed = false
       }
-
+      
+      data.dateOfClaim = timestamp
       const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 
       const updateSuccess = isUpdateSuccessful(res)
