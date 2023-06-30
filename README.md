@@ -29,11 +29,8 @@ overridden by build and release pipelines.
 | APPLICATIONRESPONSE_QUEUE_ADDRESS               | Azure Service Bus message response queue name, e.g. `application-response`                            |
 | PAYMENTREQUEST_QUEUE_ADDRESS                    | Azure Service Bus message request queue name, e.g. `payment-request`                                 |
 | NOTIFY_API_KEY                                  | GOV.UK Notify API Key                                                                            |
-| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_CLAIM     | Id of email template used to notify farmer for claim                                             |
 | NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE  | Id of email template used for farmer application complete                                        |
 | NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE        | Id of email template used to notify farmer for claim being completed                             |
-| NOTIFY_TEMPLATE_ID_FARMER_VET_RECORD_INELIGIBLE | Id of email template used to notify farmer when the vet has recorded ineligible animal numbers   |
-| NOTIFY_TEMPLATE_ID_VET_APPLICATION_COMPLETE     | Id of email template used for veet application complete                                          |
 | SERVICE_URI                                     | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
 
 ## Running the application

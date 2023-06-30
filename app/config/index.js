@@ -16,8 +16,6 @@ const schema = Joi.object({
   fetchClaimResponseMsgType: Joi.string(),
   submitClaimRequestMsgType: Joi.string(),
   submitClaimResponseMsgType: Joi.string(),
-  vetVisitRequestMsgType: Joi.string(),
-  vetVisitResponseMsgType: Joi.string(),
   submitPaymentRequestMsgType: Joi.string(),
   storage: {
     connectionString: Joi.string().required(),
@@ -44,8 +42,6 @@ const config = {
   fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
   submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
-  vetVisitRequestMsgType: `${msgTypePrefix}.vet.visit.request`,
-  vetVisitResponseMsgType: `${msgTypePrefix}.vet.visit.response`,
   submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
   storage: {
     connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
