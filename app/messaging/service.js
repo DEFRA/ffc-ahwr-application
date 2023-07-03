@@ -6,7 +6,7 @@ const processApplicationMessage = require('./process-message')
 let applicationReceiver
 
 const start = async () => {
-  const applicationAction = message => processApplicationMessage(message, applicationReceiver)
+  const applicationAction = message => applicationReceiver.deadLetterMessage(message)
   applicationReceiver = new MessageReceiver(config.applicationRequestQueue, applicationAction)
   await applicationReceiver.subscribe()
 
