@@ -40,7 +40,7 @@ const submitClaim = async (message) => {
         statusId = statusIds.inCheck
         claimed = false
       }
-      
+
       data.dateOfClaim = new Date()
       const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 
