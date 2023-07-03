@@ -1,9 +1,10 @@
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType, vetVisitRequestMsgType } = require('../config')
+const { applicationRequestMsgType, applicationResponseMsgType, applicationResponseQueue, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType, vetVisitRequestMsgType } = require('../config')
 const fetchApplication = require('./application/fetch-application')
 const fetchClaim = require('./application/fetch-claim')
 const processApplication = require('./application/process-application')
 const processVetVisit = require('./application/process-vet-visit')
 const submitClaim = require('./application/submit-claim')
+const { sendMessage } = require('./index')
 
 const processApplicationMessage = async (message, receiver) => {
   try {
@@ -24,6 +25,22 @@ const processApplicationMessage = async (message, receiver) => {
       case vetVisitRequestMsgType:
         await processVetVisit(message)
         break
+      case 'uk.gov.ffc.ahwr.deadletter':
+        console.log('Dead letter message received: ', message)
+        const { sessionId } = message
+        await receiver.deadLetterMessage(message)
+        await sendMessage(
+          {
+            applicationState: 'dead-letter',
+            applicationReference: message.body.applicationReference
+          },
+          applicationResponseMsgType,
+          applicationResponseQueue,
+          {
+            sessionId
+          }
+        )
+        return
     }
     await receiver.completeMessage(message)
   } catch (err) {
