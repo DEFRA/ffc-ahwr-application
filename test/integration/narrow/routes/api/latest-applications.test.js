@@ -1,6 +1,7 @@
 const { resetAllWhenMocks } = require('jest-when')
 
-jest.mock('../../../../../app/data')
+jest.mock('../../../../../app/repositories/application-repository')
+const applicationRepositoryMock = require('../../../../../app/repositories/application-repository')
 
 const server = require('../../../../../app/server')
 
@@ -60,5 +61,47 @@ describe('/api/applications/latest', () => {
     expect(response.statusCode).toBe(400)
     expect(response.statusMessage).toEqual('Bad Request')
     expect(payload.message).toEqual(testCase.then.errorMessage)
+  })
+  test.each([
+    {
+      toString: () => 'valid sbi',
+      given: {
+        queryString: '?sbi=105000001'
+      }
+    }
+  ])('%s', async (testCase) => {
+    const options = {
+      method: 'GET',
+      url: `${API_URL}${testCase.given.queryString}`
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(200)
+    expect(applicationRepositoryMock.getLatestApplicationsBySbi).toBeCalledTimes(1)
+  })
+
+  test.each([
+    {
+      toString: () => 'getLatestApplicationsBySbi throws error',
+      given: {
+        queryString: '?sbi=105000001'
+      }
+    }
+  ])('%s', async (testCase) => {
+    const options = {
+      method: 'GET',
+      url: `${API_URL}${testCase.given.queryString}`
+    }
+
+    applicationRepositoryMock.getLatestApplicationsBySbi.mockImplementation(() => {
+      throw new Error('some error')
+    })
+
+    try {
+      await server.inject(options)
+    } catch (e) {
+      expect(applicationRepositoryMock.getLatestApplicationsBySbi).toBeCalledTimes(1)
+      expect(e.message).toBe('some error')
+    }
   })
 })
