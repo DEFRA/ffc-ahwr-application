@@ -1,16 +1,14 @@
 const dbHelper = require('../../../db-helper')
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType, vetVisitRequestMsgType } = require('../../../../app/config')
+const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../../../../app/config')
 const fetchApplication = require('../../../../app/messaging/application/fetch-application')
 const fetchClaim = require('../../../../app/messaging/application/fetch-claim')
 const processApplication = require('../../../../app/messaging/application/process-application')
 const processApplicationMessage = require('../../../../app/messaging/process-message')
-const processVetVisit = require('../../../../app/messaging/application/process-vet-visit')
 const submitClaim = require('../../../../app/messaging/application/submit-claim')
 
 jest.mock('../../../../app/messaging/application/fetch-application')
 jest.mock('../../../../app/messaging/application/fetch-claim')
 jest.mock('../../../../app/messaging/application/process-application')
-jest.mock('../../../../app/messaging/application/process-vet-visit')
 jest.mock('../../../../app/messaging/application/submit-claim')
 
 describe('Process Message test', () => {
@@ -98,20 +96,6 @@ describe('Process Message test', () => {
     }
     await processApplicationMessage(message, receiver)
     expect(submitClaim).toHaveBeenCalledTimes(1)
-    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
-  })
-
-  test(`${vetVisitRequestMsgType} message calls processVetVisit`, async () => {
-    const message = {
-      body: {
-        reference: '12342DD'
-      },
-      applicationProperties: {
-        type: vetVisitRequestMsgType
-      }
-    }
-    await processApplicationMessage(message, receiver)
-    expect(processVetVisit).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 })

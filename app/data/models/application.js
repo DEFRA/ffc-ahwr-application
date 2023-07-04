@@ -34,10 +34,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   })
   application.associate = function (models) {
-    application.hasOne(models.vetVisit, {
-      sourceKey: 'reference',
-      foreignKey: 'applicationReference'
-    })
     application.hasOne(models.status, {
       sourceKey: 'statusId',
       foreignKey: 'statusId'

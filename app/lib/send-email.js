@@ -1,6 +1,6 @@
 const notifyClient = require('./notify-client')
-const { serviceUri, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../config')
-const { carbonCopyEmailAddress, templateIdVetApplicationComplete, templateIdFarmerApplicationClaim, templateIdFarmerClaimComplete, templateIdFarmerVetRecordIneligible } = require('../config').notify
+const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../config')
+const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
 
 const send = async (templateId, email, personalisation) => {
@@ -44,25 +44,7 @@ const sendFarmerClaimConfirmationEmail = async (email, reference) => {
   return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete)
 }
 
-const sendVetConfirmationEmail = async (email, reference) => {
-  const personalisation = { reference }
-  return sendEmail(email, personalisation, reference, templateIdVetApplicationComplete)
-}
-
-const sendFarmerClaimInvitationEmail = async (email, reference) => {
-  const personalisation = { claimStartUrl: `${serviceUri}/farmer-claim`, reference }
-  return sendEmail(email, personalisation, reference, templateIdFarmerApplicationClaim)
-}
-
-const sendFarmerVetRecordIneligibleEmail = async (email, reference) => {
-  const personalisation = { reference }
-  return sendEmail(email, personalisation, reference, templateIdFarmerVetRecordIneligible)
-}
-
 module.exports = {
-  sendFarmerClaimInvitationEmail,
   sendFarmerConfirmationEmail,
-  sendFarmerClaimConfirmationEmail,
-  sendFarmerVetRecordIneligibleEmail,
-  sendVetConfirmationEmail
+  sendFarmerClaimConfirmationEmail
 }

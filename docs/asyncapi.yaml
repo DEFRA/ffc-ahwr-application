@@ -408,14 +408,6 @@ components:
               type: string
               description: The reference number of the application
               required: true
-      ProcessVetVisit:
-        payload:
-          type: object
-          properties:
-            applicationState:
-              type: string
-              description: The state of the application, e.g. notSubmitted, failed
-              required: true
       SubmitClaim:
         payload:
           type: object
