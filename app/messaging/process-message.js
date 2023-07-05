@@ -28,7 +28,7 @@ const processApplicationMessage = async (message, receiver) => {
       case 'uk.gov.ffc.ahwr.deadletter':
         console.log('Dead letter message received: ', message)
         const { sessionId } = message
-        await receiver.deadLetterMessage(message)
+        await receiver.deadLetterMessage(message) //this is what sends the message to the DLQ
         await sendMessage(
           {
             applicationState: 'dead-letter',
