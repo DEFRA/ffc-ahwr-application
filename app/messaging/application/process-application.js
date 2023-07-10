@@ -10,7 +10,7 @@ const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
   const messageId = msg.messageId
-  let existingApplicationReference = null
+  const existingApplicationReference = null
   console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
   try {
     console.time(`[Performance] [processApplication] [${messageId}] in total`)
@@ -20,30 +20,30 @@ const processApplication = async (msg) => {
     }
 
     console.time(`[Performance] [processApplication] [${messageId}] applicationRepository.getBySbi`)
-    const existingApplication = await applicationRepository.getBySbi(
-      applicationData.organisation.sbi
-    )
-    console.timeEnd(`[Performance] [processApplication] [${messageId}] applicationRepository.getBySbi`)
+    // const existingApplication = await applicationRepository.getBySbi(
+    //   applicationData.organisation.sbi
+    // )
+    // console.timeEnd(`[Performance] [processApplication] [${messageId}] applicationRepository.getBySbi`)
 
-    if (
-      existingApplication &&
-      existingApplication.statusId !== applicationStatus.withdrawn &&
-      existingApplication.statusId !== applicationStatus.notAgreed
-      // todo consider being able to apply again within 10 months
-    ) {
-      existingApplicationReference = existingApplication.dataValues.reference
-      throw Object.assign(
-        new Error(
-          `Application already exists: ${JSON.stringify({
-            reference: existingApplication.dataValues.reference,
-            createdAt: existingApplication.dataValues.createdAt
-          })}`
-        ),
-        {
-          applicationState: states.alreadyExists
-        }
-      )
-    }
+    // if (
+    //   existingApplication &&
+    //   existingApplication.statusId !== applicationStatus.withdrawn &&
+    //   existingApplication.statusId !== applicationStatus.notAgreed
+    //   // todo consider being able to apply again within 10 months
+    // ) {
+    //   existingApplicationReference = existingApplication.dataValues.reference
+    //   throw Object.assign(
+    //     new Error(
+    //       `Application already exists: ${JSON.stringify({
+    //         reference: existingApplication.dataValues.reference,
+    //         createdAt: existingApplication.dataValues.createdAt
+    //       })}`
+    //     ),
+    //     {
+    //       applicationState: states.alreadyExists
+    //     }
+    //   )
+    // }
 
     console.time(`[Performance] [processApplication] [${messageId}] applicationRepository.set`)
     const result = await applicationRepository.set({
