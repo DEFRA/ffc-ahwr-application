@@ -26,18 +26,12 @@ describe('queryEntitiesByPartitionKey', () => {
       toString: () => 'Empty table name',
       given: {
         tableName: '',
-        partitionKey: 'partition_key'
+        partitionKey: 123456789
       },
       when: {
       },
       expect: {
-        events: [],
-        consoleLogs: [
-          `${MOCK_NOW.toISOString()} Listing events by: ${JSON.stringify({
-            tableName: '',
-            partitionKey: 'partition_key'
-          })}`
-        ]
+        events: []
       }
     },
     {
@@ -49,57 +43,33 @@ describe('queryEntitiesByPartitionKey', () => {
       when: {
       },
       expect: {
-        events: [],
-        consoleLogs: [
-          `${MOCK_NOW.toISOString()} Listing events by: ${JSON.stringify({
-            tableName: 'table_name',
-            partitionKey: ''
-          })}`
-        ]
+        events: []
       }
     },
     {
       toString: () => 'No events found',
       given: {
         tableName: 'table_name',
-        partitionKey: 'partition_key'
+        partitionKey: 123456789
       },
       when: {
         entities: []
       },
       expect: {
-        events: [],
-        consoleLogs: [
-          `${MOCK_NOW.toISOString()} Listing events by: ${JSON.stringify({
-            tableName: 'table_name',
-            partitionKey: 'partition_key'
-          })}`,
-          `${MOCK_NOW.toISOString()} Creating the table client using the DefaultAzureCredential: ${JSON.stringify({
-            tableName: 'table_name'
-          })}`
-        ]
+        events: []
       }
     },
     {
       toString: () => 'One event found',
       given: {
         tableName: 'table_name',
-        partitionKey: 'partition_key'
+        partitionKey: 123456789
       },
       when: {
         entities: [{}]
       },
       expect: {
-        events: [{}],
-        consoleLogs: [
-            `${MOCK_NOW.toISOString()} Listing events by: ${JSON.stringify({
-              tableName: 'table_name',
-              partitionKey: 'partition_key'
-            })}`,
-            `${MOCK_NOW.toISOString()} Creating the table client using the DefaultAzureCredential: ${JSON.stringify({
-              tableName: 'table_name'
-            })}`
-        ]
+        events: [{}]
       }
     }
   ])('%s', async (testCase) => {
@@ -113,7 +83,7 @@ describe('queryEntitiesByPartitionKey', () => {
           return {
             createTable: jest.fn(),
             listEntities: jest.fn().mockImplementation((args) => {
-              if (args.queryOptions.filter === `contains(PartitionKey, '${MOCK_PARTITION_KEY}')`) {
+              if (args.queryOptions.filter === `PartitionKey ge ${MOCK_PARTITION_KEY} and PartitionKey lt ${MOCK_PARTITION_KEY + 1}`) {
                 return MOCK_ENTITIES
               } else {
                 return []
