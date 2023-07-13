@@ -104,15 +104,20 @@ describe('queryEntitiesByPartitionKey', () => {
     }
   ])('%s', async (testCase) => {
     const MOCK_ENTITIES = testCase.when.entities
+    const MOCK_PARTIION_KEY = testCase.given.partitionKey
 
     jest.mock('@azure/data-tables', () => {
       return {
-        odata: jest.fn(),
+        ...jest.requireActual('@azure/data-tables'),
         TableClient: jest.fn().mockImplementation(() => {
           return {
             createTable: jest.fn(),
-            listEntities: jest.fn().mockImplementation(() => {
-              return MOCK_ENTITIES
+            listEntities: jest.fn().mockImplementation((args) => {
+              if (args.queryOptions.filter === `contains(PartitionKey, '${MOCK_PARTIION_KEY}')`) {
+                return MOCK_ENTITIES
+              } else {
+                return []
+              }
             })
           }
         })

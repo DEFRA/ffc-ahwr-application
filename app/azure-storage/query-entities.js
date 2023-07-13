@@ -9,7 +9,7 @@ const queryEntitiesByPartitionKey = async (tableName, partitionKey) => {
     const eventResults = tableClient.listEntities(
       {
         queryOptions: {
-          filter: odata`PartitionKey eq ${partitionKey}`
+          filter: odata`contains(PartitionKey, ${partitionKey})`
         }
       }
     )
