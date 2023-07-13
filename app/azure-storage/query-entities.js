@@ -10,7 +10,7 @@ const queryEntitiesByPartitionKey = async (tableName, partitionKey) => {
       {
         queryOptions: {
           // filter those that start with the partitionKey
-          filter: odata`PartitionKey ge ${+partitionKey} and PartitionKey lt ${+partitionKey + 1}`
+          filter: odata`PartitionKey ge ${partitionKey} and PartitionKey lt ${(+partitionKey + 1).toString()}`
         }
       }
     )

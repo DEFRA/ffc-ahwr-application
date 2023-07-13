@@ -26,7 +26,7 @@ describe('queryEntitiesByPartitionKey', () => {
       toString: () => 'Empty table name',
       given: {
         tableName: '',
-        partitionKey: 123456789
+        partitionKey: '123456789'
       },
       when: {
       },
@@ -50,7 +50,7 @@ describe('queryEntitiesByPartitionKey', () => {
       toString: () => 'No events found',
       given: {
         tableName: 'table_name',
-        partitionKey: 123456789
+        partitionKey: '123456789'
       },
       when: {
         entities: []
@@ -63,7 +63,7 @@ describe('queryEntitiesByPartitionKey', () => {
       toString: () => 'One event found',
       given: {
         tableName: 'table_name',
-        partitionKey: 123456789
+        partitionKey: '123456789'
       },
       when: {
         entities: [{}]
@@ -83,7 +83,7 @@ describe('queryEntitiesByPartitionKey', () => {
           return {
             createTable: jest.fn(),
             listEntities: jest.fn().mockImplementation((args) => {
-              if (args.queryOptions.filter === `PartitionKey ge ${MOCK_PARTITION_KEY} and PartitionKey lt ${MOCK_PARTITION_KEY + 1}`) {
+              if (args.queryOptions.filter === `PartitionKey ge '${MOCK_PARTITION_KEY}' and PartitionKey lt '${(+MOCK_PARTITION_KEY + 1).toString()}'`) {
                 return MOCK_ENTITIES
               } else {
                 return []
