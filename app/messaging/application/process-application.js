@@ -47,7 +47,7 @@ const processApplication = async (msg) => {
 
     console.time(`[Performance] [processApplication] [${messageId}] applicationRepository.set`)
     const result = await applicationRepository.set({
-      reference: '',
+      reference: 'AHWR-TEST-0001',
       data: applicationData,
       createdBy: 'admin',
       createdAt: new Date(),

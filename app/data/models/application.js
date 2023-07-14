@@ -23,15 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     statusId: DataTypes.SMALLINT
   }, {
     freezeTableName: true,
-    tableName: 'application',
-    hooks: {
-      afterCreate: async (applicationRecord, _) => {
-        applicationRecord.dataValues.reference = createReference(applicationRecord.id)
-        applicationRecord.dataValues.updatedBy = 'admin'
-        applicationRecord.dataValues.updatedAt = new Date()
-        await applicationRecord.update(applicationRecord.dataValues)
-      }
-    }
+    tableName: 'application'
   })
   application.associate = function (models) {
     application.hasOne(models.status, {
