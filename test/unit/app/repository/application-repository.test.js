@@ -33,8 +33,11 @@ describe('Application Repository test', () => {
 
   afterEach(() => {
     jest.clearAllMocks()
-    resetAllWhenMocks()
     process.env = { ...env }
+  })
+
+  afterEach(() => {
+    resetAllWhenMocks()
   })
 
   test('Application Repository returns Function', () => {
@@ -140,6 +143,32 @@ describe('Application Repository test', () => {
         }
       }
     ])
+  })
+
+  test.each(
+    [
+      { sortField: 'apply date', orderField: 'createdAt' },
+      { sortField: 'sbi', orderField: 'data.organisation.sbi' },
+      { sortField: 'createdAt', orderField: 'createdAt' }
+    ])('searchApplications and sort by %s', async ({ sortField, orderField }) => {
+    const searchText = '333333333'
+    const sort = { field: sortField, direction: 'DESC' }
+    await repository.searchApplications(searchText, 'sbi', [], offset, limit, sort)
+
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findAll).toHaveBeenCalledWith({
+      order: [[orderField, 'DESC']],
+      limit,
+      offset,
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }],
+      where: {
+        'data.organisation.sbi': searchText
+      }
+    })
   })
 
   describe('updateByReference', () => {
@@ -933,6 +962,73 @@ describe('Application Repository test', () => {
     expect(data.models.application.findOne).toHaveBeenCalledWith({
       where: {
         'data.organisation.sbi': sbi
+      },
+      order: [['createdAt', 'DESC']]
+    })
+  })
+
+  test('get', async () => {
+    const reference = 'AHWR-5C1C-CCCC'
+
+    when(data.models.application.findOne)
+      .calledWith({
+        where: {
+          reference: reference.toUpperCase()
+        },
+        include: [
+          {
+            model: data.models.status,
+            attributes: ['status']
+          }
+        ]
+      })
+      .mockResolvedValue({
+        application: 'MockApplication'
+      })
+
+    const result = await repository.get(reference)
+
+    expect(result).toEqual({
+      application: 'MockApplication'
+    })
+
+    expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findOne).toHaveBeenCalledWith({
+      where: {
+        reference
+      },
+      include: [
+        {
+          model: data.models.status,
+          attributes: ['status']
+        }]
+    })
+  })
+
+  test('getByEmail', async () => {
+    const email = 'email@test.com'
+
+    when(data.models.application.findOne)
+      .calledWith({
+        where: {
+          'data.organisation.email': email.toLowerCase()
+        },
+        order: [['createdAt', 'DESC']]
+      })
+      .mockResolvedValue({
+        application: 'MockApplication'
+      })
+
+    const result = await repository.getByEmail(email)
+
+    expect(result).toEqual({
+      application: 'MockApplication'
+    })
+
+    expect(data.models.application.findOne).toHaveBeenCalledTimes(1)
+    expect(data.models.application.findOne).toHaveBeenCalledWith({
+      where: {
+        'data.organisation.email': email
       },
       order: [['createdAt', 'DESC']]
     })

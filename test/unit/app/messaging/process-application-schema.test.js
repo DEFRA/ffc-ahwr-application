@@ -1,4 +1,4 @@
-describe('business-email.schema', () => {
+describe('process-application-schema', () => {
   const processAapplicationSchema = require('../../../../app/messaging/schema/process-application-schema')
   test.each([
     {
