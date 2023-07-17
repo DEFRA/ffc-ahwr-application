@@ -18,7 +18,7 @@ const sendEmail = async (email, personalisation, reference, templateId) => {
     await sendCarbonCopy(templateId, { personalisation, reference })
   } catch (e) {
     success = false
-    console.error('Error occurred during sending email', e.response.data)
+    console.error(`Error occurred during sending email: ${JSON.stringify(e.response.data)}`)
   }
   return success
 }
