@@ -1,7 +1,6 @@
-const { odata } = require('@azure/data-tables')
 const createTableClient = require('./create-table-client')
 
-const queryEntitiesByPartitionKey = async (tableName, partitionKey) => {
+const queryEntitiesByPartitionKey = async (tableName, partitionKey, queryFilter) => {
   const events = []
   if (tableName && partitionKey) {
     const tableClient = createTableClient(tableName)
@@ -9,8 +8,7 @@ const queryEntitiesByPartitionKey = async (tableName, partitionKey) => {
     const eventResults = tableClient.listEntities(
       {
         queryOptions: {
-          // filter those that start with the partitionKey
-          filter: odata`PartitionKey ge ${partitionKey} and PartitionKey lt ${(+partitionKey + 1).toString()}`
+          filter: queryFilter
         }
       }
     )
