@@ -16,6 +16,7 @@ const submitClaimSchema = joi.object({
     vetRcvs: joi.string().required(),
     detailsCorrect: joi.string().required(),
     dateOfClaim: joi.string().optional(),
+    dateOfTesting: joi.string().optional(),
     organisation: joi.object({
       farmerName: joi.string().required(),
       name: joi.string().required(),
