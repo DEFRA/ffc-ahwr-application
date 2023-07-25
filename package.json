@@ -30,6 +30,7 @@
     "ffc-ahwr-event-publisher": "^1.0.2",
     "ffc-messaging": "^2.3.4",
     "joi": "^17.6.0",
+    "lodash": "^4.17.21",
     "node-cron": "^3.0.2",
     "notifications-node-client": "^5.1.1",
     "pg": "^8.7.3",
