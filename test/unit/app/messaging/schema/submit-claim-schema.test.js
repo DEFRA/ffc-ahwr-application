@@ -1,5 +1,5 @@
 const validateSubmitClaim = require('../../../../../app/messaging/schema/submit-claim-schema')
-const _ = require('lodash')
+const unset = require('lodash.unset')
 
 describe('Submit Claim Schema Tests', () => {
   test('Should Return True When All Fields Are Populated', () => {
@@ -81,7 +81,7 @@ describe('Submit Claim Schema Tests', () => {
         }
       }
     }
-    _.unset(event, fieldName)
+    unset(event, fieldName)
 
     const result = validateSubmitClaim(event)
     expect(result).toBeFalsy()
@@ -122,7 +122,7 @@ describe('Submit Claim Schema Tests', () => {
         }
       }
     }
-    _.unset(event, fieldName)
+    unset(event, fieldName)
 
     const result = validateSubmitClaim(event)
     expect(result).toBeTruthy()
