@@ -385,6 +385,17 @@ describe('Application Repository test', () => {
     })
   })
 
+  test('getAllClaimedApplications returns a count', async () => {
+    await repository.getAllClaimedApplications([5, 9, 10])
+
+    expect(data.models.application.count).toHaveBeenCalledTimes(1)
+    expect(data.models.application.count).toHaveBeenCalledWith({
+      where: {
+        statusId: [5, 9, 10]
+      }
+    })
+  })
+
   describe('searchApplications', () => {
     test.each([
       { searchText: undefined, searchType: '' },

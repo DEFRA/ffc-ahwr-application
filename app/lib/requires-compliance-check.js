@@ -9,14 +9,13 @@ const { compliance } = require('../config')
  * @returns an object containing a statusId and a claimed indicator
  */
 module.exports = async function requiresComplianceCheck (claimStatusIds) {
-  const claimedApplications = await getAllClaimedApplications(claimStatusIds)
+  const claimedApplicationsCount = await getAllClaimedApplications(claimStatusIds)
 
   // default to IN_CHECK status
   let statusId = statusIds.inCheck
   let claimed = false
-  const nextClaimCount = claimedApplications.length + 1
 
-  if (nextClaimCount % compliance.applicationCount !== 0) {
+  if (claimedApplicationsCount + 1 % compliance.applicationCount !== 0) {
     // if the claim does not trigger the configururable compliance check volume ratio set as READY_TO_PAY
     statusId = statusIds.readyToPay
     claimed = true

@@ -204,7 +204,7 @@ async function getAll () {
  * @returns a list of applications
  */
 async function getAllClaimedApplications (claimStatusIds) {
-  return models.application.findAll({
+  return models.application.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
     }
