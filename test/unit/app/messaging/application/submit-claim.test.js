@@ -4,6 +4,10 @@ const { alreadyClaimed, failed, error, notFound, success } = require('../../../.
 
 jest.mock('../../../../../app/repositories/application-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
+
+jest.mock('../../../../../app/lib/requires-compliance-check')
+const requiresComplianceCheck = require('../../../../../app/lib/requires-compliance-check')
+
 jest.mock('../../../../../app/messaging/send-message')
 const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/send-email')
@@ -28,27 +32,25 @@ describe(('Submit claim tests'), () => {
   })
 
   test.each([
-    { desc: 'unclaimed application successfully updated returns success state', updateRes: [1], state: success, count: 13, statusId: 9 },
-    { desc: 'unclaimed application compliance check successfully updated returns success state', updateRes: [1], state: success, count: 15, statusId: 5 },
-    { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed, count: 3, statusId: 5 }
-  ])('$desc', async ({ updateRes, state, count, statusId }) => {
+    { desc: 'unclaimed application successfully updated returns success state', updateRes: [1], state: success, statusId: 9, claimed: true },
+    { desc: 'unclaimed application compliance check successfully updated returns success state', updateRes: [1], state: success, statusId: 5, claimed: false },
+    { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed, statusId: 5, claimed: false }
+  ])('$desc', async ({ updateRes, state, statusId, claimed }) => {
     const email = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
     const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
-    const applications = []
-    for (let i = 0; i < count; i++) {
-      applications.push({
-        foo: 'bar'
-      })
-    }
-    applicationRepository.getAllClaimedApplications.mockResolvedValueOnce(applications)
+    requiresComplianceCheck.mockResolvedValueOnce({
+      statusId,
+      claimed
+    })
+
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
     await submitClaim(message)
 
-    expect(applicationRepository.getAllClaimedApplications).toHaveBeenCalledTimes(1)
+    expect(requiresComplianceCheck).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })

@@ -1,10 +1,11 @@
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
-const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue, compliance } = require('../../config')
+const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
-const { get, updateByReference, getAllClaimedApplications } = require('../../repositories/application-repository')
+const { get, updateByReference } = require('../../repositories/application-repository')
 const validateSubmitClaim = require('../schema/submit-claim-schema')
 const statusIds = require('../../constants/application-status')
+const processComplianceCheck = require('../../lib/requires-compliance-check')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
@@ -57,30 +58,6 @@ const submitClaim = async (message) => {
     console.error(`failed to submit claim for request ${JSON.stringify(message.body)}`, err)
     return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   }
-}
-
-/**
- * This function determines whether the claim being processed can be sent directly for payment (READY_TO_PAY) or
- * whether it has to go through a manual compliance check (IN_CHECK)
- * @param {*} claimStatusIds an array of status IDs that represent an agreement where a claim has been made
- * @returns an object containing a statusId and a claimed indicator
- */
-async function processComplianceCheck (claimStatusIds) {
-  const claimedApplications = await getAllClaimedApplications(claimStatusIds)
-
-  // default to IN_CHECK status
-  let statusId = statusIds.inCheck
-  let claimed = false
-  const nextClaimCount = claimedApplications.length + 1
-  console.log(`Next claim is ${nextClaimCount}`)
-  console.log(`applicationCount is ${compliance.applicationCount}`)
-
-  if (nextClaimCount % compliance.applicationCount !== 0) {
-    // if the claim does not trigger the configururable compliance check volume ratio set as READY_TO_PAY
-    statusId = statusIds.readyToPay
-    claimed = true
-  }
-  return { claimed, statusId }
 }
 
 module.exports = submitClaim
