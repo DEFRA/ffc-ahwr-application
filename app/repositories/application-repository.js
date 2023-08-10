@@ -1,5 +1,4 @@
 const { models, sequelize } = require('../data')
-const { Op } = require('sequelize')
 const eventPublisher = require('../event-publisher')
 
 /**
@@ -207,17 +206,9 @@ async function getAll () {
 async function getAllClaimedApplications (claimStatusIds) {
   return models.application.findAll({
     where: {
-      statusId: claimStatusIds //shorthand for IN operator
+      statusId: claimStatusIds // shorthand for IN operator
     }
   })
-}
-
-/**
- * Get total number of applications
- * @returns
- */
-async function getApplicationsCount () {
-  return models.application.count()
 }
 
 /**
@@ -271,7 +262,6 @@ module.exports = {
   getLatestApplicationsBySbi,
   getByEmail,
   getAll,
-  getApplicationsCount,
   set,
   updateByReference,
   searchApplications,

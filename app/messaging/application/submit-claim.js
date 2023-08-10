@@ -1,4 +1,3 @@
-const util = require('util')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
 const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue, compliance } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
@@ -12,7 +11,6 @@ function isUpdateSuccessful (res) {
 }
 
 const submitClaim = async (message) => {
-  const timestamp = Date.now()
   try {
     const msgBody = message.body
     if (validateSubmitClaim(msgBody)) {
@@ -37,6 +35,8 @@ const submitClaim = async (message) => {
       const updateSuccess = isUpdateSuccessful(res)
 
       if (updateSuccess && statusId === statusIds.readyToPay) {
+        console.log(`Application with reference ${reference} has been marked as ready to pay.`)
+        // sending message to payment queue
         await sendMessage(
           {
             reference,
@@ -60,20 +60,23 @@ const submitClaim = async (message) => {
 }
 
 /**
- * This function determines whether the claim being processed can be sent directly for payment (READY_TO_PAY) or 
+ * This function determines whether the claim being processed can be sent directly for payment (READY_TO_PAY) or
  * whether it has to go through a manual compliance check (IN_CHECK)
  * @param {*} claimStatusIds an array of status IDs that represent an agreement where a claim has been made
  * @returns an object containing a statusId and a claimed indicator
  */
-async function processComplianceCheck(claimStatusIds) {
+async function processComplianceCheck (claimStatusIds) {
   const claimedApplications = await getAllClaimedApplications(claimStatusIds)
 
-  // default to in check
+  // default to IN_CHECK status
   let statusId = statusIds.inCheck
   let claimed = false
+  const nextClaimCount = claimedApplications.length + 1
+  console.log(`Next claim is ${nextClaimCount}`)
+  console.log(`applicationCount is ${compliance.applicationCount}`)
 
-  if ((claimedApplications.length + 1) % compliance.applicationCount !== 0) {
-    // if the claim does not trigger the configururable compliance check volume ratio set as ready for payment 
+  if (nextClaimCount % compliance.applicationCount !== 0) {
+    // if the claim does not trigger the configururable compliance check volume ratio set as READY_TO_PAY
     statusId = statusIds.readyToPay
     claimed = true
   }
@@ -81,4 +84,3 @@ async function processComplianceCheck(claimStatusIds) {
 }
 
 module.exports = submitClaim
-

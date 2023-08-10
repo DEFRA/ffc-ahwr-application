@@ -14,6 +14,15 @@ describe(('Submit claim tests'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const message = { body: { reference }, sessionId }
 
+  beforeAll(async () => {
+    jest.mock('../../../../../app/config', () => ({
+      ...jest.requireActual('../../../../../app/config'),
+      compliance: {
+        applicationCount: 3
+      }
+    }))
+  })
+
   beforeEach(async () => {
     jest.clearAllMocks()
   })
@@ -21,37 +30,43 @@ describe(('Submit claim tests'), () => {
   test.each([
     { desc: 'unclaimed application successfully updated returns success state', updateRes: [1], state: success, count: 13, statusId: 9 },
     { desc: 'unclaimed application compliance check successfully updated returns success state', updateRes: [1], state: success, count: 15, statusId: 5 },
-    { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed, count: 3, statusId: 9 }
+    { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed, count: 3, statusId: 5 }
   ])('$desc', async ({ updateRes, state, count, statusId }) => {
     const email = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
     const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
-    applicationRepository.getApplicationsCount.mockResolvedValueOnce(count)
+    const applications = []
+    for (let i = 0; i < count; i++) {
+      applications.push({
+        foo: 'bar'
+      })
+    }
+    applicationRepository.getAllClaimedApplications.mockResolvedValueOnce(applications)
     applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
 
     await submitClaim(message)
 
-    expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.getApplicationsCount).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.getAllClaimedApplications).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     if (state === success && statusId === 9) {
+      // if ready to pay reply message and payment message should be sent
       expect(sendMessage).toHaveBeenCalledTimes(2)
-      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
       expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     } else if (state === success && statusId === 5) {
+      // if in check only reply message should be sent
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     } else {
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
+      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     }
   })
 

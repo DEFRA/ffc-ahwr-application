@@ -531,34 +531,6 @@ describe('Application Repository test', () => {
       expect(data.models.application.findAll).not.toHaveBeenCalledTimes(1)
     })
   })
-
-  describe('getApplicationCount', () => {
-    test.each([
-      { sbi: undefined },
-      { sbi: '444444444' },
-      { sbi: '   444444444    ' }
-    ])('getApplicationCount successfully called with SBI', async ({ sbi }) => {
-      await repository.getApplicationCount(sbi)
-
-      expect(data.models.application.count).toHaveBeenCalledTimes(1)
-      if (sbi) {
-        expect(data.models.application.count).toHaveBeenCalledWith({
-          where: {
-            'data.organisation.sbi': sbi
-          }
-        })
-      } else {
-        expect(data.models.application.count).toHaveBeenCalledWith({
-        })
-      }
-    })
-
-    test('getApplicationsCount return number of applications count ', async () => {
-      await repository.getApplicationsCount()
-      expect(data.models.application.count).toHaveBeenCalledTimes(1)
-    })
-  })
-
   describe('getLatestApplicationsBySbi', () => {
     test.each([
       {

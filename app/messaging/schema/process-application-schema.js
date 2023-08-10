@@ -1,5 +1,4 @@
 const joi = require('joi')
-const util = require('util')
 
 const applicationSchema = joi.object({
   confirmCheckDetails: joi.string().required(),
@@ -24,7 +23,7 @@ const validateApplication = (event) => {
   const validate = applicationSchema.validate(event)
 
   if (validate.error) {
-    console.log('Application validation error:', util.inspect(validate.error, false, null, true))
+    console.error(`Application validation error - ${validate.error}.`)
     return false
   }
 
