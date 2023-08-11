@@ -1,11 +1,11 @@
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
-const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
+const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue, compliance } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const { get, updateByReference } = require('../../repositories/application-repository')
 const validateSubmitClaim = require('../schema/submit-claim-schema')
 const statusIds = require('../../constants/application-status')
-const processComplianceCheck = require('../../lib/requires-compliance-check')
+const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
@@ -29,7 +29,7 @@ const submitClaim = async (message) => {
         return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
 
-      const { claimed, statusId } = await processComplianceCheck(claimStatusIds)
+      const { claimed, statusId } = await requiresComplianceCheck(claimStatusIds, compliance.applicationCount)
 
       const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 
