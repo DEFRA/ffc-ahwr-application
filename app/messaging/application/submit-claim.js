@@ -29,7 +29,7 @@ const submitClaim = async (message) => {
         return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
 
-      const { claimed, statusId } = await requiresComplianceCheck(claimStatusIds, compliance.applicationCount)
+      const { claimed, statusId } = await requiresComplianceCheck(claimStatusIds, compliance.complianceCheckRatio)
 
       const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 

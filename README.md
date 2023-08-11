@@ -32,6 +32,7 @@ overridden by build and release pipelines.
 | NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE  | Id of email template used for farmer application complete                                        |
 | NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE        | Id of email template used to notify farmer for claim being completed                             |
 | SERVICE_URI                                     | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
+| CLAIM_COMPLIANCE_CHECK_RATIO                    | The ratio in which claims require a compliance check, e.g. 3 means one in every 3 claims         |
 
 ## Running the application
 
