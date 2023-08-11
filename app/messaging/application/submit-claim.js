@@ -1,24 +1,21 @@
-const util = require('util')
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
 const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue, compliance } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
-const { get, updateByReference, getApplicationsCount } = require('../../repositories/application-repository')
+const { get, updateByReference } = require('../../repositories/application-repository')
 const validateSubmitClaim = require('../schema/submit-claim-schema')
 const statusIds = require('../../constants/application-status')
+const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
 }
 
 const submitClaim = async (message) => {
-  const timestamp = Date.now()
   try {
     const msgBody = message.body
-    console.time(`performance:${timestamp}:submitClaim`)
-    console.log('received claim submit request', util.inspect(msgBody, false, null, true))
-
     if (validateSubmitClaim(msgBody)) {
+      console.log(`Received claim submit request - ${JSON.stringify(msgBody)}`)
       const { reference, data } = msgBody
       const application = await get(reference)
 
@@ -26,26 +23,21 @@ const submitClaim = async (message) => {
         return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
 
-      const claimStatusIds = [5, 10, 9]
+      const claimStatusIds = [statusIds.inCheck, statusIds.readyToPay, statusIds.rejected]
 
       if (application.dataValues.claimed || claimStatusIds.includes(application.dataValues.statusId)) {
         return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
 
-      const applicationsCount = await getApplicationsCount()
-
-      let statusId = statusIds.readyToPay
-      let claimed = true
-      if (applicationsCount % compliance.applicationCount === 0) {
-        statusId = statusIds.inCheck
-        claimed = false
-      }
+      const { claimed, statusId } = await requiresComplianceCheck(claimStatusIds, compliance.complianceCheckRatio)
 
       const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 
       const updateSuccess = isUpdateSuccessful(res)
 
       if (updateSuccess && statusId === statusIds.readyToPay) {
+        console.log(`Application with reference ${reference} has been marked as ready to pay.`)
+        // sending message to payment queue
         await sendMessage(
           {
             reference,
@@ -55,8 +47,6 @@ const submitClaim = async (message) => {
       }
 
       await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
-
-      console.timeEnd(`performance:${timestamp}:submitClaim`)
 
       if (updateSuccess) {
         await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)

@@ -11,19 +11,16 @@ const processApplication = async (msg) => {
   const applicationData = msg.body
   const messageId = msg.messageId
   let existingApplicationReference = null
-  console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
   try {
-    console.time(`[Performance] [processApplication] [${messageId}] in total`)
-
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
     }
 
-    console.time(`[Performance] [processApplication] [${messageId}] applicationRepository.getBySbi`)
+    console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
+
     const existingApplication = await applicationRepository.getBySbi(
-      applicationData.organisation.sbi
+      applicationData.organisation.sbi // todo consider reworking this for re application logic as this could pull back more than one agreement
     )
-    console.timeEnd(`[Performance] [processApplication] [${messageId}] applicationRepository.getBySbi`)
 
     if (
       existingApplication &&
@@ -45,7 +42,6 @@ const processApplication = async (msg) => {
       )
     }
 
-    console.time(`[Performance] [processApplication] [${messageId}] applicationRepository.set`)
     const result = await applicationRepository.set({
       reference: '',
       data: applicationData,
@@ -54,22 +50,21 @@ const processApplication = async (msg) => {
       statusId: applicationData.offerStatus === 'rejected' ? 7 : 1
     })
     const application = result.dataValues
-    console.timeEnd(`[Performance] [processApplication] [${messageId}] applicationRepository.set`)
 
-    console.time(`[Performance] [processApplication] [${messageId}] sendMessage`)
-    await sendMessage(
-      {
-        applicationState: states.submitted,
-        applicationReference: application.reference
-      },
+    const response = {
+      applicationState: states.submitted,
+      applicationReference: application.reference
+    }
+
+    console.log(`Returning response : ${JSON.stringify(response)} with sessionID ${sessionId} and messageID ${messageId}.`)
+
+    await sendMessage(response,
       applicationResponseMsgType,
       applicationResponseQueue,
       {
         sessionId
       }
     )
-    console.timeEnd(`[Performance] [processApplication] [${messageId}] sendMessage`)
-    console.timeEnd(`[Performance] [processApplication] [${messageId}] in total`)
 
     if (applicationData.offerStatus === 'accepted') {
       await sendFarmerConfirmationEmail(
