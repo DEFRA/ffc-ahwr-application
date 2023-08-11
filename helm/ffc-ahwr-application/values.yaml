@@ -53,7 +53,7 @@ container:
   azureStorageConnectionString:
   azureStorageUseConnectionString: true
   azureStorageAccountName:
-  complianceApplicationCount: 5
+  claimComplianceCheckRatio:
 
 postgresService:
   postgresDb: ffc_ahwr_application

@@ -49,7 +49,7 @@ const config = {
     storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
   },
   compliance: {
-    complianceCheckRatio: process.env.COMPLIANCE_APPLICATION_COUNT
+    complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO
   }
 }
 
