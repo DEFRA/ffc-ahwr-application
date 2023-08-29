@@ -20,5 +20,5 @@ data:
   SERVICE_URI: {{ quote .Values.container.serviceUri }}
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
-  COMPLIANCE_APPLICATION_COUNT: {{ quote .Values.container.complianceApplicationCount }}
+  CLAIM_COMPLIANCE_CHECK_RATIO: {{ quote .Values.container.claimComplianceCheckRatio }}
 {{- end -}}

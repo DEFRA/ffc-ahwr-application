@@ -7,7 +7,6 @@ const modelPath = path.join(__dirname, 'models')
 
 module.exports = (() => {
   const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
-
   fs
     .readdirSync(modelPath)
     .filter(file => {

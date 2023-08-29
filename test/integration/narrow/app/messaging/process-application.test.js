@@ -77,11 +77,11 @@ describe('Process Message test', () => {
   })
 
   test('Call processApplicationMessage message validation failed', async () => {
-    const consoleSpy = jest.spyOn(console, 'log')
+    const consoleSpy = jest.spyOn(console, 'error')
     delete message.body.organisation.email
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(consoleSpy.mock.calls[1][0]).toBe('Application validation error:')
+    expect(consoleSpy).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "organisation.email" is required.')
   })
 })

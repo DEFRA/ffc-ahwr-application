@@ -188,10 +188,7 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
   }
 }
 /**
- * Get All applicaitons
- * @param {*} sbi
- * @param {*} offset
- * @param {*} limit
+ * Get all applications
  * @returns
  */
 async function getAll () {
@@ -200,25 +197,20 @@ async function getAll () {
   }
   return models.application.findAll(query)
 }
+
 /**
- * Get total number of applications
- * @returns
+ * Get all applications that have been claimed
+ * @param {*} claimStatusIds an array of status IDs which indicate that an application has been claimed
+ * @returns a list of applications
  */
-async function getApplicationsCount () {
-  return models.application.count()
+async function getAllClaimedApplications (claimStatusIds) {
+  return models.application.count({
+    where: {
+      statusId: claimStatusIds // shorthand for IN operator
+    }
+  })
 }
-/**
- *
- * @param {*} sbi
- * @returns
- */
-async function getApplicationCount (sbi) {
-  const query = {}
-  if (sbi) {
-    query.where = { 'data.organisation.sbi': sbi }
-  }
-  return models.application.count(query)
-}
+
 /**
  *
  * @param {*} data
@@ -269,10 +261,9 @@ module.exports = {
   getBySbi,
   getLatestApplicationsBySbi,
   getByEmail,
-  getApplicationCount,
   getAll,
-  getApplicationsCount,
   set,
   updateByReference,
-  searchApplications
+  searchApplications,
+  getAllClaimedApplications
 }
