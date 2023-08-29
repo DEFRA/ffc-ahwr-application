@@ -5,6 +5,7 @@ const fetchClaim = require('../../../../app/messaging/application/fetch-claim')
 const processApplication = require('../../../../app/messaging/application/process-application')
 const processApplicationMessage = require('../../../../app/messaging/process-message')
 const submitClaim = require('../../../../app/messaging/application/submit-claim')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 jest.mock('../../../../app/messaging/application/fetch-application')
 jest.mock('../../../../app/messaging/application/fetch-claim')

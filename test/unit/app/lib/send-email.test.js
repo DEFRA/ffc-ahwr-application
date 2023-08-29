@@ -17,6 +17,7 @@ const notifyClient = require('../../../../app/lib/notify-client')
 
 jest.mock('../../../../app/messaging/send-message')
 const sendMessage = require('../../../../app/messaging/send-message')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 describe('Send email test', () => {
   beforeEach(async () => {

@@ -8,6 +8,7 @@ jest.mock('../../../../../app/messaging/send-message')
 const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/send-email')
 const { sendFarmerClaimConfirmationEmail } = require('../../../../../app/lib/send-email')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 describe(('Submit claim tests'), () => {
   const reference = 'AHWR-1234-5678'

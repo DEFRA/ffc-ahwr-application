@@ -8,6 +8,8 @@ jest.mock('../../../../../app/lib/send-email')
 
 const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/send-message')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
+
 boom.internal = jest.fn()
 
 describe('Process Message test', () => {
