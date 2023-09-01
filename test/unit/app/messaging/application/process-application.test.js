@@ -12,6 +12,11 @@ const consoleErrorSpy = jest.spyOn(console, 'error')
 const MOCK_REFERENCE = 'MOCK_REFERENCE'
 const MOCK_NOW = new Date()
 
+const mockMonthsAgo = (months) => {
+  const mockDate = new Date()
+  return mockDate.setMonth(mockDate.getMonth() - months)
+}
+
 jest.mock('../../../../../app/lib/send-email')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
@@ -115,7 +120,9 @@ describe(('Store application in database'), () => {
       expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
     })
 
-    xtest(' with statusId 1 (agreed)', async () => {
+    test(' with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
+      const mockApplicationDate = mockMonthsAgo(7)
+
       when(applicationRepository.getBySbi)
         .calledWith(
           message.body.organisation.sbi
@@ -123,9 +130,9 @@ describe(('Store application in database'), () => {
         .mockResolvedValue({
           dataValues: {
             reference: MOCK_REFERENCE,
-            createdAt: MOCK_NOW
+            createdAt: mockApplicationDate
           },
-          statusId: applicationStatus.agreed
+          statusId: applicationStatus.readyToPay
         })
 
       await processApplication(message)
@@ -134,9 +141,9 @@ describe(('Store application in database'), () => {
       expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Failed to process application',
-        new Error(`Application already exists: ${JSON.stringify({
+        new Error(`Recent application already exists: ${JSON.stringify({
           reference: MOCK_REFERENCE,
-          createdAt: MOCK_NOW
+          createdAt: mockApplicationDate
         })}`)
       )
       expect(sendMessage).toHaveBeenCalledTimes(1)
