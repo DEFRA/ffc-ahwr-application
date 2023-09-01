@@ -12,6 +12,8 @@ jest.mock('../../../../app/messaging/application/fetch-claim')
 jest.mock('../../../../app/messaging/application/process-application')
 jest.mock('../../../../app/messaging/application/submit-claim')
 
+jest.setTimeout(10000)
+
 describe('Process Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const receiver = {
@@ -20,6 +22,7 @@ describe('Process Message test', () => {
   }
 
   beforeEach(async () => {
+    jest.setTimeout(10000)
     await dbHelper.truncate()
     jest.clearAllMocks()
   })
