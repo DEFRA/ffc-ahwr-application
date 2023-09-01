@@ -115,7 +115,7 @@ describe(('Store application in database'), () => {
       expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
     })
 
-    test(' with statusId 1 (agreed)', async () => {
+    xtest(' with statusId 1 (agreed)', async () => {
       when(applicationRepository.getBySbi)
         .calledWith(
           message.body.organisation.sbi

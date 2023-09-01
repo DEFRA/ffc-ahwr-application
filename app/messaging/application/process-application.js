@@ -1,5 +1,5 @@
 const states = require('./states')
-const applicationStatus = require('../../constants/application-status')
+// const applicationStatus = require('../../constants/application-status')
 const { applicationResponseMsgType, applicationResponseQueue } = require('../../config')
 const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
@@ -10,7 +10,8 @@ const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
   const messageId = msg.messageId
-  let existingApplicationReference = null
+  // let existingApplicationReference = null
+  const existingApplicationReference = null
   try {
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
@@ -18,29 +19,29 @@ const processApplication = async (msg) => {
 
     console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
 
-    const existingApplication = await applicationRepository.getBySbi(
-      applicationData.organisation.sbi // todo consider reworking this for re application logic as this could pull back more than one agreement
-    )
+    // const existingApplication = await applicationRepository.getBySbi(
+    //   applicationData.organisation.sbi // todo consider reworking this for re application logic as this could pull back more than one agreement
+    // )
 
-    if (
-      existingApplication &&
-      existingApplication.statusId !== applicationStatus.withdrawn &&
-      existingApplication.statusId !== applicationStatus.notAgreed
-      // todo consider being able to apply again within 10 months
-    ) {
-      existingApplicationReference = existingApplication.dataValues.reference
-      throw Object.assign(
-        new Error(
-          `Application already exists: ${JSON.stringify({
-            reference: existingApplication.dataValues.reference,
-            createdAt: existingApplication.dataValues.createdAt
-          })}`
-        ),
-        {
-          applicationState: states.alreadyExists
-        }
-      )
-    }
+    // if (
+    //   existingApplication &&
+    //   existingApplication.statusId !== applicationStatus.withdrawn &&
+    //   existingApplication.statusId !== applicationStatus.notAgreed
+    //   // todo consider being able to apply again within 10 months
+    // ) {
+    //   existingApplicationReference = existingApplication.dataValues.reference
+    //   throw Object.assign(
+    //     new Error(
+    //       `Application already exists: ${JSON.stringify({
+    //         reference: existingApplication.dataValues.reference,
+    //         createdAt: existingApplication.dataValues.createdAt
+    //       })}`
+    //     ),
+    //     {
+    //       applicationState: states.alreadyExists
+    //     }
+    //   )
+    // }
 
     const result = await applicationRepository.set({
       reference: '',
