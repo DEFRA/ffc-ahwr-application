@@ -39,7 +39,7 @@ const processApplication = async (msg) => {
     )
 
     if (
-      existingApplication && 
+      existingApplication &&
       existingApplication.statusId !== applicationStatus.withdrawn &&
       existingApplication.statusId !== applicationStatus.notAgreed &&
       // check if it passes 10 month rule here and chuck error if it doesn't
