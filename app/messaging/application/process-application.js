@@ -30,7 +30,7 @@ const processApplication = async (msg) => {
 
     function isPastTimeLimit (dates) {
       const { endDate } = dates
-      return Date.now() > endDate
+      return new Date() > endDate
     }
 
     // Alex to fix so only latest application returned
@@ -39,16 +39,12 @@ const processApplication = async (msg) => {
     )
 
     if (
-      existingApplication &&
+      existingApplication && 
       existingApplication.statusId !== applicationStatus.withdrawn &&
-      existingApplication.statusId !== applicationStatus.notAgreed
-    ) {
+      existingApplication.statusId !== applicationStatus.notAgreed &&
       // check if it passes 10 month rule here and chuck error if it doesn't
-      const dates = timeLimitDates(existingApplication)
-      if (isPastTimeLimit(dates)) {
-        return
-      }
-
+      isPastTimeLimit(timeLimitDates(existingApplication)) === false
+    ) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
