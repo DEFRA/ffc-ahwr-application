@@ -39,10 +39,11 @@ const processApplication = async (msg) => {
 
     if (
       existingApplication &&
-      existingApplication.statusId !== applicationStatus.withdrawn &&
+      ((existingApplication.statusId !== applicationStatus.withdrawn &&
       existingApplication.statusId !== applicationStatus.notAgreed &&
       // check if it passes 10 month rule here and chuck error if it doesn't
-      isPastTimeLimit(timeLimitDates(existingApplication)) === false
+      isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
+      existingApplication.statusId === applicationStatus.agreed)
     ) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
