@@ -120,7 +120,7 @@ describe(('Store application in database'), () => {
       expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
     })
 
-    test(' with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
+    test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
       const mockApplicationDate = mockMonthsAgo(7)
 
       when(applicationRepository.getBySbi)

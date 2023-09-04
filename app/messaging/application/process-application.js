@@ -6,6 +6,20 @@ const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
 const validateApplication = require('../schema/process-application-schema')
 
+function timeLimitDates (application) {
+  const start = new Date(application.createdAt)
+  const end = new Date(start)
+  // set time limit to a constant - config??
+  end.setMonth(end.getMonth() + 10)
+  end.setHours(24, 0, 0, 0) // set to midnight of agreement end day
+  return { startDate: start, endDate: end }
+}
+
+function isPastTimeLimit (dates) {
+  const { endDate } = dates
+  return Date.now() > endDate
+}
+
 const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
@@ -19,23 +33,8 @@ const processApplication = async (msg) => {
 
     console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
 
-    function timeLimitDates (application) {
-      const start = new Date(application.createdAt)
-      const end = new Date(start)
-      // set time limit to a constant - config??
-      end.setMonth(end.getMonth() + 10)
-      end.setHours(24, 0, 0, 0) // set to midnight of agreement end day
-      return { startDate: start, endDate: end }
-    }
-
-    function isPastTimeLimit (dates) {
-      const { endDate } = dates
-      return new Date() > endDate
-    }
-
-    // Alex to fix so only latest application returned
     const existingApplication = await applicationRepository.getBySbi(
-      applicationData.organisation.sbi // todo consider reworking this for re application logic as this could pull back more than one agreement
+      applicationData.organisation.sbi
     )
 
     if (
