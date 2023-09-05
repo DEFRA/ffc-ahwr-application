@@ -1,6 +1,6 @@
 const states = require('./states')
 const applicationStatus = require('../../constants/application-status')
-const { applicationResponseMsgType, applicationResponseQueue } = require('../../config')
+const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule } = require('../../config')
 const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
@@ -18,6 +18,21 @@ function timeLimitDates (application) {
 function isPastTimeLimit (dates) {
   const { endDate } = dates
   return Date.now() > endDate
+}
+
+function isPreviousApplicationRelevant (existingApplication) {
+  if (tenMonthRule.enabled) {
+    return existingApplication &&
+    ((existingApplication.statusId !== applicationStatus.withdrawn &&
+    existingApplication.statusId !== applicationStatus.notAgreed &&
+    // check if it passes 10 month rule here and chuck error if it doesn't
+    isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
+    existingApplication.statusId === applicationStatus.agreed)
+  } else {
+    return existingApplication &&
+    existingApplication.statusId !== applicationStatus.withdrawn &&
+    existingApplication.statusId !== applicationStatus.notAgreed
+  }
 }
 
 const processApplication = async (msg) => {
@@ -38,12 +53,7 @@ const processApplication = async (msg) => {
     )
 
     if (
-      existingApplication &&
-      ((existingApplication.statusId !== applicationStatus.withdrawn &&
-      existingApplication.statusId !== applicationStatus.notAgreed &&
-      // check if it passes 10 month rule here and chuck error if it doesn't
-      isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
-      existingApplication.statusId === applicationStatus.agreed)
+      isPreviousApplicationRelevant(existingApplication)
     ) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
