@@ -77,7 +77,7 @@ describe('Process Message test', () => {
   })
 
   test('Call processApplicationMessage message validation failed', async () => {
-    const consoleSpy = jest.spyOn(console, 'log')
+    const consoleSpy = jest.spyOn(console, 'error')
     delete message.body.organisation.email
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)

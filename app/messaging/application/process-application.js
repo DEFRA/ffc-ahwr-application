@@ -5,7 +5,7 @@ const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
 const validateApplication = require('../schema/process-application-schema')
-// const appInsights = require('applicationinsights')
+const appInsights = require('applicationinsights')
 
 const processApplication = async (msg) => {
   const { sessionId } = msg
@@ -78,18 +78,18 @@ const processApplication = async (msg) => {
       )
     }
 
-    // appInsights.defaultClient.trackEvent({
-    //   name: 'process-application',
-    //   properties: {
-    //     status: applicationData?.offerStatus,
-    //     reference: application ? application?.reference : 'unknown',
-    //     sbi: applicationData?.organisation?.sbi,
-    //     sessionId
-    //   }
-    // })
+    appInsights.defaultClient.trackEvent({
+      name: 'process-application',
+      properties: {
+        status: applicationData?.offerStatus,
+        reference: application ? application?.reference : 'unknown',
+        sbi: applicationData?.organisation?.sbi,
+        sessionId
+      }
+    })
   } catch (error) {
     console.error('Failed to process application', error)
-    // appInsights.defaultClient.trackException({ exception: error })
+    appInsights.defaultClient.trackException({ exception: error })
     sendMessage(
       {
         applicationState: error.applicationState ? error.applicationState : states.failed,
