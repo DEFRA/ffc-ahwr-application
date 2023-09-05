@@ -22,7 +22,7 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi // todo consider reworking this for re application logic as this could pull back more than one agreement
     )
-
+    console.log(existingApplication)
     if (
       existingApplication &&
       existingApplication.statusId !== applicationStatus.withdrawn &&
