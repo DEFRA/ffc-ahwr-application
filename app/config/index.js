@@ -26,6 +26,9 @@ const schema = Joi.object({
   },
   compliance: {
     complianceCheckRatio: Joi.number().default(5)
+  },
+  tenMonthRule: {
+    enabled: Joi.bool().default(false)
   }
 })
 
@@ -50,6 +53,9 @@ const config = {
   },
   compliance: {
     complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO
+  },
+  tenMonthRule: {
+    enabled: process.env.TEN_MONTH_RULE_ENABLED
   }
 }
 
