@@ -5,6 +5,7 @@ const sendMessage = require('../send-message')
 const { get, updateByReference } = require('../../repositories/application-repository')
 const validateSubmitClaim = require('../schema/submit-claim-schema')
 const statusIds = require('../../constants/application-status')
+const appInsights = require('applicationinsights')
 const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 function isUpdateSuccessful (res) {
@@ -51,10 +52,21 @@ const submitClaim = async (message) => {
       if (updateSuccess) {
         await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
       }
+
+      appInsights.defaultClient.trackEvent({
+        name: 'process-claim',
+        properties: {
+          data,
+          reference,
+          status: statusId,
+          sbi: application.dataValues.data.organisation.sbi
+        }
+      })
     } else {
       return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
     }
   } catch (err) {
+    appInsights.defaultClient.trackException({ exception: err })
     console.error(`failed to submit claim for request ${JSON.stringify(message.body)}`, err)
     return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   }

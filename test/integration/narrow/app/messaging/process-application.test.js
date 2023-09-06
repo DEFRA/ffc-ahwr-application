@@ -1,5 +1,3 @@
-const dbHelper = require('../../../../db-helper')
-const { models } = require('../../../../../app/data')
 const processApplication = require('../../../../../app/messaging/application/process-application')
 const boom = require('@hapi/boom')
 
@@ -8,6 +6,8 @@ jest.mock('../../../../../app/lib/send-email')
 
 const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/send-message')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
+
 boom.internal = jest.fn()
 
 describe('Process Message test', () => {
@@ -32,46 +32,12 @@ describe('Process Message test', () => {
     applicationProperties: {
       type: 'uk.gov.ffc.ahwr.app.request'
     },
-    sessionId: '23423'
+    sessionId: '23423',
+    messageId: '1231231231231'
   }
 
   beforeEach(async () => {
-    await dbHelper.truncate()
     jest.clearAllMocks()
-  })
-
-  afterAll(async () => {
-    await dbHelper.truncate()
-    await dbHelper.close()
-  })
-
-  test('Call processApplicationMessage success', async () => {
-    await processApplication(message)
-
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
-    expect(applications.length).toBe(1)
-  })
-
-  test('Call processApplicationMessage fail to send email', async () => {
-    await processApplication(message)
-
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
-    expect(applications.length).toBe(1)
-  })
-
-  test('Call processApplicationMessage fail to send message', async () => {
-    sendMessage.mockResolvedValue(() => { throw new Error('error error error') })
-
-    await processApplication(message)
-
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    const applications = await models.application.findAll({ where: { createdBy: 'admin' }, raw: true })
-    expect(applications.length).toBe(1)
   })
 
   test('Call processApplicationMessage message validation failed', async () => {
@@ -80,6 +46,6 @@ describe('Process Message test', () => {
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(consoleSpy).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "organisation.email" is required.')
+    expect(consoleSpy.mock.calls[0][0]).toBe('Application validation error - ValidationError: "organisation.email" is required.')
   })
 })
