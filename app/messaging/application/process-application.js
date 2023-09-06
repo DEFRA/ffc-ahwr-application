@@ -5,6 +5,7 @@ const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
 const validateApplication = require('../schema/process-application-schema')
+const appInsights = require('applicationinsights')
 
 function timeLimitDates (application) {
   const start = new Date(application.createdAt)
@@ -21,23 +22,20 @@ function isPastTimeLimit (dates) {
 }
 
 function isPreviousApplicationRelevant (existingApplication) {
-  console.log('existingApplication (in isPrev)', existingApplication)
-  console.log('tenMonthRule.enabled (in isPrev)', tenMonthRule.enabled)
-  if (tenMonthRule.enabled === true) {
-    const shouldPreventApplication = existingApplication &&
+  if (tenMonthRule.enabled) {
+    return existingApplication &&
     ((existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed &&
     // check if it passes 10 month rule here and chuck error if it doesn't
     isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
     existingApplication.statusId === applicationStatus.agreed)
-    console.log('shouldPreventApplication', shouldPreventApplication)
-    return shouldPreventApplication
   } else {
     return existingApplication &&
     existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed
   }
 }
+
 const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
@@ -54,12 +52,8 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
-    console.log('existingApplication', existingApplication)
-
-    if (
-      isPreviousApplicationRelevant(existingApplication)
-    ) {
-      console.log("It's relevant", isPreviousApplicationRelevant(existingApplication))
+    console.log(existingApplication)
+    if (isPreviousApplicationRelevant(existingApplication)) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
@@ -108,8 +102,19 @@ const processApplication = async (msg) => {
         applicationData.organisation.farmerName
       )
     }
+
+    appInsights.defaultClient.trackEvent({
+      name: 'process-application',
+      properties: {
+        status: applicationData?.offerStatus,
+        reference: application ? application?.reference : 'unknown',
+        sbi: applicationData?.organisation?.sbi,
+        sessionId
+      }
+    })
   } catch (error) {
     console.error('Failed to process application', error)
+    appInsights.defaultClient.trackException({ exception: error })
     sendMessage(
       {
         applicationState: error.applicationState ? error.applicationState : states.failed,

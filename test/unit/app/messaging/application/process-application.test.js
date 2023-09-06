@@ -20,6 +20,7 @@ const mockMonthsAgo = (months) => {
 jest.mock('../../../../../app/lib/send-email')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 describe(('Store application in database'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
