@@ -179,9 +179,20 @@ describe(('Store application in database'), () => {
 
         await processApplication(message)
 
-        expect(sendMessage).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+        expect(applicationRepository.set).toHaveBeenCalledTimes(1)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
+        expect(sendMessage).toHaveBeenCalledTimes(1)
+        expect(sendMessage).toHaveBeenCalledWith(
+          {
+            applicationState: states.accepted,
+            applicationReference: MOCK_REFERENCE
+          },
+          applicationResponseMsgType,
+          applicationResponseQueue,
+          {
+            sessionId
+          }
+        )
       })
     })
 
@@ -271,6 +282,7 @@ describe(('Store application in database'), () => {
   })
 
   test('successfully submits rejected application', async () => {
+    tenMonthRule.enabled = false
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
     })
