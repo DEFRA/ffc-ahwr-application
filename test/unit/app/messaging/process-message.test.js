@@ -21,17 +21,8 @@ describe('Process Message test', () => {
   }
 
   beforeEach(async () => {
-    // await dbHelper.truncate()
     jest.clearAllMocks()
   })
-
-  // afterEach(async () => {
-  //   await dbHelper.truncate()
-  // })
-
-  // afterAll(async () => {
-  //   await dbHelper.close()
-  // })
 
   test(`${applicationRequestMsgType} message calls processApplication`, async () => {
     const message = {
