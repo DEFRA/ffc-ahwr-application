@@ -23,6 +23,7 @@ function isPastTimeLimit (dates) {
 
 function isPreviousApplicationRelevant (existingApplication) {
   if (tenMonthRule.enabled) {
+    console.log(isPastTimeLimit(timeLimitDates(existingApplication)), 'Is valid 10 month')
     return existingApplication &&
     ((existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed &&

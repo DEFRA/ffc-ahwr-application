@@ -2,7 +2,7 @@ const { when, resetAllWhenMocks } = require('jest-when')
 const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
 const sendMessage = require('../../../../../app/messaging/send-message')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-const { applicationResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
+const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule } = require('../../../../../app/config')
 const states = require('../../../../../app/messaging/application/states')
 const processApplication = require('../../../../../app/messaging/application/process-application')
 const applicationStatus = require('../../../../../app/constants/application-status')
@@ -121,9 +121,42 @@ describe(('Store application in database'), () => {
       expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
     })
 
+    test('throws an error with statusId 9 (ready to pay) and date greater than 10 months ago', async () => {
+      const mockApplicationDate = mockMonthsAgo(10)
+      tenMonthRule.enabled = true
+      when(applicationRepository.getBySbi)
+        .calledWith(
+          message.body.organisation.sbi
+        )
+        .mockResolvedValue({
+          dataValues: {
+            reference: MOCK_REFERENCE,
+            createdAt: mockApplicationDate
+          },
+          statusId: applicationStatus.readyToPay
+        })
+
+      await processApplication(message)
+
+      expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+      expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledWith(
+        {
+          applicationState: states.accepted,
+          applicationReference: MOCK_REFERENCE
+        },
+        applicationResponseMsgType,
+        applicationResponseQueue,
+        {
+          sessionId
+        }
+      )
+    })
+
     test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
       const mockApplicationDate = mockMonthsAgo(7)
-
+      tenMonthRule.enabled = true
       when(applicationRepository.getBySbi)
         .calledWith(
           message.body.organisation.sbi
@@ -163,6 +196,7 @@ describe(('Store application in database'), () => {
   })
 
   test('successfully submits rejected application', async () => {
+    tenMonthRule.enabled = false
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
     })
