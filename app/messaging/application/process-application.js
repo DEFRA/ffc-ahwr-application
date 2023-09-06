@@ -53,7 +53,7 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
-    console.log(existingApplication)
+
     if (isPreviousApplicationRelevant(existingApplication)) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
