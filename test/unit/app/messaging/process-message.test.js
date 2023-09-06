@@ -1,10 +1,11 @@
-const dbHelper = require('../../../db-helper')
+// const dbHelper = require('../../../db-helper')
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../../../../app/config')
 const fetchApplication = require('../../../../app/messaging/application/fetch-application')
 const fetchClaim = require('../../../../app/messaging/application/fetch-claim')
 const processApplication = require('../../../../app/messaging/application/process-application')
 const processApplicationMessage = require('../../../../app/messaging/process-message')
 const submitClaim = require('../../../../app/messaging/application/submit-claim')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 jest.mock('../../../../app/messaging/application/fetch-application')
 jest.mock('../../../../app/messaging/application/fetch-claim')
@@ -13,30 +14,24 @@ jest.mock('../../../../app/messaging/application/submit-claim')
 
 describe('Process Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
+  const sbi = '123456789'
   const receiver = {
     completeMessage: jest.fn(),
     abandonMessage: jest.fn()
   }
 
   beforeEach(async () => {
-    await dbHelper.truncate()
     jest.clearAllMocks()
-  })
-
-  afterEach(async () => {
-    await dbHelper.truncate()
-  })
-
-  afterAll(async () => {
-    await dbHelper.close()
   })
 
   test(`${applicationRequestMsgType} message calls processApplication`, async () => {
     const message = {
+      messageId: '1234567890',
       body: {
         cattle: 'yes',
         pigs: 'yes',
         organisation: {
+          sbi,
           name: 'test-org',
           email: 'test-email'
         }
@@ -46,6 +41,8 @@ describe('Process Message test', () => {
       },
       sessionId
     }
+
+    console.log(sessionId)
     await processApplicationMessage(message, receiver)
     expect(processApplication).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
@@ -53,6 +50,7 @@ describe('Process Message test', () => {
 
   test(`${fetchApplicationRequestMsgType} message calls fetch application`, async () => {
     const message = {
+      messageId: '1234567890',
       body: {
         cattle: 'yes',
         pigs: 'yes',

@@ -2,6 +2,7 @@ const notifyClient = require('./notify-client')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../config')
 const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
+const appInsights = require('applicationinsights')
 
 const send = async (templateId, email, personalisation) => {
   return notifyClient.sendEmail(
@@ -16,7 +17,17 @@ const sendEmail = async (email, personalisation, reference, templateId) => {
   try {
     await send(templateId, email, { personalisation, reference })
     await sendCarbonCopy(templateId, { personalisation, reference })
+    appInsights.defaultClient.trackEvent({
+      name: 'email',
+      properties: {
+        status: success,
+        reference,
+        email,
+        templateId
+      }
+    })
   } catch (e) {
+    appInsights.defaultClient.trackException({ exception: e })
     success = false
     console.error(`Error occurred during sending email: ${JSON.stringify(e.response.data)}`)
   }
