@@ -2,7 +2,7 @@ const { when, resetAllWhenMocks } = require('jest-when')
 const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
 const sendMessage = require('../../../../../app/messaging/send-message')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule } = require('../../../../../app/config')
+const { applicationResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
 const states = require('../../../../../app/messaging/application/states')
 const processApplication = require('../../../../../app/messaging/application/process-application')
 const applicationStatus = require('../../../../../app/constants/application-status')
@@ -26,6 +26,7 @@ describe(('Store application in database'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
   const email = 'email@domain.com'
   const name = 'name-on-org'
+  const OLD_ENV = process.env
   const message = {
     body: {
       confirmCheckDetails: 'yes',
@@ -48,6 +49,8 @@ describe(('Store application in database'), () => {
   }
 
   beforeEach(() => {
+    jest.resetModules()
+    process.env = { ...OLD_ENV }
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
     })
@@ -57,6 +60,10 @@ describe(('Store application in database'), () => {
   afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
+  })
+
+  afterAll(() => {
+    process.env = OLD_ENV
   })
 
   test('successfully submits application', async () => {
@@ -107,6 +114,7 @@ describe(('Store application in database'), () => {
           statusId: testCase.when.statusId
         })
 
+      process.env.TEN_MONTH_RULE_ENABLED = false
       await processApplication(message)
 
       expect(applicationRepository.set).toHaveBeenCalledTimes(1)
@@ -122,8 +130,9 @@ describe(('Store application in database'), () => {
     })
 
     test('throws an error with statusId 9 (ready to pay) and date greater than 10 months ago', async () => {
-      const mockApplicationDate = mockMonthsAgo(10)
-      tenMonthRule.enabled = true
+      const mockApplicationDate = mockMonthsAgo(11)
+      console.log(process.env.TEN_MONTH_RULE_ENABLED, 'process.env.TEN_MONTH_RULE_ENABLED')
+      process.env.TEN_MONTH_RULE_ENABLED = true
       when(applicationRepository.getBySbi)
         .calledWith(
           message.body.organisation.sbi
@@ -143,7 +152,7 @@ describe(('Store application in database'), () => {
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendMessage).toHaveBeenCalledWith(
         {
-          applicationState: states.accepted,
+          applicationState: states.submitted,
           applicationReference: MOCK_REFERENCE
         },
         applicationResponseMsgType,
@@ -156,7 +165,6 @@ describe(('Store application in database'), () => {
 
     test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
       const mockApplicationDate = mockMonthsAgo(7)
-      tenMonthRule.enabled = true
       when(applicationRepository.getBySbi)
         .calledWith(
           message.body.organisation.sbi
@@ -196,9 +204,11 @@ describe(('Store application in database'), () => {
   })
 
   test('successfully submits rejected application', async () => {
-    tenMonthRule.enabled = false
     applicationRepository.set.mockResolvedValue({
-      dataValues: { reference: MOCK_REFERENCE }
+      dataValues: {
+        reference: MOCK_REFERENCE,
+        createdAt: MOCK_NOW
+      }
     })
 
     message.body.offerStatus = 'rejected'

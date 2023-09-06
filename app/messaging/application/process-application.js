@@ -8,7 +8,7 @@ const validateApplication = require('../schema/process-application-schema')
 const appInsights = require('applicationinsights')
 
 function timeLimitDates (application) {
-  const start = new Date(application.createdAt)
+  const start = new Date(application.dataValues.createdAt)
   const end = new Date(start)
   // set time limit to a constant - config??
   end.setMonth(end.getMonth() + 10)
@@ -18,12 +18,11 @@ function timeLimitDates (application) {
 
 function isPastTimeLimit (dates) {
   const { endDate } = dates
-  return Date.now() > endDate
+  return Date.now() > new Date(endDate)
 }
 
 function isPreviousApplicationRelevant (existingApplication) {
   if (tenMonthRule.enabled) {
-    console.log(isPastTimeLimit(timeLimitDates(existingApplication)), 'Is valid 10 month')
     return existingApplication &&
     ((existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed &&
@@ -42,7 +41,7 @@ const processApplication = async (msg) => {
   const applicationData = msg.body
   const messageId = msg.messageId
   let existingApplicationReference = null
-
+  console.log(applicationData)
   try {
     if (!validateApplication(applicationData)) {
       throw new Error('Application validation error')
@@ -53,7 +52,7 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
-    console.log(existingApplication)
+
     if (isPreviousApplicationRelevant(existingApplication)) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
