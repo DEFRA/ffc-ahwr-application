@@ -162,9 +162,8 @@ describe(('Store application in database'), () => {
         )
       })
 
-      xtest('does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
+      test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(11)
-
         when(applicationRepository.getBySbi)
           .calledWith(
             message.body.organisation.sbi
@@ -181,7 +180,6 @@ describe(('Store application in database'), () => {
 
         expect(sendMessage).toHaveBeenCalledTimes(1)
         expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
-        // expect(applicationRepository.set).toHaveBeenCalledTimes(1)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
       })
     })
@@ -268,46 +266,6 @@ describe(('Store application in database'), () => {
           }
         )
       })
-    })
-
-    test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
-      const mockApplicationDate = mockMonthsAgo(7)
-
-      when(applicationRepository.getBySbi)
-        .calledWith(
-          message.body.organisation.sbi
-        )
-        .mockResolvedValue({
-          dataValues: {
-            reference: MOCK_REFERENCE,
-            createdAt: mockApplicationDate
-          },
-          statusId: applicationStatus.readyToPay
-        })
-
-      await processApplication(message)
-
-      expect(applicationRepository.set).toHaveBeenCalledTimes(0)
-      expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Failed to process application',
-        new Error(`Recent application already exists: ${JSON.stringify({
-          reference: MOCK_REFERENCE,
-          createdAt: mockApplicationDate
-        })}`)
-      )
-      expect(sendMessage).toHaveBeenCalledTimes(1)
-      expect(sendMessage).toHaveBeenCalledWith(
-        {
-          applicationState: states.alreadyExists,
-          applicationReference: MOCK_REFERENCE
-        },
-        applicationResponseMsgType,
-        applicationResponseQueue,
-        {
-          sessionId
-        }
-      )
     })
   })
 

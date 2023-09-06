@@ -9,7 +9,7 @@ const validateApplication = require('../schema/process-application-schema')
 function timeLimitDates (application) {
   const start = new Date(application.createdAt)
   const end = new Date(start)
-  // set time limit to a constant - config??
+  // refactor to set time limit to a constant - config??
   end.setMonth(end.getMonth() + 10)
   end.setHours(24, 0, 0, 0) // set to midnight of agreement end day
   return { startDate: start, endDate: end }
@@ -21,20 +21,23 @@ function isPastTimeLimit (dates) {
 }
 
 function isPreviousApplicationRelevant (existingApplication) {
-  if (tenMonthRule.enabled) {
-    return existingApplication &&
+  console.log('existingApplication (in isPrev)', existingApplication)
+  console.log('tenMonthRule.enabled (in isPrev)', tenMonthRule.enabled)
+  if (tenMonthRule.enabled === true) {
+    const shouldPreventApplication = existingApplication &&
     ((existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed &&
     // check if it passes 10 month rule here and chuck error if it doesn't
     isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
     existingApplication.statusId === applicationStatus.agreed)
+    console.log('shouldPreventApplication', shouldPreventApplication)
+    return shouldPreventApplication
   } else {
     return existingApplication &&
     existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed
   }
 }
-
 const processApplication = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
@@ -51,10 +54,12 @@ const processApplication = async (msg) => {
     const existingApplication = await applicationRepository.getBySbi(
       applicationData.organisation.sbi
     )
+    console.log('existingApplication', existingApplication)
 
     if (
       isPreviousApplicationRelevant(existingApplication)
     ) {
+      console.log("It's relevant", isPreviousApplicationRelevant(existingApplication))
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
