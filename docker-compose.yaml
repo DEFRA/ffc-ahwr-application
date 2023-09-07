@@ -35,6 +35,7 @@ services:
       AZURE_STORAGE_USE_CONNECTION_STRING: "true"
       AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME:-changeme}
       CLAIM_COMPLIANCE_CHECK_RATIO: ${CLAIM_COMPLIANCE_CHECK_RATIO:-1}
+      TEN_MONTH_RULE_ENABLED: ${TEN_MONTH_RULE_ENABLED:-false}
 
   ffc-ahwr-application-postgres:
     image: postgres:11.4-alpine

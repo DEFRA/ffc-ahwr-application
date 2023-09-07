@@ -7,7 +7,6 @@ jest.mock('../../../../../app/lib/send-email')
 const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
-
 boom.internal = jest.fn()
 
 describe('Process Message test', () => {
@@ -32,8 +31,7 @@ describe('Process Message test', () => {
     applicationProperties: {
       type: 'uk.gov.ffc.ahwr.app.request'
     },
-    sessionId: '23423',
-    messageId: '1231231231231'
+    sessionId: '23423'
   }
 
   beforeEach(async () => {
@@ -46,6 +44,6 @@ describe('Process Message test', () => {
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(consoleSpy.mock.calls[0][0]).toBe('Application validation error - ValidationError: "organisation.email" is required.')
+    expect(consoleSpy).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "organisation.email" is required.')
   })
 })
