@@ -61,12 +61,9 @@ describe(('Store application in database'), () => {
   afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
-    toggle10Months(false)
   })
 
-  // TODO: Fix so works with toggle on or off
   test('successfully submits application', async () => {
-    toggle10Months(false)
     await processApplication(message)
 
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
@@ -171,7 +168,6 @@ describe(('Store application in database'), () => {
       })
 
       test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
-        toggle10Months(true)
         const mockApplicationDate = mockMonthsAgo(11)
         when(applicationRepository.getBySbi)
           .calledWith(
