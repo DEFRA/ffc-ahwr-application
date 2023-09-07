@@ -23,7 +23,6 @@ function isPastTimeLimit (dates) {
 
 function isPreviousApplicationRelevant (existingApplication) {
   if (tenMonthRule.enabled) {
-    console.log(isPastTimeLimit(timeLimitDates(existingApplication)), 'Is valid 10 month')
     return existingApplication &&
     ((existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed &&
@@ -60,7 +59,7 @@ const processApplication = async (msg) => {
         new Error(
           `Recent application already exists: ${JSON.stringify({
             reference: existingApplication.dataValues.reference,
-            createdAt: existingApplication.dataValues.createdAt
+            createdAt: existingApplication.createdAt
           })}`
         ),
         {

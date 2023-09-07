@@ -17,6 +17,10 @@ const mockMonthsAgo = (months) => {
   return mockDate.setMonth(mockDate.getMonth() - months)
 }
 
+const toggle10Months = (toggle) => {
+  tenMonthRule.enabled = toggle
+}
+
 jest.mock('../../../../../app/lib/send-email')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
@@ -57,11 +61,12 @@ describe(('Store application in database'), () => {
   afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
+    toggle10Months(false)
   })
 
   // TODO: Fix so works with toggle on or off
   test('successfully submits application', async () => {
-    tenMonthRule.enabled = false
+    toggle10Months(false)
     await processApplication(message)
 
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
@@ -103,9 +108,9 @@ describe(('Store application in database'), () => {
         )
         .mockResolvedValue({
           dataValues: {
-            reference: MOCK_REFERENCE,
-            createdAt: MOCK_NOW
+            reference: MOCK_REFERENCE
           },
+          createdAt: MOCK_NOW,
           statusId: testCase.when.statusId
         })
 
@@ -124,7 +129,7 @@ describe(('Store application in database'), () => {
     })
 
     describe('when 10 month rule toggle is enabled', () => {
-      beforeEach(() => { tenMonthRule.enabled = true })
+      beforeEach(() => toggle10Months(true))
       test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(7)
 
@@ -134,10 +139,10 @@ describe(('Store application in database'), () => {
           )
           .mockResolvedValue({
             dataValues: {
-              reference: MOCK_REFERENCE,
-              createdAt: mockApplicationDate
+              reference: MOCK_REFERENCE
             },
-            statusId: applicationStatus.readyToPay
+            statusId: applicationStatus.readyToPay,
+            createdAt: mockApplicationDate
           })
 
         await processApplication(message)
@@ -165,8 +170,8 @@ describe(('Store application in database'), () => {
         )
       })
 
-      // TODO: Fix test
-      xtest('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
+      test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
+        toggle10Months(true)
         const mockApplicationDate = mockMonthsAgo(11)
         when(applicationRepository.getBySbi)
           .calledWith(
@@ -174,9 +179,9 @@ describe(('Store application in database'), () => {
           )
           .mockResolvedValue({
             dataValues: {
-              reference: MOCK_REFERENCE,
-              createdAt: mockApplicationDate
+              reference: MOCK_REFERENCE
             },
+            createdAt: mockApplicationDate,
             statusId: applicationStatus.readyToPay
           })
 
@@ -187,7 +192,7 @@ describe(('Store application in database'), () => {
         expect(sendMessage).toHaveBeenCalledTimes(1)
         expect(sendMessage).toHaveBeenCalledWith(
           {
-            applicationState: states.accepted,
+            applicationState: states.submitted,
             applicationReference: MOCK_REFERENCE
           },
           applicationResponseMsgType,
@@ -200,7 +205,7 @@ describe(('Store application in database'), () => {
     })
 
     describe('when 10 month rule toggle is not enabled', () => {
-      beforeEach(() => { tenMonthRule.enabled = false })
+      beforeEach(() => toggle10Months(false))
 
       test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(7)
@@ -211,9 +216,9 @@ describe(('Store application in database'), () => {
           )
           .mockResolvedValue({
             dataValues: {
-              reference: MOCK_REFERENCE,
-              createdAt: mockApplicationDate
+              reference: MOCK_REFERENCE
             },
+            createdAt: mockApplicationDate,
             statusId: applicationStatus.readyToPay
           })
 
@@ -251,9 +256,9 @@ describe(('Store application in database'), () => {
           )
           .mockResolvedValue({
             dataValues: {
-              reference: MOCK_REFERENCE,
-              createdAt: mockApplicationDate
+              reference: MOCK_REFERENCE
             },
+            createdAt: mockApplicationDate,
             statusId: applicationStatus.readyToPay
           })
 
@@ -285,7 +290,6 @@ describe(('Store application in database'), () => {
   })
 
   test('successfully submits when application rejected', async () => {
-    tenMonthRule.enabled = false
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
     })
