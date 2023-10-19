@@ -4,5 +4,6 @@ module.exports = {
   notAgreed: 7,
   readyToPay: 9,
   rejected: 10,
-  withdrawn: 2
+  withdrawn: 2,
+  onHold:11
 }
