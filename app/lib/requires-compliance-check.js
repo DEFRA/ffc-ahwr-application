@@ -18,8 +18,8 @@ module.exports = async function requiresComplianceCheck (claimStatusIds, complia
   if (complianceCheckRatio <= 0 || (claimedApplicationsCount + 1) % complianceCheckRatio !== 0) {
     // if the claim does not trigger the configurable compliance check volume ratio set as READY_TO_PAY
     // if complianceCheckRatio is 0 or less this means compliance checks are turned off
-    statusId = statusIds.readyToPay
-    claimed = true
+    statusId = statusIds.onHold
+    claimed = false
   }
   return { claimed, statusId }
 }

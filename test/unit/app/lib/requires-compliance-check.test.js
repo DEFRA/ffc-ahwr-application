@@ -9,12 +9,12 @@ describe('Test requires compliance check', () => {
   })
   test.each([
     { complianceCheckRatio: 1, expectedStatusId: 5, totalClaimedApplications: 5 }, // in check,
-    { complianceCheckRatio: 5, expectedStatusId: 9, totalClaimedApplications: 3 }, // ready to pay
-    { complianceCheckRatio: 0, expectedStatusId: 9, totalClaimedApplications: 3 }, // ready to pay - compliance checks off
+    { complianceCheckRatio: 5, expectedStatusId: 11, totalClaimedApplications: 3 }, // ready to pay
+    { complianceCheckRatio: 0, expectedStatusId: 11, totalClaimedApplications: 3 }, // ready to pay - compliance checks off
     { complianceCheckRatio: 2, expectedStatusId: 5, totalClaimedApplications: 9 }, // in check
     { complianceCheckRatio: 3, expectedStatusId: 5, totalClaimedApplications: 8 }, // in check
-    { complianceCheckRatio: 3, expectedStatusId: 9, totalClaimedApplications: 27 }, // ready to pay
-    { complianceCheckRatio: -1, expectedStatusId: 9, totalClaimedApplications: 27 } // ready to pay as value is less than 0 - compliance checks off
+    { complianceCheckRatio: 3, expectedStatusId: 11, totalClaimedApplications: 27 }, // ready to pay
+    { complianceCheckRatio: -1, expectedStatusId: 11, totalClaimedApplications: 27 } // ready to pay as value is less than 0 - compliance checks off
   ])('validate compliance check', async ({ complianceCheckRatio, expectedStatusId, totalClaimedApplications }) => {
     const requiresComplianceCheck = require('../../../../app/lib/requires-compliance-check')
     mockGetAllClaimedApplications.mockResolvedValueOnce(totalClaimedApplications)
