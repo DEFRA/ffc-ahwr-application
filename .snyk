@@ -27,6 +27,6 @@ ignore:
   SNYK-JS-AXIOS-6032459:
     - '*':
         reason: no known fix
-        expires: '2023-10-22T12:15:56.831Z'
+        expires: '2023-11-22T12:15:56.831Z'
         created: '2023-10-20T12:15:56.840Z'
 patch: {}
