@@ -59,10 +59,11 @@ module.exports = [{
         ref: Joi.string().valid()
       }),
       payload: Joi.object({
-        status: Joi.number().valid(2),
+        status: Joi.number().valid(2, 5),
         user: Joi.string()
       }),
       failAction: async (_request, h, err) => {
+        console.log(err)
         return h.response({ err }).code(400).takeover()
       }
     },
@@ -73,7 +74,7 @@ module.exports = [{
       }
 
       await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
-
+      console.log(response)
       return h.response().code(200)
     }
   }
