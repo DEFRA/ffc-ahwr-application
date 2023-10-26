@@ -116,7 +116,7 @@ function evalSortField (sort) {
  *
  * @param {string} searchText contain status, sbi number or application reference number
  * @param {string} searchType contain any of keyword ['status','ref','sbi']
- * @param {array} filter contains array of status ['CLAIMED','DATA INPUTED','APPLIED']
+ * @param {array} filter contains array of status ['CLAIMED','DATA INPUTTED','APPLIED']
  * @param {integer} offset index of row where page should start from
  * @param {integer} limit page limit
  * @param {object} object contain field and direction for sort order
