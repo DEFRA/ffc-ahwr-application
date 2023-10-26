@@ -63,7 +63,7 @@ module.exports = [{
         user: Joi.string()
       }),
       failAction: async (_request, h, err) => {
-        console.log(err)
+        console.log(`Payload validation error ${err}`)
         return h.response({ err }).code(400).takeover()
       }
     },
@@ -74,7 +74,7 @@ module.exports = [{
       }
 
       await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
-      console.log(response)
+      console.log(`Status of application with reference ${request.payload.reference} successfully updated to ${request.payload.statusId}`)
       return h.response().code(200)
     }
   }
