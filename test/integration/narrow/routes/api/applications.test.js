@@ -52,13 +52,14 @@ describe('Applications test', () => {
       { search: { text: '444444444', type: 'sbi' } },
       { search: { text: 'AHWR-555A-FD6E', type: 'ref' } },
       { search: { text: 'applied', type: 'status' } },
-      { search: { text: 'data inputed', type: 'status' } },
+      { search: { text: 'data inputted', type: 'status' } },
       { search: { text: 'claimed', type: 'status' } },
       { search: { text: 'check', type: 'status' } },
       { search: { text: 'accepted', type: 'status' } },
       { search: { text: 'rejected', type: 'status' } },
       { search: { text: 'paid', type: 'status' } },
-      { search: { text: 'withdrawn', type: 'status' } }
+      { search: { text: 'withdrawn', type: 'status' } },
+      { search: { text: 'on hold', type: 'status' } }
     ])('returns success when post %p', async ({ search }) => {
       const options = {
         method,
@@ -112,7 +113,7 @@ describe('Applications test', () => {
   })
   describe(`PUT ${url} route`, () => {
     const method = 'PUT'
-    test('returns 200', async () => {
+    test('returns 200 when new status is Withdrawn (2)', async () => {
       applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
       const options = {
         method,
@@ -124,7 +125,19 @@ describe('Applications test', () => {
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     })
-    test('returns 404', async () => {
+    test('returns 200 when new status is In Check (2)', async () => {
+      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      const options = {
+        method,
+        url: '/api/application/ABC-1234',
+        payload: { status: 5, user: 'test' }
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+    })
+    test('returns 404 when no dataValues sent', async () => {
       applicationRepository.get.mockResolvedValue({ dataValues: null })
       const options = {
         method,
@@ -138,7 +151,8 @@ describe('Applications test', () => {
     test.each([
       { status: 'abc', user: null },
       { status: 'abc', user: 0 },
-      { status: 5000, user: 'test' }
+      { status: 5000, user: 'test' },
+      { status: 9, user: 'test' }
     ])('returns 400 with error message for invalid input', async ({ status, user }) => {
       const options = {
         method,
