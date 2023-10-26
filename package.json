@@ -40,7 +40,8 @@
   },
   "overrides": {
     "notifications-node-client": {
-      "jsonwebtoken": "9.0.0"
+      "jsonwebtoken": "9.0.0",
+      "axios": "^1.5.1"
     },
     "@azure/identity": {
       "jsonwebtoken": "9.0.0"
