@@ -5,15 +5,19 @@ const sendMessage = require('../messaging/send-message')
 const appInsights = require('applicationinsights')
 
 const send = async (templateId, email, personalisation) => {
-  return notifyClient.sendEmail(
-    templateId,
-    email,
-    personalisation
-  )
+  try {
+    return notifyClient.sendEmail(
+      templateId,
+      email,
+      personalisation
+    )
+  } catch (error) {
+    throw Error(error)
+  }
 }
 
 const sendEmail = async (email, personalisation, reference, templateId) => {
-  let success = true
+  let success = false
   try {
     await send(templateId, email, { personalisation, reference })
     await sendCarbonCopy(templateId, { personalisation, reference })
@@ -26,6 +30,7 @@ const sendEmail = async (email, personalisation, reference, templateId) => {
         templateId
       }
     })
+    success = true
   } catch (e) {
     appInsights.defaultClient.trackException({ exception: e })
     success = false
@@ -35,14 +40,17 @@ const sendEmail = async (email, personalisation, reference, templateId) => {
 }
 
 const sendCarbonCopy = async (templateId, personalisation) => {
-  if (carbonCopyEmailAddress) {
-    await send(
-      templateId,
-      carbonCopyEmailAddress,
-      personalisation
-    )
-
-    console.log(`Carbon copy email sent to ${carbonCopyEmailAddress} for ${personalisation.reference}`)
+  try {
+    if (carbonCopyEmailAddress) {
+      await send(
+        templateId,
+        carbonCopyEmailAddress,
+        personalisation
+      )
+      console.log(`Carbon copy email sent to ${carbonCopyEmailAddress} for ${personalisation.reference}`)
+    }
+  } catch (error) {
+    throw Error(error)
   }
 }
 
