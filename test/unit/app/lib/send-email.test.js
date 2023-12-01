@@ -18,6 +18,7 @@ const notifyClient = require('../../../../app/lib/notify-client')
 
 jest.mock('../../../../app/messaging/send-message')
 const sendMessage = require('../../../../app/messaging/send-message')
+
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 describe('Send email test', () => {
@@ -25,44 +26,45 @@ describe('Send email test', () => {
     jest.clearAllMocks()
   })
 
-  test('sendFarmerConfirmationEmail calls sendMessage', async () => {
-    sendMessage.mockResolvedValueOnce(true)
-    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  describe('sendFarmerConfirmationEmail', () => {
+    test('sendFarmerConfirmationEmail calls sendMessage', async () => {
+      sendMessage.mockResolvedValueOnce(true)
+      await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName)
+
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    })
   })
 
-  test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
-    notifyClient.sendEmail.mockResolvedValueOnce(true)
+  describe('sendFarmerClaimConfirmationEmail', () => {
+    test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
+      notifyClient.sendEmail.mockResolvedValueOnce(true)
+      const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
-    const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
+      expect(response).toBe(true)
+    })
 
-    expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
-    expect(response).toBe(true)
-  })
+    test('sendFarmerClaimConfirmationEmail tracks an event on successful email', async () => {
+      notifyClient.sendEmail.mockResolvedValueOnce(true)
+      await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
-  test('sendFarmerClaimConfirmationEmail tracks an event on successful email', async () => {
-    notifyClient.sendEmail.mockResolvedValueOnce(true)
+      expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledTimes(1)
+    })
 
-    await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
+    test('sendFarmerClaimConfirmationEmail returns false on error sending email', async () => {
+      notifyClient.sendEmail.mockRejectedValueOnce(error)
+      const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
-    expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledTimes(1)
-  })
+      expect(response).toBe(false)
+    })
 
-  test('sendFarmerClaimConfirmationEmail returns false on error sending email', async () => {
-    notifyClient.sendEmail.mockRejectedValueOnce(error)
+    test('sendFarmerClaimConfirmationEmail tracks an error on error sending email', async () => {
+      notifyClient.sendEmail.mockRejectedValueOnce(error)
+      await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
-    const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
-
-    expect(response).toBe(false)
-  })
-
-  test('sendFarmerClaimConfirmationEmail tracks an error on error sending email', async () => {
-    notifyClient.sendEmail.mockRejectedValueOnce(error)
-
-    await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
-
-    expect(appInsights.defaultClient.trackException).toHaveBeenCalledTimes(1)
-    expect(appInsights.defaultClient.trackException).toHaveBeenCalledWith({ exception: error })
+      expect(appInsights.defaultClient.trackException).toHaveBeenCalledTimes(1)
+      expect(appInsights.defaultClient.trackException).toHaveBeenCalledWith({ exception: error })
+    })
   })
 })
