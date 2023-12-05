@@ -9,6 +9,9 @@ module.exports = {
     'text-summary',
     'lcov'
   ],
+  moduleNameMapper: {
+    axios: require.resolve('axios')
+  },
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/test-output/',
