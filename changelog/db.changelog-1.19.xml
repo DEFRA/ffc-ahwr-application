@@ -8,12 +8,13 @@
       <column name="reference" type="VARCHAR(12)">
         <constraints nullable="false"  unique="true" uniqueConstraintName="claimReference_ukey" />
       </column>
-      <column name="appReference" type="VARCHAR(12)">
+      <column name="applicationReference" type="VARCHAR(12)">
         <constraints nullable="false"  unique="true" />
       </column>
       <column name="data" type="JSONB">
         <constraints nullable="false" />
       </column>
+      <column name="statusId" type="SMALLINT" defaultValue="2" />
       <column defaultValueComputed="now()" name="createdAt" type="TIMESTAMP WITH TIME ZONE">
         <constraints nullable="false" />
       </column>
@@ -33,7 +34,7 @@
   </changeSet>
   <changeSet author="Satish Chatap" id="3">
     <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="claim" constraintName="fk_claim_application_reference" referencedColumnNames="reference" referencedTableName="application" />
-    <addForeignKeyConstraint baseColumnNames="statusId" baseTableName="claim" constraintName="fk_claim_application_statusId" referencedColumnNames="statusId" referencedTableName="status" />
+    <addForeignKeyConstraint baseColumnNames="statusId" baseTableName="claim" constraintName="fk_claim_statusId" referencedColumnNames="statusId" referencedTableName="status" />
   </changeSet>
   <changeSet author="Satish Chatap" id="4">
     <insert tableName="status">
@@ -69,5 +70,12 @@
   </changeSet>
   <changeSet author="Satish Chatap" id="6">
     <addPrimaryKey tableName="user" columnNames="crn,sbi" constraintName="crnsbi_pk_constraint"/>
+  </changeSet>
+  <changeSet author="Satish Chatap" id="7">
+    <addColumn tableName="application">
+        <column name="type" type="varchar(5)" defaultValue="VV">  
+            <constraints nullable="false" />  
+        </column>  
+    </addColumn>  
   </changeSet>
 </databaseChangeLog>
