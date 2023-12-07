@@ -1,0 +1,81 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Satish Chatap" id="2">
+    <createTable tableName="claim">
+      <column name="id" type="UUID" defaultValueComputed="public.uuid_generate_v4()">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="claimId_pkey" />
+      </column>
+      <column name="reference" type="VARCHAR(12)">
+        <constraints nullable="false"  unique="true" uniqueConstraintName="claimReference_ukey" />
+      </column>
+      <column name="applicationReference" type="VARCHAR(12)">
+        <constraints nullable="false"  unique="true" />
+      </column>
+      <column name="data" type="JSONB">
+        <constraints nullable="false" />
+      </column>
+      <column name="statusId" type="SMALLINT" defaultValue="2" />
+      <column defaultValueComputed="now()" name="createdAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="false" />
+      </column>
+      <column defaultValueComputed="now()" name="updatedAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="true" />
+      </column>
+      <column name="createdBy" type="VARCHAR(50)">
+        <constraints nullable="false" />
+      </column>
+      <column name="updatedBy" type="VARCHAR(50)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+  </changeSet>
+  <changeSet author="Satish Chatap" id="1">
+    <tagDatabase tag="v1.19.0" />
+  </changeSet>
+  <changeSet author="Satish Chatap" id="3">
+    <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="claim" constraintName="fk_claim_application_reference" referencedColumnNames="reference" referencedTableName="application" />
+    <addForeignKeyConstraint baseColumnNames="statusId" baseTableName="claim" constraintName="fk_claim_statusId" referencedColumnNames="statusId" referencedTableName="status" />
+  </changeSet>
+  <changeSet author="Satish Chatap" id="4">
+    <insert tableName="status">
+      <column name="statusId" value="12" />
+      <column name="status" value="IN CHECK - Recommend to Approve" />
+    </insert>
+    <insert tableName="status">
+      <column name="statusId" value="13" />
+      <column name="status" value="IN CHECK - Recommend to Reject" />
+    </insert>
+  </changeSet>
+  <changeSet author="Satish Chatap" id="5">
+    <createTable tableName="user">
+      <column name="crn" type="VARCHAR(12)">
+        <constraints nullable="false"  unique="true" />
+      </column>
+      <column name="sbi" type="VARCHAR(12)">
+        <constraints nullable="false"  unique="true" />
+      </column>
+      <column defaultValueComputed="now()" name="createdAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="false" />
+      </column>
+      <column defaultValueComputed="now()" name="updatedAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="true" />
+      </column>
+      <column name="createdBy" type="VARCHAR(50)">
+        <constraints nullable="false" />
+      </column>
+      <column name="updatedBy" type="VARCHAR(50)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+  </changeSet>
+  <changeSet author="Satish Chatap" id="6">
+    <addPrimaryKey tableName="user" columnNames="crn,sbi" constraintName="crnsbi_pk_constraint"/>
+  </changeSet>
+  <changeSet author="Satish Chatap" id="7">
+    <addColumn tableName="application">
+        <column name="type" type="varchar(5)" defaultValue="VV">  
+            <constraints nullable="false" />  
+        </column>  
+    </addColumn>  
+  </changeSet>
+</databaseChangeLog>
