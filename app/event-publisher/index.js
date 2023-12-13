@@ -2,6 +2,7 @@ const { PublishEventBatch } = require('ffc-ahwr-event-publisher')
 const config = require('../config')
 
 const raise = async (event) => {
+  console.log('event from application raise', event)
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
       name: 'application-status-event',
