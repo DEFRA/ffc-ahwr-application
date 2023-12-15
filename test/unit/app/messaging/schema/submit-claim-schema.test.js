@@ -13,6 +13,41 @@ describe('Submit Claim Schema Tests', () => {
         declaration: 'true',
         offerStatus: 'accepted',
         visitDate: '2023-07-21T00:00:00.000Z',
+        animalsTested: '23',
+        vetName: 'Mr Vet',
+        urnResult: '134242',
+        vetRcvs: '1234234',
+        detailsCorrect: 'yes',
+        dateOfClaim: '2023-07-22T00:00:00.000Z',
+        dateOfTesting: '2023-07-21T00:00:00.000Z',
+        organisation: {
+          farmerName: 'Mr Farmer',
+          name: 'Mr Farmers Farm',
+          sbi: '555555555',
+          crn: '1111122222',
+          cph: '55/555/5555',
+          address: 'Address line 1, Addres line 2, Town, AB12 34C',
+          email: 'testemail@test.com',
+          isTest: 'false'
+        }
+      }
+    }
+
+    const result = validateSubmitClaim(event)
+    expect(result).toBeTruthy()
+  })
+
+  test('Should Return True When All Fields Are Populated and animalsTested missing', () => {
+    const event = {
+      reference: 'AHWR-1234-5678',
+      data: {
+        confirmCheckDetails: 'yes',
+        whichReview: 'sheep',
+        eligibleSpecies: 'yes',
+        reference: 'ABC123',
+        declaration: 'true',
+        offerStatus: 'accepted',
+        visitDate: '2023-07-21T00:00:00.000Z',
         vetName: 'Mr Vet',
         urnResult: '134242',
         vetRcvs: '1234234',
