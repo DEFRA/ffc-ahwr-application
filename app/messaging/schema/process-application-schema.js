@@ -17,7 +17,7 @@ const applicationSchema = joi.object({
     email: joi.string().required().lowercase().email({ tlds: false }),
     isTest: joi.boolean().optional()
   }),
-  type: joi.string().valid('VV','EE').required()
+  type: joi.string().valid('VV', 'EE').required()
 })
 
 const validateApplication = (event) => {

@@ -18,7 +18,8 @@ describe('process-application-schema', () => {
             sbi: '123456789',
             cph: '123/456/789',
             address: '1 Some Street'
-          }
+          },
+          type: 'EE'
         }
       },
       expect: {
@@ -44,7 +45,8 @@ describe('process-application-schema', () => {
             sbi: '123456789',
             cph: '123/456/789',
             address: '1 Some Street'
-          }
+          },
+          type: 'EE'
         }
       },
       expect: {

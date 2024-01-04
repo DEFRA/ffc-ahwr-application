@@ -46,7 +46,8 @@ describe(('Store application in database'), () => {
         cph: '123/456/789',
         address: '1 Some Street',
         isTest: true
-      }
+      },
+      type: 'EE'
     },
     sessionId
   }
