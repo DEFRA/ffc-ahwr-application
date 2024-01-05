@@ -29,6 +29,9 @@ const schema = Joi.object({
   },
   tenMonthRule: {
     enabled: Joi.bool().default(false)
+  },
+  endemics: {
+    enabled: Joi.bool().default(false)
   }
 })
 
@@ -56,6 +59,9 @@ const config = {
   },
   tenMonthRule: {
     enabled: process.env.TEN_MONTH_RULE_ENABLED
+  },
+  endemics: {
+    enabled: process.env.ENDEMICS_ENABLED
   }
 }
 
