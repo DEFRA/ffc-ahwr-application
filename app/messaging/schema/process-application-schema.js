@@ -22,8 +22,6 @@ const applicationSchema = joi.object({
 
 const endemicsApplicationSchema = joi.object({
   confirmCheckDetails: joi.string().required(),
-  whichReview: joi.string().optional(),
-  eligibleSpecies: joi.string().optional(),
   reference: joi.string().allow(null).required(),
   declaration: joi.boolean().required(),
   offerStatus: joi.string().required(),
