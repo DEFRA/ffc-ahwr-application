@@ -100,7 +100,7 @@ module.exports = [{
 
       try {
         let statusId = statusIds.rejected
-        console.log('request.payload from applications', request.payload)
+
         if (request.payload.approved) {
           statusId = statusIds.readyToPay
 
