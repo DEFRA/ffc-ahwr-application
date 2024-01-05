@@ -2,7 +2,6 @@ const { when, resetAllWhenMocks } = require('jest-when')
 const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
 const sendMessage = require('../../../../../app/messaging/send-message')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule } = require('../../../../../app/config')
 const states = require('../../../../../app/messaging/application/states')
 const processApplication = require('../../../../../app/messaging/application/process-application')
 const applicationStatus = require('../../../../../app/constants/application-status')
@@ -16,6 +15,14 @@ const mockMonthsAgo = (months) => {
   const mockDate = new Date()
   return mockDate.setMonth(mockDate.getMonth() - months)
 }
+
+jest.mock('../../../../../app/config', () => ({
+  ...jest.requireActual('../../../../../app/config'),
+  endemics: {
+    enabled: false
+  }
+}))
+const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule } = require('../../../../../app/config')
 
 const toggle10Months = (toggle) => {
   tenMonthRule.enabled = toggle
@@ -46,8 +53,7 @@ describe(('Store application in database'), () => {
         cph: '123/456/789',
         address: '1 Some Street',
         isTest: true
-      },
-      type: 'EE'
+      }
     },
     sessionId
   }
