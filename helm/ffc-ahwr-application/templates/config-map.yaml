@@ -22,4 +22,5 @@ data:
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
   CLAIM_COMPLIANCE_CHECK_RATIO: {{ quote .Values.container.claimComplianceCheckRatio }}
   TEN_MONTH_RULE_ENABLED: {{ quote .Values.container.tenMonthRuleEnabled }}
+  ENDEMICS_ENABLED: {{ quote .Values.container.endemicsEnabled }}
 {{- end -}}
