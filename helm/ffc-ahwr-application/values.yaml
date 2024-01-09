@@ -55,6 +55,7 @@ container:
   azureStorageAccountName:
   claimComplianceCheckRatio:
   tenMonthRuleEnabled:
+  endemicsEnabled:
 
 postgresService:
   postgresDb: ffc_ahwr_application
