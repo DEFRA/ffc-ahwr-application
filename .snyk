@@ -2,31 +2,14 @@
 version: v1.22.1
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
-  SNYK-JS-MOMENT-2944238:
-    - sequelize > moment:
-        reason: None given
-        expires: '2022-08-14T12:21:53.720Z'
-    - sequelize > moment-timezone > moment:
-        reason: None given
-        expires: '2022-08-14T12:21:53.720Z'
-  SNYK-JS-SEQUELIZE-3324088:
+  SNYK-JS-AXIOS-6124857:
+     - '*':
+         reason: No fix available
+         expires: 2024-01-14T12:14:35.510Z
+         created: 2023-12-15T12:14:35.514Z
+  SNYK-JS-FOLLOWREDIRECTS-6141137:
     - '*':
-        reason: no known fix
-        expires: '2023-03-22T12:15:56.831Z'
-        created: '2023-02-20T12:15:56.840Z'
-  SNYK-JS-SEQUELIZE-3324090:
-    - '*':
-        reason: no known fix
-        expires: '2023-03-22T12:15:56.831Z'
-        created: '2023-02-20T12:15:56.840Z'
-  SNYK-JS-SEQUELIZE-3324089:
-    - '*':
-        reason: no known fix
-        expires: '2023-03-22T12:15:56.831Z'
-        created: '2023-02-20T12:15:56.840Z'
-  SNYK-JS-AXIOS-6032459:
-    - '*':
-        reason: no known fix
-        expires: '2023-11-22T12:15:56.831Z'
-        created: '2023-10-20T12:15:56.840Z'
+        reason: No fix available
+        expires: 2024-01-14T12:14:35.510Z
+        created: 2023-12-15T12:14:35.514Z
 patch: {}
