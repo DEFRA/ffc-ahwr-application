@@ -96,7 +96,8 @@ describe('process-application-schema', () => {
         email: 'hollygriffithsx@shtiffirgyllohm.com.test',
         sbi: '123456789',
         cph: '123/456/789',
-        address: '1 Some Street'
+        address: '1 Some Street',
+        appliedBefore: 'newUser'
       },
       type: 'EE'
     }
