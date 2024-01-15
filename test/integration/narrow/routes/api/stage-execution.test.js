@@ -103,7 +103,7 @@ describe('Stage execution test', () => {
   })
 
   describe(`POST ${url} route`, () => {
-    test('returns 200', async () => {
+    test('returns 200 when Recommend to pay', async () => {
       const mockGet = {
         dataValues: {
           id: 1,
@@ -128,6 +128,36 @@ describe('Stage execution test', () => {
       expect(res.statusCode).toBe(200)
       expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, mockGet)
+      expect(updateByReference).toHaveBeenCalledTimes(1)
+      expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 200 when Recommend to reject', async () => {
+      const mockGet = {
+        dataValues: {
+          id: 1,
+          data: {
+            organisation: {
+              sbi: 123
+            }
+          }
+        }
+      }
+      const data2 = { ...data, action: { action: 'Recommend to reject' } }
+      when(get).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(stageExecutionRepository.set)
+        .calledWith({ ...data2, executedAt: expect.any(Date) }, 123)
+        .mockResolvedValue(mockResponse)
+
+      const options = {
+        method: 'POST',
+        url,
+        payload: data2
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data2, executedAt: expect.any(Date) }, mockGet)
       expect(updateByReference).toHaveBeenCalledTimes(1)
       expect(res.result).toEqual(mockResponse)
     })
