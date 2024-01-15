@@ -22,6 +22,8 @@ const applicationSchema = joi.object({
 
 const endemicsApplicationSchema = joi.object({
   confirmCheckDetails: joi.string().required(),
+  whichReview: joi.string().optional(),
+  eligibleSpecies: joi.string().optional(),
   reference: joi.string().allow(null).required(),
   declaration: joi.boolean().required(),
   offerStatus: joi.string().required(),
@@ -33,7 +35,8 @@ const endemicsApplicationSchema = joi.object({
     crn: joi.string().optional(),
     address: joi.string().required(),
     email: joi.string().required().lowercase().email({ tlds: false }),
-    isTest: joi.boolean().optional()
+    isTest: joi.boolean().optional(),
+    appliedBefore: joi.string().valid('newUser', 'existingUser').required()
   }),
   type: joi.string().valid('VV', 'EE').required()
 })
