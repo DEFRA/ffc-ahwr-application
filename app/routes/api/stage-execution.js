@@ -20,14 +20,6 @@ module.exports = [{
   method: 'GET',
   path: '/api/stageexecution/{applicationReference}',
   options: {
-    validate: {
-      params: Joi.object({
-        applicationReference: Joi.string().required()
-      }),
-      failAction: async (_request, h, err) => {
-        return h.response({ err }).code(400).takeover()
-      }
-    },
     handler: async (request, h) => {
       const stageExecutions = await getByApplicationReference(request.params.applicationReference)
       if (stageExecutions) {
