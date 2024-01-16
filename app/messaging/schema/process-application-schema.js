@@ -36,7 +36,7 @@ const endemicsApplicationSchema = joi.object({
     address: joi.string().required(),
     email: joi.string().required().lowercase().email({ tlds: false }),
     isTest: joi.boolean().optional(),
-    appliedBefore: joi.string().valid('newUser', 'existingUser').required()
+    userType: joi.string().valid('newUser', 'existingUser').required()
   }),
   type: joi.string().valid('VV', 'EE').required()
 })
