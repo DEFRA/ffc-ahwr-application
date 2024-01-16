@@ -73,7 +73,8 @@ const processApplication = async (msg) => {
       data: applicationData,
       createdBy: 'admin',
       createdAt: new Date(),
-      statusId: applicationData.offerStatus === 'rejected' ? 7 : 1
+      statusId: applicationData.offerStatus === 'rejected' ? 7 : 1,
+      type: applicationData.type ? applicationData.type : 'VV'
     })
     const application = result.dataValues
 
