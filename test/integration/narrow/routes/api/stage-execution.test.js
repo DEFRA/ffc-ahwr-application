@@ -2,14 +2,17 @@ const { ValidationError } = require('joi')
 const stageExecutionRepository = require('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/application-repository')
-const { get } = require('../../../../../app/repositories/application-repository')
+const { get, updateByReference } = require('../../../../../app/repositories/application-repository')
 const { when, resetAllWhenMocks } = require('jest-when')
 
 const data = {
   applicationReference: 'AHWR-0000-0000',
   stageConfigurationId: 2,
   executedBy: 'Mr User',
-  processedAt: null
+  processedAt: null,
+  action: {
+    action: 'Recommend to pay'
+  }
 }
 
 const mockResponse = {
@@ -100,7 +103,7 @@ describe('Stage execution test', () => {
   })
 
   describe(`POST ${url} route`, () => {
-    test('returns 200', async () => {
+    test('returns 200 when Recommend to pay', async () => {
       const mockGet = {
         dataValues: {
           id: 1,
@@ -125,6 +128,37 @@ describe('Stage execution test', () => {
       expect(res.statusCode).toBe(200)
       expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, mockGet)
+      expect(updateByReference).toHaveBeenCalledTimes(1)
+      expect(res.result).toEqual(mockResponse)
+    })
+
+    test('returns 200 when Recommend to reject', async () => {
+      const mockGet = {
+        dataValues: {
+          id: 1,
+          data: {
+            organisation: {
+              sbi: 123
+            }
+          }
+        }
+      }
+      const data2 = { ...data, action: { action: 'Recommend to reject' } }
+      when(get).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(stageExecutionRepository.set)
+        .calledWith({ ...data2, executedAt: expect.any(Date) }, 123)
+        .mockResolvedValue(mockResponse)
+
+      const options = {
+        method: 'POST',
+        url,
+        payload: data2
+      }
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data2, executedAt: expect.any(Date) }, mockGet)
+      expect(updateByReference).toHaveBeenCalledTimes(1)
       expect(res.result).toEqual(mockResponse)
     })
 
@@ -183,7 +217,6 @@ describe('Stage execution test', () => {
         url: `${url}/2`
       }
       const res = await server.inject(options)
-      console.log(res, 'res')
       expect(res.statusCode).toBe(200)
       expect(stageExecutionRepository.update).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.update).toHaveBeenCalledWith({ id: 2 })
@@ -199,7 +232,6 @@ describe('Stage execution test', () => {
         url: `${url}/2`
       }
       const res = await server.inject(options)
-      console.log(res, 'res')
       expect(res.statusCode).toBe(404)
       expect(stageExecutionRepository.getById).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.update).toHaveBeenCalledTimes(0)
@@ -215,7 +247,6 @@ describe('Stage execution test', () => {
         url: `${url}/-2`
       }
       const res = await server.inject(options)
-      console.log(res, 'res')
       expect(res.statusCode).toBe(400)
       expect(stageExecutionRepository.update).toHaveBeenCalledTimes(0)
       expect(res.result).toEqual({ err: new ValidationError('"id" must be greater than 0') })

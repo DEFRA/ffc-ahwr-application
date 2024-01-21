@@ -1,6 +1,7 @@
 const Joi = require('joi')
-const { get } = require('../../repositories/application-repository')
+const { get, updateByReference } = require('../../repositories/application-repository')
 const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
+const statusIds = require('../../constants/application-status')
 
 module.exports = [{
   method: 'GET',
@@ -19,14 +20,6 @@ module.exports = [{
   method: 'GET',
   path: '/api/stageexecution/{applicationReference}',
   options: {
-    validate: {
-      params: Joi.object({
-        applicationReference: Joi.string().required()
-      }),
-      failAction: async (_request, h, err) => {
-        return h.response({ err }).code(400).takeover()
-      }
-    },
     handler: async (request, h) => {
       const stageExecutions = await getByApplicationReference(request.params.applicationReference)
       if (stageExecutions) {
@@ -73,6 +66,21 @@ module.exports = [{
         request.payload,
         application
       )
+      // Update status on basis of action
+      let statusId = null
+      console.log(request.payload)
+      switch (request.payload.action.action) {
+        case 'Recommend to pay':
+          statusId = statusIds.recommendToPay
+          break
+        case 'Recommend to reject':
+          statusId = statusIds.recommendToReject
+          break
+      }
+      if (statusId) {
+        console.log(request.payload)
+        await updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
+      }
       console.log('Stage execution inserted: ', response.dataValues)
       return h.response(response).code(200)
     }

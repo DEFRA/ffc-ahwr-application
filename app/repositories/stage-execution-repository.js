@@ -64,12 +64,12 @@ const getStatus = (action) => {
   switch (action) {
     case stageExecutionActions.recommendToPay:
       return {
-        statusId: applicationStatus.inCheck,
+        statusId: applicationStatus.recommendToPay,
         subStatus: stageExecutionActions.recommendToPay
       }
     case stageExecutionActions.recommendToReject:
       return {
-        statusId: applicationStatus.inCheck,
+        statusId: applicationStatus.recommendToReject,
         subStatus: stageExecutionActions.recommendToReject
       }
     case stageExecutionActions.authorisePayment:

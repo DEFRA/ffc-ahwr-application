@@ -20,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     updatedAt: { type: DataTypes.DATE, defaultValue: null },
     createdBy: DataTypes.STRING,
     updatedBy: { type: DataTypes.STRING, defaultValue: null },
-    statusId: DataTypes.SMALLINT
+    statusId: DataTypes.SMALLINT,
+    type: DataTypes.STRING
   }, {
     freezeTableName: true,
     tableName: 'application',
