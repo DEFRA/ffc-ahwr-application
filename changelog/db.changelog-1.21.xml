@@ -6,7 +6,7 @@
         <where>"statusId" = '12'</where>
     </update>
     <update tableName="status">
-        <column name="status" value="Recommendied to Reject" />
+        <column name="status" value="Recommended to Reject" />
         <where>"statusId" = '13'</where>
     </update>
   </changeSet>
