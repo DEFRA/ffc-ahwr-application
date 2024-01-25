@@ -27,6 +27,7 @@ module.exports = [
           'number.max': ERROR_MESSAGE.sbiNumberOutOfRange
         }),
         failAction (request, h, err) {
+          appInsights.defaultClient.trackException({ exception: err })
           throw Boom.badRequest(err.message)
         }
       },
@@ -35,6 +36,7 @@ module.exports = [
           const applications = await getLatestApplicationsBySbi(request.query.sbi)
           return h.response(applications).code(200)
         } catch (error) {
+          appInsights.defaultClient.trackException({ exception: error })
           console.error(`${new Date().toISOString()} Error while getting latest applications by ${JSON.stringify({
             sbi: request.query.sbi
           })}`, error)
