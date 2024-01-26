@@ -5,10 +5,10 @@
       <column name="id" type="UUID" defaultValueComputed="public.uuid_generate_v4()">
         <constraints nullable="false" primaryKey="true" primaryKeyName="claimId_pkey" />
       </column>
-      <column name="reference" type="VARCHAR(14)">
+      <column name="reference" type="VARCHAR(12)">
         <constraints nullable="false"  unique="true" uniqueConstraintName="claimReference_ukey" />
       </column>
-      <column name="applicationReference" type="VARCHAR(14)">
+      <column name="applicationReference" type="VARCHAR(12)">
         <constraints nullable="false"  unique="true" />
       </column>
       <column name="data" type="JSONB">
