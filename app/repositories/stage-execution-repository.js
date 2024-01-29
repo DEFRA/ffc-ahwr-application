@@ -1,7 +1,4 @@
 const { models } = require('../data')
-const eventPublisher = require('../event-publisher')
-const stageExecutionActions = require('../constants/stage-execution-actions')
-const applicationStatus = require('../constants/application-status')
 
 /**
  * Get stage executions
@@ -42,49 +39,7 @@ async function getByApplicationReference (applicationReference) {
  */
 async function set (data, application) {
   const result = await models.stage_execution.create(data)
-  await eventPublisher.raise({
-    message: 'New stage execution has been created',
-    application: {
-      id: application.dataValues.id,
-      reference: result.dataValues.applicationReference,
-      ...getStatus(result.dataValues.action.action),
-      data: {
-        organisation: {
-          sbi: application.dataValues.data.organisation.sbi
-        }
-      }
-    },
-    raisedBy: result.dataValues.executedBy,
-    raisedOn: result.dataValues.executedAt
-  })
   return result
-}
-
-const getStatus = (action) => {
-  switch (action) {
-    case stageExecutionActions.recommendToPay:
-      return {
-        statusId: applicationStatus.recommendToPay,
-        subStatus: stageExecutionActions.recommendToPay
-      }
-    case stageExecutionActions.recommendToReject:
-      return {
-        statusId: applicationStatus.recommendToReject,
-        subStatus: stageExecutionActions.recommendToReject
-      }
-    case stageExecutionActions.authorisePayment:
-      return {
-        statusId: applicationStatus.readyToPay,
-        subStatus: 'Authorise to pay'
-      }
-    case stageExecutionActions.authoriseRejection:
-      return {
-        statusId: applicationStatus.rejected,
-        subStatus: 'Authorise to reject'
-      }
-    default:
-      throw new Error(`Unrecognised action: ${action}`)
-  }
 }
 
 /**
