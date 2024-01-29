@@ -2,6 +2,7 @@ const Joi = require('joi')
 const Boom = require('@hapi/boom')
 const { getLatestApplicationsBySbi } = require('../../repositories/application-repository')
 const SBI_SCHEMA = require('./schema/sbi.schema.js')
+const appInsights = require('applicationinsights')
 
 const ERROR_MESSAGE = {
   mandatoryQueryParameters: '"sbi" query param must be provided',
