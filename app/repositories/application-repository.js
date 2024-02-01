@@ -1,5 +1,6 @@
 const { models, sequelize } = require('../data')
 const eventPublisher = require('../event-publisher')
+const { Op } = require('sequelize')
 
 /**
  * Get application by reference number
@@ -140,7 +141,7 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
         query.where = { 'data.organisation.sbi': searchText }
         break
       case 'organisation':
-        query.where = { 'data.organisation.name': searchText }
+        query.where = { 'data.organisation.name': { [Op.iLike]: `%${searchText}%` } }
         break
       case 'ref':
         query.where = { reference: searchText }
@@ -150,7 +151,7 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
           {
             model: models.status,
             attributes: ['status'],
-            where: { status: searchText.toUpperCase() }
+            where: { status: { [Op.iLike]: `%${searchText}%` } }
           }]
         break
     }

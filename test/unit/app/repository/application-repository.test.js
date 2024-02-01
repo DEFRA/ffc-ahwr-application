@@ -1,6 +1,7 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/application-repository')
 const data = require('../../../../app/data')
+const { Op } = require('sequelize')
 
 jest.mock('../../../../app/data')
 
@@ -469,7 +470,7 @@ describe('Application Repository test', () => {
     })
 
     test('searchApplications for Status call findAll', async () => {
-      const searchText = 'In Progress'
+      const searchText = 'IN PROGRESS'
       await repository.searchApplications(searchText, 'status')
 
       expect(data.models.application.count).toHaveBeenCalledTimes(1)
@@ -481,7 +482,7 @@ describe('Application Repository test', () => {
           {
             model: data.models.status,
             attributes: ['status'],
-            where: { status: 'IN PROGRESS' }
+            where: { status: { [Op.iLike]: '%IN PROGRESS%' } }
           }]
       })
 
@@ -490,7 +491,7 @@ describe('Application Repository test', () => {
           {
             model: data.models.status,
             attributes: ['status'],
-            where: { status: 'IN PROGRESS' }
+            where: { status: { [Op.iLike]: '%IN PROGRESS%' } }
           }]
       })
     })
@@ -509,7 +510,7 @@ describe('Application Repository test', () => {
             model: data.models.status,
             attributes: ['status']
           }],
-        where: { 'data.organisation.name': searchText }
+        where: { 'data.organisation.name': { [Op.iLike]: `%${searchText}%` } }
       })
 
       expect(data.models.application.count).toHaveBeenCalledWith({
@@ -518,7 +519,7 @@ describe('Application Repository test', () => {
             model: data.models.status,
             attributes: ['status']
           }],
-        where: { 'data.organisation.name': searchText }
+        where: { 'data.organisation.name': { [Op.iLike]: `%${searchText}%` } }
       })
     })
 
