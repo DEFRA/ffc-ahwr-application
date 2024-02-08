@@ -79,6 +79,8 @@ describe(('Submit claim tests'), () => {
     { desc: 'application already on hold returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 11 }, state: alreadyClaimed },
     { desc: 'application already in check returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 5 }, state: alreadyClaimed },
     { desc: 'application already rejected returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 10 }, state: alreadyClaimed },
+    { desc: 'application already Recommended to pay returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 12 }, state: alreadyClaimed },
+    { desc: 'application already Recommended to reject returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 13 }, state: alreadyClaimed },
     { desc: 'application already ready to pay returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 9 }, state: alreadyClaimed }
   ])('$desc', async ({ applicationMock, state }) => {
     applicationRepository.get.mockResolvedValueOnce({ dataValues: applicationMock })
