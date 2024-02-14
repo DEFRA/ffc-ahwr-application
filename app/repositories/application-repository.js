@@ -99,7 +99,7 @@ async function getByEmail (email) {
 }
 
 function evalSortField (sort) {
-  if (sort && sort.field) {
+  if (sort !== null && sort !== undefined && sort.field !== undefined) {
     switch (sort.field.toLowerCase()) {
       case 'status':
         return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
@@ -236,25 +236,39 @@ async function set (data) {
  * @return {Array} contains a single element, 1 equates to success, 0 equates
  * to failure.
  */
-async function updateByReference (data) {
-  const result = await models.application.update(
-    data,
-    {
+async function updateByReference(data) {
+  try {
+    const result = await models.application.update(data, {
       where: {
         reference: data.reference
       },
-      returning: true
+      returning: true // Assuming Sequelize and that it supports 'returning'
+    });
+
+    const updatedRows = result[0]; // Number of affected rows
+    const updatedRecords = result[1]; // Assuming this is the array of updated records
+
+    for (let i = 0; i < updatedRows; i++) {
+      const updatedRecord = updatedRecords[i];
+      eventPublisher.raise({
+        message: 'Application has been updated',
+        application: updatedRecord.dataValues,
+        raisedBy: updatedRecord.dataValues.updatedBy,
+        raisedOn: updatedRecord.dataValues.updatedAt
+      });
     }
-  )
-  for (let i = 0; i < result[0]; i++) {
+
+    return result;
+  } catch (error) {
+    console.error('Error updating application by reference:', error);    
     eventPublisher.raise({
-      message: 'Application has been updated',
-      application: result[1][i].dataValues,
-      raisedBy: result[1][i].dataValues.updatedBy,
-      raisedOn: result[1][i].dataValues.updatedAt
-    })
+      message: `Application update failed. Error: ${error.message}`,
+      application: updatedRecord.dataValues,
+      raisedBy: updatedRecord.dataValues.updatedBy,
+      raisedOn: updatedRecord.dataValues.updatedAt
+    });
+    throw error; // re-throw the error after logging or handle it as needed
   }
-  return result
 }
 
 module.exports = {

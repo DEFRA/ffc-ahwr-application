@@ -19,7 +19,7 @@ module.exports = async function requiresComplianceCheck (claimStatusIds, complia
     // if the claim does not trigger the configurable compliance check volume ratio set as onHold
     // if complianceCheckRatio is 0 or less this means compliance checks are turned off
     statusId = statusIds.onHold
-    claimed = false
+    claimed = true
   }
   return { claimed, statusId }
 }
