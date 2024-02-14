@@ -236,38 +236,38 @@ async function set (data) {
  * @return {Array} contains a single element, 1 equates to success, 0 equates
  * to failure.
  */
-async function updateByReference(data) {
+async function updateByReference (data) {
   try {
     const result = await models.application.update(data, {
       where: {
         reference: data.reference
       },
       returning: true // Assuming Sequelize and that it supports 'returning'
-    });
+    })
 
-    const updatedRows = result[0]; // Number of affected rows
-    const updatedRecords = result[1]; // Assuming this is the array of updated records
+    const updatedRows = result[0] // Number of affected rows
+    const updatedRecords = result[1] // Assuming this is the array of updated records
 
     for (let i = 0; i < updatedRows; i++) {
-      const updatedRecord = updatedRecords[i];
+      const updatedRecord = updatedRecords[i]
       eventPublisher.raise({
         message: 'Application has been updated',
         application: updatedRecord.dataValues,
         raisedBy: updatedRecord.dataValues.updatedBy,
         raisedOn: updatedRecord.dataValues.updatedAt
-      });
+      })
     }
 
-    return result;
+    return result
   } catch (error) {
-    console.error('Error updating application by reference:', error);    
+    console.error('Error updating application by reference:', error)
     eventPublisher.raise({
       message: `Application update failed. Error: ${error.message}`,
-      application: updatedRecord.dataValues,
-      raisedBy: updatedRecord.dataValues.updatedBy,
-      raisedOn: updatedRecord.dataValues.updatedAt
-    });
-    throw error; // re-throw the error after logging or handle it as needed
+      application: data.reference,
+      raisedBy: data.updatedBy,
+      raisedOn: new Date()
+    })
+    throw error // re-throw the error after logging or handle it as needed
   }
 }
 
