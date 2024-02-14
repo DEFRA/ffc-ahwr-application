@@ -375,6 +375,48 @@ describe('Application Repository test', () => {
       )
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
     })
+
+    test('Update record for data by reference - throw exception', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const reference = 'AHWR-7C72-8871'
+
+      when(data.models.application.update)
+        .calledWith(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          {
+            where: {
+              reference
+            },
+            returning: true
+          })
+        .mockResolvedValue(new Error('Something failed'))
+
+      await repository.updateByReference({
+        reference,
+        statusId: 3,
+        updatedBy: 'admin'
+      })
+
+      expect(data.models.application.update).toHaveBeenCalledTimes(1)
+      expect(data.models.application.update).toHaveBeenCalledWith(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
+        },
+        {
+          where: {
+            reference
+          },
+          returning: true
+        }
+      )
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
+    })
   })
 
   test('getAll returns pages of 10 ordered by createdAt DESC', async () => {
