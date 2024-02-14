@@ -261,12 +261,6 @@ async function updateByReference (data) {
     return result
   } catch (error) {
     console.error('Error updating application by reference:', error)
-    eventPublisher.raise({
-      message: `Application update failed. Error: ${error.message}`,
-      application: data.reference,
-      raisedBy: data.updatedBy,
-      raisedOn: new Date()
-    })
     throw error // re-throw the error after logging or handle it as needed
   }
 }
