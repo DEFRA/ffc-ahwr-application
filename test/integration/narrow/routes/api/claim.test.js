@@ -4,7 +4,7 @@ const applicationRepository = require('../../../../../app/repositories/applicati
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
 
-describe('Applications test', () => {
+describe('Get claims test', () => {
   const server = require('../../../../../app/server')
 
   beforeEach(async () => {
@@ -129,63 +129,73 @@ describe('Applications test', () => {
     expect(claimRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
     expect(res.payload).toBe('Not Found')
   })
+})
+
+describe('Post claim test', () => {
+  const server = require('../../../../../app/server')
+  const claim = {
+    reference: 'AHWR-E01A-65EF',
+    applicationReference: 'AHWR-0AD3-3322',
+    data: {
+      typeOfLivestock: 'pigs',
+      typeOfReview: 'review one',
+      dateOfVisit: '2024-01-22T00:00:00.000Z',
+      dateOfTesting: '2024-01-22T00:00:00.000Z',
+      vetsName: 'Afshin',
+      vetRCVSNumber: 'AK-2024',
+      laboratoryURN: 'AK-2024',
+      numberOfOralFluidSamples: 5,
+      numberAnimalsTested: 30,
+      minimumNumberAnimalsRequired: 10,
+      testResults: 'positive',
+      speciesNumbers: 'yes'
+    },
+    statusId: 11,
+    type: 'R',
+    createdBy: 'admin'
+  }
+
+  beforeEach(async () => {
+    jest.clearAllMocks()
+    await server.start()
+  })
+
+  afterEach(async () => {
+    await server.stop()
+  })
+
   test('Post claim and return 200', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',
-      payload: {
-        reference: 'AHWR-E01A-65EF',
-        applicationReference: 'AHWR-0AD3-3322',
-        data: {
-          vetsName: 'vetsName',
-          dateOfVisit: '2024-02-01T07:24:29.224Z',
-          testResults: 'testResult',
-          typeOfReview: 'typeOfReview',
-          dateOfTesting: '2024-02-01T07:24:29.224Z',
-          laboratoryURN: '12345566',
-          vetRCVSNumber: '12345',
-          detailsCorrect: 'yes',
-          typeOfLivestock: 'beef',
-          numberAnimalsTested: '23',
-          numberOfOralFluidSamples: '12',
-          minimumNumberAnimalsRequired: '20'
-        },
-        statusId: 11,
-        type: 'R',
-        createdBy: 'admin'
-      }
+      payload: claim
     }
 
     applicationRepository.get.mockResolvedValue({
       dataValues: {
-        id: '0ad33322-c833-40c9-8116-0a293f0850a1',
-        reference: 'AHWR-0AD3-3322',
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-0F5D-4A26',
+        applicationReference: 'AHWR-0AD3-3322',
         data: {
-          reference: null,
-          declaration: true,
-          offerStatus: 'accepted',
-          whichReview: 'sheep',
-          organisation: {
-            sbi: '106785889',
-            name: 'Mr Jack Whaling',
-            email: 'johnallany@nallanhoje.com.test',
-            address:
-              'Elmtree Farm,Gamlingay,NORTH MILFORD GRANGE,LISKEARD,DL12 9TY,United Kingdom',
-            farmerName: 'John Allan'
-          },
-          eligibleSpecies: 'yes',
-          confirmCheckDetails: 'yes'
+          vetsName: 'Afshin',
+          dateOfVisit: '2024-01-22T00:00:00.000Z',
+          testResults: 'positive',
+          typeOfReview: 'review one',
+          dateOfTesting: '2024-01-22T00:00:00.000Z',
+          laboratoryURN: 'AK-2024',
+          vetRCVSNumber: 'AK-2024',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'pigs',
+          numberAnimalsTested: 30,
+          numberOfOralFluidSamples: 5,
+          minimumNumberAnimalsRequired: 10
         },
-        claimed: false,
-        createdAt: '2023-12-20T15:32:59.262Z',
-        updatedAt: '2023-12-20T15:32:59.359Z',
-        createdBy: 'admin',
-        updatedBy: null,
         statusId: 1,
-        type: 'VV',
-        status: {
-          status: 'AGREED'
-        }
+        type: 'R',
+        createdBy: 'admin'
       }
     })
 
@@ -194,60 +204,13 @@ describe('Applications test', () => {
     expect(res.statusCode).toBe(200)
     expect(claimRepository.set).toHaveBeenCalledTimes(1)
   })
-  test('Post claim with missing createdBy key and return 400', async () => {
-    const options = {
-      method: 'POST',
-      url: '/api/claim',
-      payload: {
-        reference: 'AHWR-E01A-65EF',
-        applicationReference: 'AHWR-0AD3-3322',
-        data: {
-          vetsName: 'vetsName',
-          dateOfVisit: '2024-02-01T07:24:29.224Z',
-          testResults: 'testResult',
-          typeOfReview: 'typeOfReview',
-          dateOfTesting: '2024-02-01T07:24:29.224Z',
-          laboratoryURN: '12345566',
-          vetRCVSNumber: '12345',
-          detailsCorrect: 'yes',
-          typeOfLivestock: 'beef',
-          numberAnimalsTested: '23',
-          numberOfOralFluidSamples: '12',
-          minimumNumberAnimalsRequired: '20'
-        },
-        statusId: 11,
-        type: 'R'
-      }
-    }
-
-    const res = await server.inject(options)
-
-    expect(res.statusCode).toBe(400)
-  })
   test('Post claim with wrong application reference return 404', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',
       payload: {
-        reference: 'AHWR-E01A-65EF',
-        applicationReference: 'AHWR-0AD3-3322',
-        data: {
-          vetsName: 'vetsName',
-          dateOfVisit: '2024-02-01T07:24:29.224Z',
-          testResults: 'testResult',
-          typeOfReview: 'typeOfReview',
-          dateOfTesting: '2024-02-01T07:24:29.224Z',
-          laboratoryURN: '12345566',
-          vetRCVSNumber: '12345',
-          detailsCorrect: 'yes',
-          typeOfLivestock: 'beef',
-          numberAnimalsTested: '23',
-          numberOfOralFluidSamples: '12',
-          minimumNumberAnimalsRequired: '20'
-        },
-        statusId: 11,
-        type: 'R',
-        createdBy: 'admin'
+        ...claim,
+        reference: 'AHWR-E01A-65EF'
       }
     }
 
@@ -256,5 +219,20 @@ describe('Applications test', () => {
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(404)
+  })
+
+  test('Post claim with missing createdBy key and return 400', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        ...claim,
+        createdBy: undefined
+      }
+    }
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(400)
   })
 })
