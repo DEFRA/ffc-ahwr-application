@@ -17,8 +17,8 @@ module.exports = {
     yes: 'yes',
     no: 'no'
   },
-  numberOfOralFluidSamplesLimit: 5,
-  numberOfAnimalsTestedLimit: {
+  minimumNumberOfOralFluidSamples: 5,
+  minimumNumberOfAnimalsTested: {
     beef: 5,
     pigs: 30,
     sheep: 10

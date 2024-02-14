@@ -1,10 +1,10 @@
 const Joi = require('joi')
 const {
-  livestockTypes: { beef, dairy, pigs, sheep },
-  testResults: { positive, negative },
   speciesNumbers: { yes, no },
-  numberOfOralFluidSamplesLimit,
-  numberOfAnimalsTestedLimit
+  minimumNumberOfAnimalsTested,
+  minimumNumberOfOralFluidSamples,
+  testResults: { positive, negative },
+  livestockTypes: { beef, dairy, pigs, sheep }
 } = require('../../constants/claim')
 const {
   set,
@@ -75,7 +75,7 @@ module.exports = [
             speciesNumbers: Joi.string().valid(yes, no).required(),
             ...(request.payload.data.typeOfLivestock === pigs && {
               numberOfOralFluidSamples: Joi.number()
-                .min(numberOfOralFluidSamplesLimit)
+                .min(minimumNumberOfOralFluidSamples)
                 .required()
             }),
             ...([beef, sheep, pigs].includes(
@@ -83,7 +83,7 @@ module.exports = [
             ) && {
               numberAnimalsTested: Joi.number()
                 .min(
-                  numberOfAnimalsTestedLimit[
+                  minimumNumberOfAnimalsTested[
                     request.payload.data.typeOfLivestock
                   ]
                 )
