@@ -2,6 +2,7 @@ const Joi = require('joi')
 const {
   speciesNumbers: { yes, no },
   minimumNumberOfAnimalsTested,
+  claimType: { review, endemics },
   minimumNumberOfOralFluidSamples,
   testResults: { positive, negative },
   livestockTypes: { beef, dairy, pigs, sheep }
@@ -11,7 +12,10 @@ const {
   getByReference,
   getByApplicationReference
 } = require('../../repositories/claim-repository')
+const { compliance } = require('../../config')
+const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
+const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 module.exports = [
   {
@@ -59,13 +63,11 @@ module.exports = [
     options: {
       handler: async (request, h) => {
         const claimDataModel = Joi.object({
-          reference: Joi.string().required(),
           applicationReference: Joi.string().required(),
           data: Joi.object({
             typeOfLivestock: Joi.string()
               .valid(beef, dairy, pigs, sheep)
               .required(),
-            typeOfReview: Joi.string().required(),
             dateOfVisit: Joi.date().required(),
             dateOfTesting: Joi.date().required(),
             vetsName: Joi.string().required(),
@@ -95,8 +97,7 @@ module.exports = [
               testResults: Joi.string().valid(positive, negative).required()
             })
           }),
-          statusId: Joi.number().required(),
-          type: Joi.string().required(),
+          type: Joi.string().valid(review, endemics).required(),
           createdBy: Joi.string().required()
         })
 
@@ -107,10 +108,22 @@ module.exports = [
         }
 
         const application = await get(request.payload.applicationReference)
+
         if (!application.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
-        const claim = await set(request.payload)
+
+        const claimStatusIds = [
+          statusIds.inCheck,
+          statusIds.readyToPay,
+          statusIds.rejected,
+          statusIds.onHold,
+          statusIds.recommendToPay,
+          statusIds.recommendToReject
+        ]
+        const { statusId } = await requiresComplianceCheck(claimStatusIds, compliance.complianceCheckRatio)
+        const claim = await set({ ...request.payload, statusId })
+
         return h.response(claim).code(200)
       }
     }

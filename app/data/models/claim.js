@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       reference: {
         type: DataTypes.STRING,
+        defaultValue: '',
         set (val) {
           this.setDataValue('reference', val.toUpperCase())
         }
@@ -34,9 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'claim',
       hooks: {
         afterCreate: async (claimRecord, _) => {
-          claimRecord.dataValues.reference = createReference(
-            claimRecord.id
-          )
+          claimRecord.dataValues.reference = createReference(claimRecord.id)
           claimRecord.dataValues.updatedBy = 'admin'
           claimRecord.dataValues.updatedAt = new Date()
           await claimRecord.update(claimRecord.dataValues)

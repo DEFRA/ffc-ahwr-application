@@ -134,11 +134,9 @@ describe('Get claims test', () => {
 describe('Post claim test', () => {
   const server = require('../../../../../app/server')
   const claim = {
-    reference: 'AHWR-E01A-65EF',
     applicationReference: 'AHWR-0AD3-3322',
     data: {
       typeOfLivestock: 'pigs',
-      typeOfReview: 'review one',
       dateOfVisit: '2024-01-22T00:00:00.000Z',
       dateOfTesting: '2024-01-22T00:00:00.000Z',
       vetsName: 'Afshin',
@@ -150,7 +148,6 @@ describe('Post claim test', () => {
       testResults: 'positive',
       speciesNumbers: 'yes'
     },
-    statusId: 11,
     type: 'R',
     createdBy: 'admin'
   }
@@ -210,7 +207,7 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: {
         ...claim,
-        reference: 'AHWR-E01A-65EF'
+        applicationReference: 'AHWR-E01A-65EF'
       }
     }
 
