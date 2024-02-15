@@ -172,6 +172,43 @@ describe('Application Repository test', () => {
     })
   })
 
+  describe('updateByReference function', () => {
+    const mockData = {
+      reference: 'REF-UPDATE',
+      statusId: 2,
+      updatedBy: 'admin',
+      data: {
+        organisation: {
+          sbi: '123456789',
+          email: 'business@email.com'
+        }
+      }
+    }
+
+    test('should update an application by reference successfully', async () => {
+      const updateResult = [1, [{ dataValues: { ...mockData, updatedAt: new Date(), updatedBy: 'admin' } }]] // Simulate one record updated
+
+      data.models.application.update.mockResolvedValue(updateResult)
+      MOCK_SEND_EVENTS.mockResolvedValue(null)
+
+      const result = await repository.updateByReference(mockData)
+
+      expect(data.models.application.update).toHaveBeenCalledWith(mockData, {
+        where: { reference: mockData.reference },
+        returning: true
+      })
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
+      expect(result).toEqual(updateResult)
+    })
+
+    test('should handle failure to update an application by reference', async () => {
+      data.models.application.update.mockRejectedValue(new Error('Update failed'))
+
+      await expect(repository.updateByReference(mockData)).rejects.toThrow('Update failed')
+      expect(MOCK_SEND_EVENTS).not.toHaveBeenCalled()
+    })
+  })
+
   describe('updateByReference', () => {
     test('Update record for data by reference - 2 records updated', async () => {
       process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
@@ -352,6 +389,48 @@ describe('Application Repository test', () => {
           0,
           []
         ])
+
+      await repository.updateByReference({
+        reference,
+        statusId: 3,
+        updatedBy: 'admin'
+      })
+
+      expect(data.models.application.update).toHaveBeenCalledTimes(1)
+      expect(data.models.application.update).toHaveBeenCalledWith(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
+        },
+        {
+          where: {
+            reference
+          },
+          returning: true
+        }
+      )
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
+    })
+
+    test('Update record for data by reference - throw exception', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const reference = 'AHWR-7C72-8871'
+
+      when(data.models.application.update)
+        .calledWith(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          {
+            where: {
+              reference
+            },
+            returning: true
+          })
+        .mockResolvedValue(new Error('Something failed'))
 
       await repository.updateByReference({
         reference,
