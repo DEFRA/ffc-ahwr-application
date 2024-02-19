@@ -74,7 +74,7 @@ module.exports = [{
       }
 
       await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
-      console.log(`Status of application with reference ${request.payload.reference} successfully updated to ${request.payload.statusId}`)
+      console.log(`Status of application with reference ${request.params.ref} successfully updated to ${request.payload.status}`)
       return h.response().code(200)
     }
   }
@@ -100,6 +100,7 @@ module.exports = [{
 
       try {
         let statusId = statusIds.rejected
+
         if (request.payload.approved) {
           statusId = statusIds.readyToPay
 

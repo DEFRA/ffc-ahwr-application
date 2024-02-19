@@ -31,7 +31,7 @@ describe('Send email test', () => {
     expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   })
 
-  test('sendFarmerClaimConfirmationEmail returns true onsuccessful email', async () => {
+  test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
     notifyClient.sendEmail.mockResolvedValueOnce(true)
 
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
