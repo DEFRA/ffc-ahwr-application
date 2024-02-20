@@ -144,7 +144,6 @@ describe('Post claim test', () => {
       laboratoryURN: 'AK-2024',
       numberOfOralFluidSamples: 5,
       numberAnimalsTested: 30,
-      minimumNumberAnimalsRequired: 10,
       testResults: 'positive',
       speciesNumbers: 'yes'
     },
@@ -187,8 +186,7 @@ describe('Post claim test', () => {
           speciesNumbers: 'yes',
           typeOfLivestock: 'pigs',
           numberAnimalsTested: 30,
-          numberOfOralFluidSamples: 5,
-          minimumNumberAnimalsRequired: 10
+          numberOfOralFluidSamples: 5
         },
         statusId: 1,
         type: 'R',
