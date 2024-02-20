@@ -73,7 +73,6 @@ module.exports = [
             vetsName: Joi.string().required(),
             vetRCVSNumber: Joi.string().required(),
             laboratoryURN: Joi.string().required(),
-            minimumNumberAnimalsRequired: Joi.number().required(),
             speciesNumbers: Joi.string().valid(yes, no).required(),
             ...(request.payload.data.typeOfLivestock === pigs && {
               numberOfOralFluidSamples: Joi.number()
