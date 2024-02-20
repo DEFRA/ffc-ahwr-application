@@ -1,7 +1,5 @@
 const Joi = require('joi')
-const { v4: uuid } = require('uuid')
 const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
-const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const statusIds = require('../../constants/application-status')
 
 module.exports = [{
