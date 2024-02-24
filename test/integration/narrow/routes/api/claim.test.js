@@ -134,11 +134,9 @@ describe('Get claims test', () => {
 describe('Post claim test', () => {
   const server = require('../../../../../app/server')
   const claim = {
-    reference: 'AHWR-E01A-65EF',
     applicationReference: 'AHWR-0AD3-3322',
     data: {
       typeOfLivestock: 'pigs',
-      typeOfReview: 'review one',
       dateOfVisit: '2024-01-22T00:00:00.000Z',
       dateOfTesting: '2024-01-22T00:00:00.000Z',
       vetsName: 'Afshin',
@@ -146,11 +144,9 @@ describe('Post claim test', () => {
       laboratoryURN: 'AK-2024',
       numberOfOralFluidSamples: 5,
       numberAnimalsTested: 30,
-      minimumNumberAnimalsRequired: 10,
       testResults: 'positive',
       speciesNumbers: 'yes'
     },
-    statusId: 11,
     type: 'R',
     createdBy: 'admin'
   }
@@ -190,8 +186,7 @@ describe('Post claim test', () => {
           speciesNumbers: 'yes',
           typeOfLivestock: 'pigs',
           numberAnimalsTested: 30,
-          numberOfOralFluidSamples: 5,
-          minimumNumberAnimalsRequired: 10
+          numberOfOralFluidSamples: 5
         },
         statusId: 1,
         type: 'R',
@@ -210,7 +205,7 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: {
         ...claim,
-        reference: 'AHWR-E01A-65EF'
+        applicationReference: 'AHWR-E01A-65EF'
       }
     }
 
