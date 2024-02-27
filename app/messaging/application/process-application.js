@@ -12,7 +12,7 @@ function timeLimitDates (application) {
   const end = new Date(start)
   // refactor to set time limit to a constant - config??
   end.setMonth(end.getMonth() + 10)
-  end.setHours(24, 0, 0, 0) // set to midnight of agreement end day
+  end.setHours(23, 59, 59, 999) // set to midnight of agreement end day
   return { startDate: start, endDate: end }
 }
 
