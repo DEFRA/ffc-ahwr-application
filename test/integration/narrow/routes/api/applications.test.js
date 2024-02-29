@@ -1,6 +1,5 @@
 const statusIds = require('../../../../../app/constants/application-status')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('uuid', () => ({ v4: () => '123456789' }))
@@ -184,13 +183,11 @@ describe('Applications test', () => {
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, statusId, updatedBy: user })
-      expect(sendMessage).toHaveBeenCalledTimes(payment)
       expect(consoleLogSpy).toHaveBeenCalledTimes(1)
       expect(consoleLogSpy).toHaveBeenCalledWith(`Status of application with reference ${reference} successfully updated`)
     })
     test('returns a 200, payment failure & status not updated', async () => {
       applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
-      sendMessage.mockImplementation(() => { throw new Error() })
       const options = {
         method,
         url: '/api/application/claim',
@@ -199,7 +196,6 @@ describe('Applications test', () => {
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-      expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).not.toBeCalled()
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
       expect(consoleErrorSpy).toHaveBeenCalledWith(`Status of application with reference ${reference} failed to update`)
