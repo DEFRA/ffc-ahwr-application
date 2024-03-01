@@ -160,11 +160,16 @@ describe('Post claim test', () => {
     await server.stop()
   })
 
-  test('Post claim and return 200', async () => {
+  test.each([
+    { type: 'R', typeOfLivestock: 'dairy', numberAnimalsTested: undefined, numberOfOralFluidSamples: undefined, testResults: 'positive' },
+    { type: 'E', typeOfLivestock: 'sheep', numberAnimalsTested: 30, numberOfOralFluidSamples: undefined, testResults: 'positive' },
+    { type: 'E', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfOralFluidSamples: 5, testResults: undefined },
+    { type: 'R', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfOralFluidSamples: 5, testResults: 'positive' }
+  ])('Post claim with Type: $type and Type of Livestock: $typeOfLivestock and return 200', async ({ type, typeOfLivestock, numberOfOralFluidSamples, testResults, numberAnimalsTested }) => {
     const options = {
       method: 'POST',
       url: '/api/claim',
-      payload: claim
+      payload: { ...claim, ...{ type }, ...{ data: { ...claim.data, typeOfLivestock, numberOfOralFluidSamples, testResults, numberAnimalsTested } } }
     }
 
     applicationRepository.get.mockResolvedValue({
@@ -185,8 +190,7 @@ describe('Post claim test', () => {
           vetRCVSNumber: 'AK-2024',
           speciesNumbers: 'yes',
           typeOfLivestock: 'pigs',
-          numberAnimalsTested: 30,
-          numberOfOralFluidSamples: 5
+          numberAnimalsTested: 30
         },
         statusId: 1,
         type: 'R',
