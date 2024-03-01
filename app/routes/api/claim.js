@@ -90,10 +90,21 @@ module.exports = [
                 )
                 .required()
             }),
-            ...([beef, dairy, pigs].includes(
+            ...(request.payload.data.typeOfLivestock === pigs && request.payload.type === review && {
+              testResults: Joi.string().valid(positive, negative).required()
+            }),
+            ...(request.payload.data.typeOfLivestock === sheep && request.payload.type === endemics && {
+              testResults: Joi.string().valid(positive, negative).required()
+            }),
+            ...([beef, dairy].includes(
               request.payload.data.typeOfLivestock
             ) && {
               testResults: Joi.string().valid(positive, negative).required()
+            }),
+            ...([beef, dairy, pigs].includes(
+              request.payload.data.typeOfLivestock
+            ) && {
+              vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional()
             })
           }),
           type: Joi.string().valid(review, endemics).required(),
@@ -108,7 +119,7 @@ module.exports = [
 
         const application = await get(request.payload.applicationReference)
 
-        if (!application.dataValues) {
+        if (!application?.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
 
