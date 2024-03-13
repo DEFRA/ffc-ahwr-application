@@ -1,6 +1,4 @@
 const { models } = require('../data')
-// const dateLocate = 'en-us'
-// const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' }
 
 /**
  * Check today is Holiday
