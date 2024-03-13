@@ -1,13 +1,13 @@
 const { models } = require('../data')
-const dateLocate = 'en-us'
-const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' }
+// const dateLocate = 'en-us'
+// const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' }
 
 /**
  * Check today is Holiday
  * @returns true if today is holiday
  */
 async function IsTodayHoliday () {
-  const today = new Date().toLocaleDateString(dateLocate, dateOptions)
+  const today = new Date().toISOString().split('T')[0]
 
   const holiday = await models.holiday.findOne({
     where: {

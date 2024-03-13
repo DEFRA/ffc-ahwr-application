@@ -1,12 +1,9 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/holiday-repository')
 const data = require('../../../../app/data')
-const dateLocate = 'en-us'
-const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' }
 
 jest.mock('../../../../app/data')
 
-data.models.holiday.create = jest.fn()
 data.models.holiday.findOne = jest.fn()
 data.models.holiday.upsert = jest.fn()
 
@@ -23,7 +20,7 @@ describe('holiday repository test', () => {
   })
 
   test('should create or update holiday', async () => {
-    const aDate = new Date().toLocaleDateString(dateLocate, dateOptions)
+    const aDate = new Date().toISOString().split('T')[0]
     await repository.set(aDate, 'a holiday')
 
     const entry = {
@@ -37,7 +34,7 @@ describe('holiday repository test', () => {
 
   test('Should return false', async () => {
     when(data.models.holiday.findOne)
-      .calledWith({ where: { date: new Date().toLocaleDateString(dateLocate, dateOptions) } })
+      .calledWith({ where: { date: new Date().toISOString().split('T')[0] } })
       .mockResolvedValue(null)
 
     expect(await repository.IsTodayHoliday()).toBeFalsy()
@@ -45,7 +42,7 @@ describe('holiday repository test', () => {
 
   test('Should return true', async () => {
     when(data.models.holiday.findOne)
-      .calledWith({ where: { date: new Date().toLocaleDateString(dateLocate, dateOptions) } })
+      .calledWith({ where: { date: new Date().toISOString().split('T')[0] } })
       .mockResolvedValue({ valid: 'date' })
 
     expect(await repository.IsTodayHoliday()).toBeTruthy()
