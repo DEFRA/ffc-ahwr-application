@@ -1,6 +1,6 @@
 const states = require('./states')
 const applicationStatus = require('../../constants/application-status')
-const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule } = require('../../config')
+const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule, endemics } = require('../../config')
 const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
@@ -22,7 +22,12 @@ function isPastTimeLimit (dates) {
 }
 
 function isPreviousApplicationRelevant (existingApplication) {
-  if (tenMonthRule.enabled) {
+  if (endemics.enabled) {
+    if (existingApplication.type === 'EE') {
+      return true
+    }
+    return false
+  } else if (tenMonthRule.enabled) {
     return existingApplication &&
     ((existingApplication.statusId !== applicationStatus.withdrawn &&
     existingApplication.statusId !== applicationStatus.notAgreed &&
