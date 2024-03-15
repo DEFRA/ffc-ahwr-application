@@ -23,7 +23,7 @@ function isPastTimeLimit (dates) {
 
 function isPreviousApplicationRelevant (existingApplication) {
   if (endemics.enabled) {
-    if (existingApplication.type === 'EE') {
+    if (existingApplication?.type === 'EE') {
       return true
     }
     return false
