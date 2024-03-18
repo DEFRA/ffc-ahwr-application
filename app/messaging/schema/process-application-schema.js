@@ -1,4 +1,5 @@
 const joi = require('joi')
+const appInsights = require('applicationinsights')
 const endemicsEnabled = require('../../config/index').endemics.enabled
 
 const applicationSchema = joi.object({
@@ -46,6 +47,7 @@ const validateApplication = (event) => {
 
   if (validate.error) {
     console.error(`Application validation error - ${validate.error}.`)
+    appInsights.defaultClient.trackException({ exception: error })
     return false
   }
 

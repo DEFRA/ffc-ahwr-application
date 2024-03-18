@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const appInsights = require('applicationinsights')
 const {
   speciesNumbers: { yes, no },
   minimumNumberOfAnimalsTested,
@@ -114,6 +115,7 @@ module.exports = [
         const { error } = claimDataModel.validate(request.payload)
 
         if (error) {
+          appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
 
