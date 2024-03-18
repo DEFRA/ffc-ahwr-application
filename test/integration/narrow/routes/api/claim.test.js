@@ -1,6 +1,8 @@
 const claimRepository = require('../../../../../app/repositories/claim-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
 
+jest.mock('../../../../../app/insights')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
 
