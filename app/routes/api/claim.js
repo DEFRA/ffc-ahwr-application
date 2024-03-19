@@ -2,6 +2,7 @@ const Joi = require('joi')
 const appInsights = require('applicationinsights')
 const {
   speciesNumbers: { yes, no },
+  biosecurity,
   minimumNumberOfAnimalsTested,
   claimType: { review, endemics },
   minimumNumberOfOralFluidSamples,
@@ -91,16 +92,37 @@ module.exports = [
                 )
                 .required()
             }),
+            ...(request.payload.data.typeOfLivestock === pigs && request.payload.type === endemics && {
+              herdVaccinationStatus: Joi.string().valid('vaccinated', 'notVaccinated').required(),
+              diseaseStatus: Joi.string().valid('1', '2', '3', '4').required(),
+              biosecurity: Joi.alternatives().try(
+                Joi.string().valid(biosecurity.no),
+                Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })
+              ).required()
+            }),
             ...(request.payload.data.typeOfLivestock === pigs && request.payload.type === review && {
               testResults: Joi.string().valid(positive, negative).required()
             }),
             ...(request.payload.data.typeOfLivestock === sheep && request.payload.type === endemics && {
-              testResults: Joi.string().valid(positive, negative).required()
+              sheepEndemicsPackage: Joi.string().required(),
+              testResults: Joi.array().items(
+                Joi.object({
+                  diseaseType: Joi.string(),
+                  result: Joi.alternatives().try(
+                    Joi.string(),
+                    Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.string() }))
+                  )
+                })).required()
             }),
             ...([beef, dairy].includes(
               request.payload.data.typeOfLivestock
             ) && {
               testResults: Joi.string().valid(positive, negative).required()
+            }),
+            ...([beef, dairy].includes(
+              request.payload.data.typeOfLivestock
+            ) && request.payload.type === endemics && {
+              biosecurity: Joi.string().valid(biosecurity.yes, biosecurity.no).required()
             }),
             ...([beef, dairy, pigs].includes(
               request.payload.data.typeOfLivestock
