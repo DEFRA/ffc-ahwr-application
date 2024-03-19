@@ -29,15 +29,15 @@ function isPreviousApplicationRelevant (existingApplication) {
     return false
   } else if (tenMonthRule.enabled) {
     return existingApplication &&
-    ((existingApplication.statusId !== applicationStatus.withdrawn &&
-    existingApplication.statusId !== applicationStatus.notAgreed &&
-    // check if it passes 10 month rule here and chuck error if it doesn't
-    isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
-    existingApplication.statusId === applicationStatus.agreed)
+      ((existingApplication.statusId !== applicationStatus.withdrawn &&
+        existingApplication.statusId !== applicationStatus.notAgreed &&
+        // check if it passes 10 month rule here and chuck error if it doesn't
+        isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
+        existingApplication.statusId === applicationStatus.agreed)
   } else {
     return existingApplication &&
-    existingApplication.statusId !== applicationStatus.withdrawn &&
-    existingApplication.statusId !== applicationStatus.notAgreed
+      existingApplication.statusId !== applicationStatus.withdrawn &&
+      existingApplication.statusId !== applicationStatus.notAgreed
   }
 }
 
@@ -106,8 +106,10 @@ const processApplication = async (msg) => {
         application.createdAt,
         applicationData.organisation.email,
         applicationData.organisation.farmerName,
-        applicationData.organisation?.orgName,
-        applicationData.organisation?.orgEmail
+        {
+          orgName: applicationData.organisation?.orgName,
+          orgEmail: applicationData.organisation?.orgEmail
+        }
       )
     }
 
