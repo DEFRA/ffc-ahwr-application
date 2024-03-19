@@ -9,6 +9,7 @@ const applicationSchema = joi.object({
   declaration: joi.boolean().required(),
   offerStatus: joi.string().required(),
   organisation: joi.object({
+    orgName: joi.string().optional(),
     farmerName: joi.string().required(),
     name: joi.string().required(),
     sbi: joi.string().required(),
@@ -16,6 +17,7 @@ const applicationSchema = joi.object({
     crn: joi.string().optional(),
     address: joi.string().required(),
     email: joi.string().required().lowercase().email({ tlds: false }),
+    orgEmail: joi.string().optional().lowercase().email({ tlds: false }),
     isTest: joi.boolean().optional()
   })
 })
@@ -29,12 +31,14 @@ const endemicsApplicationSchema = joi.object({
   offerStatus: joi.string().required(),
   organisation: joi.object({
     farmerName: joi.string().required(),
+    orgName: joi.string().optional(),
     name: joi.string().required(),
     sbi: joi.string().required(),
     cph: joi.string().optional(),
     crn: joi.string().optional(),
     address: joi.string().required(),
     email: joi.string().required().lowercase().email({ tlds: false }),
+    orgEmail: joi.string().optional().lowercase().email({ tlds: false }),
     isTest: joi.boolean().optional(),
     userType: joi.string().valid('newUser', 'existingUser').required()
   }),

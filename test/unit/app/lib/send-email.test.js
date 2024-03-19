@@ -11,6 +11,8 @@ const sbi = '123456789'
 const whichSpecies = 'beef'
 const startDate = Date.now()
 const farmerName = 'farmer'
+const orgName = 'Farmer org'
+const orgEmail = 'test@unit-test.org'
 
 jest.mock('../../../../app/lib/notify-client')
 const notifyClient = require('../../../../app/lib/notify-client')
@@ -26,9 +28,17 @@ describe('Send email test', () => {
 
   test('sendFarmerConfirmationEmail calls sendMessage', async () => {
     sendMessage.mockResolvedValueOnce(true)
-    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName)
+    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName, orgName)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName, orgName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    // await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName, orgName, orgEmail)
+    // expect(sendMessage).toHaveBeenCalledTimes(2)
+  })
+
+  test('sendFarmerConfirmationEmail calls sendMessage to organization email', async () => {
+    sendMessage.mockResolvedValueOnce(true)
+    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName, orgName, orgEmail)
+    expect(sendMessage).toHaveBeenCalledTimes(2)
   })
 
   test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {

@@ -105,7 +105,9 @@ const processApplication = async (msg) => {
         applicationData.whichReview,
         application.createdAt,
         applicationData.organisation.email,
-        applicationData.organisation.farmerName
+        applicationData.organisation.farmerName,
+        applicationData.organisation?.orgName,
+        applicationData.organisation?.orgEmail
       )
     }
 
