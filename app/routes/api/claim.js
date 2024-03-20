@@ -74,11 +74,16 @@ module.exports = [
             dateOfTesting: Joi.date().required(),
             vetsName: Joi.string().required(),
             vetRCVSNumber: Joi.string().required(),
-            laboratoryURN: Joi.string().required(),
+            ...(request.payload.data.typeOfLivestock === sheep && request.payload.type === endemics ? {} : { laboratoryURN: Joi.string().required() }),
             speciesNumbers: Joi.string().valid(yes, no).required(),
-            ...(request.payload.data.typeOfLivestock === pigs && {
+            ...(request.payload.data.typeOfLivestock === pigs && request.payload.type === review && {
               numberOfOralFluidSamples: Joi.number()
                 .min(minimumNumberOfOralFluidSamples)
+                .required()
+            }),
+            ...(request.payload.data.typeOfLivestock === pigs && request.payload.type === endemics && {
+              numberOfSamplesTested: Joi.number()
+                .valid(6, 30)
                 .required()
             }),
             ...([beef, sheep, pigs].includes(
