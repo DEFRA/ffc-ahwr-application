@@ -1,8 +1,15 @@
 const claimRepository = require('../../../../../app/repositories/claim-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
 
+jest.mock('../../../../../app/insights')
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
+
+const sheepTestResultsMockData = [
+  { diseaseType: 'flystrike', result: 'negative' },
+  { diseaseType: 'sheepScab', result: 'positive' }
+]
 
 describe('Get claims test', () => {
   const server = require('../../../../../app/server')
@@ -162,8 +169,6 @@ describe('Post claim test', () => {
 
   test.each([
     { type: 'R', typeOfLivestock: 'dairy', numberAnimalsTested: undefined, numberOfOralFluidSamples: undefined, testResults: 'positive' },
-    { type: 'E', typeOfLivestock: 'sheep', numberAnimalsTested: 30, numberOfOralFluidSamples: undefined, testResults: 'positive' },
-    { type: 'E', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfOralFluidSamples: 5, testResults: undefined },
     { type: 'R', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfOralFluidSamples: 5, testResults: 'positive' }
   ])('Post claim with Type: $type and Type of Livestock: $typeOfLivestock and return 200', async ({ type, typeOfLivestock, numberOfOralFluidSamples, testResults, numberAnimalsTested }) => {
     const options = {
@@ -203,6 +208,41 @@ describe('Post claim test', () => {
     expect(res.statusCode).toBe(200)
     expect(claimRepository.set).toHaveBeenCalledTimes(1)
   })
+
+  test.each([
+    { type: 'E', typeOfLivestock: 'sheep', numberAnimalsTested: 30, numberOfSamplesTested: undefined, testResults: sheepTestResultsMockData, biosecurity: undefined, sheepEndemicsPackage: 'sheepEndemicsPackage', herdVaccinationStatus: undefined, diseaseStatus: undefined },
+    { type: 'E', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfSamplesTested: 6, testResults: undefined, biosecurity: { biosecurity: 'yes', assessmentPercentage: '10' }, sheepEndemicsPackage: undefined, herdVaccinationStatus: 'vaccinated', diseaseStatus: '1' },
+    { type: 'E', typeOfLivestock: 'beef', numberAnimalsTested: 30, numberOfSamplesTested: undefined, testResults: 'positive', biosecurity: 'yes', sheepEndemicsPackage: undefined, herdVaccinationStatus: undefined, diseaseStatus: undefined }
+  ])(
+    'Post claim with Type: $type and Type of Livestock: $typeOfLivestock and return 200',
+    async ({ type, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus }) => {
+      const options = {
+        method: 'POST',
+        url: '/api/claim',
+        payload: { ...claim, type, ...{ data: { ...claim.data, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, numberOfOralFluidSamples: undefined, ...(typeOfLivestock === 'sheep' && { laboratoryURN: undefined }) } } }
+      }
+
+      applicationRepository.get.mockResolvedValue({
+        dataValues: {
+          createdAt: '2024-02-14T09:59:46.756Z',
+          id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+          updatedAt: '2024-02-14T10:43:03.544Z',
+          updatedBy: 'admin',
+          reference: 'AHWR-0F5D-4A26',
+          applicationReference: 'AHWR-0AD3-3322',
+          data: {},
+          statusId: 1,
+          type: 'R',
+          createdBy: 'admin'
+        }
+      })
+
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+      expect(claimRepository.set).toHaveBeenCalledTimes(1)
+    }
+  )
   test('Post claim with wrong application reference return 404', async () => {
     const options = {
       method: 'POST',
