@@ -40,34 +40,43 @@ function isPreviousApplicationRelevant (existingApplication) {
   }
 }
 
-const processApplicationData = async (applicationData, sessionId) => {
-  try {
-    if (!validateApplication(applicationData)) {
-      throw new Error('Application validation error')
-    }
+/**
+ * processApplicationData
+ * */
+const processApplicationData =  async (applicationData, sessionId) => {
 
-    console.log(`Application received : ${JSON.stringify(applicationData)} with sessionId ${sessionId}`)
+    const existingApplicationReference = null
+
+try{
+    
+    if (!validateApplication(applicationData)) {
+        throw new Error('Application validation error')
+      }
+
+      console.log(`Application received : ${JSON.stringify(applicationData)} with sessionId ${sessionId}`)
 
     const existingApplication = await applicationRepository.getBySbi(
-      applicationData.organisation.sbi
-    )
-
-    if (isPreviousApplicationRelevant(existingApplication)) {
-      throw Object.assign(
-        new Error(
-            `Recent application already exists: ${JSON.stringify({
-              reference: existingApplication?.dataValues.reference,
-              createdAt: existingApplication?.createdAt
-            })}`
-        ),
-        {
-          applicationState: states
-            .alreadyExists
-        }
+        applicationData.organisation.sbi
       )
-    }
-
-    const { organisation, whichReview, offerStatus } = applicationData || {}
+      console.log('existingApplication=====>', existingApplication) 
+  
+      if (isPreviousApplicationRelevant(existingApplication)) {
+        existingApplicationReference = existingApplication.dataValues.reference
+        throw Object.assign(
+          new Error(
+            `Recent application already exists: ${JSON.stringify({
+              reference: existingApplication.dataValues.reference,
+              createdAt: existingApplication.createdAt
+            })}`
+          ),
+          {
+            applicationState: states
+            .alreadyExists
+          }
+        )
+      }
+      
+      // set the Data structure
 
     const result = await applicationRepository.set({
       reference: '',
@@ -78,26 +87,37 @@ const processApplicationData = async (applicationData, sessionId) => {
       type: applicationData.type ? applicationData.type : 'VV'
     })
     const application = result.dataValues
+    console.log("application=====>", application)
+    console.log('result from applicationRepository.set ====>', result)
+    console.log('only data values result====>', result.dataValues)
 
-    applicationData.offerStatus === 'accepted' && await sendFarmerConfirmationEmail(application?.reference, organisation?.sbi, whichReview, application?.createdAt, organisation?.email, organisation?.farmerName)
+      //
+      const {data, organisation, createdBy, createdAt, whichReview, statusId, type} = applicationData || {}
+      console.log('data for email ====>', {data, organisation, createdBy, createdAt, whichReview, statusId, type})
 
+    //send email
+    applicationData.offerStatus === 'accepted' && await sendFarmerConfirmationEmail(application.reference, organisation.sbi, whichReview, createdAt, organisation.email, organisation.farmerName)
+    
+    
+    // track events 
     appInsights.defaultClient.trackEvent({
-      name: 'process-application',
-      properties: {
-        status: offerStatus,
-        reference: application ? application?.reference : 'unknown',
-        sbi: organisation?.sbi,
-        sessionId
-      }
-    })
+        name: 'process-application',
+        properties: {
+          status: applicationData?.offerStatus,
+          reference: application ? application?.reference : 'unknown',
+          sbi: applicationData?.organisation?.sbi,
+          sessionId
+        }
+      })
 
-    return result
-  } catch (error) {
-    console.error('Failed to process application', error)
-    appInsights.defaultClient.trackException({ exception: error })
-  }
+      return result;
+
+    } catch (error) {
+        console.error('Failed to process application', error)
+        appInsights.defaultClient.trackException({ exception: error })
+          }
 }
 
 module.exports = {
-  processApplicationData
+    processApplicationData
 }
