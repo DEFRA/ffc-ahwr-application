@@ -10,7 +10,6 @@ const applicationSchema = joi.object({
   declaration: joi.boolean().required(),
   offerStatus: joi.string().required(),
   organisation: joi.object({
-    orgName: joi.string().optional(),
     farmerName: joi.string().required(),
     name: joi.string().required(),
     sbi: joi.string().required(),
@@ -32,7 +31,6 @@ const endemicsApplicationSchema = joi.object({
   offerStatus: joi.string().required(),
   organisation: joi.object({
     farmerName: joi.string().required(),
-    orgName: joi.string().optional(),
     name: joi.string().required(),
     sbi: joi.string().required(),
     cph: joi.string().optional(),
