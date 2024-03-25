@@ -26,6 +26,7 @@ const submitClaimSchema = joi.object({
       cph: joi.string().optional(),
       address: joi.string().required(),
       email: joi.string().required(),
+      orgEmail: joi.string().optional(),
       isTest: joi.boolean().optional()
     })
   })
