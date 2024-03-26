@@ -1,9 +1,10 @@
-const validateApplication = require("../messaging/schema/process-application-schema")
-const { sendFarmerConfirmationEmail } = require("./send-email")
-const {endemics, tenMonthRule} = require("../config")
-const applicationRepository = require("../repositories/application-repository")
+const validateApplication = require('../messaging/schema/process-application-schema')
+const applicationStatus = require('../constants/application-status')
+const { sendFarmerConfirmationEmail } = require('./send-email')
+const { endemics, tenMonthRule } = require('../config')
+const applicationRepository = require('../repositories/application-repository')
 const appInsights = require('applicationinsights')
-const states = require("../messaging/application/states")
+const states = require('../messaging/application/states')
 
 function timeLimitDates (application) {
   const start = new Date(application.createdAt)
@@ -39,43 +40,34 @@ function isPreviousApplicationRelevant (existingApplication) {
   }
 }
 
-/**
- * processApplicationData
- * */
-const processApplicationData =  async (applicationData, sessionId) => {
-
-    const existingApplicationReference = null
-
-try{
-    
+const processApplicationData = async (applicationData, sessionId) => {
+  try {
     if (!validateApplication(applicationData)) {
-        throw new Error('Application validation error')
-      }
+      throw new Error('Application validation error')
+    }
 
-      console.log(`Application received : ${JSON.stringify(applicationData)} with sessionId ${sessionId}`)
+    console.log(`Application received : ${JSON.stringify(applicationData)} with sessionId ${sessionId}`)
 
     const existingApplication = await applicationRepository.getBySbi(
-        applicationData.organisation.sbi
-      )
-      console.log('existingApplication=====>', existingApplication) 
-  
-      if (isPreviousApplicationRelevant(existingApplication)) {
-        existingApplicationReference = existingApplication.dataValues.reference
-        throw Object.assign(
-          new Error(
+      applicationData.organisation.sbi
+    )
+
+    if (isPreviousApplicationRelevant(existingApplication)) {
+      throw Object.assign(
+        new Error(
             `Recent application already exists: ${JSON.stringify({
-              reference: existingApplication.dataValues.reference,
-              createdAt: existingApplication.createdAt
+              reference: existingApplication?.dataValues.reference,
+              createdAt: existingApplication?.createdAt
             })}`
-          ),
-          {
-            applicationState: states
+        ),
+        {
+          applicationState: states
             .alreadyExists
-          }
-        )
-      }
-      
-      // set the Data structure
+        }
+      )
+    }
+
+    const { organisation, whichReview, offerStatus } = applicationData || {}
 
     const result = await applicationRepository.set({
       reference: '',
@@ -86,37 +78,26 @@ try{
       type: applicationData.type ? applicationData.type : 'VV'
     })
     const application = result.dataValues
-    console.log("application=====>", application)
-    console.log('result from applicationRepository.set ====>', result)
-    console.log('only data values result====>', result.dataValues)
 
-      //
-      const {data, organisation, createdBy, createdAt, whichReview, statusId, type} = applicationData || {}
-      console.log('data for email ====>', {data, organisation, createdBy, createdAt, whichReview, statusId, type})
+    applicationData.offerStatus === 'accepted' && await sendFarmerConfirmationEmail(application.reference, organisation.sbi, whichReview, application.createdAt, organisation.email, organisation.farmerName)
 
-    //send email
-    applicationData.offerStatus === 'accepted' && await sendFarmerConfirmationEmail(application.reference, organisation.sbi, whichReview, createdAt, organisation.email, organisation.farmerName)
-    
-    
-    // track events 
     appInsights.defaultClient.trackEvent({
-        name: 'process-application',
-        properties: {
-          status: applicationData?.offerStatus,
-          reference: application ? application?.reference : 'unknown',
-          sbi: applicationData?.organisation?.sbi,
-          sessionId
-        }
-      })
+      name: 'process-application',
+      properties: {
+        status: offerStatus,
+        reference: application ? application?.reference : 'unknown',
+        sbi: organisation?.sbi,
+        sessionId
+      }
+    })
 
-      return result;
-
-    } catch (error) {
-        console.error('Failed to process application', error)
-        appInsights.defaultClient.trackException({ exception: error })
-          }
+    return result
+  } catch (error) {
+    console.error('Failed to process application', error)
+    appInsights.defaultClient.trackException({ exception: error })
+  }
 }
 
 module.exports = {
-    processApplicationData
+  processApplicationData
 }

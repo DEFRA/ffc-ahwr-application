@@ -1,6 +1,6 @@
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
-const { get, searchApplications, updateByReference, set } = require('../../repositories/application-repository')
+const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
@@ -79,18 +79,17 @@ module.exports = [{
       return h.response().code(200)
     }
   }
-}, 
+},
 {
   method: 'POST',
-  path:'/api/application/processor',
+  path: '/api/application/processor',
   handler: async (request, h) => {
-    try{
+    try {
       const appData = request.payload
-      const appProcessed =  await processApplicationData(appData, uuid())
-      console.log('appProcessed ====>', appProcessed)
+      const appProcessed = await processApplicationData(appData, uuid())
 
-      return h.response({appProcessed}).code(200)
-    }catch(error){
+      return h.response({ appProcessed }).code(200)
+    } catch (error) {
       console.error('Failed to process application', error)
       return h.response({ error }).code(400).takeover()
     }
