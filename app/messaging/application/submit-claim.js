@@ -50,7 +50,7 @@ const submitClaim = async (message) => {
       await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
 
       if (updateSuccess) {
-        await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference)
+        await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference, application.dataValues.data.organisation.orgEmail)
       }
 
       appInsights.defaultClient.trackEvent({

@@ -38,9 +38,10 @@ describe(('Submit claim tests'), () => {
     { desc: 'unclaimed application unsuccessfully updated returns failed state', updateRes: [0], state: failed, statusId: 5, claimed: false }
   ])('$desc', async ({ updateRes, state, statusId, claimed }) => {
     const email = 'an@email.com'
+    const orgEmail = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
-    const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi } } } }
+    const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi, orgEmail } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     requiresComplianceCheck.mockResolvedValueOnce({
       statusId,
@@ -58,7 +59,7 @@ describe(('Submit claim tests'), () => {
     if (state === success && statusId === 9) {
       // if ready to pay reply message and payment message should be sent
       expect(sendMessage).toHaveBeenCalledTimes(2)
-      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference)
+      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference, orgEmail)
       expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     } else if (state === success && statusId === 5) {
