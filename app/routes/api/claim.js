@@ -221,7 +221,6 @@ module.exports = [
           console.error('Failed to submit claim or already claimed ', error)
           return h.response({ error }).code(400).takeover()
         }
->>>>>>> 016ca06 (implementation for queue replacement)
       }
     }
   }
