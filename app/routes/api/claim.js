@@ -20,7 +20,8 @@ const {
 } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
-// const requiresComplianceCheck = require('../../lib/requires-compliance-check')
+const requiresComplianceCheck = require('../../lib/requires-compliance-check')
+const { submitClaimData } = require('../../lib/submit-claim-data')
 
 module.exports = [
   {
@@ -201,6 +202,26 @@ module.exports = [
         console.log(`Status of claim with reference ${request.payload.reference} successfully updated to ${request.payload.status}`)
 
         return h.response().code(200)
+       }
+     }
+  },
+  {
+    method: 'POST',
+    path: '/api/claim/submit-claim',
+    options: {
+      description: 'Submit claim data - queue replacement',
+      handler: async (request, h) => {
+        try {
+          const claimData = request.payload
+          console.log('claimData ======>', claimData)
+          const result = await submitClaimData(claimData)
+          console.log('result ======>', result)
+          return h.response({ result }).code(200)
+        } catch (error) {
+          console.error('Failed to submit claim or already claimed ', error)
+          return h.response({ error }).code(400).takeover()
+        }
+>>>>>>> 016ca06 (implementation for queue replacement)
       }
     }
   }
