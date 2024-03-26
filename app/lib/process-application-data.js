@@ -79,7 +79,7 @@ const processApplicationData = async (applicationData, sessionId) => {
     })
     const application = result.dataValues
 
-    applicationData.offerStatus === 'accepted' && await sendFarmerConfirmationEmail(application.reference, organisation.sbi, whichReview, application.createdAt, organisation.email, organisation.farmerName)
+    applicationData.offerStatus === 'accepted' && await sendFarmerConfirmationEmail(application?.reference, organisation?.sbi, whichReview, application?.createdAt, organisation?.email, organisation?.farmerName)
 
     appInsights.defaultClient.trackEvent({
       name: 'process-application',
