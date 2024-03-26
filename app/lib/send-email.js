@@ -46,8 +46,12 @@ const sendCarbonCopy = async (templateId, personalisation) => {
   }
 }
 
-const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate, email, farmerName) => {
-  await sendMessage({ reference, sbi, whichSpecies, startDate, email, farmerName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate, email, farmerName, orgData) => {
+  const { name, orgEmail } = orgData
+  if (orgEmail) {
+    await sendMessage({ reference, sbi, whichSpecies, startDate, orgEmail, farmerName, name }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  }
+  await sendMessage({ reference, sbi, whichSpecies, startDate, email, farmerName, name }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
 const sendFarmerClaimConfirmationEmail = async (email, reference) => {

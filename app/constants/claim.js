@@ -17,6 +17,10 @@ module.exports = {
     yes: 'yes',
     no: 'no'
   },
+  biosecurity: {
+    yes: 'yes',
+    no: 'no'
+  },
   minimumNumberOfOralFluidSamples: 5,
   minimumNumberOfAnimalsTested: {
     beef: 5,
