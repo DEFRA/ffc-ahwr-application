@@ -58,8 +58,8 @@ const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDa
 
 const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
   const personalisation = { reference }
-  if (orgEmail && orgEmail !== email) { sendEmail(orgEmail, personalisation, reference, templateIdFarmerClaimComplete, true) }
-  return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete)
+  if (orgEmail && orgEmail !== email) { sendEmail(orgEmail, personalisation, reference, templateIdFarmerClaimComplete) }
+  return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
 }
 
 module.exports = {
