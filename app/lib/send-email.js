@@ -12,11 +12,13 @@ const send = async (templateId, email, personalisation) => {
   )
 }
 
-const sendEmail = async (email, personalisation, reference, templateId) => {
+const sendEmail = async (email, personalisation, reference, templateId, carbonEmail = false) => {
   let success = true
   try {
     await send(templateId, email, { personalisation, reference })
-    await sendCarbonCopy(templateId, { personalisation, reference })
+    if (carbonEmail) {
+      await sendCarbonCopy(templateId, { personalisation, reference })
+    }
     appInsights.defaultClient.trackEvent({
       name: 'email',
       properties: {
@@ -47,16 +49,17 @@ const sendCarbonCopy = async (templateId, personalisation) => {
 }
 
 const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate, email, farmerName, orgData) => {
-  const { name, orgEmail } = orgData
-  if (orgEmail) {
-    await sendMessage({ reference, sbi, whichSpecies, startDate, orgEmail, farmerName, name }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  const { orgName, orgEmail } = orgData
+  if (orgEmail && orgEmail !== email) {
+    await sendMessage({ reference, sbi, whichSpecies, startDate, orgEmail, farmerName, orgName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   }
-  await sendMessage({ reference, sbi, whichSpecies, startDate, email, farmerName, name }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  await sendMessage({ reference, sbi, whichSpecies, startDate, email, farmerName, orgName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
-const sendFarmerClaimConfirmationEmail = async (email, reference) => {
+const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
   const personalisation = { reference }
-  return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete)
+  if (orgEmail && orgEmail !== email) { sendEmail(orgEmail, personalisation, reference, templateIdFarmerClaimComplete) }
+  return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
 }
 
 module.exports = {
