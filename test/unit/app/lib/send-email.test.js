@@ -27,19 +27,19 @@ describe('Send email test', () => {
   })
 
   test('sendFarmerConfirmationEmail calls sendMessage', async () => {
-    const orgData = { orgName, orgEmail: undefined }
+    const orgData = { orgName, orgEmail }
     sendMessage.mockResolvedValueOnce(true)
     await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName, orgData)
     expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName, orgName: orgData.orgName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName, name: orgData.orgName, orgEmail }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   })
 
   test('sendFarmerConfirmationEmail calls sendMessage to organization email', async () => {
     const orgData = { orgName, orgEmail }
     sendMessage.mockResolvedValueOnce(true)
     await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, email, farmerName, orgData)
-    expect(sendMessage).toHaveBeenCalledTimes(2)
-    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName, orgName: orgData.orgName }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, email, farmerName, name: orgData.orgName, orgEmail }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   })
 
   test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
