@@ -107,7 +107,7 @@ const processApplication = async (msg) => {
         applicationData.organisation.email,
         applicationData.organisation.farmerName,
         {
-          name: applicationData.organisation?.name,
+          orgName: applicationData.organisation?.name,
           orgEmail: applicationData.organisation?.orgEmail
         }
       )
