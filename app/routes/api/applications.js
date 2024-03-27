@@ -4,6 +4,7 @@ const { get, searchApplications, updateByReference } = require('../../repositori
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
+const { processApplicationData } = require('../../lib/process-application-data')
 
 module.exports = [{
   method: 'GET',
@@ -78,7 +79,23 @@ module.exports = [{
       return h.response().code(200)
     }
   }
-}, {
+},
+{
+  method: 'POST',
+  path: '/api/application/processor',
+  handler: async (request, h) => {
+    try {
+      const appData = request.payload
+      const appProcessed = await processApplicationData(appData, uuid())
+
+      return h.response({ appProcessed }).code(200)
+    } catch (error) {
+      console.error('Failed to process application', error)
+      return h.response({ error }).code(400).takeover()
+    }
+  }
+},
+{
   method: 'POST',
   path: '/api/application/claim',
   options: {
