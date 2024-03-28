@@ -18,7 +18,7 @@ const { compliance } = require('../../config')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
 const requiresComplianceCheck = require('../../lib/requires-compliance-check')
-const { submitClaimData } = require('../../lib/submit-claim-data')
+const submitClaim = require('../../messaging/application/submit-claim')
 
 module.exports = [
   {
@@ -170,15 +170,17 @@ module.exports = [
   },
   {
     method: 'POST',
-    path: '/api/claim/submit-claim',
+    path: '/api/claim/submit-claim/{sessionId}',
     options: {
       description: 'Submit claim data - queue replacement',
       handler: async (request, h) => {
         try {
-          const claimData = request.payload
-          console.log('claimData ======>', claimData)
-          const result = await submitClaimData(claimData)
-          console.log('result ======>', result)
+          console.log('Submitting clai request payload', request.payload)
+          const result = await submitClaim({
+            body: request.payload,
+            sessionId: request.params.sessionId,
+            isRestApi: true
+          })
           return h.response({ result }).code(200)
         } catch (error) {
           console.error('Failed to submit claim or already claimed ', error)

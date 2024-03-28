@@ -89,14 +89,9 @@ const processApplication = async (msg) => {
     }
 
     console.log(`Returning response : ${JSON.stringify(response)} with sessionID ${sessionId} and messageID ${messageId}.`)
-
-    await sendMessage(response,
-      applicationResponseMsgType,
-      applicationResponseQueue,
-      {
-        sessionId
-      }
-    )
+    if (messageId !== 'RESTAPI') {
+      await sendMessage(response, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    }
 
     if (applicationData.offerStatus === 'accepted') {
       await sendFarmerConfirmationEmail(
@@ -122,20 +117,28 @@ const processApplication = async (msg) => {
         sessionId
       }
     })
+    if (messageId === 'RESTAPI') {
+      return response
+    }
   } catch (error) {
     console.error('Failed to process application', error)
     appInsights.defaultClient.trackException({ exception: error })
-    sendMessage(
-      {
-        applicationState: error.applicationState ? error.applicationState : states.failed,
-        applicationReference: existingApplicationReference
-      },
-      applicationResponseMsgType,
-      applicationResponseQueue,
-      {
-        sessionId
-      }
-    )
+    const errorResponse = {
+      applicationState: states.failed,
+      applicationReference: existingApplicationReference
+    }
+    if (messageId !== 'RESTAPI') {
+      sendMessage(
+        errorResponse,
+        applicationResponseMsgType,
+        applicationResponseQueue,
+        {
+          sessionId
+        }
+      )
+    } else {
+      return errorResponse
+    }
   }
 }
 
