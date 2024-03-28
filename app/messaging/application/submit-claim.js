@@ -13,21 +13,30 @@ function isUpdateSuccessful (res) {
 }
 
 const submitClaim = async (message) => {
+  const msgBody = message?.body
+  const isRestApi = message?.isRestApi
+  const { reference, data } = msgBody
+
   try {
-    const msgBody = message.body
     if (validateSubmitClaim(msgBody)) {
       console.log(`Received claim submit request - ${JSON.stringify(msgBody)}`)
-      const { reference, data } = msgBody
+
       const application = await get(reference)
 
+      console.log('application data values', application.dataValues)
+
       if (!application.dataValues) {
-        return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+        return !isRestApi
+          ? sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+          : `Application not found {state: notFound, sessionId: ${message.sessionId}} for reference ${reference} in submitClaim`
       }
 
       const claimStatusIds = [statusIds.inCheck, statusIds.readyToPay, statusIds.rejected, statusIds.onHold, statusIds.recommendToPay, statusIds.recommendToReject]
 
       if (application.dataValues.claimed || claimStatusIds.includes(application.dataValues.statusId)) {
-        return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+        return !isRestApi
+          ? sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+          : `Application alreadyClaimed {state: alreadyClaimed, sessionId: ${message.sessionId}} for reference ${reference} in submitClaim`
       }
 
       const { claimed, statusId } = await requiresComplianceCheck('application')
@@ -38,16 +47,18 @@ const submitClaim = async (message) => {
 
       if (updateSuccess && statusId === statusIds.readyToPay) {
         console.log(`Application with reference ${reference} has been marked as ready to pay.`)
-        // sending message to payment queue
-        await sendMessage(
-          {
-            reference,
-            sbi: application.dataValues.data.organisation.sbi,
-            whichReview: application.dataValues.data.whichReview
-          }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: message.sessionId })
+        if (!isRestApi) {
+          await sendMessage(
+            {
+              reference,
+              sbi: application.dataValues.data.organisation.sbi,
+              whichReview: application.dataValues.data.whichReview
+            }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: message.sessionId })
+        }
       }
-
-      await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+      if (!isRestApi) {
+        await sendMessage({ state: updateSuccess ? success : failed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+      }
 
       if (updateSuccess) {
         await sendFarmerClaimConfirmationEmail(application.dataValues.data.organisation.email, reference, application.dataValues.data.organisation.orgEmail)
@@ -62,13 +73,18 @@ const submitClaim = async (message) => {
           sbi: application.dataValues.data.organisation.sbi
         }
       })
+      return updateSuccess ? success : failed
     } else {
-      return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+      return !isRestApi
+        ? sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+        : `Application validation error {state: error, sessionId: ${message.sessionId}} for reference ${reference} in submitClaim`
     }
   } catch (err) {
     appInsights.defaultClient.trackException({ exception: err })
     console.error(`failed to submit claim for request ${JSON.stringify(message.body)}`, err)
-    return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+    return !isRestApi
+      ? sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
+      : `Failed to submit claim {state: error, sessionId: ${message.sessionId}} for request ${JSON.stringify(message.body)}`
   }
 }
 
