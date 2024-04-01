@@ -39,6 +39,7 @@ jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.
 
 describe(('Store application in database'), () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
+  const messageId = '111111'
   const email = 'email@domain.com'
   const name = 'name-on-org'
   const message = {
@@ -59,7 +60,8 @@ describe(('Store application in database'), () => {
         isTest: true
       }
     },
-    sessionId
+    sessionId,
+    messageId
   }
 
   beforeEach(() => {
@@ -76,7 +78,6 @@ describe(('Store application in database'), () => {
 
   test('successfully submits application', async () => {
     await processApplication(message)
-
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
       reference: '',
@@ -87,6 +88,21 @@ describe(('Store application in database'), () => {
     }))
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+  })
+  test('successfully submits application but send Message not called', async () => {
+    await processApplication(message)
+    message.messageId = 'RESTAPI'
+    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+      reference: '',
+      data: message.body,
+      createdBy: 'admin',
+      createdAt: expect.any(Date),
+      statusId: applicationStatus.agreed
+    }))
+    if (messageId === 'RESTAPI') {
+      expect(sendMessage).toHaveBeenCalledTimes(0)
+    }
   })
 
   describe('Submits an existing application', () => {
@@ -132,8 +148,17 @@ describe(('Store application in database'), () => {
         createdAt: expect.any(Date),
         statusId: applicationStatus.agreed
       }))
-      expect(sendMessage).toHaveBeenCalledTimes(1)
-      expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+      if (message.messageId !== 'RESTAPI') {
+        expect(sendMessage).toHaveBeenCalledTimes(1)
+        expect(sendMessage).toHaveBeenCalledWith({
+          applicationState: states.submitted,
+          applicationReference: MOCK_REFERENCE
+        },
+        applicationResponseMsgType,
+        applicationResponseQueue, {
+          sessionId
+        })
+      }
     })
 
     describe('when endemics toggle is enabled', () => {
@@ -165,18 +190,20 @@ describe(('Store application in database'), () => {
             createdAt: mockApplicationDate
           })}`)
         )
-        expect(sendMessage).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledWith(
-          {
-            applicationState: states.alreadyExists,
-            applicationReference: MOCK_REFERENCE
-          },
-          applicationResponseMsgType,
-          applicationResponseQueue,
-          {
-            sessionId
-          }
-        )
+        if (message.messageId !== 'RESTAPI') {
+          expect(sendMessage).toHaveBeenCalledTimes(1)
+          expect(sendMessage).toHaveBeenCalledWith(
+            {
+              applicationState: states.alreadyExists,
+              applicationReference: MOCK_REFERENCE
+            },
+            applicationResponseMsgType,
+            applicationResponseQueue,
+            {
+              sessionId
+            }
+          )
+        }
       })
 
       test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
@@ -198,18 +225,20 @@ describe(('Store application in database'), () => {
 
         expect(applicationRepository.set).toHaveBeenCalledTimes(1)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledWith(
-          {
-            applicationState: states.submitted,
-            applicationReference: MOCK_REFERENCE
-          },
-          applicationResponseMsgType,
-          applicationResponseQueue,
-          {
-            sessionId
-          }
-        )
+        if (message.messageId !== 'RESTAPI') {
+          expect(sendMessage).toHaveBeenCalledTimes(1)
+          expect(sendMessage).toHaveBeenCalledWith(
+            {
+              applicationState: states.submitted,
+              applicationReference: MOCK_REFERENCE
+            },
+            applicationResponseMsgType,
+            applicationResponseQueue,
+            {
+              sessionId
+            }
+          )
+        }
       })
     })
 
@@ -244,18 +273,20 @@ describe(('Store application in database'), () => {
             createdAt: mockApplicationDate
           })}`)
         )
-        expect(sendMessage).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledWith(
-          {
-            applicationState: states.alreadyExists,
-            applicationReference: MOCK_REFERENCE
-          },
-          applicationResponseMsgType,
-          applicationResponseQueue,
-          {
-            sessionId
-          }
-        )
+        if (message.messageId !== 'RESTAPI') {
+          expect(sendMessage).toHaveBeenCalledTimes(1)
+          expect(sendMessage).toHaveBeenCalledWith(
+            {
+              applicationState: states.alreadyExists,
+              applicationReference: MOCK_REFERENCE
+            },
+            applicationResponseMsgType,
+            applicationResponseQueue,
+            {
+              sessionId
+            }
+          )
+        }
       })
 
       test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
@@ -276,18 +307,20 @@ describe(('Store application in database'), () => {
 
         expect(applicationRepository.set).toHaveBeenCalledTimes(1)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledWith(
-          {
-            applicationState: states.submitted,
-            applicationReference: MOCK_REFERENCE
-          },
-          applicationResponseMsgType,
-          applicationResponseQueue,
-          {
-            sessionId
-          }
-        )
+        if (message.messageId !== 'RESTAPI') {
+          expect(sendMessage).toHaveBeenCalledTimes(1)
+          expect(sendMessage).toHaveBeenCalledWith(
+            {
+              applicationState: states.submitted,
+              applicationReference: MOCK_REFERENCE
+            },
+            applicationResponseMsgType,
+            applicationResponseQueue,
+            {
+              sessionId
+            }
+          )
+        }
       })
     })
 
@@ -323,18 +356,20 @@ describe(('Store application in database'), () => {
             createdAt: mockApplicationDate
           })}`)
         )
-        expect(sendMessage).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledWith(
-          {
-            applicationState: states.alreadyExists,
-            applicationReference: MOCK_REFERENCE
-          },
-          applicationResponseMsgType,
-          applicationResponseQueue,
-          {
-            sessionId
-          }
-        )
+        if (message.messageId !== 'RESTAPI') {
+          expect(sendMessage).toHaveBeenCalledTimes(1)
+          expect(sendMessage).toHaveBeenCalledWith(
+            {
+              applicationState: states.alreadyExists,
+              applicationReference: MOCK_REFERENCE
+            },
+            applicationResponseMsgType,
+            applicationResponseQueue,
+            {
+              sessionId
+            }
+          )
+        }
       })
 
       test('throws an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
@@ -363,18 +398,20 @@ describe(('Store application in database'), () => {
             createdAt: mockApplicationDate
           })}`)
         )
-        expect(sendMessage).toHaveBeenCalledTimes(1)
-        expect(sendMessage).toHaveBeenCalledWith(
-          {
-            applicationState: states.alreadyExists,
-            applicationReference: MOCK_REFERENCE
-          },
-          applicationResponseMsgType,
-          applicationResponseQueue,
-          {
-            sessionId
-          }
-        )
+        if (message.messageId !== 'RESTAPI') {
+          expect(sendMessage).toHaveBeenCalledTimes(1)
+          expect(sendMessage).toHaveBeenCalledWith(
+            {
+              applicationState: states.alreadyExists,
+              applicationReference: MOCK_REFERENCE
+            },
+            applicationResponseMsgType,
+            applicationResponseQueue,
+            {
+              sessionId
+            }
+          )
+        }
       })
     })
   })
@@ -395,8 +432,10 @@ describe(('Store application in database'), () => {
       createdAt: expect.any(Date),
       statusId: applicationStatus.notAgreed
     }))
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    if (message.messageId !== 'RESTAPI') {
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledWith({ applicationState: states.submitted, applicationReference: MOCK_REFERENCE }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    }
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
   })
 
@@ -406,15 +445,19 @@ describe(('Store application in database'), () => {
     await processApplication(message)
 
     expect(sendFarmerConfirmationEmail).not.toHaveBeenCalled()
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationReference: null, applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    if (message.messageId !== 'RESTAPI') {
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledWith({ applicationReference: null, applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    }
   })
 
   test('Application submission message validation failed', async () => {
     delete message.body.organisation.email
     await processApplication(message)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ applicationReference: null, applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    if (message.messageId !== 'RESTAPI') {
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+      expect(sendMessage).toHaveBeenCalledWith({ applicationReference: null, applicationState: states.failed }, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+    }
   })
 })
