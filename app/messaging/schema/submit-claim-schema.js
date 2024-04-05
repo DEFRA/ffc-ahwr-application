@@ -39,7 +39,6 @@ const validateSubmitClaim = (event) => {
     console.log('Submit claim validation error:', util.inspect(validate.error, false, null, true))
     return false
   }
-
   return true
 }
 
