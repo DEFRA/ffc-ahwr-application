@@ -17,7 +17,8 @@ jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.
 describe(('Submit claim tests'), () => {
   const reference = 'AHWR-1234-5678'
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
-  const message = { body: { reference }, sessionId }
+  const isRestApi = false
+  const message = { body: { reference }, sessionId, isRestApi }
 
   beforeAll(async () => {
     jest.mock('../../../../../app/config', () => ({
@@ -55,21 +56,21 @@ describe(('Submit claim tests'), () => {
     expect(requiresComplianceCheck).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+    !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
     if (state === success && statusId === 9) {
       // if ready to pay reply message and payment message should be sent
-      expect(sendMessage).toHaveBeenCalledTimes(2)
+      !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(2)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference, orgEmail)
-      expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
+      !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     } else if (state === success && statusId === 5) {
       // if in check only reply message should be sent
-      expect(sendMessage).toHaveBeenCalledTimes(1)
+      !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     } else {
-      expect(sendMessage).toHaveBeenCalledTimes(1)
-      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+      !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
+      !isRestApi && expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     }
   })
@@ -90,8 +91,8 @@ describe(('Submit claim tests'), () => {
 
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+    !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
+    !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('error occurring return error state', async () => {
@@ -101,14 +102,20 @@ describe(('Submit claim tests'), () => {
 
     expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+    !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
+    !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('submit claim message validation failed', async () => {
     message.body.test = 'test'
     await submitClaim(message)
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+    !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
+    !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+  })
+  test('submit claim message validation failed', async () => {
+    message.body.test = 'test'
+    await submitClaim(message)
+    !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
+    !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 })
