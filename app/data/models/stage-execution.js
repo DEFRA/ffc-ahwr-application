@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    claimOrApplication: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     stageConfigurationId: {
       type: DataTypes.SMALLINT,
       allowNull: false
