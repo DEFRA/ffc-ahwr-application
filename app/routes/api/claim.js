@@ -1,4 +1,6 @@
 const Joi = require('joi')
+const { v4: uuid } = require('uuid')
+const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const appInsights = require('applicationinsights')
 const {
   speciesNumbers: { yes, no },
@@ -12,6 +14,7 @@ const {
 const {
   set,
   getByReference,
+  updateByReference,
   getByApplicationReference
 } = require('../../repositories/claim-repository')
 const { compliance } = require('../../config')
@@ -164,6 +167,46 @@ module.exports = [
         const claim = await set({ ...request.payload, statusId })
 
         return h.response(claim).code(200)
+      }
+    }
+  }, {
+    method: 'PUT',
+    path: '/api/claim/update-by-reference',
+    options: {
+      validate: {
+        payload: Joi.object({
+          reference: Joi.string().valid().required(),
+          status: Joi.number().valid(5, 9, 10).required(),
+          user: Joi.string().required()
+        }),
+        failAction: async (_request, h, err) => {
+          console.log(`Payload validation error ${err}`)
+          return h.response({ err }).code(400).takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const claim = await getByReference(request.payload.reference)
+        if (!claim.dataValues) {
+          return h.response('Not Found').code(404).takeover()
+        }
+
+        if (request.payload.status === statusIds.readyToPay){
+          const application  = await get(claim.dataValues.applicationReference)
+
+          await sendMessage(
+            {
+              reference: request.payload.reference,
+              sbi: application.dataValues.data.organisation.sbi,
+              whichReview: claim.dataValues.data.typeOfLivestock
+            }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: uuid() }
+          )
+        }
+
+        await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
+
+        console.log(`Status of claim with reference ${request.payload.reference} successfully updated to ${request.payload.status}`)
+
+        return h.response().code(200)
       }
     }
   }
