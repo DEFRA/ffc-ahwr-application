@@ -1,5 +1,6 @@
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
+const sendMessage = require('../../messaging/send-message')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const appInsights = require('applicationinsights')
 const {
@@ -190,8 +191,8 @@ module.exports = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        if (request.payload.status === statusIds.readyToPay){
-          const application  = await get(claim.dataValues.applicationReference)
+        if (request.payload.status === statusIds.readyToPay) {
+          const application = await get(claim.dataValues.applicationReference)
 
           await sendMessage(
             {
