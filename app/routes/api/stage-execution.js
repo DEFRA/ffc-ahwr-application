@@ -89,6 +89,12 @@ module.exports = [{
         case 'Recommend to reject':
           statusId = statusIds.recommendToReject
           break
+        case 'Paid':
+          statusId = statusIds.paid
+          break
+        case 'Rejected':
+          statusId = statusIds.rejected
+          break
       }
 
       if (statusId) {
