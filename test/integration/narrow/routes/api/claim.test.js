@@ -1,10 +1,12 @@
 const claimRepository = require('../../../../../app/repositories/claim-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
+const sendMessage = require('../../../../../app/messaging/send-message')
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
+jest.mock('../../../../../app/messaging/send-message')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -269,6 +271,91 @@ describe('Post claim test', () => {
         createdBy: undefined
       }
     }
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(400)
+  })
+})
+
+describe('PUT claim test', () => {
+  const server = require('../../../../../app/server')
+
+  beforeEach(async () => {
+    jest.clearAllMocks()
+    await server.start()
+  })
+
+  afterEach(async () => {
+    await server.stop()
+  })
+
+  test.each([
+    { statusId: 5 },
+    { statusId: 9 },
+    { statusId: 10 }
+  ])('Update claim statusId to statusId $statusId', async ({ statusId }) => {
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'AHWR-0F5D-4A26',
+        status: statusId,
+        user: 'admin'
+      }
+    }
+
+    claimRepository.getByReference.mockResolvedValue({
+      dataValues: { reference: 'AHWR-0F5D-4A26', data: { typeOfLivestock: 'sheep' } }
+    })
+
+    claimRepository.updateByReference.mockResolvedValue({
+      dataValues: { reference: 'AHWR-0F5D-4A26', statusId }
+    })
+
+    applicationRepository.get.mockResolvedValue({
+      dataValues: {
+        data: {
+          organisation: {
+            sbi: 'sbi'
+          }
+        }
+      }
+    })
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(sendMessage).toHaveBeenCalledTimes(statusId === 9 ? 1 : 0)
+  })
+  test('Update claim should failed when claim is not exist', async () => {
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'AHWR-0F5D-4A26',
+        status: 9,
+        user: 'admin'
+      }
+    }
+
+    claimRepository.getByReference.mockResolvedValue({})
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(404)
+  })
+  test('Update claim should failed when reference is not provieded', async () => {
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        status: 9,
+        user: 'admin'
+      }
+    }
+
+    claimRepository.getByReference.mockResolvedValue({})
 
     const res = await server.inject(options)
 
