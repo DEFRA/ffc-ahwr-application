@@ -203,7 +203,7 @@ module.exports = [
           )
         }
 
-        await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
+        await updateByReference({ reference: request.payload.reference, statusId: request.payload.status, updatedBy: request.payload.user })
 
         console.log(`Status of claim with reference ${request.payload.reference} successfully updated to ${request.payload.status}`)
 
