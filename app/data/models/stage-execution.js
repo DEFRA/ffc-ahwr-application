@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     claimOrApplication: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     stageConfigurationId: {
       type: DataTypes.SMALLINT,
