@@ -1,4 +1,4 @@
-const processApplication = require('../../../../../app/messaging/application/process-application')
+const { processApplication } = require('../../../../../app/messaging/application/process-application')
 const boom = require('@hapi/boom')
 
 const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
