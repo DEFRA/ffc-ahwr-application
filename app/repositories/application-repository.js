@@ -257,7 +257,6 @@ async function updateByReference (data) {
         raisedOn: updatedRecord.dataValues.updatedAt
       })
     }
-
     return result
   } catch (error) {
     console.error('Error updating application by reference:', error)
