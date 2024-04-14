@@ -32,7 +32,7 @@
     </createTable>
   </changeSet>
   <changeSet author="Elamin Fadlalla" id="1">
-    <tagDatabase tag="v1.26" />
+    <tagDatabase tag="v1.27" />
   </changeSet>
   <changeSet author="Elamin Fadlalla" id="3">
      <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="contact_history" constraintName="fk_application_reference" referencedColumnNames="reference" referencedTableName="application" />
