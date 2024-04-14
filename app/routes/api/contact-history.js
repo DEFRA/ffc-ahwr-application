@@ -23,7 +23,6 @@ module.exports = [{
     },
     handler: async (request, h) => {
       const applications = await getLatestApplicationsBySbi(request.payload.sbi)
-      console.log('%%%%%%%%%%%%%%personSummary', JSON.stringify(applications))
       if (!applications.length) {
         return h.response('No applications found to update').code(200).takeover()
       }
@@ -47,7 +46,6 @@ module.exports = [{
           })
           dataCopy.organisation.address = request.payload.address
         }
-        console.log('****************contactHistory', dataCopy.organisation)
 
         if (contactHistory.length > 0) {
           await updateByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user })
@@ -61,7 +59,6 @@ module.exports = [{
             })
           })
         }
-        console.log(`Status of application with reference ${application.reference} successfully updated to ${request.payload.status}`)
       })
       return h.response().code(200)
     }

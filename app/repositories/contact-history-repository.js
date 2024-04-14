@@ -6,7 +6,7 @@ const { models } = require('../data')
  * @returns contact history object.
  */
 async function getAllByApplicationReference (applicationReference) {
-  const result = models.contact_history.findAll({
+  const result = await models.contact_history.findAll({
     where: {
       applicationReference: applicationReference.toUpperCase()
     },
