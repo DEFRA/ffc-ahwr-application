@@ -91,36 +91,38 @@ describe('Contact history Repository test', () => {
 
     const contactHistory = [
       {
-        id: '0ad33322-c833-40c9-8116-0a293f0850a1',
-        reference: 'AHWR-0AD3-3322',
+        id: 'ce758b2c-5e2c-4957-9864-ebc4451f6b1f',
+        applicationReference: 'AHWR-9049-6416',
+        claimReference: null,
         data: {
-          reference: null,
-          declaration: true,
-          offerStatus: 'accepted',
-          whichReview: 'sheep',
-          organisation: {
-            sbi: '106785889',
-            name: 'Mr Jack Whaling',
-            email: 'johnallany@nallanhoje.com.test',
-            address:
-              'Elmtree Farm,Gamlingay,NORTH MILFORD GRANGE,LISKEARD,DL12 9TY,United Kingdom',
-            farmerName: 'John Allan'
-          },
-          eligibleSpecies: 'yes',
-          confirmCheckDetails: 'yes'
+          field: 'email',
+          newValue: '4fd3vc4fhvcjjh5@testvest.com',
+          oldValue: '4fdfhvcjjh5@testvest.com'
         },
-        claimed: false,
-        createdAt: '2023-12-20T15:32:59.262Z',
-        updatedAt: '2023-12-20T15:32:59.359Z',
+        sbi: '107204504',
+        createdAt: '2024-04-14T20:00:46.045Z',
+        updatedAt: '2024-04-14T20:00:46.399Z',
         createdBy: 'admin',
-        updatedBy: null,
-        statusId: 1,
-        type: 'VV',
-        status: {
-          status: 'AGREED'
-        }
-      }
-    ]
+        updatedBy: null
+      },
+      {
+        id: 'c528abb9-7d1a-4617-ae00-9db08d072e86',
+        applicationReference: 'AHWR-9049-6416',
+        claimReference: null,
+        data: {
+          field: 'email',
+          newValue: '4fdfhvcjjh5@testvest.com',
+          oldValue: '4fdfh5vvcjjh5@testvest.com',
+          createdBy: 'Admin',
+          createdOn: '2024-04-12T14:54:55.727Z'
+        },
+        sbi: '107204504',
+        createdAt: '2024-04-12T14:54:55.893Z',
+        updatedAt: '2024-04-12T14:54:55.950Z',
+        createdBy: 'admin',
+        updatedBy: null
+      }]
+
     when(data.models.contact_history.findAll)
       .calledWith({
         where: { applicationReference: application.reference.toUpperCase() },
@@ -132,7 +134,12 @@ describe('Contact history Repository test', () => {
       application.reference
     )
 
+    const sortedContactHistory = contactHistory.sort((a, b) =>
+      new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+    )
+
     expect(data.models.contact_history.findAll).toHaveBeenCalledTimes(1)
     expect(contactHistory).toEqual(result)
+    expect(result).toStrictEqual(sortedContactHistory)
   })
 })
