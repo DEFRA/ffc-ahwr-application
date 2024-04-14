@@ -6,6 +6,7 @@ module.exports = {
   rejected: 10,
   withdrawn: 2,
   onHold: 11,
+  paid: 8,
   recommendToPay: 12,
   recommendToReject: 13
 }

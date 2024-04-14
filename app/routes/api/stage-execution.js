@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const claim = require('../../repositories/claim-repository')
 const { get, updateByReference } = require('../../repositories/application-repository')
 const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
 const statusIds = require('../../constants/application-status')
@@ -35,6 +36,7 @@ module.exports = [{
   options: {
     validate: {
       payload: Joi.object({
+        claimOrApplication: Joi.string().valid('application', 'claim').required(),
         applicationReference: Joi.string().required(),
         stageConfigurationId: Joi.number().greater(0).required(),
         executedAt: Joi.date().default(new Date()),
@@ -58,17 +60,28 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      const application = await get(request.payload.applicationReference)
+      let application
+
+      if (request.payload.claimOrApplication === 'claim') {
+        application = await claim.getByReference(request.payload.applicationReference)
+      }
+
+      if (request.payload.claimOrApplication === 'application') {
+        application = await get(request.payload.applicationReference)
+      }
+
       if (!application.dataValues) {
         return h.response('Reference not found').code(400).takeover()
       }
+
       const response = await set(
         request.payload,
         application
       )
+
       // Update status on basis of action
       let statusId = null
-      console.log(request.payload)
+
       switch (request.payload.action.action) {
         case 'Recommend to pay':
           statusId = statusIds.recommendToPay
@@ -76,10 +89,20 @@ module.exports = [{
         case 'Recommend to reject':
           statusId = statusIds.recommendToReject
           break
+        case 'Paid':
+          statusId = statusIds.paid
+          break
+        case 'Rejected':
+          statusId = statusIds.rejected
+          break
       }
+
       if (statusId) {
-        console.log(request.payload)
-        await updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
+        if (request.payload.claimOrApplication === 'claim') {
+          await claim.updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
+        } else {
+          await updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
+        }
       }
       console.log('Stage execution inserted: ', response.dataValues)
       return h.response(response).code(200)
