@@ -142,4 +142,86 @@ describe('Contact history Repository test', () => {
     expect(contactHistory).toEqual(result)
     expect(result).toStrictEqual(sortedContactHistory)
   })
+
+  test.only('should sort contact history by createdAt date descending', async () => {
+    const application = {
+      id: '0ad33322-c833-40c9-8116-0a293f0850a1',
+      reference: 'AHWR-0AD3-3322',
+      data: {
+        reference: null,
+        declaration: true,
+        offerStatus: 'accepted',
+        whichReview: 'sheep',
+        organisation: {
+          sbi: '106785889',
+          name: 'Mr Jack Whaling',
+          email: 'johnallany@nallanhoje.com.test',
+          address:
+            'Elmtree Farm,Gamlingay,NORTH MILFORD GRANGE,LISKEARD,DL12 9TY,United Kingdom',
+          farmerName: 'John Allan'
+        },
+        eligibleSpecies: 'yes',
+        confirmCheckDetails: 'yes'
+      },
+      claimed: false,
+      createdAt: '2023-12-20T15:32:59.262Z',
+      updatedAt: '2023-12-20T15:32:59.359Z',
+      createdBy: 'admin',
+      updatedBy: null,
+      statusId: 1,
+      type: 'VV',
+      status: {
+        status: 'AGREED'
+      }
+    }
+
+    const contactHistory = [
+      {
+        id: 'ce758b2c-5e2c-4957-9864-ebc4451f6b1f',
+        applicationReference: 'AHWR-9049-6416',
+        claimReference: null,
+        data: {
+          field: 'email',
+          newValue: '4fd3vc4fhvcjjh5@testvest.com',
+          oldValue: '4fdfhvcjjh5@testvest.com'
+        },
+        sbi: '107204504',
+        createdAt: '2024-04-14T20:00:46.045Z',
+        updatedAt: '2024-04-14T20:00:46.399Z',
+        createdBy: 'admin',
+        updatedBy: null
+      },
+      {
+        id: 'c528abb9-7d1a-4617-ae00-9db08d072e86',
+        applicationReference: 'AHWR-9049-6416',
+        claimReference: null,
+        data: {
+          field: 'email',
+          newValue: '4fdfhvcjjh5@testvest.com',
+          oldValue: '4fdfh5vvcjjh5@testvest.com',
+          createdBy: 'Admin',
+          createdOn: '2024-04-12T14:54:55.727Z'
+        },
+        sbi: '107204504',
+        createdAt: '2024-04-12T14:54:55.893Z',
+        updatedAt: '2024-04-12T14:54:55.950Z',
+        createdBy: 'admin',
+        updatedBy: null
+      }]
+
+    when(data.models.contact_history.findAll)
+      .calledWith({
+        where: { applicationReference: application.reference.toUpperCase() },
+        order: [['createdAt', 'DESC']]
+      })
+      .mockResolvedValue(contactHistory)
+
+    const result = await repository.getAllByApplicationReference(
+      application.reference
+    )
+
+    expect(data.models.contact_history.findAll).toHaveBeenCalledTimes(1)
+    expect(new Date(result[0].createdAt)).toEqual(new Date('2024-04-14T20:00:46.045Z'))
+    expect(new Date(result[1].createdAt)).toEqual(new Date('2024-04-12T14:54:55.893Z'))
+  })
 })
