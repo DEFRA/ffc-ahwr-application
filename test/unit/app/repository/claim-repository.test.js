@@ -218,4 +218,41 @@ describe('Application Repository test', () => {
     expect(data.models.claim.findOne).toHaveBeenCalledTimes(1)
     expect(claim).toEqual(result)
   })
+  test('Update claim by reference', async () => {
+    const claim = {
+      id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
+      reference: 'AHWR-5602-BAC6',
+      applicationReference: 'AHWR-0AD3-3322',
+      data: {
+        vetsName: 'vetsName',
+        dateOfVisit: '2024-02-01T07:24:29.224Z',
+        testResults: 'testResult',
+        typeOfReview: 'typeOfReview',
+        dateOfTesting: '2024-02-01T07:24:29.224Z',
+        laboratoryURN: '12345566',
+        vetRCVSNumber: '12345',
+        detailsCorrect: 'yes',
+        typeOfLivestock: 'sheep',
+        numberAnimalsTested: '12',
+        numberOfOralFluidSamples: '23',
+        minimumNumberAnimalsRequired: '20'
+      },
+      statusId: 11,
+      type: 'R',
+      createdAt: '2024-02-01T07:24:29.224Z',
+      updatedAt: '2024-02-01T08:02:30.356Z',
+      createdBy: 'admin',
+      updatedBy: null,
+      status: {
+        status: 'ON HOLD'
+      }
+    }
+
+    when(data.models.claim.update).mockResolvedValue(claim)
+
+    const result = await repository.updateByReference(claim)
+
+    expect(data.models.claim.update).toHaveBeenCalledTimes(1)
+    expect(claim).toEqual(result)
+  })
 })

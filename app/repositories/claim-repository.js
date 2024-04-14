@@ -50,8 +50,25 @@ async function set (data) {
   return result
 }
 
+/**
+ *
+ * @param {*} data
+ * @returns
+ */
+async function updateByReference (data) {
+  const result = await models.claim.update(data, {
+    where: {
+      reference: data.reference
+    },
+    returning: true
+  })
+
+  return result
+}
+
 module.exports = {
   set,
   getByReference,
+  updateByReference,
   getByApplicationReference
 }

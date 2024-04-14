@@ -2,11 +2,14 @@ const { ValidationError } = require('joi')
 const stageExecutionRepository = require('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/application-repository')
+jest.mock('../../../../../app/repositories/claim-repository')
 const { get, updateByReference } = require('../../../../../app/repositories/application-repository')
+const claim = require('../../../../../app/repositories/claim-repository')
 const { when, resetAllWhenMocks } = require('jest-when')
 
 const data = {
   applicationReference: 'AHWR-0000-0000',
+  claimOrApplication: 'application',
   stageConfigurationId: 2,
   executedBy: 'Mr User',
   processedAt: null,
@@ -18,6 +21,7 @@ const data = {
 const mockResponse = {
   id: 13,
   applicationReference: 'AHWR-0000-0000',
+  claimOrApplication: 'application',
   stageConfigurationId: 2,
   executedBy: 'Mr User',
   processedAt: null,
@@ -103,6 +107,41 @@ describe('Stage execution test', () => {
   })
 
   describe(`POST ${url} route`, () => {
+    test.each([
+      { action: 'Paid' },
+      { action: 'Rejected' },
+      { action: 'Recommend to pay' },
+      { action: 'Recommend to reject' }
+    ])('returns 200 when Recommend to pay', async ({ action }) => {
+      const mockGet = {
+        dataValues: {
+          id: 1,
+          data: {
+            organisation: {
+              sbi: 123
+            }
+          }
+        }
+      }
+
+      when(claim.getByReference).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(claim.updateByReference).mockResolvedValue({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
+      when(get).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(stageExecutionRepository.set).mockResolvedValue({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
+
+      const options = {
+        method: 'POST',
+        url,
+        payload: { ...data, claimOrApplication: 'claim', action: { action } }
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
+      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, claimOrApplication: 'claim', action: { action }, executedAt: expect.any(Date) }, mockGet)
+      expect(claim.updateByReference).toHaveBeenCalledTimes(1)
+      expect(res.result).toEqual({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
+    })
     test('returns 200 when Recommend to pay', async () => {
       const mockGet = {
         dataValues: {
@@ -125,6 +164,7 @@ describe('Stage execution test', () => {
         payload: data
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(200)
       expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
       expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, mockGet)
