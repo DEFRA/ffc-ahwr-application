@@ -143,7 +143,7 @@ describe('Contact history Repository test', () => {
     expect(result).toStrictEqual(sortedContactHistory)
   })
 
-  test.only('should sort contact history by createdAt date descending', async () => {
+  test('should sort contact history by createdAt date descending', async () => {
     const application = {
       id: '0ad33322-c833-40c9-8116-0a293f0850a1',
       reference: 'AHWR-0AD3-3322',
