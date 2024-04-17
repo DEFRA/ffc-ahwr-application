@@ -23,6 +23,7 @@ const submitClaimSchema = joi.object({
       name: joi.string().required(),
       sbi: joi.string().required(),
       crn: joi.string().optional(),
+      frn: joi.string().optional(),
       cph: joi.string().optional(),
       address: joi.string().required(),
       email: joi.string().required(),
