@@ -19,7 +19,16 @@ const applicationSchema = joi.object({
     email: joi.string().required().lowercase().email({ tlds: false }),
     orgEmail: joi.string().allow(null).optional().lowercase().email({ tlds: false }),
     isTest: joi.boolean().optional()
-  })
+  }),
+  contactHistory: joi.array().items(
+    joi.object({
+      createdBy: joi.string(),
+      createdOn: joi.string(),
+      field: joi.string(),
+      oldValue: joi.string(),
+      newValue: joi.string()
+    }).allow(null).optional()
+  )
 })
 
 const endemicsApplicationSchema = joi.object({
@@ -41,7 +50,16 @@ const endemicsApplicationSchema = joi.object({
     isTest: joi.boolean().optional(),
     userType: joi.string().valid('newUser', 'existingUser').required()
   }),
-  type: joi.string().valid('VV', 'EE').required()
+  type: joi.string().valid('VV', 'EE').required(),
+  contactHistory: joi.array().items(
+    joi.object({
+      createdBy: joi.string(),
+      createdOn: joi.string(),
+      field: joi.string(),
+      oldValue: joi.string(),
+      newValue: joi.string()
+    }).allow(null).optional()
+  )
 })
 
 const validateApplication = (event) => {

@@ -1,0 +1,41 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet author="Elamin Fadlalla" id="2">
+    <createTable tableName="contact_history">
+      <column name="id" type="UUID" defaultValueComputed="public.uuid_generate_v4()">
+        <constraints nullable="false" primaryKey="true" />
+      </column>
+      <column name="applicationReference" type="VARCHAR(14)">
+        <constraints nullable="false" />
+      </column>
+      <column name="claimReference" type="VARCHAR(14)">
+        <constraints nullable="true" />
+      </column>
+      <column name="data" type="JSONB">
+        <constraints nullable="false" />
+      </column>
+      <column name="sbi" type="VARCHAR(12)">
+        <constraints nullable="false"/>
+      </column>
+      <column defaultValueComputed="now()" name="createdAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="false" />
+      </column>
+      <column name="createdBy" type="VARCHAR(50)">
+        <constraints nullable="false" />
+      </column>
+      <column defaultValueComputed="now()" name="updatedAt" type="TIMESTAMP WITH TIME ZONE">
+        <constraints nullable="true" />
+      </column>
+      <column name="updatedBy" type="VARCHAR(50)">
+        <constraints nullable="true" />
+      </column>
+    </createTable>
+  </changeSet>
+  <changeSet author="Elamin Fadlalla" id="1">
+    <tagDatabase tag="v1.27" />
+  </changeSet>
+  <changeSet author="Elamin Fadlalla" id="3">
+     <addForeignKeyConstraint baseColumnNames="applicationReference" baseTableName="contact_history" constraintName="fk_application_reference" referencedColumnNames="reference" referencedTableName="application" />
+     <addForeignKeyConstraint baseColumnNames="claimReference" baseTableName="contact_history" constraintName="fk_claim_reference" referencedColumnNames="reference" referencedTableName="claim" />
+  </changeSet>
+</databaseChangeLog>
