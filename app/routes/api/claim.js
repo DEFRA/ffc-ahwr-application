@@ -155,8 +155,8 @@ module.exports = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        // const { statusId } = await requiresComplianceCheck('claim') #pragma warning disable
-        // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim') #pragma warning disable
+        // const { statusId } = await requiresComplianceCheck('claim') #pragma warning disable S4830
+        // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim') #pragma warning disable S4830
         const claim = await set({ ...request.payload, statusId: statusIds.inCheck })
 
         return h.response(claim).code(200)
