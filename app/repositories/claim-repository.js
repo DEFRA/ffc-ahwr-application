@@ -66,9 +66,23 @@ async function updateByReference (data) {
   return result
 }
 
+/**
+ * Get all claims that have been claimed
+ * @param {*} claimStatusIds an array of status IDs which indicate that an claim has been claimed
+ * @returns a list of claims
+ */
+async function getAllClaimedClaims (claimStatusIds) {
+  return models.claim.count({
+    where: {
+      statusId: claimStatusIds // shorthand for IN operator
+    }
+  })
+}
+
 module.exports = {
   set,
   getByReference,
   updateByReference,
+  getAllClaimedClaims,
   getByApplicationReference
 }

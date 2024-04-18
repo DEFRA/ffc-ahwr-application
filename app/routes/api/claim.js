@@ -18,10 +18,9 @@ const {
   updateByReference,
   getByApplicationReference
 } = require('../../repositories/claim-repository')
-const { compliance } = require('../../config')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
-const requiresComplianceCheck = require('../../lib/requires-compliance-check')
+// const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 module.exports = [
   {
@@ -156,16 +155,9 @@ module.exports = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        const claimStatusIds = [
-          statusIds.inCheck,
-          statusIds.readyToPay,
-          statusIds.rejected,
-          statusIds.onHold,
-          statusIds.recommendToPay,
-          statusIds.recommendToReject
-        ]
-        const { statusId } = await requiresComplianceCheck(claimStatusIds, compliance.complianceCheckRatio)
-        const claim = await set({ ...request.payload, statusId })
+        // const { statusId } = await requiresComplianceCheck('claim')
+        // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
+        const claim = await set({ ...request.payload, statusId: statusIds.inCheck })
 
         return h.response(claim).code(200)
       }
