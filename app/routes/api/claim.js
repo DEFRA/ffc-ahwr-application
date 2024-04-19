@@ -154,10 +154,10 @@ module.exports = [
         if (!application?.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
-        // BEGIN-NOSCAN
+
         // const { statusId } = await requiresComplianceCheck('claim')
         // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
-        // END-NOSCAN
+        // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
         const claim = await set({ ...request.payload, statusId: statusIds.inCheck })
 
         return h.response(claim).code(200)
