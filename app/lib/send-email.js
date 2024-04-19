@@ -3,7 +3,6 @@ const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue }
 const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
 const appInsights = require('applicationinsights')
-const { or } = require('sequelize')
 
 const send = async (templateId, email, personalisation) => {
   return notifyClient.sendEmail(
