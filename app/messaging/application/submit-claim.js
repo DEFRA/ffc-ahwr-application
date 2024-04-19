@@ -1,5 +1,5 @@
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
-const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue, compliance } = require('../../config')
+const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const { get, updateByReference } = require('../../repositories/application-repository')
@@ -30,7 +30,7 @@ const submitClaim = async (message) => {
         return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
 
-      const { claimed, statusId } = await requiresComplianceCheck(claimStatusIds, compliance.complianceCheckRatio)
+      const { claimed, statusId } = await requiresComplianceCheck('application')
 
       const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 
