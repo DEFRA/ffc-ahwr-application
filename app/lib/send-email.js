@@ -3,6 +3,7 @@ const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue }
 const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
 const appInsights = require('applicationinsights')
+const { or } = require('sequelize')
 
 const send = async (templateId, email, personalisation) => {
   return notifyClient.sendEmail(
@@ -48,9 +49,9 @@ const sendCarbonCopy = async (templateId, personalisation) => {
   }
 }
 
-const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate, email, farmerName, orgData) => {
+const sendFarmerConfirmationEmail = async (reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData) => {
   const { orgName, orgEmail } = orgData
-  await sendMessage({ reference, sbi, whichSpecies, startDate, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  await sendMessage({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
 const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {

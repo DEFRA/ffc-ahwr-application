@@ -104,6 +104,7 @@ const processApplication = async (msg) => {
         applicationData.organisation.sbi,
         applicationData.whichReview,
         application.createdAt,
+        applicationData.organisation.userType,
         applicationData.organisation.email,
         applicationData.organisation.farmerName,
         {
