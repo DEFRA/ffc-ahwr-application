@@ -30,7 +30,7 @@ describe('Send email test', () => {
   test('sendFarmerConfirmationEmail calls sendMessage', async () => {
     const orgData = { orgName, orgEmail }
     sendMessage.mockResolvedValueOnce(true)
-    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData)
+    await sendEmail.sendFarmerConfirmationEmail({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData })
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgData.orgName, orgEmail }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   })
@@ -38,7 +38,7 @@ describe('Send email test', () => {
   test('sendFarmerConfirmationEmail calls sendMessage to organization email', async () => {
     const orgData = { orgName, orgEmail }
     sendMessage.mockResolvedValueOnce(true)
-    await sendEmail.sendFarmerConfirmationEmail(reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData)
+    await sendEmail.sendFarmerConfirmationEmail({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData })
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgData.orgName, orgEmail }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   })

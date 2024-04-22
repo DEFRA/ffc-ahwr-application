@@ -6,7 +6,6 @@ const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
 const validateApplication = require('../schema/process-application-schema')
 const appInsights = require('applicationinsights')
-const { or } = require('sequelize')
 
 function timeLimitDates (application) {
   const start = new Date(application.createdAt)
@@ -99,10 +98,9 @@ const processApplication = async (msg) => {
       }
     )
 
-
-const {organisation:{sbi, userType, email, farmerName, name, orgEmail }, whichReview } = applicationData
-const {reference, createdAt: startDate} = application
-const orgData = { orgName: name, orgEmail: orgEmail }
+    const { organisation: { sbi, userType, email, farmerName, name, orgEmail }, whichReview } = applicationData
+    const { reference, createdAt: startDate } = application
+    const orgData = { orgName: name, orgEmail }
 
     if (applicationData.offerStatus === 'accepted') {
       await sendFarmerConfirmationEmail({
@@ -114,7 +112,7 @@ const orgData = { orgName: name, orgEmail: orgEmail }
         email,
         farmerName,
         orgData
-    })
+      })
     }
 
     appInsights.defaultClient.trackEvent({
