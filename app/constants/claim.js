@@ -1,30 +1,55 @@
-module.exports = {
-  livestockTypes: {
-    beef: 'beef',
-    dairy: 'dairy',
-    pigs: 'pigs',
-    sheep: 'sheep'
+const livestockTypes = {
+  beef: 'beef',
+  dairy: 'dairy',
+  pigs: 'pigs',
+  sheep: 'sheep'
+}
+
+const claimType = {
+  review: 'R',
+  endemics: 'E'
+}
+
+const testResults = {
+  positive: 'positive',
+  negative: 'negative'
+}
+
+const speciesNumbers = {
+  yes: 'yes',
+  no: 'no'
+}
+
+const biosecurity = {
+  yes: 'yes',
+  no: 'no'
+}
+
+const minimumNumberOfAnimalsTested = {
+  [livestockTypes.beef]: {
+    [claimType.review]: 5,
+    [claimType.endemics]: 1
   },
-  claimType: {
-    review: 'R',
-    endemics: 'E'
+  [livestockTypes.dairy]: {
+    [claimType.review]: 5,
+    [claimType.endemics]: 1
   },
-  testResults: {
-    positive: 'positive',
-    negative: 'negative'
+  [livestockTypes.pigs]: {
+    [claimType.review]: 30,
+    [claimType.endemics]: 30
   },
-  speciesNumbers: {
-    yes: 'yes',
-    no: 'no'
-  },
-  biosecurity: {
-    yes: 'yes',
-    no: 'no'
-  },
-  minimumNumberOfOralFluidSamples: 5,
-  minimumNumberOfAnimalsTested: {
-    beef: 5,
-    pigs: 30,
-    sheep: 10
+  [livestockTypes.sheep]: {
+    [claimType.review]: 1,
+    [claimType.endemics]: 1
   }
+}
+
+module.exports = {
+  livestockTypes,
+  claimType,
+  testResults,
+  speciesNumbers,
+  biosecurity,
+  minimumNumberOfOralFluidSamples: 5,
+  minimumNumberOfAnimalsTested
 }
