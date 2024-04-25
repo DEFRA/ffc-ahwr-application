@@ -65,7 +65,7 @@ const raiseClaimEvents = async (event) => {
           data: {
             reference: event.claim.reference,
             applicationReference: event.claim.applicationReference,
-            statusId: event.claim.statusId,
+            statusId: event.claim.statusId
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
@@ -86,7 +86,7 @@ const raiseClaimEvents = async (event) => {
           data: {
             reference: event.claim.reference,
             applicationReference: event.claim.applicationReference,
-            statusId: event.claim.statusId,
+            statusId: event.claim.statusId
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()

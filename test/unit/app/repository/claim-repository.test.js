@@ -32,24 +32,27 @@ describe('Application Repository test', () => {
       },
       statusId: 11,
       type: 'R',
-      createdBy: 'admin'
+      createdBy: 'admin',
+      createdAt: new Date()
     }
 
     const returnedClaimData = {
-      createdAt: '2024-02-01T07:24:29.224Z',
-      id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
-      updatedAt: '2024-02-01T08:02:30.356Z',
-      updatedBy: 'admin',
-      reference: 'AHWR-5602-BAC6',
-      applicationReference: 'AHWR-0AD3-3322',
-      data: {
-        vetsName: 'vetsName',
-        dateOfVisit: '2024-01-22T00:00:00.000Z',
-        testResults: 'testResult'
-      },
-      statusId: 11,
-      type: 'R',
-      createdBy: 'admin'
+      dataValues: {
+        id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
+        updatedAt: '2024-02-01T08:02:30.356Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-5602-BAC6',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {
+          vetsName: 'vetsName',
+          dateOfVisit: '2024-01-22T00:00:00.000Z',
+          testResults: 'testResult'
+        },
+        statusId: 11,
+        type: 'R',
+        createdBy: 'admin',
+        createdAt: new Date()
+      }
     }
 
     when(data.models.claim.create)
