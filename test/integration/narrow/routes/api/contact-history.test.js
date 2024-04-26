@@ -55,7 +55,7 @@ describe('Update contact history test', () => {
     })
   })
   describe('PUT route', () => {
-    test('Update email and address fields in application and add the changes fields to contact history table', async () => {
+    test('Update email, orgEmail, farmerName and address fields in application and add the changed fields to contact history table', async () => {
       const options = {
         method: 'PUT',
         url: '/api/application/contact-history',
@@ -83,7 +83,7 @@ describe('Update contact history test', () => {
               name: 'West Somerset Advice Bureau',
               email: '4fdfhvcjjh5@testvest.com',
               address: 'Oaklands Office Park,Offchurch Lane,CROWLE GRANGE,MOORHOUSE ROAD,COVENTRY,WA14 3RJ,United Kingdom',
-              orgEmail: 'westsomersetadvicebureaux@uaerubecivdatesremostsewo.com.test',
+              orgEmail: 'myorg@test.com',
               farmerName: 'Hayley Penrose-Body'
             },
             eligibleSpecies: 'yes',
@@ -102,7 +102,7 @@ describe('Update contact history test', () => {
 
       expect(res.statusCode).toBe(200)
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-      expect(contactHistoryRepository.set).toHaveBeenCalledTimes(3)
+      expect(contactHistoryRepository.set).toHaveBeenCalledTimes(4)
     })
 
     test('Return 200 without updating contact history if no application found for the sbi', async () => {
@@ -177,7 +177,7 @@ describe('Update contact history test', () => {
       expect(contactHistoryRepository.set).toHaveBeenCalledTimes(0)
     })
 
-    test('Will not call set contact history and updateByReference if there is no change in email and the address', async () => {
+    test('should through error if the sbi is not send', async () => {
       const options = {
         method: 'PUT',
         url: '/api/application/contact-history',
