@@ -96,7 +96,7 @@ module.exports = [
                 .min(
                   minimumNumberOfAnimalsTested[
                     request.payload.data.typeOfLivestock
-                  ]
+                  ][request.payload.type]
                 )
                 .required()
             }),
