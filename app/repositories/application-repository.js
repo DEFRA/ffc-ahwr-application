@@ -242,7 +242,7 @@ async function updateByReference (data) {
       where: {
         reference: data.reference
       },
-      returning: true // Assuming Sequelize and that it supports 'returning'
+      returning: true
     })
 
     const updatedRows = result[0] // Number of affected rows

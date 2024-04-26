@@ -1,4 +1,5 @@
 const { models } = require('../data')
+const eventPublisher = require('../event-publisher')
 
 /**
  * Get claim by reference number
@@ -46,7 +47,12 @@ async function getByApplicationReference (applicationReference) {
  */
 async function set (data) {
   const result = await models.claim.create(data)
-
+  eventPublisher.raiseClaimEvents({
+    message: 'New claim has been created',
+    claim: result.dataValues,
+    raisedBy: result.dataValues.createdBy,
+    raisedOn: result.dataValues.createdAt
+  })
   return result
 }
 
@@ -56,14 +62,31 @@ async function set (data) {
  * @returns
  */
 async function updateByReference (data) {
-  const result = await models.claim.update(data, {
-    where: {
-      reference: data.reference
-    },
-    returning: true
-  })
+  try {
+    const result = await models.claim.update(data, {
+      where: {
+        reference: data.reference
+      },
+      returning: true
+    })
 
-  return result
+    const updatedRows = result[0] // Number of affected rows
+    const updatedRecords = result[1] // Assuming this is the array of updated records
+
+    for (let i = 0; i < updatedRows; i++) {
+      const updatedRecord = updatedRecords[i]
+      eventPublisher.raiseClaimEvents({
+        message: 'Claim has been updated',
+        claim: updatedRecord.dataValues,
+        raisedBy: updatedRecord.dataValues.updatedBy,
+        raisedOn: updatedRecord.dataValues.updatedAt
+      })
+    }
+    return result
+  } catch (error) {
+    console.error('Error updating claim by reference:', error)
+    throw error // re-throw the error after logging or handle it as needed
+  }
 }
 
 /**

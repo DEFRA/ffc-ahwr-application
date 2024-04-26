@@ -9,7 +9,19 @@ data.models.claim.findAll = jest.fn()
 data.models.claim.findOne = jest.fn()
 data.models.status = jest.fn()
 
-describe('Application Repository test', () => {
+const MOCK_SEND_EVENTS = jest.fn()
+
+jest.mock('ffc-ahwr-event-publisher', () => {
+  return {
+    PublishEventBatch: jest.fn().mockImplementation(() => {
+      return {
+        sendEvents: MOCK_SEND_EVENTS
+      }
+    })
+  }
+})
+
+describe('Claim repository test', () => {
   const env = process.env
 
   afterEach(() => {
@@ -32,24 +44,27 @@ describe('Application Repository test', () => {
       },
       statusId: 11,
       type: 'R',
-      createdBy: 'admin'
+      createdBy: 'admin',
+      createdAt: new Date()
     }
 
     const returnedClaimData = {
-      createdAt: '2024-02-01T07:24:29.224Z',
-      id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
-      updatedAt: '2024-02-01T08:02:30.356Z',
-      updatedBy: 'admin',
-      reference: 'AHWR-5602-BAC6',
-      applicationReference: 'AHWR-0AD3-3322',
-      data: {
-        vetsName: 'vetsName',
-        dateOfVisit: '2024-01-22T00:00:00.000Z',
-        testResults: 'testResult'
-      },
-      statusId: 11,
-      type: 'R',
-      createdBy: 'admin'
+      dataValues: {
+        id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
+        updatedAt: '2024-02-01T08:02:30.356Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-5602-BAC6',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {
+          vetsName: 'vetsName',
+          dateOfVisit: '2024-01-22T00:00:00.000Z',
+          testResults: 'testResult'
+        },
+        statusId: 11,
+        type: 'R',
+        createdBy: 'admin',
+        createdAt: new Date()
+      }
     }
 
     when(data.models.claim.create)
@@ -290,5 +305,289 @@ describe('Application Repository test', () => {
 
     expect(data.models.claim.count).toHaveBeenCalledTimes(1)
     expect(result).toEqual(1)
+  })
+
+  describe('updateByReference function', () => {
+    const mockData = {
+      reference: 'REF-UPDATE',
+      statusId: 2,
+      updatedBy: 'admin',
+      data: {
+        organisation: {
+          sbi: '123456789',
+          email: 'business@email.com'
+        }
+      }
+    }
+
+    test('should update an application by reference successfully', async () => {
+      const updateResult = [1, [{ dataValues: { ...mockData, updatedAt: new Date(), updatedBy: 'admin' } }]] // Simulate one record updated
+
+      data.models.claim.update.mockResolvedValue(updateResult)
+      MOCK_SEND_EVENTS.mockResolvedValue(null)
+
+      const result = await repository.updateByReference(mockData)
+
+      expect(data.models.claim.update).toHaveBeenCalledWith(mockData, {
+        where: { reference: mockData.reference },
+        returning: true
+      })
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
+      expect(result).toEqual(updateResult)
+    })
+
+    test('should handle failure to update an application by reference', async () => {
+      data.models.claim.update.mockRejectedValue(new Error('Update failed'))
+
+      await expect(repository.updateByReference(mockData)).rejects.toThrow('Update failed')
+      expect(MOCK_SEND_EVENTS).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('updateByReference', () => {
+    test('Update record for data by reference - 2 records updated', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const mockNow = new Date()
+      const reference = 'AHWR-7C72-8871'
+
+      when(data.models.claim.update)
+        .calledWith(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          {
+            where: {
+              reference
+            },
+            returning: true
+          })
+        .mockResolvedValue([
+          2,
+          [
+            {
+              dataValues: {
+                id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+                reference: 'AHWR-7C72-8871',
+                statusId: 3,
+                data: {
+                  organisation: {
+                    sbi: 'none',
+                    email: 'business@email.com'
+                  }
+                },
+                updatedBy: 'admin',
+                updatedAt: mockNow
+              }
+            },
+            {
+              dataValues: {
+                id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+                reference: 'AHWR-7C72-8872',
+                statusId: 3,
+                data: {
+                  organisation: {
+                    sbi: 'none',
+                    email: 'business@email.com'
+                  }
+                },
+                updatedBy: 'admin',
+                updatedAt: mockNow
+              }
+            }
+          ]
+        ])
+
+      await repository.updateByReference({
+        reference,
+        statusId: 3,
+        updatedBy: 'admin'
+      })
+
+      expect(data.models.claim.update).toHaveBeenCalledTimes(1)
+      expect(data.models.claim.update).toHaveBeenCalledWith(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
+        },
+        {
+          where: {
+            reference
+          },
+          returning: true
+        }
+      )
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(2)
+      expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(1, [{
+        name: 'application-status-event',
+        properties: {
+          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+          sbi: 'none',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'status-updated',
+            message: 'Claim has been updated',
+            data: {
+              reference: 'AHWR-7C72-8871',
+              statusId: 3
+            },
+            raisedBy: 'admin',
+            raisedOn: mockNow.toISOString()
+          }
+        }
+      }, {
+        name: 'send-session-event',
+        properties: {
+          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+          sbi: 'none',
+          cph: 'n/a',
+          checkpoint: 'cloud_role',
+          status: 'success',
+          action: {
+            type: 'application:status-updated:3',
+            message: 'Claim has been updated',
+            data: {
+              reference: 'AHWR-7C72-8871',
+              statusId: 3
+            },
+            raisedBy: 'admin',
+            raisedOn: mockNow.toISOString()
+          }
+        }
+      }])
+      expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(2, [
+        {
+          name: 'application-status-event',
+          properties: {
+            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+            sbi: 'none',
+            cph: 'n/a',
+            checkpoint: 'cloud_role',
+            status: 'success',
+            action: {
+              type: 'status-updated',
+              message: 'Claim has been updated',
+              data: {
+                reference: 'AHWR-7C72-8872',
+                statusId: 3
+              },
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
+            }
+          }
+        },
+        {
+          name: 'send-session-event',
+          properties: {
+            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+            sbi: 'none',
+            cph: 'n/a',
+            checkpoint: 'cloud_role',
+            status: 'success',
+            action: {
+              type: 'application:status-updated:3',
+              message: 'Claim has been updated',
+              data: {
+                reference: 'AHWR-7C72-8872',
+                statusId: 3
+              },
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
+            }
+          }
+        }
+      ])
+    })
+
+    test('Update record for data by reference - 0 records updated', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const reference = 'AHWR-7C72-8871'
+
+      when(data.models.claim.update)
+        .calledWith(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          {
+            where: {
+              reference
+            },
+            returning: true
+          })
+        .mockResolvedValue([
+          0,
+          []
+        ])
+
+      await repository.updateByReference({
+        reference,
+        statusId: 3,
+        updatedBy: 'admin'
+      })
+
+      expect(data.models.claim.update).toHaveBeenCalledTimes(1)
+      expect(data.models.claim.update).toHaveBeenCalledWith(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
+        },
+        {
+          where: {
+            reference
+          },
+          returning: true
+        }
+      )
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
+    })
+
+    test('Update record for data by reference - throw exception', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
+      const reference = 'AHWR-7C72-8871'
+
+      when(data.models.claim.update)
+        .calledWith(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          {
+            where: {
+              reference
+            },
+            returning: true
+          })
+        .mockResolvedValue(new Error('Something failed'))
+
+      await repository.updateByReference({
+        reference,
+        statusId: 3,
+        updatedBy: 'admin'
+      })
+
+      expect(data.models.claim.update).toHaveBeenCalledTimes(1)
+      expect(data.models.claim.update).toHaveBeenCalledWith(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
+        },
+        {
+          where: {
+            reference
+          },
+          returning: true
+        }
+      )
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
+    })
   })
 })

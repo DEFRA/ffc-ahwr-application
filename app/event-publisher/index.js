@@ -48,6 +48,55 @@ const raise = async (event) => {
   ])
 }
 
+const raiseClaimEvents = async (event) => {
+  console.log(event)
+  await new PublishEventBatch(config.eventQueue).sendEvents([
+    {
+      name: 'application-status-event',
+      properties: {
+        id: `${event.claim.id}`,
+        sbi: 'none',
+        cph: 'n/a',
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        status: 'success',
+        action: {
+          type: 'status-updated',
+          message: event.message,
+          data: {
+            reference: event.claim.reference,
+            applicationReference: event.claim.applicationReference,
+            statusId: event.claim.statusId
+          },
+          raisedBy: event.raisedBy,
+          raisedOn: event.raisedOn.toISOString()
+        }
+      }
+    },
+    {
+      name: 'send-session-event',
+      properties: {
+        id: `${event.claim.id}`,
+        sbi: 'none',
+        cph: 'n/a',
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        status: 'success',
+        action: {
+          type: `application:status-updated:${event.claim.statusId}`,
+          message: event.message,
+          data: {
+            reference: event.claim.reference,
+            applicationReference: event.claim.applicationReference,
+            statusId: event.claim.statusId
+          },
+          raisedBy: event.raisedBy,
+          raisedOn: event.raisedOn.toISOString()
+        }
+      }
+    }
+  ])
+}
+
 module.exports = {
-  raise
+  raise,
+  raiseClaimEvents
 }
