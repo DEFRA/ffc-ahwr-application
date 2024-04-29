@@ -191,7 +191,8 @@ module.exports = [
             {
               reference: request.payload.reference,
               sbi: application.dataValues.data.organisation.sbi,
-              whichReview: claim.dataValues.data.typeOfLivestock
+              whichReview: claim.dataValues.data.typeOfLivestock,
+              frn: application.dataValues.data.organisation.frn,
             }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: uuid() }
           )
         }
