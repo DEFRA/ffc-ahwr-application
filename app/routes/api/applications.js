@@ -86,12 +86,10 @@ module.exports = [{
   handler: async (request, h) => {
     try {
       const appData = request.payload
-
       const appProcessed = await processApplicationApi(appData)
-
       return h.response(appProcessed).code(200)
     } catch (error) {
-      console.error('Failed to process application', error)
+      console.error(`Failed to process application : ${error}`)
       return h.response({ error }).code(400).takeover()
     }
   }

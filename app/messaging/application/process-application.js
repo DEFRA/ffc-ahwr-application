@@ -42,18 +42,23 @@ function isPreviousApplicationRelevant (existingApplication) {
 }
 
 const processApplicationApi = async (body) => {
-  const response = await processApplication(body)
+  try {
+    const response = await processApplication(body)
 
-  appInsights.defaultClient.trackEvent({
-    name: 'process-application-api',
-    properties: {
-      status: body?.offerStatus,
-      reference: response?.applicationReference,
-      sbi: body?.organisation?.sbi
-    }
+    appInsights.defaultClient.trackEvent({
+      name: 'process-application-api',
+      properties: {
+        status: body?.offerStatus,
+        reference: response?.applicationReference,
+        sbi: body?.organisation?.sbi
+      }
 
-  })
-  return response
+    })
+    return response
+  } catch (e) {
+    console.error('fail submitting applycation')
+    throw e
+  }
 }
 
 const processApplication = async (data) => {
@@ -104,17 +109,19 @@ const processApplication = async (data) => {
 
     if (data.offerStatus === 'accepted') {
       try {
-        sendFarmerConfirmationEmail(
-          application.reference,
-          data.organisation.sbi,
-          data.whichReview,
-          application.createdAt,
-          data.organisation.email,
-          data.organisation.farmerName,
-          {
+        sendFarmerConfirmationEmail({
+          reference: application.reference,
+          sbi: data.organisation.sbi,
+          whichSpecies: data.whichReview,
+          startDate: application.createdAt,
+          userType: '',
+          email: data.organisation.email,
+          farmerName: data.organisation.farmerName,
+          orgData: {
             orgName: data.organisation?.name,
             orgEmail: data.organisation?.orgEmail
           }
+        }
         )
       } catch (error) {
         console.error('Failed to send farmer confirmation email', error)
