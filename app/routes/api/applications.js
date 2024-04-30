@@ -4,7 +4,7 @@ const { get, searchApplications, updateByReference } = require('../../repositori
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
-const {processApplicationApi, processApplicationQueue} = require('../../messaging/application/process-application')
+const { processApplicationApi } = require('../../messaging/application/process-application')
 
 module.exports = [{
   method: 'GET',
@@ -86,7 +86,7 @@ module.exports = [{
   handler: async (request, h) => {
     try {
       const appData = request.payload
-    
+
       const appProcessed = await processApplicationApi(appData)
 
       return h.response(appProcessed).code(200)

@@ -20,7 +20,6 @@ const {
 } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
-const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 const submitClaim = require('../../messaging/application/submit-claim')
 
 module.exports = [
@@ -202,8 +201,8 @@ module.exports = [
         console.log(`Status of claim with reference ${request.payload.reference} successfully updated to ${request.payload.status}`)
 
         return h.response().code(200)
-       }
-     }
+      }
+    }
   },
   {
     method: 'POST',

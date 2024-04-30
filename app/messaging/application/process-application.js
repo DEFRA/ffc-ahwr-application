@@ -42,20 +42,18 @@ function isPreviousApplicationRelevant (existingApplication) {
 }
 
 const processApplicationApi = async (body) => {
+  const response = await processApplication(body)
 
+  appInsights.defaultClient.trackEvent({
+    name: 'process-application-api',
+    properties: {
+      status: body?.offerStatus,
+      reference: response?.applicationReference,
+      sbi: body?.organisation?.sbi
+    }
 
-    const response = await processApplication(body)
-
-    appInsights.defaultClient.trackEvent({
-      name: 'process-application-api',
-      properties: {
-        status: body?.offerStatus,
-        reference: response?.applicationReference,
-        sbi: body?.organisation?.sbi
-      }
-      
-    })
-    return response
+  })
+  return response
 }
 
 const processApplication = async (data) => {
@@ -63,70 +61,67 @@ const processApplication = async (data) => {
 
   console.log(`processing Application : ${JSON.stringify(data)}`)
   try {
-      // validation 
-      if (!validateApplication(data)) {
-        throw new Error('Application validation error')
-      }
-      // exisiting application
-      const existingApplication = await applicationRepository.getBySbi(
-        data.organisation.sbi
-      )
-  
-      if (isPreviousApplicationRelevant(existingApplication)) {
-        existingApplicationReference = existingApplication.dataValues.reference
-        throw Object.assign(
-          new Error(
+    // validation
+    if (!validateApplication(data)) {
+      throw new Error('Application validation error')
+    }
+    // exisiting application
+    const existingApplication = await applicationRepository.getBySbi(
+      data.organisation.sbi
+    )
+
+    if (isPreviousApplicationRelevant(existingApplication)) {
+      existingApplicationReference = existingApplication.dataValues.reference
+      throw Object.assign(
+        new Error(
             `Recent application already exists: ${JSON.stringify({
               reference: existingApplication.dataValues.reference,
               createdAt: existingApplication.createdAt
             })}`
-          ),
+        ),
+        {
+          applicationState: states.alreadyExists
+        }
+      )
+    }
+
+    // create application = save in database
+    const result = await applicationRepository.set({
+      reference: '',
+      data,
+      createdBy: 'admin',
+      createdAt: new Date(),
+      statusId: data.offerStatus === 'rejected' ? 7 : 1,
+      type: data.type ? data.type : 'VV'
+    })
+    const application = result.dataValues
+
+    const response = {
+      applicationState: states.submitted,
+      applicationReference: application.reference
+    }
+    // send email to farmer if application is accepted
+
+    if (data.offerStatus === 'accepted') {
+      try {
+        sendFarmerConfirmationEmail(
+          application.reference,
+          data.organisation.sbi,
+          data.whichReview,
+          application.createdAt,
+          data.organisation.email,
+          data.organisation.farmerName,
           {
-            applicationState: states.alreadyExists
+            orgName: data.organisation?.name,
+            orgEmail: data.organisation?.orgEmail
           }
         )
+      } catch (error) {
+        console.error('Failed to send farmer confirmation email', error)
       }
+    }
 
-      // create application = save in database 
-      const result = await applicationRepository.set({
-        reference: '',
-        data: data,
-        createdBy: 'admin',
-        createdAt: new Date(),
-        statusId: data.offerStatus === 'rejected' ? 7 : 1,
-        type: data.type ? data.type : 'VV'
-      })
-      const application = result.dataValues
-
-      const response = {
-        applicationState: states.submitted,
-        applicationReference: application.reference
-      }
-      // send email to farmer if application is accepted
-      
-      if (data.offerStatus === 'accepted') {
-        try {
-          sendFarmerConfirmationEmail(
-            application.reference,
-            data.organisation.sbi,
-            data.whichReview,
-            application.createdAt,
-            data.organisation.email,
-            data.organisation.farmerName,
-            {
-              orgName: data.organisation?.name,
-              orgEmail: data.organisation?.orgEmail
-            }
-          )
-          
-        } catch (error) {
-          console.error('Failed to send farmer confirmation email', error)
-        }
-      }
-  
     return response
-
-    
   } catch (error) {
     console.error('Failed to process application', error)
     appInsights.defaultClient.trackException({ exception: error })
@@ -135,15 +130,12 @@ const processApplication = async (data) => {
       applicationState: states.failed,
       applicationReference: existingApplicationReference
     }
-    
   }
 }
 
 const processApplicationQueue = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
-  const messageId = msg.messageId
-  let existingApplicationReference = null
 
   const response = await processApplication(applicationData)
 
@@ -153,7 +145,7 @@ const processApplicationQueue = async (msg) => {
     name: 'process-application-queue',
     properties: {
       status: applicationData?.offerStatus,
-      reference:  response?.applicationReference,
+      reference: response?.applicationReference,
       sbi: applicationData?.organisation?.sbi,
       sessionId
     }
@@ -264,9 +256,8 @@ const processApplicationOld = async (msg) => {
 }
 
 module.exports = {
-  processApplication, 
+  processApplication,
   processApplicationOld,
   processApplicationApi,
-  processApplicationQueue 
+  processApplicationQueue
 }
-
