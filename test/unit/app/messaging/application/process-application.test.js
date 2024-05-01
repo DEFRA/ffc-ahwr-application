@@ -2,8 +2,9 @@ const { when, resetAllWhenMocks } = require('jest-when')
 const appInsights = require('applicationinsights')
 const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
-const { processApplication, processApplicationApi } = require('../../../../../app/messaging/application/process-application')
+const { processApplication, processApplicationApi, processApplicationQueue } = require('../../../../../app/messaging/application/process-application')
 const applicationStatus = require('../../../../../app/constants/application-status')
+const sendMessage = require('../../../../../app/messaging/send-message')
 
 const consoleErrorSpy = jest.spyOn(console, 'error')
 
@@ -34,6 +35,7 @@ const toggleEndemics = (toggle) => {
 jest.mock('../../../../../app/lib/send-email')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
+jest.mock('../../../../../app/messaging/send-message')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 describe(('Store application in database'), () => {
@@ -347,23 +349,92 @@ describe(('Store application in database'), () => {
     expect(consoleSpy).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "organisation.email" is required.')
   })
 
-  describe('process Application with API', () => {
-    test('process application via API', async () => {
-      const response = await processApplicationApi(data)
+  describe('processApplicationApi', () => {
+    const data2 = {
+      confirmCheckDetails: 'yes',
+      whichReview: 'beef',
+      eligibleSpecies: 'yes',
+      reference: 'AHWR-5C1C-DD6Z',
+      declaration: true,
+      offerStatus: 'accepted',
+      organisation: {
+        farmerName: 'A Farmer',
+        name,
+        email,
+        orgEmail,
+        sbi: '123456789',
+        cph: '123/456/789',
+        address: '1 Some Street',
+        isTest: true
+      }
+    }
+
+    test('successfully process Application', async () => {
+      const response = await processApplicationApi(data2)
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith(expect.objectContaining({
         name: 'process-application-api',
         properties: {
-          status: data.offerStatus,
+          status: data2.offerStatus,
           reference: response.applicationReference,
-          sbi: data.organisation.sbi
+          sbi: data2.organisation.sbi
         }
       }))
 
       expect(response).toEqual(expect.objectContaining({
+        applicationReference: MOCK_REFERENCE,
+        applicationState: 'submitted'
+      }))
+    })
+
+    test('fail to process application via API', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error')
+      const response = await processApplicationApi({ some: 'invalid data' })
+
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "confirmCheckDetails" is required.')
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, 'Failed to process application', expect.anything())
+      expect(response).toEqual(expect.objectContaining({
         applicationReference: null,
         applicationState: 'failed'
       }))
+    })
+  })
+
+  describe('processApplicationQueue', () => {
+    const data2 = {
+      confirmCheckDetails: 'yes',
+      whichReview: 'beef',
+      eligibleSpecies: 'yes',
+      reference: 'AHWR-5C1C-DD6Z',
+      declaration: true,
+      offerStatus: 'accepted',
+      organisation: {
+        farmerName: 'A Farmer',
+        name,
+        email,
+        orgEmail,
+        sbi: '123456789',
+        cph: '123/456/789',
+        address: '1 Some Street',
+        isTest: true
+      }
+    }
+
+    test('successfully process Application', async () => {
+      await processApplicationQueue(data2)
+
+      expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'process-application-queue'
+      }))
+
+      expect(sendMessage).toHaveBeenCalledTimes(1)
+    })
+
+    test('fail to process application via API', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error')
+      await processApplicationQueue({ some: 'invalid data' })
+
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Failed to process application', expect.anything())
     })
   })
 })
