@@ -430,8 +430,6 @@ describe(('Store application in database'), () => {
     })
 
     test('successfully process Application', async () => {
-      toggleEndemics(true)
-      data2.type = 'VV'
       await processApplicationQueue(data2)
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith(expect.objectContaining({
