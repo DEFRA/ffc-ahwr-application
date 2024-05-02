@@ -104,7 +104,7 @@ const processApplication = async (data) => {
 
     if (data.offerStatus === 'accepted') {
       try {
-        sendFarmerConfirmationEmail({
+        await sendFarmerConfirmationEmail({
           reference: application.reference,
           sbi: data.organisation.sbi,
           whichSpecies: data.whichReview,
