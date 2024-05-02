@@ -20,7 +20,7 @@ const {
 } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
-const submitClaim = require('../../messaging/application/submit-claim')
+// const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 module.exports = [
   {
@@ -201,27 +201,6 @@ module.exports = [
         console.log(`Status of claim with reference ${request.payload.reference} successfully updated to ${request.payload.status}`)
 
         return h.response().code(200)
-      }
-    }
-  },
-  {
-    method: 'POST',
-    path: '/api/claim/submit-claim/{sessionId}',
-    options: {
-      description: 'Submit claim data - queue replacement',
-      handler: async (request, h) => {
-        try {
-          console.log('Submitting clai request payload', request.payload)
-          const result = await submitClaim({
-            body: request.payload,
-            sessionId: request.params.sessionId,
-            isRestApi: true
-          })
-          return h.response({ result }).code(200)
-        } catch (error) {
-          console.error('Failed to submit claim or already claimed ', error)
-          return h.response({ error }).code(400).takeover()
-        }
       }
     }
   }
