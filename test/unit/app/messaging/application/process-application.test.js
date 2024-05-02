@@ -420,6 +420,15 @@ describe(('Store application in database'), () => {
       }
     }
 
+    test('fail to send confirmation email', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error')
+      sendFarmerConfirmationEmail.mockImplementation(() => { throw new Error() })
+
+      await processApplication(data2)
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Failed to send farmer confirmation email', expect.anything())
+      expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+    })
+
     test('successfully process Application', async () => {
       await processApplicationQueue(data2)
 
