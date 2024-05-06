@@ -1,6 +1,6 @@
 const notifyClient = require('./notify-client')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../config')
-const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
+const { carbonCopyEmailAddress, templateIdFarmerClaimComplete, templateIdFarmerEndemicsClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
 const appInsights = require('applicationinsights')
 
@@ -60,7 +60,27 @@ const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
   return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
 }
 
+const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templateIdFarmerEndemicsClaimComplete) => {
+  let carbonEmail = false
+  let email = data.email
+
+  const { reference } = data
+  const personalisation = {
+    reference,
+    amount: data.amount || '£[amount]'
+  }
+  const { orgData: { orgEmail } } = data
+
+  if (orgEmail && orgEmail !== email) {
+    email = orgEmail
+    carbonEmail = true
+  }
+
+  return await sendEmail(email, personalisation, reference, templateId, carbonEmail)
+}
+
 module.exports = {
   sendFarmerConfirmationEmail,
-  sendFarmerClaimConfirmationEmail
+  sendFarmerClaimConfirmationEmail,
+  sendFarmerEndemicsClaimConfirmationEmail
 }

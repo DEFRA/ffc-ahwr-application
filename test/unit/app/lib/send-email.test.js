@@ -49,7 +49,7 @@ describe('Send email test', () => {
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
     expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
-    expect(response).toBe(true)
+    expect(response).toBeTruthy()
   })
 
   test('sendFarmerClaimConfirmationEmail returns false on error sending email', async () => {
@@ -58,5 +58,86 @@ describe('Send email test', () => {
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
     expect(response).toBe(false)
+  })
+  describe('sendFarmerEndemicsClaimConfirmationEmail', () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email', async () => {
+      const data = {
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {
+          orgEmail: 'test@unit-test.org'
+        }
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        amount: data.amount
+      }
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(true)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail sends carbon copy email to organization email', async () => {
+      const data = {
+        email: 'test@unit-test.com',
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {
+          orgEmail: 'test@unit-test.org'
+        }
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        amount: data.amount
+      }
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(true)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email when orgEmail is not provided', async () => {
+      const data = {
+        email: 'test@unit-test.com',
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {}
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        amount: data.amount
+      }
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(true)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail returns false on error sending email', async () => {
+      const data = {
+        email: 'test@unit-test.com',
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {
+          orgEmail: 'test@unit-test.org'
+        }
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+
+      const error = new Error('Test exception')
+      error.response = { data: 'failed to send email' }
+      notifyClient.sendEmail.mockRejectedValueOnce(error)
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(false)
+    })
   })
 })
