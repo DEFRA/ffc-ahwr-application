@@ -2,9 +2,10 @@
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../../../../app/config')
 const fetchApplication = require('../../../../app/messaging/application/fetch-application')
 const fetchClaim = require('../../../../app/messaging/application/fetch-claim')
-const processApplication = require('../../../../app/messaging/application/process-application')
 const processApplicationMessage = require('../../../../app/messaging/process-message')
 const submitClaim = require('../../../../app/messaging/application/submit-claim')
+const { processApplicationQueue } = require('../../../../app/messaging/application/process-application')
+jest.mock('../../../../app/messaging/application/process-application')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 jest.mock('../../../../app/messaging/application/fetch-application')
@@ -42,9 +43,8 @@ describe('Process Message test', () => {
       sessionId
     }
 
-    console.log(sessionId)
     await processApplicationMessage(message, receiver)
-    expect(processApplication).toHaveBeenCalledTimes(1)
+    expect(processApplicationQueue).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 
