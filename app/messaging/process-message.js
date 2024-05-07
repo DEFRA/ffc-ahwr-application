@@ -1,7 +1,7 @@
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../config')
 const fetchApplication = require('./application/fetch-application')
 const fetchClaim = require('./application/fetch-claim')
-const processApplication = require('./application/process-application')
+const { processApplicationQueue } = require('./application/process-application')
 const submitClaim = require('./application/submit-claim')
 
 const processApplicationMessage = async (message, receiver) => {
@@ -9,7 +9,7 @@ const processApplicationMessage = async (message, receiver) => {
     const { applicationProperties: properties } = message
     switch (properties.type) {
       case applicationRequestMsgType:
-        await processApplication(message)
+        await processApplicationQueue(message)
         break
       case fetchApplicationRequestMsgType:
         await fetchApplication(message)
