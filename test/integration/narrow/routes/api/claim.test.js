@@ -297,28 +297,11 @@ describe('Post claim test', () => {
 
     expect(res.statusCode).toBe(400)
   })
-  test('Post claim with missing createdBy key and return 400', async () => {
-    // const claim = {
-    //   applicationReference: 'AHWR-0AD3-3322',
-    //   data: {
-    //     typeOfLivestock: 'pigs',
-    //     dateOfVisit: '2024-01-22T00:00:00.000Z',
-    //     dateOfTesting: '2024-01-22T00:00:00.000Z',
-    //     vetsName: 'Afshin',
-    //     vetRCVSNumber: 'AK-2024',
-    //     laboratoryURN: 'AK-2024',
-    //     numberOfOralFluidSamples: 5,
-    //     numberAnimalsTested: 30,
-    //     testResults: 'positive',
-    //     speciesNumbers: 'yes'
-    //   },
-    //   type: 'R',
-    //   createdBy: 'admin'
-    // }
+  test('called with the correct arguments ', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',
-      payload: claim
+      payload: { ...claim }
     }
 
     applicationRepository.get.mockResolvedValue({
@@ -360,7 +343,7 @@ describe('Post claim test', () => {
     await server.inject(options)
     expect(claimRepository.set).toHaveBeenCalledTimes(1)
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(mockEmailData).toHaveProperty('reference')
+    expect(Object.keys(mockEmailData)).toEqual(expect.arrayContaining(['reference', 'email', 'amount', 'farmerName', 'orgData']))
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining(mockEmailData))
   })
 })
