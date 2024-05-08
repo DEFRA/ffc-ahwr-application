@@ -347,6 +347,56 @@ describe('Post claim test', () => {
     expect(Object.keys(mockEmailData)).toEqual(expect.arrayContaining(['reference', 'email', 'amount', 'farmerName', 'orgData']))
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining(mockEmailData))
   })
+  test('called with default value for amount ', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: { ...claim }
+    }
+
+    applicationRepository.get.mockResolvedValue({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-0F5D-4A26',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {
+          vetsName: 'Afshin',
+          dateOfVisit: '2024-01-22T00:00:00.000Z',
+          testResults: 'positive',
+          typeOfReview: 'review one',
+          dateOfTesting: '2024-01-22T00:00:00.000Z',
+          laboratoryURN: 'AK-2024',
+          vetRCVSNumber: 'AK-2024',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'pigs',
+          numberAnimalsTested: 30,
+          amount: '£[amount]'
+        },
+        statusId: 1,
+        type: 'R',
+        createdBy: 'admin'
+      }
+    })
+
+    const mockEmailData = {
+      reference: 'AHWR-0F5D-4A26',
+      email: 'test@test-unit.com',
+      amount: '£[amount]',
+      farmerName: 'farmerName',
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
+    }
+
+    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+
+    await server.inject(options)
+
+    expect(claimRepository.set).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(Object.keys(mockEmailData)).toEqual(expect.arrayContaining(['reference', 'email', 'amount', 'farmerName', 'orgData']))
+  })
   test('contain corresponding values ', async () => {
     const options = {
       method: 'POST',
@@ -398,7 +448,6 @@ describe('Post claim test', () => {
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(reference).toMatch('AHWR-0F5D-4A26')
     expect(email).toMatch('test@test-unit.com')
-    expect(amount).toMatch('£[amount]')
     expect(amount).toMatch(amount || '£[amount]')
     expect(farmerName).toMatch('farmerName')
     expect(orgData).toEqual(expect.objectContaining({ orgName: 'orgName', orgEmail: 'test@test-unit.org' }))
@@ -421,7 +470,85 @@ describe('Post claim test', () => {
 
     expect(res.statusCode).toBe(404)
     expect(claimResponse).toBeFalsy()
+
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+  })
+  test('values for email not available ', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        ...claim,
+        applicationReference: 'AHWR-E01A-65EF'
+      }
+    }
+
+    applicationRepository.get.mockResolvedValue({})
+    const claimResponse = claimRepository.set({})
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(404)
+    expect(claimResponse).toBeFalsy()
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+  })
+  test('values for email not available ', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        ...claim
+      }
+    }
+
+    applicationRepository.get.mockResolvedValue({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-0F5D-4A26',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {
+          vetsName: 'Afshin',
+          dateOfVisit: '2024-01-22T00:00:00.000Z',
+          testResults: 'positive',
+          typeOfReview: 'review one',
+          dateOfTesting: '2024-01-22T00:00:00.000Z',
+          laboratoryURN: 'AK-2024',
+          vetRCVSNumber: 'AK-2024',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'pigs',
+          numberAnimalsTested: 30,
+          amount: '£[amount]'
+        },
+        statusId: 1,
+        type: 'R',
+        createdBy: 'admin'
+      }
+    })
+
+    const mockEmailDataWithoutAmount = {
+      reference: 'AHWR-0F5D-4A26',
+      email: 'test@test-unit.com',
+      amount: undefined || '£[amount]',
+      farmerName: 'farmerName',
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
+    }
+
+    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailDataWithoutAmount)
+
+    await server.inject(options)
+
+    expect(claimRepository.set).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      reference: 'AHWR-0F5D-4A26',
+      email: 'test@test-unit.com',
+      amount: '£[amount]',
+      farmerName: 'farmerName',
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
+    }))
   })
 })
 
