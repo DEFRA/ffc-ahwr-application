@@ -162,16 +162,18 @@ module.exports = [
         // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
         const claim = await set({ ...request.payload, statusId: statusIds.inCheck })
 
-        claim && await sendFarmerEndemicsClaimConfirmationEmail({
-          reference: claim?.dataValues?.reference,
-          amount: claim?.dataValues?.data?.amount || '£[amount]',
-          email: application?.dataValues?.data?.email,
-          farmerName: application?.dataValues?.data?.farmerName,
-          orgData: {
-            orgName: application?.dataValues?.data?.organisation?.name,
-            orgEmail: application?.dataValues?.data?.organisation?.orgEmail
-          }
-        })
+        if (claim) {
+          await sendFarmerEndemicsClaimConfirmationEmail({
+            reference: claim?.dataValues?.reference,
+            amount: claim?.dataValues?.data?.amount || '£[amount]',
+            email: application?.dataValues?.data?.email,
+            farmerName: application?.dataValues?.data?.farmerName,
+            orgData: {
+              orgName: application?.dataValues?.data?.organisation?.name,
+              orgEmail: application?.dataValues?.data?.organisation?.orgEmail
+            }
+          })
+        }
 
         return h.response(claim).code(200)
       }
