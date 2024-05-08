@@ -60,10 +60,9 @@ const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
   return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
 }
 
-const sendFarmerEndemicsClaimConfirmationEmail = async (data) => {
+const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templateIdFarmerEndemicsClaimComplete) => {
   let carbonEmail = false
   let email = data?.email
-  const templateId = templateIdFarmerEndemicsClaimComplete
 
   const { orgData, reference } = data || {}
   const personalisation = {
