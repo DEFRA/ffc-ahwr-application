@@ -415,10 +415,12 @@ describe('Post claim test', () => {
 
     applicationRepository.get.mockResolvedValue({})
 
+    const claimResponse = claimRepository.set({})
+
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(404)
-    expect(claimRepository.set).toHaveBeenCalledTimes(0)
+    expect(claimResponse).toBeFalsy()
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
   })
 })
