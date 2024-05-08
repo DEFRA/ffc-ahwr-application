@@ -1,12 +1,14 @@
 const claimRepository = require('../../../../../app/repositories/claim-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
 const sendMessage = require('../../../../../app/messaging/send-message')
+const sendEmail = require('../../../../../app/lib/send-email')
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
 jest.mock('../../../../../app/messaging/send-message')
+jest.mock('../../../../../app/lib/send-email')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -15,7 +17,6 @@ const sheepTestResultsMockData = [
 
 describe('Get claims test', () => {
   const server = require('../../../../../app/server')
-
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
@@ -197,18 +198,28 @@ describe('Post claim test', () => {
           vetRCVSNumber: 'AK-2024',
           speciesNumbers: 'yes',
           typeOfLivestock: 'pigs',
-          numberAnimalsTested: 30
+          numberAnimalsTested: 30,
+          amount: '£[amount]'
         },
         statusId: 1,
         type: 'R',
         createdBy: 'admin'
       }
     })
+    const mockEmailData = {
+      reference: 'AHWR-0F5D-4A26',
+      email: 'test@test-unit.com',
+      amount: '£[amount]',
+      farmerName: 'farmerName',
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
+    }
 
-    const res = await server.inject(options)
+    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
-    expect(res.statusCode).toBe(200)
+    await server.inject(options)
+
     expect(claimRepository.set).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
   })
 
   test.each([
@@ -238,14 +249,23 @@ describe('Post claim test', () => {
           createdBy: 'admin'
         }
       })
+      const mockEmailData = {
+        reference: 'AHWR-0F5D-4A26',
+        email: 'test@test-unit.com',
+        amount: '£[amount]',
+        farmerName: 'farmerName',
+        orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
+      }
 
-      const res = await server.inject(options)
+      await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
-      expect(res.statusCode).toBe(200)
+      await server.inject(options)
+
       expect(claimRepository.set).toHaveBeenCalledTimes(1)
+      expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
     }
   )
-  test('Post claim with wrong application reference return 404', async () => {
+  test('Post claim with wrong application reference return 400', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',

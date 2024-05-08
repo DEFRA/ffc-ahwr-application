@@ -62,17 +62,16 @@ const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
 
 const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templateIdFarmerEndemicsClaimComplete) => {
   let carbonEmail = false
-  let email = data.email
+  let email = data?.email
 
-  const { reference } = data
+  const { orgData, reference } = data || {}
   const personalisation = {
     reference,
-    amount: data.amount || '£[amount]'
+    amount: data?.amount || '£[amount]'
   }
-  const { orgData: { orgEmail } } = data
 
-  if (orgEmail && orgEmail !== email) {
-    email = orgEmail
+  if (orgData?.orgEmail && orgData?.orgEmail !== email) {
+    email = orgData?.orgEmail
     carbonEmail = true
   }
 
