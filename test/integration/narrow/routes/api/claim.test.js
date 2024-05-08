@@ -219,7 +219,7 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining(mockEmailData))
   })
 
   test.each([
