@@ -403,6 +403,24 @@ describe('Post claim test', () => {
     expect(farmerName).toMatch('farmerName')
     expect(orgData).toEqual(expect.objectContaining({ orgName: 'orgName', orgEmail: 'test@test-unit.org' }))
   })
+  test('no email sent ', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        ...claim,
+        applicationReference: 'AHWR-E01A-65EF'
+      }
+    }
+
+    applicationRepository.get.mockResolvedValue({})
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(404)
+    expect(claimRepository.set).toHaveBeenCalledTimes(0)
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+  })
 })
 
 describe('PUT claim test', () => {
