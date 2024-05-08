@@ -399,6 +399,7 @@ describe('Post claim test', () => {
     expect(reference).toMatch('AHWR-0F5D-4A26')
     expect(email).toMatch('test@test-unit.com')
     expect(amount).toMatch('£[amount]')
+    expect(amount).toMatch(amount || '£[amount]')
     expect(farmerName).toMatch('farmerName')
     expect(orgData).toEqual(expect.objectContaining({ orgName: 'orgName', orgEmail: 'test@test-unit.org' }))
   })
