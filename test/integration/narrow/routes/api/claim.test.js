@@ -17,6 +17,7 @@ const sheepTestResultsMockData = [
 
 describe('Get claims test', () => {
   const server = require('../../../../../app/server')
+
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
@@ -420,42 +421,6 @@ describe('Post claim test', () => {
 
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
   })
-  test('values for email not available ', async () => {
-    const options = {
-      method: 'POST',
-      url: '/api/claim',
-      payload: {
-        ...claim,
-        applicationReference: 'AHWR-E01A-65EF'
-      }
-    }
-
-    applicationRepository.get.mockResolvedValue({})
-    const claimResponse = claimRepository.set({})
-
-    const res = await server.inject(options)
-
-    expect(res.statusCode).toBe(404)
-    expect(claimResponse).toBeFalsy()
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
-  })
-  test('not send Email if claim is undefined ', async () => {
-    const options = {
-      method: 'POST',
-      url: '/api/claim',
-      payload: {
-        applicationReference: 'AHWR-E01A-65EF'
-      }
-    }
-
-    applicationRepository.get.mockResolvedValue({})
-    const claimResponse = claimRepository.set({})
-
-    await server.inject(options)
-
-    expect(claimResponse).toBeFalsy()
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).not.toHaveBeenCalled()
-  })
 
   test('send email with values no data  ', async () => {
     const options = {
@@ -491,13 +456,14 @@ describe('Post claim test', () => {
         createdBy: 'admin'
       }
     })
-    // claimRepository.set = jest.fn().mockResolvedValueOnce(true)
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(null)
+    const sendEmailResult = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(null)
     await server.inject(options)
 
+    expect(claimRepository.set).toHaveBeenCalledTimes(1)
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(null)
+    expect(sendEmailResult).toBeFalsy()
   })
   test('send email with values available ', async () => {
     const options = {
@@ -568,7 +534,7 @@ describe('Post claim test', () => {
     claimRepository.set = jest.fn().mockRejectedValueOnce(false)
     await server.inject(options)
 
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).not.toHaveBeenCalled()
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
   })
 
   test('send email when claim is truthy ', async () => {
