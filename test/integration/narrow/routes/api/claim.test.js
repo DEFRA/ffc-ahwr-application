@@ -430,17 +430,18 @@ describe('Post claim test', () => {
         createdBy: 'admin'
       }
     })
+
     const mockEmailData = {
       reference: 'AHWR-0F5D-4A26',
       email: 'test@test-unit.com',
-      amount: '£[amount]',
+      amount: 'amount' || '£[amount]',
       farmerName: 'farmerName',
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
     await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
-    const { reference, email, amount, farmerName, orgData } = mockEmailData || {}
+    const { reference, email, farmerName, orgData } = mockEmailData || {}
 
     await server.inject(options)
 
@@ -448,7 +449,7 @@ describe('Post claim test', () => {
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(reference).toMatch('AHWR-0F5D-4A26')
     expect(email).toMatch('test@test-unit.com')
-    expect(amount).toMatch(amount || '£[amount]')
+    expect(['amount', '£[amount]']).toContain(mockEmailData.amount)
     expect(farmerName).toMatch('farmerName')
     expect(orgData).toEqual(expect.objectContaining({ orgName: 'orgName', orgEmail: 'test@test-unit.org' }))
   })

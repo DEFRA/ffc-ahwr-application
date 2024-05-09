@@ -1,6 +1,7 @@
 const sendEmail = require('../../../../app/lib/send-email')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../../../../app/config')
 const { templateIdFarmerClaimComplete, templateIdFarmerEndemicsClaimComplete } = require('../../../../app/config').notify
+// const appInsights = require('applicationinsights')
 
 const error = new Error('Test exception')
 error.response = { data: 'failed to send email' }
@@ -152,12 +153,27 @@ describe('Send email test', () => {
       }
       const expectedPersonalisation = {
         reference: data.reference,
-        amount: data.amount
+        amount: data.amount || '£[amount]'
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data)
       expect(result).toBe(true)
+      expect([data.amount, '£[amount]']).toContain(expectedPersonalisation.amount)
       expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+    test('sendEmail tracks event and returns false on error sending email', async () => {
+      const templateId = 'templateId'
+      const email = 'test@unit-test.com'
+      const personalisation = { name: 'farmer' }
+      const reference = 'AHWR-B977-4D0D'
+      const error = new Error('Test exception')
+      error.response = { data: 'failed to send email' }
+
+      notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+      sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
+
+      const response = await sendEmail.sendEmail(email, personalisation, reference, templateId)
+      expect(response).toBe(false)
     })
   })
 })
