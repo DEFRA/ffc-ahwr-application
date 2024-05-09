@@ -164,7 +164,7 @@ module.exports = [
 
         claim && await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
-          amount: claim?.dataValues?.data?.amount || '£[amount]',
+          amount: '£[amount]',
           email: application?.dataValues?.data?.email,
           farmerName: application?.dataValues?.data?.farmerName,
           orgData: {
