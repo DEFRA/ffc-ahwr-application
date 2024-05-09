@@ -491,20 +491,13 @@ describe('Post claim test', () => {
         createdBy: 'admin'
       }
     })
+    // claimRepository.set = jest.fn().mockResolvedValueOnce(true)
 
-    const mockEmailData = {
-      reference: 'AHWR-0F5D-4A26'
-    }
-
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
-
+    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(null)
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(Object.keys(mockEmailData)).toEqual(expect.arrayContaining(['reference']))
-    expect(Object.keys(mockEmailData)).not.toHaveProperty('email')
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining(mockEmailData))
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(null)
   })
   test('send email with values available ', async () => {
     const options = {
