@@ -1,8 +1,10 @@
 const statusIds = require('../../../../../app/constants/application-status')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
 const sendMessage = require('../../../../../app/messaging/send-message')
+const { processApplicationApi } = require('../../../../../app/messaging/application/process-application')
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/messaging/send-message')
+jest.mock('../../../../../app/messaging/application/process-application')
 jest.mock('uuid', () => ({ v4: () => '123456789' }))
 
 const data = { organisation: { sbi: '1231' }, whichReview: 'sheep' }
@@ -228,6 +230,54 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(400)
+    })
+  })
+
+  describe('POST /api/application/processor', () => {
+    const options = {
+      method: 'POST',
+      url: '/api/application/processor',
+      payload: {
+        confirmCheckDetails: 'yes',
+        whichReview: 'sheep',
+        eligibleSpecies: 'yes',
+        reference: 'AHWR-5C1C-DD6Z',
+        declaration: true,
+        offerStatus: 'accepted',
+        organisation: {
+          farmerName: 'Mr Farmer',
+          name: 'My Amazing Farm',
+          sbi: '112223',
+          cph: '123/456/789',
+          crn: '112223',
+          address: '1 Example Road',
+          email: 'business@email.com',
+          isTest: true,
+          userType: 'newUser'
+        },
+        type: 'VV'
+      }
+    }
+
+    afterAll(() => {
+      jest.clearAllMocks()
+    })
+
+    test('succesfully submiting an application', async () => {
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+      expect(processApplicationApi).toHaveBeenCalledTimes(1)
+    })
+
+    test('submiting an application fail', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error')
+      processApplicationApi.mockImplementation(async () => { throw new Error() })
+      const res = await server.inject(options)
+      expect(res.statusCode).toBe(400)
+      expect(processApplicationApi).toHaveBeenCalledTimes(1)
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to process application : Error')
     })
   })
 })

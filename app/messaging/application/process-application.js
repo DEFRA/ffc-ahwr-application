@@ -41,31 +41,43 @@ function isPreviousApplicationRelevant (existingApplication) {
   }
 }
 
-const processApplication = async (msg) => {
-  const { sessionId } = msg
-  const applicationData = msg.body
-  const messageId = msg.messageId
-  let existingApplicationReference = null
+const processApplicationApi = async (body) => {
+  const response = await processApplication(body)
 
-  try {
-    if (!validateApplication(applicationData)) {
-      throw new Error('Application validation error')
+  appInsights.defaultClient.trackEvent({
+    name: 'process-application-api',
+    properties: {
+      status: body?.offerStatus,
+      reference: response?.applicationReference,
+      sbi: body?.organisation?.sbi
     }
 
-    console.log(`Application received : ${JSON.stringify(applicationData)} with sessionID ${sessionId} and messageID ${messageId}.`)
+  })
+  return response
+}
 
+const processApplication = async (data) => {
+  let existingApplicationReference = null
+
+  console.log(`processing Application : ${JSON.stringify(data)}`)
+  try {
+    // validation
+    if (!validateApplication(data)) {
+      throw new Error('Application validation error')
+    }
+    // exisiting application
     const existingApplication = await applicationRepository.getBySbi(
-      applicationData.organisation.sbi
+      data.organisation.sbi
     )
 
     if (isPreviousApplicationRelevant(existingApplication)) {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
-          `Recent application already exists: ${JSON.stringify({
-            reference: existingApplication.dataValues.reference,
-            createdAt: existingApplication.createdAt
-          })}`
+            `Recent application already exists: ${JSON.stringify({
+              reference: existingApplication.dataValues.reference,
+              createdAt: existingApplication.createdAt
+            })}`
         ),
         {
           applicationState: states.alreadyExists
@@ -73,13 +85,14 @@ const processApplication = async (msg) => {
       )
     }
 
+    // create application = save in database
     const result = await applicationRepository.set({
       reference: '',
-      data: applicationData,
+      data,
       createdBy: 'admin',
       createdAt: new Date(),
-      statusId: applicationData.offerStatus === 'rejected' ? 7 : 1,
-      type: applicationData.type ? applicationData.type : 'VV'
+      statusId: data.offerStatus === 'rejected' ? 7 : 1,
+      type: data.type ? data.type : 'VV'
     })
     const application = result.dataValues
 
@@ -87,58 +100,62 @@ const processApplication = async (msg) => {
       applicationState: states.submitted,
       applicationReference: application.reference
     }
+    // send email to farmer if application is accepted
 
-    console.log(`Returning response : ${JSON.stringify(response)} with sessionID ${sessionId} and messageID ${messageId}.`)
-
-    await sendMessage(response,
-      applicationResponseMsgType,
-      applicationResponseQueue,
-      {
-        sessionId
+    if (data.offerStatus === 'accepted') {
+      try {
+        await sendFarmerConfirmationEmail({
+          reference: application.reference,
+          sbi: data.organisation.sbi,
+          whichSpecies: data.whichReview,
+          startDate: application.createdAt,
+          userType: data.organisation.userType,
+          email: data.organisation.email,
+          farmerName: data.organisation.farmerName,
+          orgData: {
+            orgName: data.organisation.name,
+            orgEmail: data.organisation.orgEmail
+          }
+        }
+        )
+      } catch (error) {
+        console.error('Failed to send farmer confirmation email', error)
       }
-    )
-
-    const { organisation: { sbi, userType, email, farmerName, name, orgEmail }, whichReview } = applicationData
-    const { reference, createdAt: startDate } = application
-    const orgData = { orgName: name, orgEmail }
-
-    if (applicationData.offerStatus === 'accepted') {
-      await sendFarmerConfirmationEmail({
-        reference,
-        sbi,
-        whichSpecies: whichReview,
-        startDate,
-        userType,
-        email,
-        farmerName,
-        orgData
-      })
     }
 
-    appInsights.defaultClient.trackEvent({
-      name: 'process-application',
-      properties: {
-        status: applicationData?.offerStatus,
-        reference: application ? application?.reference : 'unknown',
-        sbi: applicationData?.organisation?.sbi,
-        sessionId
-      }
-    })
+    return response
   } catch (error) {
     console.error('Failed to process application', error)
     appInsights.defaultClient.trackException({ exception: error })
-    sendMessage(
-      {
-        applicationState: error.applicationState ? error.applicationState : states.failed,
-        applicationReference: existingApplicationReference
-      },
-      applicationResponseMsgType,
-      applicationResponseQueue,
-      {
-        sessionId
-      }
-    )
+
+    return {
+      applicationState: states.failed,
+      applicationReference: existingApplicationReference
+    }
   }
 }
 
-module.exports = processApplication
+const processApplicationQueue = async (msg) => {
+  const { sessionId } = msg
+  const applicationData = msg.body
+
+  const response = await processApplication(applicationData)
+
+  await sendMessage(response, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+
+  appInsights.defaultClient.trackEvent({
+    name: 'process-application-queue',
+    properties: {
+      status: applicationData?.offerStatus,
+      reference: response?.applicationReference,
+      sbi: applicationData?.organisation?.sbi,
+      sessionId
+    }
+  })
+}
+
+module.exports = {
+  processApplication,
+  processApplicationApi,
+  processApplicationQueue
+}
