@@ -106,7 +106,7 @@ const processApplication = async (msg) => {
       await sendFarmerConfirmationEmail({
         reference,
         sbi,
-        whichReview,
+        whichSpecies: whichReview,
         startDate,
         userType,
         email,
