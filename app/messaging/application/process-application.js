@@ -109,12 +109,12 @@ const processApplication = async (data) => {
           sbi: data.organisation.sbi,
           whichSpecies: data.whichReview,
           startDate: application.createdAt,
-          userType: '',
+          userType: data.organisation.userType,
           email: data.organisation.email,
           farmerName: data.organisation.farmerName,
           orgData: {
-            orgName: data.organisation?.name,
-            orgEmail: data.organisation?.orgEmail
+            orgName: data.organisation.name,
+            orgEmail: data.organisation.orgEmail
           }
         }
         )
