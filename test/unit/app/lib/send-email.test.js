@@ -161,6 +161,15 @@ describe('Send email test', () => {
       expect([data.amount, '£[amount]']).toContain(expectedPersonalisation.amount)
       expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
     })
+    test('if data is empty - no email sent', async () => {
+      const data = {}
+
+      await sendEmail.sendFarmerEndemicsClaimConfirmationEmail({})
+
+      expect(data).toEqual({})
+      expect(data.orgData).toBeUndefined()
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, undefined, { personalisation: { amount: '£[amount]', reference: undefined }, reference: undefined })
+    })
     test('sendEmail returns false on error sending email', async () => {
       const templateId = 'templateId'
       const email = 'test@unit-test.com'
