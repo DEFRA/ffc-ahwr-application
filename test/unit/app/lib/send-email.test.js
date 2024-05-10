@@ -166,8 +166,6 @@ describe('Send email test', () => {
       const email = 'test@unit-test.com'
       const personalisation = { name: 'farmer' }
       const reference = 'AHWR-B977-4D0D'
-      const error = new Error('Test exception')
-      error.response = { data: 'failed to send email' }
 
       notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
       sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
@@ -175,21 +173,18 @@ describe('Send email test', () => {
       const response = await sendEmail.sendEmail(email, personalisation, reference, templateId)
       expect(response).toBe(false)
     })
-    test(' check if sendEmail  is called with the right values ', async () => {
-      const templateId = 'templateId'
-      const email = 'test@unit-test.com'
-      const personalisation = { name: 'farmer' }
-      const reference = 'AHWR-B977-4D0D'
-      const error = new Error('Test exception')
-      error.response = { data: 'failed to send email' }
+  })
+  test(' fail to sendEmail  if values  missing or incomplete  ', async () => {
+    const templateId = 'templateId'
+    const personalisation = { name: 'farmer' }
+    const reference = 'AHWR-B977-4D0D'
 
-      notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
-      sendEmail.sendEmail = jest.fn().mockReturnValueOnce(true)
+    notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+    sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
 
-      const response = await sendEmail.sendEmail(email, personalisation, reference, templateId)
+    const response = await sendEmail.sendEmail(personalisation, reference, templateId)
 
-      expect(response).toBe(true)
-      expect(sendEmail.sendEmail).toHaveBeenCalledWith(email, personalisation, reference, templateId)
-    })
+    expect(response).toBe(false)
+    expect(sendEmail.sendEmail).toHaveBeenCalledWith(personalisation, reference, templateId)
   })
 })
