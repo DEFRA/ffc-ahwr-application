@@ -24,13 +24,13 @@ const isNegativeReviewTestResult = (payload) => payload.data.reviewTestResults =
 const isPositiveBeefReviewTestResult = (payload) => isBeefEndemics(payload) && isPositiveReviewTestResult(payload)
 const isNegativeBeefReviewTestResult = (payload) => isBeefEndemics(payload) && isNegativeReviewTestResult(payload)
 
-const isClaimDataValid = (payload) => {
-  const pigsTestResults = isPigsReview(payload) && Joi.string().valid(positive, negative).required()
-  const sheepTestResults = isSheepEndemics(payload) && Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.string() }))) })).required()
-  const beefDairyTestResults = [beef, dairy].includes(payload.data.typeOfLivestock) && Joi.string().valid(positive, negative).required()
-  const beefDairyBiosecurity = [beef, dairy].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && Joi.string().valid(biosecurity.yes, biosecurity.no).required()
-  const pigsBiosecurity = isPigsEndemics(payload) && Joi.alternatives().try(Joi.string().valid(biosecurity.no), Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
+const pigsTestResults = (payload) => isPigsReview(payload) && Joi.string().valid(positive, negative).required()
+const sheepTestResults = (payload) => isSheepEndemics(payload) && Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.string() }))) })).required()
+const beefDairyTestResults = (payload) => [beef, dairy].includes(payload.data.typeOfLivestock) && Joi.string().valid(positive, negative).required()
+const beefDairyBiosecurity = (payload) => [beef, dairy].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && Joi.string().valid(biosecurity.yes, biosecurity.no).required()
+const pigsBiosecurity = (payload) => isPigsEndemics(payload) && Joi.alternatives().try(Joi.string().valid(biosecurity.no), Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
 
+const isClaimDataValid = (payload) => {
   const claimDataModel = Joi.object({
     applicationReference: Joi.string().required(),
     type: Joi.string().valid(review, endemics).required(),
@@ -49,16 +49,18 @@ const isClaimDataValid = (payload) => {
       herdVaccinationStatus: isPigsEndemics(payload) && Joi.string().valid('vaccinated', 'notVaccinated').required(),
       diseaseStatus: isPigsEndemics(payload) && Joi.string().valid('1', '2', '3', '4').required(),
       piHunt: isPositiveBeefReviewTestResult(payload) && Joi.string().valid(yes, no).required(),
-      biosecurity: pigsBiosecurity || beefDairyBiosecurity,
+      biosecurity: pigsBiosecurity(payload) || beefDairyBiosecurity(payload),
       reviewTestResults: [beef, dairy, pigs].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && Joi.string().valid(positive, negative).required(),
-      testResults: !isNegativeBeefReviewTestResult(payload) && (pigsTestResults || sheepTestResults || beefDairyTestResults),
+      testResults: !isNegativeBeefReviewTestResult(payload) && (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload)),
       sheepEndemicsPackage: isSheepEndemics(payload) && Joi.string().required(),
       vetVisitsReviewTestResults: [beef, dairy, pigs].includes(payload.data.typeOfLivestock) && Joi.string().valid(positive, negative).optional(),
       amount: Joi.string().optional()
     })
   })
 
-  return claimDataModel.validate(payload)
+  const { error } = claimDataModel.validate(payload)
+
+  return { error, ...(!error && { data: { ...payload, data: { ...payload.data, reviewTestResults: undefined } } }) }
 }
 
 module.exports = [
@@ -106,14 +108,14 @@ module.exports = [
     path: '/api/claim',
     options: {
       handler: async (request, h) => {
-        const { error } = isClaimDataValid(request.payload)
+        const { error, data } = isClaimDataValid(request.payload)
 
         if (error) {
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
 
-        const application = await get(request.payload.applicationReference)
+        const application = await get(data.applicationReference)
 
         if (!application?.dataValues) {
           return h.response('Not Found').code(404).takeover()
@@ -122,7 +124,7 @@ module.exports = [
         // const { statusId } = await requiresComplianceCheck('claim')
         // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
         // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
-        const claim = await set({ ...request.payload, statusId: statusIds.inCheck })
+        const claim = await set({ ...data, statusId: statusIds.inCheck })
 
         claim && await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
