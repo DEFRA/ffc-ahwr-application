@@ -20,6 +20,7 @@ const {
 } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
+const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-email')
 // const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 module.exports = [
@@ -136,7 +137,8 @@ module.exports = [
               request.payload.data.typeOfLivestock
             ) && {
               vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional()
-            })
+            }),
+            amount: Joi.string().optional()
           }),
           type: Joi.string().valid(review, endemics).required(),
           createdBy: Joi.string().required()
@@ -159,6 +161,17 @@ module.exports = [
         // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
         // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
         const claim = await set({ ...request.payload, statusId: statusIds.inCheck })
+
+        claim && await sendFarmerEndemicsClaimConfirmationEmail({
+          reference: claim?.dataValues?.reference,
+          amount: '£[amount]',
+          email: application?.dataValues?.data?.email,
+          farmerName: application?.dataValues?.data?.farmerName,
+          orgData: {
+            orgName: application?.dataValues?.data?.organisation?.name,
+            orgEmail: application?.dataValues?.data?.organisation?.orgEmail
+          }
+        })
 
         return h.response(claim).code(200)
       }

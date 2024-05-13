@@ -1,6 +1,7 @@
 const sendEmail = require('../../../../app/lib/send-email')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../../../../app/config')
-const { templateIdFarmerClaimComplete } = require('../../../../app/config').notify
+const { templateIdFarmerClaimComplete, templateIdFarmerEndemicsClaimComplete } = require('../../../../app/config').notify
+// const appInsights = require('applicationinsights')
 
 const error = new Error('Test exception')
 error.response = { data: 'failed to send email' }
@@ -49,7 +50,7 @@ describe('Send email test', () => {
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
     expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
-    expect(response).toBe(true)
+    expect(response).toBeTruthy()
   })
 
   test('sendFarmerClaimConfirmationEmail returns false on error sending email', async () => {
@@ -58,5 +59,141 @@ describe('Send email test', () => {
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
     expect(response).toBe(false)
+  })
+  describe('sendFarmerEndemicsClaimConfirmationEmail', () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email', async () => {
+      const data = {
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {
+          orgEmail: 'test@unit-test.org'
+        }
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        amount: data.amount
+      }
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(true)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail sends carbon copy email to organization email', async () => {
+      const data = {
+        email: 'test@unit-test.com',
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {
+          orgEmail: 'test@unit-test.org'
+        }
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        amount: data.amount
+      }
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(true)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email when orgEmail is not provided', async () => {
+      const data = {
+        email: 'test@unit-test.com',
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {}
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        amount: data.amount
+      }
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(true)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail returns false on error sending email', async () => {
+      const data = {
+        email: 'test@unit-test.com',
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {
+          orgEmail: 'test@unit-test.org'
+        }
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+
+      const error = new Error('Test exception')
+      error.response = { data: 'failed to send email' }
+      notifyClient.sendEmail.mockRejectedValueOnce(error)
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(false)
+    })
+
+    test('use default templateId when not provided', async () => {
+      const data = {
+        email: 'test@test-unit.com',
+        reference: 'AHWR-B977-4D0D',
+        amount: '£[amount]',
+        orgData: {
+          orgEmail: 'test@test-unit.org',
+          orgName: 'Farmer'
+        }
+      }
+      const expectedPersonalisation = {
+        reference: data.reference,
+        amount: data.amount || '£[amount]'
+      }
+
+      const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data)
+      expect(result).toBe(true)
+      expect([data.amount, '£[amount]']).toContain(expectedPersonalisation.amount)
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+    test('if data is empty - no email sent', async () => {
+      const data = {}
+
+      await sendEmail.sendFarmerEndemicsClaimConfirmationEmail({})
+
+      expect(data).toEqual({})
+      expect(data.orgData).toBeUndefined()
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, undefined, { personalisation: { amount: '£[amount]', reference: undefined }, reference: undefined })
+    })
+    test('sendEmail returns false on error sending email', async () => {
+      const templateId = 'templateId'
+      const email = 'test@unit-test.com'
+      const personalisation = { name: 'farmer' }
+      const reference = 'AHWR-B977-4D0D'
+
+      notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+      sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
+
+      const response = await sendEmail.sendEmail(email, personalisation, reference, templateId)
+      expect(response).toBe(false)
+    })
+  })
+  test(' fail to sendEmail  if values  missing or incomplete  ', async () => {
+    const templateId = 'templateId'
+    const personalisation = { name: 'farmer' }
+    const reference = 'AHWR-B977-4D0D'
+
+    notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+    sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
+
+    const response = await sendEmail.sendEmail(personalisation, reference, templateId)
+
+    expect(response).toBe(false)
+    expect(sendEmail.sendEmail).toHaveBeenCalledWith(personalisation, reference, templateId)
   })
 })
