@@ -107,8 +107,6 @@ module.exports = [
     options: {
       handler: async (request, h) => {
         const { error } = isClaimDataValid(request.payload)
-        console.log('🚀 ~ handler: ~ request.payload:', request.payload)
-        console.log('🚀 ~ handler: ~ error:', error)
 
         if (error) {
           appInsights.defaultClient.trackException({ exception: error })
