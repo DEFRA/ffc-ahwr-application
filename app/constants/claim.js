@@ -28,7 +28,7 @@ const biosecurity = {
 const minimumNumberOfAnimalsTested = {
   [livestockTypes.beef]: {
     [claimType.review]: 5,
-    [claimType.endemics]: 1
+    [claimType.endemics]: 11
   },
   [livestockTypes.dairy]: {
     [claimType.review]: 5,

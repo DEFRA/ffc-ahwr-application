@@ -224,15 +224,15 @@ describe('Post claim test', () => {
 
   test.each([
     { type: 'E', typeOfLivestock: 'sheep', numberAnimalsTested: 30, numberOfSamplesTested: undefined, testResults: sheepTestResultsMockData, biosecurity: undefined, sheepEndemicsPackage: 'sheepEndemicsPackage', herdVaccinationStatus: undefined, diseaseStatus: undefined },
-    { type: 'E', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfSamplesTested: 6, testResults: undefined, biosecurity: { biosecurity: 'yes', assessmentPercentage: '10' }, sheepEndemicsPackage: undefined, herdVaccinationStatus: 'vaccinated', diseaseStatus: '1' },
-    { type: 'E', typeOfLivestock: 'beef', numberAnimalsTested: 30, numberOfSamplesTested: undefined, testResults: 'positive', biosecurity: 'yes', sheepEndemicsPackage: undefined, herdVaccinationStatus: undefined, diseaseStatus: undefined }
+    { type: 'E', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfSamplesTested: 6, testResults: undefined, biosecurity: { biosecurity: 'yes', assessmentPercentage: '10' }, sheepEndemicsPackage: undefined, herdVaccinationStatus: 'vaccinated', diseaseStatus: '1', reviewTestResults: 'positive' },
+    { type: 'E', typeOfLivestock: 'beef', numberAnimalsTested: 30, numberOfSamplesTested: undefined, testResults: 'positive', biosecurity: 'yes', sheepEndemicsPackage: undefined, herdVaccinationStatus: undefined, diseaseStatus: undefined, reviewTestResults: 'positive', piHunt: 'yes' }
   ])(
     'Post claim with Type: $type and Type of Livestock: $typeOfLivestock and return 200',
-    async ({ type, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus }) => {
+    async ({ type, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, reviewTestResults, piHunt }) => {
       const options = {
         method: 'POST',
         url: '/api/claim',
-        payload: { ...claim, type, ...{ data: { ...claim.data, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, numberOfOralFluidSamples: undefined, ...(typeOfLivestock === 'sheep' && { laboratoryURN: undefined }) } } }
+        payload: { ...claim, type, ...{ data: { ...claim.data, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, numberOfOralFluidSamples: undefined, reviewTestResults, piHunt, ...(typeOfLivestock === 'sheep' && { laboratoryURN: undefined }) } } }
       }
 
       applicationRepository.get.mockResolvedValue({
@@ -265,6 +265,55 @@ describe('Post claim test', () => {
       expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
     }
   )
+  test('Post claim with Type: endemics and Type of Livestock: beef that review test result is negative and return 200', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        applicationReference: 'AHWR-0AD3-3322',
+        type: 'E',
+        createdBy: 'admin',
+        data: {
+          vetsName: 'Capgemini',
+          biosecurity: 'yes',
+          dateOfVisit: '2024-05-13T00:00:00.000Z',
+          vetRCVSNumber: '7777777',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'beef',
+          reviewTestResults: 'negative'
+        }
+      }
+    }
+
+    applicationRepository.get.mockResolvedValue({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-0F5D-4A26',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {},
+        statusId: 1,
+        type: 'E',
+        createdBy: 'admin'
+      }
+    })
+    const mockEmailData = {
+      reference: 'AHWR-0F5D-4A26',
+      email: 'test@test-unit.com',
+      amount: '£[amount]',
+      farmerName: 'farmerName',
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
+    }
+
+    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+
+    await server.inject(options)
+
+    expect(claimRepository.set).toHaveBeenCalledTimes(1)
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
+  })
   test('Post claim with wrong application reference return 400', async () => {
     const options = {
       method: 'POST',
