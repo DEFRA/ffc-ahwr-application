@@ -31,7 +31,7 @@ describe('application', () => {
     const mockEndemics = {
       enabled: true
     }
-    
+
     const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
 
     const mockApplicationRecord = {
