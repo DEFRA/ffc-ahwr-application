@@ -14,6 +14,9 @@ describe('createAgreementNumber', () => {
       const fourDigitRandomNumberGenerator = mockfourDigitRandomNumberGenerator()
       createAgreementNumber(mockfourDigitRandomNumberGenerator)
 
+      expect(mockgetRandomBytes).toHaveBeenCalledTimes(1)
+      expect(mockconvertToUint32Array).toHaveBeenCalledTimes(1)
+      expect(mocksetValueInRange).toHaveBeenCalledTimes(1)
       expect(fourDigitRandomNumberGenerator).toBe(1000)
       expect(fourDigitRandomNumberGenerator).toBeGreaterThanOrEqual(1000)
       expect(fourDigitRandomNumberGenerator).toBeLessThanOrEqual(9999)
