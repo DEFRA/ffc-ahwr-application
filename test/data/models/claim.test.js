@@ -81,6 +81,7 @@ describe('claim model', () => {
     const mockEndemics = {
       enabled: false
     }
+
     mockCreateReference()
     const mockClaimRecord = {
       id: 'mock-id',

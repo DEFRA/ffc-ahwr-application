@@ -46,4 +46,49 @@ describe('application', () => {
     expect(mockCreateReference).toHaveBeenCalledTimes(0)
     expect(mockApplicationRecord.dataValues.reference).toMatch('IAHW-1234-2345')
   })
+  test('should call createAgreementNumber when endemics is true  ', async () => {
+    application(mockSequelize, DataTypes)
+
+    const mockEndemics = {
+      enabled: true
+    }
+    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
+    const mockCreateAgreementNumber = jest.fn().mockReturnValue('IAHW-1234-2345')
+
+    mockCreateAgreementNumber()
+    const mockApplicationRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: 'IAHW-1234-2345'
+      },
+      update: jest.fn()
+    }
+
+    expect(mockEndemics.enabled).toBe(true)
+    expect(mockCreateReference).toHaveBeenCalledTimes(0)
+    expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(1)
+    expect(mockApplicationRecord.dataValues.reference).toMatch('IAHW-1234-2345')
+  })
+  test('should call createReference when endemics is false  ', async () => {
+    application(mockSequelize, DataTypes)
+
+    const mockEndemics = {
+      enabled: false
+    }
+    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
+    const mockCreateAgreementNumber = jest.fn().mockReturnValue('IAHW-1234-2345')
+
+    const mockApplicationRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: mockEndemics.enabled ? mockCreateAgreementNumber() : mockCreateReference()
+      },
+      update: jest.fn()
+    }
+
+    expect(mockEndemics.enabled).toBe(false)
+    expect(mockCreateReference).toHaveBeenCalledTimes(1)
+    expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(0)
+    expect(mockApplicationRecord.dataValues.reference).toMatch('AHWR-1234-APP1')
+  })
 })
