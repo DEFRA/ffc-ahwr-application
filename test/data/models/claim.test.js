@@ -73,5 +73,48 @@ describe('claim model', () => {
     expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(1)
     expect(mockCreateReference).toHaveBeenCalledTimes(0)
     expect(mockClaimRecord.dataValues.reference).toMatch('REBC-1234-2345')
+    expect(mockClaimRecord.dataValues.reference).toMatch(mockClaimRecord.dataValues.reference.toUpperCase())
+  })
+  test('should call createReference to create reference number', async () => {
+    const mockCreateAgreementNumber = jest.fn().mockReturnValue('REBC-1234-2345')
+    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
+    const mockEndemics = {
+      enabled: false
+    }
+    mockCreateReference()
+    const mockClaimRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: 'AHWR-1234-APP1'
+      },
+      update: jest.fn()
+    }
+
+    expect(mockEndemics.enabled).toBe(false)
+    expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(0)
+    expect(mockCreateReference).toHaveBeenCalledTimes(1)
+    expect(mockClaimRecord.dataValues.reference).toMatch('AHWR-1234-APP1')
+    expect(mockClaimRecord.dataValues.reference).toMatch(mockClaimRecord.dataValues.reference.toUpperCase())
+  })
+  test('should call createAgreementNumber to create agreement number', async () => {
+    const mockCreateAgreementNumber = jest.fn().mockReturnValue('REBC-1234-2345')
+    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
+    const mockEndemics = {
+      enabled: true
+    }
+    mockCreateAgreementNumber()
+    const mockClaimRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: 'REBC-1234-2345'
+      },
+      update: jest.fn()
+    }
+
+    expect(mockEndemics.enabled).toBe(true)
+    expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(1)
+    expect(mockCreateReference).toHaveBeenCalledTimes(0)
+    expect(mockClaimRecord.dataValues.reference).toMatch('REBC-1234-2345')
+    expect(mockClaimRecord.dataValues.reference).toMatch(mockClaimRecord.dataValues.reference.toUpperCase())
   })
 })
