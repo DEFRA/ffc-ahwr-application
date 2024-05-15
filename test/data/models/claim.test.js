@@ -118,4 +118,19 @@ describe('claim model', () => {
     expect(mockClaimRecord.dataValues.reference).toMatch('REBC-1234-2345')
     expect(mockClaimRecord.dataValues.reference).toMatch(mockClaimRecord.dataValues.reference.toUpperCase())
   })
+  test('set reference to uppercase and update other fields in the afterCreate hook', async () => {
+    const claimRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: 'REBC-1234-2345',
+        type: 'type'
+      },
+      update: jest.fn()
+    }
+
+    await Claim.hooks.afterCreate(claimRecord, mockSequelize)
+    expect(claimRecord.dataValues.reference).toMatch('REBC-1234-2345')
+    expect(claimRecord.dataValues.reference).toMatch(claimRecord.dataValues.reference.toUpperCase())
+    expect(claimRecord.dataValues.updatedAt).toBeInstanceOf(Date)
+  })
 })
