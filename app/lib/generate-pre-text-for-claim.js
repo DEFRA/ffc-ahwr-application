@@ -14,8 +14,8 @@ module.exports = (reviewOrFollowUp, typeOfLiveStock) => {
   switch (typeOfLiveStock.toLowerCase()) {
     case 'beef':
     case 'beef cattle':
-      return reviewOrFollowUpValue + species[0] 
-    case 'dairy':  
+      return reviewOrFollowUpValue + species[0]
+    case 'dairy':
     case 'dairy cattle':
       return reviewOrFollowUpValue + species[1]
     case 'pig':
