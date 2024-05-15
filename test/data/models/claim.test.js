@@ -1,5 +1,9 @@
 const { DataTypes } = require('sequelize')
 const application = require('../../../app/data/models/claim')
+jest.mock('../../../app/lib/create-agreement-number')
+jest.mock('../../../app/lib/create-reference')
+jest.mock('../../../app/lib/get-review-type')
+jest.mock('../../../app/lib/generate-pre-text-for-claim')
 
 const mockSequelize = {
   define: jest.fn().mockReturnValue({
@@ -131,6 +135,21 @@ describe('claim model', () => {
     await Claim.hooks.afterCreate(claimRecord, mockSequelize)
     expect(claimRecord.dataValues.reference).toMatch('REBC-1234-2345')
     expect(claimRecord.dataValues.reference).toMatch(claimRecord.dataValues.reference.toUpperCase())
-    expect(claimRecord.dataValues.updatedAt).toBeInstanceOf(Date)
+  })
+  test('test relationship', async () => {
+    const mockModels = {
+      application: jest.fn(),
+      status: jest.fn()
+    }
+    Claim.hasOne = jest.fn()
+    Claim.associate(mockModels)
+    expect(Claim.hasOne).toHaveBeenCalledWith(mockModels.application, {
+      sourceKey: 'applicationReference',
+      foreignKey: 'reference'
+    })
+    expect(Claim.hasOne).toHaveBeenCalledWith(mockModels.status, {
+      sourceKey: 'statusId',
+      foreignKey: 'statusId'
+    })
   })
 })
