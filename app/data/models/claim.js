@@ -1,4 +1,9 @@
+
+const createAgreementNumber = require('../../lib/create-agreement-number')
+const { endemics } = require('../../config')
 const createReference = require('../../lib/create-reference')
+const { getReviewType } = require('../../lib/get-review-type')
+const generateClaimPreText = require('../../lib/generate-pre-text-for-claim')
 
 module.exports = (sequelize, DataTypes) => {
   const claim = sequelize.define('claim',
@@ -35,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'claim',
       hooks: {
         afterCreate: async (claimRecord, _) => {
-          claimRecord.dataValues.reference = createReference(claimRecord.id)
+          claimRecord.dataValues.reference = endemics.enabled ? createAgreementNumber(generateClaimPreText(getReviewType(claimRecord.type), claimRecord.dataValues.data.typeOfLivestock)) : createReference(claimRecord.id)
           claimRecord.dataValues.updatedBy = 'admin'
           claimRecord.dataValues.updatedAt = new Date()
           await claimRecord.update(claimRecord.dataValues)
