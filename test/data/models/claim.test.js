@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const application = require('../../../app/data/models/claim')
+const claim = require('../../../app/data/models/claim')
 const { getReviewType } = require('../../../app/lib/get-review-type')
 const generatePreTextForClaim = require('../../../app/lib/generate-pre-text-for-claim')
 jest.mock('../../../app/lib/create-agreement-number')
@@ -19,7 +19,7 @@ describe('claim model', () => {
   let Claim
 
   beforeAll(() => {
-    Claim = application(mockSequelize, DataTypes)
+    Claim = claim(mockSequelize, DataTypes)
     global.Date.now = jest.fn(() => new Date('2024-01-01'))
   })
 
@@ -104,22 +104,24 @@ describe('claim model', () => {
     expect(mockClaimRecord.dataValues.reference).toMatch(mockClaimRecord.dataValues.reference.toUpperCase())
   })
   test('should call createAgreementNumber to create agreement number', async () => {
+    const mockClaimRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: 'REBC-1234-2345',
+        data: {
+          typeOfLiveStock: 'beef'
+        }
+      },
+      update: jest.fn()
+    }
     jest.mocked(getReviewType).mockReturnValue({ isReview: true, isEndemicsFollowUp: false })
-    jest.mocked(generatePreTextForClaim).mockReturnValue('REBC')
-    const mockCreateAgreementNumber = jest.fn().mockReturnValue('REBC-1234-2345')
+    jest.mocked(generatePreTextForClaim).mockImplementation((getReviewType) => 'REBC')
+    const mockCreateAgreementNumber = jest.fn().mockImplementation((generatePreTextForClaim) => 'REBC-1234-2345')
     const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
     const mockEndemics = {
       enabled: true
     }
     mockCreateAgreementNumber()
-
-    const mockClaimRecord = {
-      id: 'mock-id',
-      dataValues: {
-        reference: 'REBC-1234-2345'
-      },
-      update: jest.fn()
-    }
 
     expect(mockEndemics.enabled).toBe(true)
     expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(1)
