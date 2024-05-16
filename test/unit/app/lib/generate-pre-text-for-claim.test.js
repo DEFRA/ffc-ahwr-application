@@ -14,23 +14,25 @@ describe('generate pretext for claim', () => {
     expect(generateClaimPreText(type, typeOfLiveStock)).toMatch('REBC')
     expect(isReviewResult).toEqual({ isReview: true, isEndemicsFollowUp: false })
   })
-  test('check if getReviewType is called and has correct value', () => {
+  test('check the value of getReviewType', () => {
     const type = 'R'
-    const typeOfLiveStock = 'Beef Cattle'
-
-    const { isReview } = getReviewType(type) || {}
-    generateClaimPreText(type, typeOfLiveStock)
-
-    expect(isReview).toBe(true)
+    const reviewOrFollowUpValue = getReviewType(type)
+    expect(reviewOrFollowUpValue).toEqual({ isReview: true, isEndemicsFollowUp: false })
   })
-  test('check if getReviewType is called and has correct value', () => {
+  test('return RE for review when type is R', () => {
     const type = 'R'
-    const typeOfLiveStock = 'Beef Cattle'
+    const reviewOrFollowUp = getReviewType(type)
+    const reviewOrFollowUpValue = reviewOrFollowUp?.isReview === true ? 'RE' : 'FU'
 
-    const { isReview } = '' || {}
-    generateClaimPreText(type, typeOfLiveStock)
+    expect(reviewOrFollowUp).toEqual({ isReview: true, isEndemicsFollowUp: false })
+    expect(reviewOrFollowUpValue).toMatch('RE')
+  })
+  test('return undefined for review when type is R', () => {
+    const reviewOrFollowUp = undefined
+    const reviewOrFollowUpValue = reviewOrFollowUp?.isReview === true ? 'RE' : 'FU'
 
-    expect(isReview).toBeUndefined()
+    expect(reviewOrFollowUp).toBeUndefined()
+    expect(reviewOrFollowUpValue).toMatch('FU')
   })
 
   test.each([

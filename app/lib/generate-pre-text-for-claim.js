@@ -9,9 +9,9 @@ const { getReviewType } = require('./get-review-type')
  */
 module.exports = (type, typeOfLiveStock) => {
   const species = ['BC', 'DC', 'PI', 'SH']
-  const { isReview } = getReviewType(type) || {}
+  const reviewOrFollowUp = getReviewType(type)
 
-  const reviewOrFollowUpValue = isReview === true ? 'RE' : 'FU'
+  const reviewOrFollowUpValue = reviewOrFollowUp?.isReview === true ? 'RE' : 'FU'
 
   switch (typeOfLiveStock.toLowerCase()) {
     case 'beef':
