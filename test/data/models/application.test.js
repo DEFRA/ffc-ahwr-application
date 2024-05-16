@@ -13,10 +13,9 @@ const mockSequelize = {
 }
 describe('application', () => {
   beforeAll(() => {
-    jest.spyOn(Date, 'now').mockImplementation(() => new Date('2024-01-01'))
+    Date.now = jest.fn(() => 1482363367071)
   })
   afterAll(async () => {
-    jest.spyOn(Date, 'now').mockRestore()
     jest.clearAllMocks()
   })
   test('should call sequelize.define with the correct model name and schema', () => {

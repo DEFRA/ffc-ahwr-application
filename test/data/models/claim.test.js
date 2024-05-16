@@ -19,6 +19,7 @@ describe('claim model', () => {
   let Claim
   beforeAll(() => {
     Claim = claim(mockSequelize, DataTypes)
+    Date.now = jest.fn(() => 1482363367071)
   })
 
   afterAll(() => {
@@ -29,6 +30,32 @@ describe('claim model', () => {
     expect(mockSequelize.define).toHaveBeenCalledTimes(1)
     expect(Claim.create).toBeDefined()
     expect(Claim.associate).toBeDefined()
+  })
+  test('should set the reference to uppercase and update other fields after creation', async () => {
+    const claimRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: 'REBC-1234-2345',
+        type: 'type',
+        updatedBy: '',
+        updatedAt: null,
+        data: {
+          typeOfLiveStock: 'beef'
+        }
+      },
+      update: jest.fn()
+    }
+    mockSequelize.define.mockImplementation((_, config) => ({
+      create: jest.fn(),
+      associate: jest.fn(),
+      hooks: {
+        afterCreate: config.hooks.afterCreate
+      }
+    }))
+
+    expect(claimRecord.dataValues.reference).toMatch('REBC-1234-2345')
+    expect(claimRecord.dataValues.updatedAt).toBeDefined()
+    expect(claimRecord.dataValues.reference).toMatch(claimRecord.dataValues.reference.toUpperCase())
   })
 
   test('should associate the claim model with application and status models', () => {
