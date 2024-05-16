@@ -14,6 +14,15 @@ describe('generate pretext for claim', () => {
     expect(generateClaimPreText(type, typeOfLiveStock)).toMatch('REBC')
     expect(isReviewResult).toEqual({ isReview: true, isEndemicsFollowUp: false })
   })
+  test('check if getReviewType is called and has correct value', () => {
+    const type = 'R'
+    const typeOfLiveStock = 'Beef Cattle'
+
+    const { isReview } = getReviewType(type) || {}
+    generateClaimPreText(type, typeOfLiveStock)
+
+    expect(isReview).toBe(true)
+  })
 
   test.each([
     { type: 'R', typeOfLiveStock: 'InvalidType', expected: 'Invalid livestock type' },
