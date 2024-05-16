@@ -1,3 +1,4 @@
+const { getReviewType } = require('./get-review-type')
 /**
  *
  * 1st 2 characters denote review or follow up: RE/FU
@@ -6,10 +7,11 @@
  * Eg for Review (pig) -  REPI-6844-3029
  * Eg for Follow up (Beef Cattle) - FUBC-7933-2138
  */
-module.exports = (reviewOrFollowUp, typeOfLiveStock) => {
+module.exports = (type, typeOfLiveStock) => {
   const species = ['BC', 'DC', 'PI', 'SH']
+  const { isReview } = getReviewType(type) || {}
 
-  const reviewOrFollowUpValue = reviewOrFollowUp.isReview === true ? 'RE' : 'FU'
+  const reviewOrFollowUpValue = isReview === true ? 'RE' : 'FU'
 
   switch (typeOfLiveStock.toLowerCase()) {
     case 'beef':

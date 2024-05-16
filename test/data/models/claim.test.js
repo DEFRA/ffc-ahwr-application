@@ -25,6 +25,7 @@ describe('claim model', () => {
 
   afterAll(() => {
     global.Date.now = originalDateNow
+    jest.clearAllMocks()
   })
   test('should define the claim model', () => {
     expect(Claim).toBeDefined()
