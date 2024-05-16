@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize')
 const application = require('../../../app/data/models/application')
+jest.mock('../../../app/lib/create-agreement-number')
+jest.mock('../../../app/lib/create-reference')
 
 // Mocking the sequelize instance
 const mockSequelize = {
@@ -19,6 +21,7 @@ describe('application', () => {
   })
   test('should call sequelize.define with the correct model name and schema', () => {
     const applicationModel = application(mockSequelize, DataTypes)
+
     expect(mockSequelize.define).toHaveBeenCalledTimes(1)
 
     expect(applicationModel.create).toBeDefined()

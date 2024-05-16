@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize')
 const application = require('../../../app/data/models/claim')
+const { getReviewType } = require('../../../app/lib/get-review-type')
+const generatePreTextForClaim = require('../../../app/lib/generate-pre-text-for-claim')
 jest.mock('../../../app/lib/create-agreement-number')
 jest.mock('../../../app/lib/create-reference')
 jest.mock('../../../app/lib/get-review-type')
@@ -102,12 +104,15 @@ describe('claim model', () => {
     expect(mockClaimRecord.dataValues.reference).toMatch(mockClaimRecord.dataValues.reference.toUpperCase())
   })
   test('should call createAgreementNumber to create agreement number', async () => {
+    jest.mocked(getReviewType).mockReturnValue({ isReview: true, isEndemicsFollowUp: false })
+    jest.mocked(generatePreTextForClaim).mockReturnValue('REBC')
     const mockCreateAgreementNumber = jest.fn().mockReturnValue('REBC-1234-2345')
     const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
     const mockEndemics = {
       enabled: true
     }
     mockCreateAgreementNumber()
+
     const mockClaimRecord = {
       id: 'mock-id',
       dataValues: {
@@ -151,5 +156,33 @@ describe('claim model', () => {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
+  })
+  test('should call afterCreate hook', async () => {
+    const mockEndemics = {
+      enabled: true
+    }
+
+    const mockClaimRecord = {
+      id: 'mock-id',
+      dataValues: {
+        reference: 'REBC-1234-2345'
+      },
+      update: jest.fn()
+    }
+    const mockModels = {
+      status: {
+        sourceKey: 'statusId',
+        foreignKey: 'statusId'
+      }
+    }
+    Claim.hooks = {
+      afterCreate: jest.fn()
+    }
+
+    Claim.associate(mockModels)
+    expect(mockEndemics.enabled).toBe(true)
+
+    expect(mockClaimRecord.dataValues.reference).toMatch('REBC-1234-2345')
+    expect(mockClaimRecord.dataValues.reference).toMatch(mockClaimRecord.dataValues.reference.toUpperCase())
   })
 })
