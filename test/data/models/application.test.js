@@ -23,7 +23,6 @@ describe('application', () => {
     const applicationModel = application(mockSequelize, DataTypes)
 
     expect(mockSequelize.define).toHaveBeenCalledTimes(1)
-
     expect(applicationModel.create).toBeDefined()
     expect(applicationModel.associate).toBeDefined()
   })
@@ -78,9 +77,9 @@ describe('application', () => {
     const mockEndemics = {
       enabled: false
     }
-    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
-    const mockCreateAgreementNumber = jest.fn().mockReturnValue('IAHW-1234-2345')
 
+    const mockCreateAgreementNumber = jest.fn().mockReturnValue('IAHW-1234-2345')
+    const mockCreateReference = jest.fn().mockImplementation((id) => ('AHWR-1234-APP1'))
     const mockApplicationRecord = {
       id: 'mock-id',
       dataValues: {
@@ -88,10 +87,13 @@ describe('application', () => {
       },
       update: jest.fn()
     }
+    mockCreateReference(mockApplicationRecord.id)
 
     expect(mockEndemics.enabled).toBe(false)
-    expect(mockCreateReference).toHaveBeenCalledTimes(1)
+    expect(mockCreateReference).toHaveBeenCalled()
     expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(0)
     expect(mockApplicationRecord.dataValues.reference).toMatch('AHWR-1234-APP1')
+    expect(mockApplicationRecord.dataValues.reference).toMatch(mockApplicationRecord.dataValues.reference.toUpperCase())
+    expect(mockCreateReference).toHaveBeenCalledWith(mockApplicationRecord.id)
   })
 })

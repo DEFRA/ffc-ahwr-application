@@ -14,17 +14,14 @@ const mockSequelize = {
   }),
   UUIDV4: 'mock-uuid-v4'
 }
-const originalDateNow = Date.now
+
 describe('claim model', () => {
   let Claim
-
   beforeAll(() => {
     Claim = claim(mockSequelize, DataTypes)
-    global.Date.now = jest.fn(() => new Date('2024-01-01'))
   })
 
   afterAll(() => {
-    global.Date.now = originalDateNow
     jest.clearAllMocks()
   })
   test('should define the claim model', () => {
