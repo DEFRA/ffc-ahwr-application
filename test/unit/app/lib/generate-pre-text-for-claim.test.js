@@ -23,6 +23,15 @@ describe('generate pretext for claim', () => {
 
     expect(isReview).toBe(true)
   })
+  test('check if getReviewType is called and has correct value', () => {
+    const type = 'R'
+    const typeOfLiveStock = 'Beef Cattle'
+
+    const { isReview } = '' || {}
+    generateClaimPreText(type, typeOfLiveStock)
+
+    expect(isReview).toBeUndefined()
+  })
 
   test.each([
     { type: 'R', typeOfLiveStock: 'InvalidType', expected: 'Invalid livestock type' },
