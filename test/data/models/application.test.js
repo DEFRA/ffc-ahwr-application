@@ -22,6 +22,7 @@ describe('application', () => {
     const applicationModel = application(mockSequelize, DataTypes)
 
     expect(mockSequelize.define).toHaveBeenCalledTimes(1)
+    expect(mockSequelize.define).toHaveBeenCalledWith('application', expect.any(Object), expect.any(Object))
     expect(applicationModel.create).toBeDefined()
     expect(applicationModel.associate).toBeDefined()
   })
