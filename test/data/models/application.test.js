@@ -7,7 +7,10 @@ jest.mock('../../../app/lib/create-reference')
 const mockSequelize = {
   define: jest.fn().mockReturnValue({
     create: jest.fn(),
-    associate: jest.fn()
+    associate: jest.fn(),
+    hooks: {
+      afterCreate: jest.fn()
+    }
   }),
   UUIDV4: 'mock-uuid-v4'
 }
@@ -28,25 +31,45 @@ describe('application', () => {
   })
 
   test('should call afterCreate hook with the correct logic', async () => {
-    application(mockSequelize, DataTypes)
+    const applicationModel = application(mockSequelize, DataTypes)
 
     const mockEndemics = {
       enabled: true
     }
-
-    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
-
     const mockApplicationRecord = {
       id: 'mock-id',
       dataValues: {
         reference: 'IAHW-1234-2345'
       },
-      update: jest.fn()
+      update: jest.fn().mockImplementation((data) => {
+        mockApplicationRecord.dataValues = data
+      })
     }
+    const _ = undefined
+
+    await mockApplicationRecord.update(mockApplicationRecord.dataValues)
+
+    const mockCreateAgreementNumber = jest.fn().mockReturnValue('IAHW-1234-2345')
+    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
+    applicationModel.hooks.afterCreate.mockImplementation(async (mockApplicationRecord, _) => {
+      mockApplicationRecord.dataValues.reference = mockEndemics.enabled ? mockCreateAgreementNumber() : mockCreateReference(mockApplicationRecord.id)
+      mockApplicationRecord.dataValues.updatedBy = 'admin'
+      mockApplicationRecord.dataValues.updatedAt = new Date()
+      await mockApplicationRecord.update(mockApplicationRecord.dataValues)
+    })
+
+    await applicationModel.hooks.afterCreate(mockApplicationRecord, _)
+    mockCreateReference(mockApplicationRecord.id)
+    mockCreateAgreementNumber()
 
     expect(mockEndemics.enabled).toBe(true)
-    expect(mockCreateReference).toHaveBeenCalledTimes(0)
+
+    expect(mockCreateAgreementNumber).toHaveBeenCalled()
     expect(mockApplicationRecord.dataValues.reference).toMatch('IAHW-1234-2345')
+    expect(mockApplicationRecord.dataValues.reference).toMatch(mockApplicationRecord.dataValues.reference.toUpperCase())
+    expect(mockCreateReference).toHaveBeenCalledWith(mockApplicationRecord.id)
+    expect(mockApplicationRecord.update).toHaveBeenCalledWith(mockApplicationRecord.dataValues)
+    expect(mockApplicationRecord.dataValues.updatedBy).toMatch('admin')
   })
   test('should call createAgreementNumber when endemics is true  ', async () => {
     application(mockSequelize, DataTypes)
