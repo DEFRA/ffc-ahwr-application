@@ -29,6 +29,7 @@ describe('claim model', () => {
     jest.clearAllMocks()
   })
   test('should define the claim model', () => {
+    expect(mockSequelize.define).toHaveBeenCalledWith('claim', expect.any(Object), expect.any(Object))
     expect(Claim).toBeDefined()
     expect(mockSequelize.define).toHaveBeenCalledTimes(1)
     expect(Claim.create).toBeDefined()
@@ -102,17 +103,15 @@ describe('claim model', () => {
       }
     }
     const _ = {}
+    mockClaimRecord.update = jest.fn().mockImplementation((data) => {
+      mockClaimRecord.dataValues = data
+    })
     Claim.hooks.afterCreate.mockImplementation(async (mockClaimRecord, _) => {
       mockClaimRecord.dataValues.reference = mockEndemics.enabled
         ? mockCreateAgreementNumber(mockGenerateClaimPreText(mockClaimRecord.type, mockClaimRecord.dataValues?.data?.typeOfLivestock || ''))
         : mockCreateReference(mockClaimRecord.id)
       mockClaimRecord.dataValues.updatedBy = 'admin'
       mockClaimRecord.dataValues.updatedAt = new Date()
-
-      mockClaimRecord.update = jest.fn().mockImplementation((data) => {
-        mockClaimRecord.dataValues = data
-      })
-
       await mockClaimRecord.update(mockClaimRecord.dataValues)
     })
 
@@ -136,7 +135,6 @@ describe('claim model', () => {
       enabled: false
     }
 
-    mockCreateReference()
     const mockClaimRecord = {
       id: 'mock-id',
       dataValues: {
@@ -144,6 +142,7 @@ describe('claim model', () => {
       },
       update: jest.fn()
     }
+    mockCreateReference(mockClaimRecord.id || 'mock-id')
 
     expect(mockEndemics.enabled).toBe(false)
     expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(0)
@@ -186,8 +185,9 @@ describe('claim model', () => {
       },
       update: jest.fn()
     }
+    const _ = {}
 
-    await Claim.hooks.afterCreate(claimRecord, mockSequelize)
+    await Claim.hooks.afterCreate(claimRecord, _)
     expect(claimRecord.dataValues.reference).toMatch('REBC-1234-2345')
     expect(claimRecord.dataValues.reference).toMatch(claimRecord.dataValues.reference.toUpperCase())
   })
