@@ -24,8 +24,26 @@ describe('application', () => {
   test('should call sequelize.define with the correct model name and schema', () => {
     const applicationModel = application(mockSequelize, DataTypes)
 
+    const args = jest.mocked(mockSequelize.define).mock.calls[0]
+
+    expect(args[0]).toBe('application')
     expect(mockSequelize.define).toHaveBeenCalledTimes(1)
-    expect(mockSequelize.define).toHaveBeenCalledWith('application', expect.any(Object), expect.any(Object))
+    expect(args[1]).toMatchObject({
+      id: {
+        type: DataTypes.UUID,
+        primaryKey: true
+      },
+      reference: {
+        type: DataTypes.STRING
+      },
+      updatedBy: {
+        type: DataTypes.STRING
+      },
+      updatedAt: {
+        type: DataTypes.DATE
+      }
+    })
+
     expect(applicationModel.create).toBeDefined()
     expect(applicationModel.associate).toBeDefined()
   })
