@@ -1,6 +1,4 @@
 const createAgreementNumber = require('../../lib/create-agreement-number')
-const { endemics } = require('../../config')
-const createReference = require('../../lib/create-reference')
 
 module.exports = (sequelize, DataTypes) => {
   const application = sequelize.define('application', {
@@ -29,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'application',
     hooks: {
       afterCreate: async (applicationRecord, _) => {
-        applicationRecord.dataValues.reference = endemics.enabled ? createAgreementNumber() : createReference(applicationRecord.id)
+        applicationRecord.dataValues.reference =  createAgreementNumber('apply', { id: applicationRecord.id })
         applicationRecord.dataValues.updatedBy = 'admin'
         applicationRecord.dataValues.updatedAt = new Date()
         await applicationRecord.update(applicationRecord.dataValues)
