@@ -10,9 +10,8 @@ const appInsights = require('applicationinsights')
 function timeLimitDates (application) {
   const start = new Date(application.createdAt)
   const end = new Date(start)
-  // refactor to set time limit to a constant - config??
   end.setMonth(end.getMonth() + 10)
-  end.setHours(23, 59, 59, 999) // set to midnight of agreement end day
+  end.setHours(23, 59, 59, 999)
   return { startDate: start, endDate: end }
 }
 
@@ -28,12 +27,12 @@ function isPreviousApplicationRelevant (existingApplication) {
     }
     return false
   } else if (tenMonthRule.enabled) {
-    return existingApplication &&
+    const isWithinTimeLimit = existingApplication &&
       ((existingApplication.statusId !== applicationStatus.withdrawn &&
         existingApplication.statusId !== applicationStatus.notAgreed &&
-        // check if it passes 10 month rule here and chuck error if it doesn't
-        isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
+        !isPastTimeLimit(timeLimitDates(existingApplication))) ||
         existingApplication.statusId === applicationStatus.agreed)
+    return isWithinTimeLimit
   } else {
     return existingApplication &&
       existingApplication.statusId !== applicationStatus.withdrawn &&
@@ -61,11 +60,9 @@ const processApplication = async (data) => {
 
   console.log(`processing Application : ${JSON.stringify(data)}`)
   try {
-    // validation
     if (!validateApplication(data)) {
       throw new Error('Application validation error')
     }
-    // exisiting application
     const existingApplication = await applicationRepository.getBySbi(
       data.organisation.sbi
     )
@@ -85,7 +82,6 @@ const processApplication = async (data) => {
       )
     }
 
-    // create application = save in database
     const result = await applicationRepository.set({
       reference: '',
       data,
@@ -100,7 +96,6 @@ const processApplication = async (data) => {
       applicationState: states.submitted,
       applicationReference: application.reference
     }
-    // send email to farmer if application is accepted
 
     if (data.offerStatus === 'accepted') {
       try {

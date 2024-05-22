@@ -8,7 +8,6 @@ const { set, getByReference, updateByReference, getByApplicationReference, isURN
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
 const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-email')
-// const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 const isReview = (payload) => payload.type === review
 const isEndemicsFollowUp = (payload) => payload.type === endemics
@@ -148,9 +147,6 @@ module.exports = [
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
-        // const { statusId } = await requiresComplianceCheck('claim')
-        // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
-        // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
         const claim = await set({ ...data, data: { ...data?.data, reviewTestResults: undefined }, statusId: statusIds.inCheck })
 
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
