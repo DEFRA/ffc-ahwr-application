@@ -306,6 +306,19 @@ describe('Claim repository test', () => {
     expect(data.models.claim.count).toHaveBeenCalledTimes(1)
     expect(result).toEqual(1)
   })
+  test.each([
+    { applications: undefined, response: { isURNUnique: true } },
+    { applications: [{ dataValues: { data: { urnResult: '12345566' } } }], response: { isURNUnique: false } },
+    { applications: [{ dataValues: { data: { urnResult: '123455663434' }, reference: '123456' } }], response: { isURNUnique: false } }
+  ])('check if URN number is unique', async ({ applications, response }) => {
+    when(data.models.application.findAll).mockResolvedValue(applications)
+    when(data.models.claim.findAll).mockResolvedValue(['claim 1', 'claim 2'])
+
+    const result = await repository.isURNNumberUnique('106785889', '12345566')
+
+    expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
+    expect(result).toEqual(response)
+  })
 
   describe('updateByReference function', () => {
     const mockData = {
