@@ -1,4 +1,4 @@
-const createReference = require('../../lib/create-reference')
+const createAgreementNumber = require('../../lib/create-agreement-number')
 
 module.exports = (sequelize, DataTypes) => {
   const createdAt = { type: DataTypes.DATE, defaultValue: Date.now() }
@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'claim',
       hooks: {
         afterCreate: async (claimRecord, _) => {
-          claimRecord.dataValues.reference = createReference(claimRecord.id)
+          claimRecord.dataValues.reference = createAgreementNumber('claim', { id: claimRecord?.id, type: claimRecord?.type, typeOfLivestock: claimRecord?.dataValues?.data?.typeOfLivestock })
           claimRecord.dataValues.updatedBy = 'admin'
           claimRecord.dataValues.updatedAt = new Date()
           await claimRecord.update(claimRecord.dataValues)
