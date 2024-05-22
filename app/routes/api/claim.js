@@ -60,9 +60,7 @@ const isClaimDataValid = (payload) => {
     })
   })
 
-  const { error } = claimDataModel.validate(payload)
-
-  return { error, ...(!error && { data: { ...payload, data: { ...payload.data, reviewTestResults: undefined } } }) }
+  return claimDataModel.validate(payload)
 }
 
 module.exports = [
@@ -128,7 +126,7 @@ module.exports = [
     path: '/api/claim',
     options: {
       handler: async (request, h) => {
-        const { error, data } = isClaimDataValid(request.payload)
+        const { error, value: data } = isClaimDataValid(request.payload)
         const applicationReference = data?.applicationReference
         const laboratoryURN = data?.data?.laboratoryURN
 
@@ -153,7 +151,7 @@ module.exports = [
         // const { statusId } = await requiresComplianceCheck('claim')
         // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
         // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
-        const claim = await set({ ...data, statusId: statusIds.inCheck })
+        const claim = await set({ ...data, data: { ...data?.data, reviewTestResults: undefined }, statusId: statusIds.inCheck })
 
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
