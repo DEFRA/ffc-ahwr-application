@@ -1,5 +1,4 @@
 const createAgreementNumber = require('../../lib/create-agreement-number')
-const { type } = require('../../server')
 
 module.exports = (sequelize, DataTypes) => {
   const claim = sequelize.define('claim',
@@ -36,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'claim',
       hooks: {
         afterCreate: async (claimRecord, _) => {
-          claimRecord.dataValues.reference = createAgreementNumber('claim', { id: claimRecord.id, type: claimRecord.type, typeOfLivestock: claimRecord.dataValues.data?.typeOfLivestock})
+          claimRecord.dataValues.reference = createAgreementNumber('claim', { id: claimRecord?.id, type: claimRecord?.type, typeOfLivestock: claimRecord?.dataValues?.data?.typeOfLivestock })
           claimRecord.dataValues.updatedBy = 'admin'
           claimRecord.dataValues.updatedAt = new Date()
           await claimRecord.update(claimRecord.dataValues)

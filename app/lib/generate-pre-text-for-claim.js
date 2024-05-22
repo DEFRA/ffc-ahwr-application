@@ -13,7 +13,9 @@ module.exports = (type, typeOfLivestock) => {
 
   const reviewOrFollowUpValue = reviewOrFollowUp?.isReview === true ? 'RE' : 'FU'
 
-  switch (typeOfLivestock.toLowerCase()) {
+  const typeOfLiveStock = typeOfLivestock?.toLowerCase() || ''
+
+  switch (typeOfLiveStock) {
     case 'beef':
     case 'beef cattle':
       return reviewOrFollowUpValue + species[0]

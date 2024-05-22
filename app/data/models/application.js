@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'application',
     hooks: {
       afterCreate: async (applicationRecord, _) => {
-        applicationRecord.dataValues.reference =  createAgreementNumber('apply', { id: applicationRecord.id })
+        applicationRecord.dataValues.reference = createAgreementNumber('apply', { id: applicationRecord?.id })
         applicationRecord.dataValues.updatedBy = 'admin'
         applicationRecord.dataValues.updatedAt = new Date()
         await applicationRecord.update(applicationRecord.dataValues)
