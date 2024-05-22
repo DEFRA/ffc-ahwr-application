@@ -46,8 +46,8 @@ describe('generate pretext for claim', () => {
     { type: 'E', typeOfLiveStock: 'Dairy', expected: 'FUDC' },
     { type: 'R', typeOfLiveStock: 'Dairy Cattle', expected: 'REDC' },
     { type: 'E', typeOfLiveStock: 'Dairy Cattle', expected: 'FUDC' },
-    { type: 'R', typeOfLiveStock: 'Pig', expected: 'REPI' },
-    { type: 'E', typeOfLiveStock: 'Pig', expected: 'FUPI' },
+    { type: 'R', typeOfLiveStock: 'Pigs', expected: 'REPI' },
+    { type: 'E', typeOfLiveStock: 'Pigs', expected: 'FUPI' },
     { type: 'R', typeOfLiveStock: 'Sheep', expected: 'RESH' },
     { type: 'E', typeOfLiveStock: 'Sheep', expected: 'FUSH' }
   ])('should return $expected for type $type and livestock type $typeOfLiveStock', ({ type, typeOfLiveStock, expected }) => {
