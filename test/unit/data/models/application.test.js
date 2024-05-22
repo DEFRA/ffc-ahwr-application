@@ -1,14 +1,23 @@
-const { Sequelize, DataTypes } = require('sequelize')
+const { DataTypes } = require('sequelize')
 const createAgreementNumber = require('../../../../app/lib/create-agreement-number')
 
 jest.mock('../../../../app/lib/create-agreement-number')
 
 describe('application model', () => {
   let Application
-  let mockSequelize
+  // Mocking the sequelize instance
+  const mockSequelize = {
+    define: jest.fn().mockReturnValue({
+      create: jest.fn(),
+      associate: jest.fn(),
+      hooks: {
+        afterCreate: jest.fn()
+      }
+    }),
+    UUIDV4: 'mock-uuid-v4'
+  }
 
   beforeEach(() => {
-    mockSequelize = new Sequelize('sqlite::memory:')
     Application = require('../../../../app/data/models/application')(
       mockSequelize,
       DataTypes

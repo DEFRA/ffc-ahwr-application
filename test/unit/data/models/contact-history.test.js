@@ -1,9 +1,19 @@
 describe('ContactHistory model', () => {
   let ContactHistory
-  let mockSequelize
-  const { Sequelize, DataTypes } = require('sequelize')
+
+  // Mocking the sequelize instance
+  const mockSequelize = {
+    define: jest.fn().mockReturnValue({
+      create: jest.fn(),
+      associate: jest.fn(),
+      hooks: {
+        afterCreate: jest.fn()
+      }
+    }),
+    UUIDV4: 'mock-uuid-v4'
+  }
+  const { DataTypes } = require('sequelize')
   beforeEach(() => {
-    mockSequelize = new Sequelize('sqlite::memory:')
     ContactHistory = require('../../../../app/data/models/contact-history')(
       mockSequelize,
       DataTypes
