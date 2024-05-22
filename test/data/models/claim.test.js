@@ -255,3 +255,65 @@ describe('claim model', () => {
     expect(mockCreateAgreementNumber).toHaveBeenCalledWith(generatePreTextForClaim(mockClaimRecord.type, mockClaimRecord.dataValues.data.typeOfLiveStock))
   })
 })
+describe('claim model Extra tests', () => {
+  let Claim
+  const createAgreementNumber = require('../../../../app/lib/create-agreement-number')
+
+  beforeAll(() => {
+    Claim = claim(mockSequelize, DataTypes)
+  })
+
+  test('should set default values for createdAt and updatedAt', () => {
+    const claimInstance = Claim.build()
+    expect(claimInstance.createdAt).toBeInstanceOf(Date)
+    expect(claimInstance.updatedAt).toBeNull()
+  })
+
+  test('should set default value for createdBy', () => {
+    const claimInstance = Claim.build()
+    expect(claimInstance.createdBy).toBeUndefined()
+  })
+
+  test('should set default value for updatedBy', () => {
+    const claimInstance = Claim.build()
+    expect(claimInstance.updatedBy).toBeNull()
+  })
+
+  test('should set reference to uppercase', () => {
+    const claimInstance = Claim.build({ reference: 'abc-123' })
+    expect(claimInstance.reference).toBe('ABC-123')
+  })
+
+  test('should set applicationReference to uppercase', () => {
+    const claimInstance = Claim.build({ applicationReference: 'xyz-456' })
+    expect(claimInstance.applicationReference).toBe('XYZ-456')
+  })
+
+  test('should call afterCreate hook with correct arguments', async () => {
+    const mockCreateAgreementNumber = jest.fn().mockReturnValue('REBC-1234-2345')
+    jest.mocked(createAgreementNumber).mockImplementation(mockCreateAgreementNumber)
+
+    const claimRecord = {
+      id: 'mock-id',
+      type: 'R',
+      dataValues: {
+        data: {
+          typeOfLivestock: 'beef'
+        }
+      },
+      update: jest.fn()
+    }
+
+    await Claim.hooks.afterCreate(claimRecord, mockSequelize)
+
+    expect(mockCreateAgreementNumber).toHaveBeenCalledWith('claim', {
+      id: 'mock-id',
+      type: 'R',
+      typeOfLivestock: 'beef'
+    })
+    expect(claimRecord.dataValues.reference).toBe('REBC-1234-2345')
+    expect(claimRecord.dataValues.updatedBy).toBe('admin')
+    expect(claimRecord.dataValues.updatedAt).toBeInstanceOf(Date)
+    expect(claimRecord.update).toHaveBeenCalledWith(claimRecord.dataValues)
+  })
+})
