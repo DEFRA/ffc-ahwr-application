@@ -257,7 +257,7 @@ describe('claim model', () => {
 })
 describe('claim model Extra tests', () => {
   let Claim
-  const createAgreementNumber = require('../../../../app/lib/create-agreement-number')
+  const createAgreementNumber = require('../../../app/lib/create-agreement-number')
 
   beforeAll(() => {
     Claim = claim(mockSequelize, DataTypes)
