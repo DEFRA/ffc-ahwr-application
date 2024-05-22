@@ -35,9 +35,7 @@ async function getByApplicationReference (applicationReference) {
     order: [['createdAt', 'DESC']]
   })
 
-  return result.sort((a, b) =>
-    new Date(a.createdAt) > new Date(b.createdAt) ? a : b
-  )
+  return result.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? a : b))
 }
 
 /**
@@ -101,10 +99,28 @@ async function getAllClaimedClaims (claimStatusIds) {
     }
   })
 }
+/**
+ * Get a boolean value indicating if the URN number is unique
+ * @param {number} SBI
+ * @param {string} laboratoryURN
+ * @returns {boolean} isURNUnique
+ */
+async function isURNNumberUnique (sbi, laboratoryURN) {
+  const applications = await models.application.findAll({ where: { 'data.organisation.sbi': sbi } })
+
+  if (!applications) return { isURNUnique: true }
+  if (applications.find((application) => application.dataValues?.data?.urnResult === laboratoryURN)) return { isURNUnique: false }
+
+  const applicationsReferences = applications.map((application) => application.dataValues.reference)
+  const claims = await models.claim.findAll({ where: { applicationReference: applicationsReferences, 'data.laboratoryURN': laboratoryURN } })
+
+  return { isURNUnique: claims.length === 0 }
+}
 
 module.exports = {
   set,
   getByReference,
+  isURNNumberUnique,
   updateByReference,
   getAllClaimedClaims,
   getByApplicationReference

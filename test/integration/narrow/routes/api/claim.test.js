@@ -171,6 +171,47 @@ describe('Post claim test', () => {
     await server.stop()
   })
 
+  test('Post a new claim with duplicated URN ', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        ...claim
+      }
+    }
+
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: false })
+    applicationRepository.get.mockResolvedValue({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'Afshin',
+        reference: 'AHWR-0F5D-4A26',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {
+          vetsName: 'Afshin',
+          dateOfVisit: '2024-01-22T00:00:00.000Z',
+          testResults: 'positive',
+          typeOfReview: 'review one',
+          dateOfTesting: '2024-01-22T00:00:00.000Z',
+          laboratoryURN: 'AK-2024',
+          vetRCVSNumber: 'AK-2024',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'pigs',
+          numberAnimalsTested: 30
+        },
+        statusId: 1,
+        type: 'E',
+        createdBy: 'admin'
+      }
+    })
+
+    const response = await server.inject(options)
+
+    expect(response.statusCode).toBe(400)
+  })
+
   test.each([
     { type: 'R', typeOfLivestock: 'dairy', numberAnimalsTested: undefined, numberOfOralFluidSamples: undefined, testResults: 'positive' },
     { type: 'R', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfOralFluidSamples: 5, testResults: 'positive' }
@@ -180,7 +221,7 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: { ...claim, ...{ type }, ...{ data: { ...claim.data, typeOfLivestock, numberOfOralFluidSamples, testResults, numberAnimalsTested } } }
     }
-
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
@@ -235,6 +276,7 @@ describe('Post claim test', () => {
         payload: { ...claim, type, ...{ data: { ...claim.data, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, numberOfOralFluidSamples: undefined, reviewTestResults, piHunt, ...(typeOfLivestock === 'sheep' && { laboratoryURN: undefined }) } } }
       }
 
+      claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
       applicationRepository.get.mockResolvedValue({
         dataValues: {
           createdAt: '2024-02-14T09:59:46.756Z',
@@ -285,6 +327,7 @@ describe('Post claim test', () => {
       }
     }
 
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
@@ -352,6 +395,7 @@ describe('Post claim test', () => {
       payload: { ...claim }
     }
 
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
@@ -400,7 +444,7 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: { ...claim }
     }
-
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     const application = applicationRepository.get.mockReturnValue({})
 
     const mockEmailData = {
@@ -455,6 +499,7 @@ describe('Post claim test', () => {
       }
     }
 
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
@@ -498,6 +543,7 @@ describe('Post claim test', () => {
       }
     }
 
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
@@ -555,6 +601,7 @@ describe('Post claim test', () => {
       }
     }
 
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
@@ -612,11 +659,28 @@ describe('Post claim test', () => {
       }
     }
 
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({})
     claimRepository.set = jest.fn().mockRejectedValueOnce(false)
     await server.inject(options)
 
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+  })
+  test('Check if laboratoryURN is unique ', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim/is-urn-unique',
+      payload: {
+        sbi: '123456789',
+        laboratoryURN: 'AK-2024'
+      }
+    }
+
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+
+    const response = await server.inject(options)
+
+    expect(response.statusCode).toBe(200)
   })
 
   test('send email when claim is truthy ', async () => {
@@ -628,6 +692,7 @@ describe('Post claim test', () => {
       }
     }
 
+    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',

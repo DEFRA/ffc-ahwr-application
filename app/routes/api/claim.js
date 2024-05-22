@@ -4,7 +4,7 @@ const sendMessage = require('../../messaging/send-message')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const appInsights = require('applicationinsights')
 const { speciesNumbers: { yes, no }, biosecurity, minimumNumberOfAnimalsTested, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep } } = require('../../constants/claim')
-const { set, getByReference, updateByReference, getByApplicationReference } = require('../../repositories/claim-repository')
+const { set, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
 const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-email')
@@ -29,6 +29,8 @@ const sheepTestResults = (payload) => isSheepEndemics(payload) && Joi.array().it
 const beefDairyTestResults = (payload) => [beef, dairy].includes(payload.data.typeOfLivestock) && Joi.string().valid(positive, negative).required()
 const beefDairyBiosecurity = (payload) => [beef, dairy].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && Joi.string().valid(biosecurity.yes, biosecurity.no).required()
 const pigsBiosecurity = (payload) => isPigsEndemics(payload) && Joi.alternatives().try(Joi.string().valid(biosecurity.no), Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
+const isBiosecurityValid = (payload) => pigsBiosecurity(payload) || beefDairyBiosecurity(payload)
+const isTestResultValid = (payload) => !isNegativeBeefReviewTestResult(payload) && (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
 
 const isClaimDataValid = (payload) => {
   const claimDataModel = Joi.object({
@@ -36,25 +38,25 @@ const isClaimDataValid = (payload) => {
     type: Joi.string().valid(review, endemics).required(),
     createdBy: Joi.string().required(),
     data: Joi.object({
-      typeOfLivestock: Joi.string().valid(beef, dairy, pigs, sheep).required(),
-      dateOfVisit: Joi.date().required(),
-      dateOfTesting: !isNegativeBeefReviewTestResult(payload) && Joi.date().required(),
+      amount: Joi.string().optional(),
       vetsName: Joi.string().required(),
+      dateOfVisit: Joi.date().required(),
       vetRCVSNumber: Joi.string().required(),
-      laboratoryURN: !isNegativeBeefReviewTestResult(payload) && !isSheepEndemics(payload) && Joi.string().required(),
       speciesNumbers: Joi.string().valid(yes, no).required(),
-      numberOfOralFluidSamples: isPigsReview(payload) && Joi.number().min(minimumNumberOfOralFluidSamples).required(),
-      numberOfSamplesTested: isPigsEndemics(payload) && Joi.number().valid(6, 30).required(),
-      numberAnimalsTested: !isNegativeBeefReviewTestResult(payload) && [beef, sheep, pigs].includes(payload.data.typeOfLivestock) && Joi.number().min(minimumNumberOfAnimalsTested[payload.data.typeOfLivestock][payload.type]).required(),
-      herdVaccinationStatus: isPigsEndemics(payload) && Joi.string().valid('vaccinated', 'notVaccinated').required(),
-      diseaseStatus: isPigsEndemics(payload) && Joi.string().valid('1', '2', '3', '4').required(),
-      piHunt: isPositiveBeefReviewTestResult(payload) && Joi.string().valid(yes, no).required(),
-      biosecurity: pigsBiosecurity(payload) || beefDairyBiosecurity(payload),
-      reviewTestResults: [beef, dairy, pigs].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && Joi.string().valid(positive, negative).required(),
-      testResults: !isNegativeBeefReviewTestResult(payload) && (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload)),
-      sheepEndemicsPackage: isSheepEndemics(payload) && Joi.string().required(),
-      vetVisitsReviewTestResults: [beef, dairy, pigs].includes(payload.data.typeOfLivestock) && Joi.string().valid(positive, negative).optional(),
-      amount: Joi.string().optional()
+      typeOfLivestock: Joi.string().valid(beef, dairy, pigs, sheep).required(),
+      ...(isSheepEndemics(payload) && { sheepEndemicsPackage: Joi.string().required() }),
+      ...(!isNegativeBeefReviewTestResult(payload) && { dateOfTesting: Joi.date().required() }),
+      ...(isPigsEndemics(payload) && { numberOfSamplesTested: Joi.number().valid(6, 30).required() }),
+      ...(isPositiveBeefReviewTestResult(payload) && { piHunt: Joi.string().valid(yes, no).required() }),
+      ...(isPigsEndemics(payload) && { diseaseStatus: Joi.string().valid('1', '2', '3', '4').required() }),
+      ...(!!isBiosecurityValid(payload) && { biosecurity: pigsBiosecurity(payload) || beefDairyBiosecurity(payload) }),
+      ...(isPigsEndemics(payload) && { herdVaccinationStatus: Joi.string().valid('vaccinated', 'notVaccinated').required() }),
+      ...(!isNegativeBeefReviewTestResult(payload) && !isSheepEndemics(payload) && { laboratoryURN: Joi.string().required() }),
+      ...(isPigsReview(payload) && { numberOfOralFluidSamples: Joi.number().min(minimumNumberOfOralFluidSamples).required() }),
+      ...(!!isTestResultValid(payload) && { testResults: pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload) }),
+      ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && { vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional() }),
+      ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && { reviewTestResults: Joi.string().valid(positive, negative).required() }),
+      ...(!isNegativeBeefReviewTestResult(payload) && [beef, sheep, pigs].includes(payload.data.typeOfLivestock) && { numberAnimalsTested: Joi.number().min(minimumNumberOfAnimalsTested[payload.data.typeOfLivestock][payload.type]).required() })
     })
   })
 
@@ -105,20 +107,47 @@ module.exports = [
   },
   {
     method: 'POST',
+    path: '/api/claim/is-urn-unique',
+    options: {
+      validate: {
+        payload: Joi.object({
+          sbi: Joi.string().required(),
+          laboratoryURN: Joi.string().required()
+        })
+      },
+      handler: async (request, h) => {
+        const { sbi, laboratoryURN } = request.payload
+        const result = await isURNNumberUnique(sbi, laboratoryURN)
+
+        return h.response(result).code(200)
+      }
+    }
+  },
+  {
+    method: 'POST',
     path: '/api/claim',
     options: {
       handler: async (request, h) => {
         const { error, data } = isClaimDataValid(request.payload)
+        const applicationReference = data?.applicationReference
+        const laboratoryURN = data?.data?.laboratoryURN
 
         if (error) {
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
 
-        const application = await get(data.applicationReference)
+        const application = await get(applicationReference)
 
         if (!application?.dataValues) {
           return h.response('Not Found').code(404).takeover()
+        }
+
+        if (laboratoryURN) {
+          const sbi = application?.dataValues?.data?.organisation?.sbi
+          const { isURNUnique } = await isURNNumberUnique(sbi, laboratoryURN)
+
+          if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
         // const { statusId } = await requiresComplianceCheck('claim')
@@ -126,7 +155,7 @@ module.exports = [
         // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
         const claim = await set({ ...data, statusId: statusIds.inCheck })
 
-        claim && await sendFarmerEndemicsClaimConfirmationEmail({
+        claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           amount: '£[amount]',
           email: application?.dataValues?.data?.email,
@@ -135,12 +164,13 @@ module.exports = [
             orgName: application?.dataValues?.data?.organisation?.name,
             orgEmail: application?.dataValues?.data?.organisation?.orgEmail
           }
-        })
+        }))
 
         return h.response(claim).code(200)
       }
     }
-  }, {
+  },
+  {
     method: 'PUT',
     path: '/api/claim/update-by-reference',
     options: {
