@@ -1,6 +1,8 @@
 const createAgreementNumber = require('../../lib/create-agreement-number')
 
 module.exports = (sequelize, DataTypes) => {
+  const createdAt = { type: DataTypes.DATE, defaultValue: Date.now() }
+  console.log('Claim createdAt', createdAt)
   const claim = sequelize.define('claim',
     {
       id: {
@@ -25,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       data: DataTypes.JSONB,
       statusId: DataTypes.SMALLINT,
       type: DataTypes.STRING,
-      createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
+      createdAt,
       updatedAt: { type: DataTypes.DATE, defaultValue: null },
       createdBy: DataTypes.STRING,
       updatedBy: { type: DataTypes.STRING, defaultValue: null }

@@ -46,7 +46,6 @@ async function getByApplicationReference (applicationReference) {
  * @returns
  */
 async function set (data) {
-  console.log('Creating claim with data:', data)
   const result = await models.claim.create(data)
   eventPublisher.raiseClaimEvents({
     message: 'New claim has been created',
