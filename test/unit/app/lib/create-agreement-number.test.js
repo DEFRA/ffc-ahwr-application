@@ -1,37 +1,68 @@
 const createAgreementNumber = require('../../../../app/lib/create-agreement-number')
-describe('createAgreementNumber', () => {
-  describe('fourDigitRandomNumberGenerator', () => {
-    test('fourDigitRandomNumberGenerator should return a four-digit random number between 1000 and 9999', () => {
-      const mockgetRandomBytes = jest.fn().mockReturnValueOnce(Buffer.from([0x00, 0x00, 0x00, 0x00]))
-      const mockconvertToUint32Array = jest.fn().mockReturnValueOnce(new Uint32Array([0x00]))
-      const mocksetValueInRange = jest.fn().mockReturnValueOnce(1000)
+const createReference = require('../../../../app/lib/create-reference')
+jest.mock('../../../../app/lib/create-reference')
+describe('create agreement number', () => {
+  const data = { id: 'MOCK-ID12' }
+  afterAll(() => {
+    jest.clearAllMocks()
+  })
 
-      const mockfourDigitRandomNumberGenerator = () => {
-        const randomBytes = mockgetRandomBytes(4)
-        const randomUint32Array = mockconvertToUint32Array(randomBytes)
-        return mocksetValueInRange(randomUint32Array[0], 1000, 9999)
-      }
-      const fourDigitRandomNumberGenerator = mockfourDigitRandomNumberGenerator()
-      createAgreementNumber(mockfourDigitRandomNumberGenerator)
+  describe('endemics apply ', () => {
+    test('should return a reference with the correct prefix for an application', () => {
+      const mockEndemics = { enabled: true }
+      const journey = 'apply'
 
-      expect(mockgetRandomBytes).toHaveBeenCalledTimes(1)
-      expect(mockconvertToUint32Array).toHaveBeenCalledTimes(1)
-      expect(mocksetValueInRange).toHaveBeenCalledTimes(1)
-      expect(fourDigitRandomNumberGenerator).toBe(1000)
-      expect(fourDigitRandomNumberGenerator).toBeGreaterThanOrEqual(1000)
-      expect(fourDigitRandomNumberGenerator).toBeLessThanOrEqual(9999)
+      const mockJourneyPreText = jest.fn().mockReturnValue('IAHW')
+      const mockCreateReference = jest.mocked(createReference).mockReturnValue('AHWR-MOCK-ID12')
+      const mockReplacePrefix = jest.fn().mockReturnValue('IAHW-MOCK-ID12')
+
+      mockJourneyPreText(journey, data)
+      mockCreateReference(data.id)
+      mockReplacePrefix('AHWR-MOCK-ID12', 'IAHW')
+      const result = createAgreementNumber(journey, data)
+
+      expect(mockEndemics.enabled).toBe(true)
+      expect(mockCreateReference).toHaveBeenCalled()
+      expect(mockJourneyPreText).toHaveBeenCalledTimes(1)
+      expect(mockReplacePrefix).toHaveBeenCalledTimes(1)
+      expect(result).toMatch('IAHW-MOCK-ID12')
     })
   })
-  test('return random 14 digit on every call', () => {
-    const agreementNumber = createAgreementNumber()
-    expect(agreementNumber).toHaveLength(14)
-  })
+  describe(' endemics claim journey ', () => {
+    test('should return a reference with the correct prefix for a claim', () => {
+      const journey = 'claim'
+      const data = { id: '', type: 'F', typeOfLivestock: 'beef' }
+      const result = createAgreementNumber(journey, data)
+      expect(result).toMatch('FUBC-MOCK-ID12')
+    })
+    test('should return a reference with the correct prefix for a claim with no typeOfLivestock', () => {
+      const journey = 'claim'
+      const data = { id: 'MOCK-ID12', type: 'R', typeOfLivestock: '' }
+      const result = createAgreementNumber(journey, data)
+      expect(result).toMatch(/Invalid livestock type/i)
+    })
+    test('should return a reference with the correct prefix for a claim with no data', () => {
+      const journey = 'claim'
+      const data = { id: 'MOCK-ID12', type: 'R', typeOfLivestock: 'beef' }
+      const result = createAgreementNumber(journey, data)
+      expect(result).toMatch('REBC-MOCK-ID12')
+    })
+    test('should return a reference with the correct prefix for a claim with no data', () => {
+      const mockEndemics = { enabled: true }
+      const journey = 'claim'
+      const data = { }
+      const result = createAgreementNumber(journey, data)
 
-  test('return  14 digit alpha numeric number Eg IAHW-9154-8827', () => {
-    const mockfourDigitRandomNumberGenerator = jest.fn().mockReturnValueOnce(1234).mockReturnValueOnce(2345)
-    const agreementNumber = createAgreementNumber('IAHW', mockfourDigitRandomNumberGenerator)
-
-    expect(agreementNumber).toMatch(/IAHW-1234-2345/i)
-    expect(agreementNumber).toHaveLength(14)
+      expect(mockEndemics.enabled).toBe(true)
+      expect(result).toMatch(/Invalid livestock type/i)
+    })
+    test('should return a reference with the correct prefix for a claim with no data', () => {
+      const mockEndemics = { enabled: true }
+      const journey = 'claim'
+      const data = { id: 'MOCK-ID12' }
+      const result = createAgreementNumber(journey, data)
+      expect(mockEndemics.enabled).toBe(true)
+      expect(result).toMatch(/Invalid livestock type/i)
+    })
   })
 })
