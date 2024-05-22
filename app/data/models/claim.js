@@ -1,6 +1,8 @@
 const createReference = require('../../lib/create-reference')
 
 module.exports = (sequelize, DataTypes) => {
+  const createdAt = { type: DataTypes.DATE, defaultValue: Date.now() }
+  console.log('Claim createdAt', createdAt, Date.now(), new Date())
   const claim = sequelize.define('claim',
     {
       id: {
