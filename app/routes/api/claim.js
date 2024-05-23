@@ -127,7 +127,7 @@ module.exports = [
     options: {
       handler: async (request, h) => {
         const { error } = isClaimDataValid(request.payload)
-        
+
         if (error) {
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
