@@ -1,8 +1,6 @@
 const createReference = require('../../lib/create-reference')
 
 module.exports = (sequelize, DataTypes) => {
-  const createdAt = { type: DataTypes.DATE, defaultValue: Date.now() }
-  console.log('Claim createdAt', createdAt, Date.now(), new Date())
   const claim = sequelize.define('claim',
     {
       id: {
@@ -27,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       data: DataTypes.JSONB,
       statusId: DataTypes.SMALLINT,
       type: DataTypes.STRING,
-      createdAt: { type: DataTypes.DATE, defaultValue: new Date() },
+      createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
       updatedAt: { type: DataTypes.DATE, defaultValue: null },
       createdBy: DataTypes.STRING,
       updatedBy: { type: DataTypes.STRING, defaultValue: null }
@@ -40,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
           claimRecord.dataValues.reference = createReference(claimRecord.id)
           claimRecord.dataValues.updatedBy = 'admin'
           claimRecord.dataValues.updatedAt = new Date()
+          claimRecord.dataValues.createdAt = new Date()
           await claimRecord.update(claimRecord.dataValues)
         }
       }
