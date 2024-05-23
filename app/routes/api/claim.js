@@ -126,14 +126,16 @@ module.exports = [
     path: '/api/claim',
     options: {
       handler: async (request, h) => {
-        const { error, value: data } = isClaimDataValid(request.payload)
-        const applicationReference = data?.applicationReference
-        const laboratoryURN = data?.data?.laboratoryURN
+        const { error } = isClaimDataValid(request.payload)
 
         if (error) {
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
+
+        const data = request.payload
+        const applicationReference = data?.applicationReference
+        const laboratoryURN = data?.data?.laboratoryURN
 
         const application = await get(applicationReference)
 
