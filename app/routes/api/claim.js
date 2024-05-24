@@ -150,10 +150,7 @@ module.exports = [
 
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
-        console.log('>>>>>>>>>>>>>>>', getAmount(data.data.typeOfLivestock, data.data.testResults, claimPricesConfig))
-        // const { statusId } = await requiresComplianceCheck('claim')
-        // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
-        // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
+
         const claim = await set({ ...data, data: { ...data?.data, reviewTestResults: undefined }, statusId: statusIds.inCheck })
         const amount = getAmount(data.data.typeOfLivestock, data.data.testResults, claimPricesConfig)
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({

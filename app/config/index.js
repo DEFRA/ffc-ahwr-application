@@ -24,7 +24,7 @@ const schema = Joi.object({
     endemicsSettingsContainer: Joi.string().default('endemics-settings'),
     endemicsPricesFile: Joi.string().default('endemics-prices-config.json'),
     storageAccount: Joi.string().required(),
-    useConnectionString: Joi.bool().default(false)
+    useConnectionString: Joi.bool().default(true)
   },
   compliance: {
     complianceCheckRatio: Joi.number().default(5)
