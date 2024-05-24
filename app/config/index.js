@@ -21,8 +21,10 @@ const schema = Joi.object({
     connectionString: Joi.string().required(),
     usersContainer: Joi.string().default('users'),
     usersFile: Joi.string().default('users.json'),
+    endemicsSettingsContainer: Joi.string().default('endemics-settings'),
+    endemicsPricesFile: Joi.string().default('endemics-prices-config.json'),
     storageAccount: Joi.string().required(),
-    useConnectionString: Joi.bool().default(true)
+    useConnectionString: Joi.bool().default(false)
   },
   compliance: {
     complianceCheckRatio: Joi.number().default(5)
@@ -52,6 +54,7 @@ const config = {
   storage: {
     connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
     useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
+    endemicsSettingsContainer: process.env.AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER,
     storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
   },
   compliance: {

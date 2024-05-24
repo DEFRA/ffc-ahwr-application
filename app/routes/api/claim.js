@@ -8,6 +8,8 @@ const { set, getByReference, updateByReference, getByApplicationReference, isURN
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
 const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-email')
+const { getBlob } = require('../../storage')
+const { getAmount } = require('../../lib/getAmount')
 // const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 const isReview = (payload) => payload.type === review
@@ -140,6 +142,7 @@ module.exports = [
         if (!application?.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
+        const claimPricesConfig = await getBlob('claim-prices-config.json')
 
         if (laboratoryURN) {
           const sbi = application?.dataValues?.data?.organisation?.sbi
@@ -147,15 +150,15 @@ module.exports = [
 
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
-
+        console.log('>>>>>>>>>>>>>>>', getAmount(data.data.typeOfLivestock, data.data.testResults, claimPricesConfig))
         // const { statusId } = await requiresComplianceCheck('claim')
         // TODO: Currently claim status by default is in check but in future, We should use requiresComplianceCheck('claim')
         // TODO: This file has been excluded from sonarcloud as it is a temporary solution, We should remove this exclusion in future
         const claim = await set({ ...data, data: { ...data?.data, reviewTestResults: undefined }, statusId: statusIds.inCheck })
-
+        const amount = getAmount(data.data.typeOfLivestock, data.data.testResults, claimPricesConfig)
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
-          amount: '£[amount]',
+          amount,
           email: application?.dataValues?.data?.email,
           farmerName: application?.dataValues?.data?.farmerName,
           orgData: {
@@ -164,7 +167,7 @@ module.exports = [
           }
         }))
 
-        return h.response(claim).code(200)
+        return h.response({ ...claim, amount }).code(200)
       }
     }
   },
@@ -197,6 +200,8 @@ module.exports = [
               reference: request.payload.reference,
               sbi: application.dataValues.data.organisation.sbi,
               whichReview: claim.dataValues.data.typeOfLivestock,
+              isEndemics: true,
+              testResults: claim.dataValues.data.testResults,
               frn: application.dataValues.data.organisation.frn
             },
             submitPaymentRequestMsgType,
