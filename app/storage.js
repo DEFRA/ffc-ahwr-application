@@ -1,6 +1,6 @@
 const { BlobServiceClient } = require('@azure/storage-blob')
 const { DefaultAzureCredential } = require('@azure/identity')
-const { connectionString, useConnectionString, endemicsSettingsContainer } = require('./config').storage
+const { connectionString, useConnectionString, endemicsSettingsContainer, storageAccount } = require('./config').storage
 
 let blobServiceClient
 
@@ -8,7 +8,7 @@ if (useConnectionString === true) {
   console.log('Using connection string?????')
   blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
 } else {
-  const uri = 'https://ffcahwr.blob.core.windows.net'
+  const uri = `https://${storageAccount}.blob.core.windows.net`
   blobServiceClient = new BlobServiceClient(uri, new DefaultAzureCredential())
 }
 
