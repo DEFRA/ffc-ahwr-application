@@ -52,14 +52,14 @@ describe('storage tests', () => {
         const mockJsonData = { key: 'value' }
         const mockBuffer = Buffer.from(JSON.stringify(mockJsonData))
         const mockStreamToBuffer = jest.fn().mockResolvedValue(mockBuffer)
-        const mockGetBlob = jest.fn().mockReturnValueOnce(mockJsonData)
-        jest.mock('../../../app/storage', () => ({
-          streamToBuffer: mockStreamToBuffer,
-          getBlob: mockGetBlob
+        const mockDownload = jest.fn()
+        const mockBlobClient = jest.fn()
+        jest.mock('../../../app/lib/streamToBuffer', () => ({
+          streamToBuffer: mockStreamToBuffer
         }))
         const mockGetContainerClient = jest.fn().mockReturnValueOnce({
-          getBlobClient: jest.fn().mockReturnValueOnce({
-            download: jest.fn().mockResolvedValue(mockDownloadResponse)
+          getBlobClient: mockBlobClient.mockReturnValueOnce({
+            download: mockDownload.mockResolvedValue(mockDownloadResponse)
           })
         })
         const { BlobServiceClient } = require('@azure/storage-blob')
@@ -69,6 +69,10 @@ describe('storage tests', () => {
         }))
         const { getBlob } = require('../../../app/storage')
         const result = await getBlob('filename.json')
+        expect(mockGetContainerClient).toHaveBeenCalledTimes(1)
+        expect(mockBlobClient).toHaveBeenCalledTimes(1)
+        expect(mockDownload).toHaveBeenCalledTimes(1)
+        expect(mockStreamToBuffer).toHaveBeenCalledTimes(1)
         expect(result).toEqual(mockJsonData)
       })
     })
