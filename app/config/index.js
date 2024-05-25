@@ -2,7 +2,7 @@ const Joi = require('joi')
 const notifyConfig = require('./notify')
 const messageQueueConfig = require('./message-queue')
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
-
+const storageConfig = require('./storage')
 const schema = Joi.object({
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   isDev: Joi.boolean().default(false),
@@ -75,5 +75,5 @@ if (error) {
 }
 
 value.notify = notifyConfig
-
+value.storage = storageConfig
 module.exports = { ...value, ...messageQueueConfig }
