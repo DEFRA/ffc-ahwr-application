@@ -2,19 +2,37 @@ const claimRepository = require('../../../../../app/repositories/claim-repositor
 const applicationRepository = require('../../../../../app/repositories/application-repository')
 const sendMessage = require('../../../../../app/messaging/send-message')
 const sendEmail = require('../../../../../app/lib/send-email')
-
+const pricesConfig = require('../../../../data/claim-prices-config.json')
+const { getBlob } = require('../../../../../app/storage')
+const { getAmount } = require('../../../../../app/lib/getAmount')
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/send-email')
+jest.mock('../../../../../app/lib/getAmount')
+jest.mock('../../../../../app/storage')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
   { diseaseType: 'sheepScab', result: 'positive' }
 ]
-
+// const mockDownloadResponse = {
+//   readableStreamBody: {
+//     on: jest.fn(),
+//     read: jest.fn(),
+//     once: jest.fn(),
+//     pause: jest.fn(),
+//     resume: jest.fn(),
+//     isPaused: jest.fn(),
+//     pipe: jest.fn(),
+//     unpipe: jest.fn(),
+//     unshift: jest.fn(),
+//     wrap: jest.fn(),
+//     [Symbol.asyncIterator]: jest.fn()
+//   }
+// }
 describe('Get claims test', () => {
   const server = require('../../../../../app/server')
 
@@ -161,10 +179,19 @@ describe('Post claim test', () => {
     type: 'R',
     createdBy: 'admin'
   }
-
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
+    jest.mock('../../../../../app/config', () => ({
+      storage: {
+        storageAccount: 'mockStorageAccount',
+        useConnectionString: false,
+        endemicsSettingsContainer: 'endemics-settings',
+        connectionString: 'connectionString'
+      }
+    }))
+    getBlob.mockReturnValue(JSON.stringify(pricesConfig))
+    getAmount.mockReturnValue(100)
   })
 
   afterEach(async () => {
@@ -179,7 +206,6 @@ describe('Post claim test', () => {
         ...claim
       }
     }
-
     claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: false })
     applicationRepository.get.mockResolvedValue({
       dataValues: {

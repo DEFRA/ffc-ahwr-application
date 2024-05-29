@@ -2,6 +2,7 @@ const Joi = require('joi')
 const notifyConfig = require('./notify')
 const messageQueueConfig = require('./message-queue')
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
+const storageConfig = require('./storage')
 
 const schema = Joi.object({
   env: Joi.string().valid('development', 'test', 'production').default('development'),
@@ -17,13 +18,6 @@ const schema = Joi.object({
   submitClaimRequestMsgType: Joi.string(),
   submitClaimResponseMsgType: Joi.string(),
   submitPaymentRequestMsgType: Joi.string(),
-  storage: {
-    connectionString: Joi.string().required(),
-    usersContainer: Joi.string().default('users'),
-    usersFile: Joi.string().default('users.json'),
-    storageAccount: Joi.string().required(),
-    useConnectionString: Joi.bool().default(true)
-  },
   compliance: {
     complianceCheckRatio: Joi.number().default(5)
   },
@@ -49,11 +43,6 @@ const config = {
   submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
   submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
-  storage: {
-    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
-    useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
-    storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
-  },
   compliance: {
     complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO
   },
@@ -72,5 +61,5 @@ if (error) {
 }
 
 value.notify = notifyConfig
-
+value.storage = storageConfig
 module.exports = { ...value, ...messageQueueConfig }
