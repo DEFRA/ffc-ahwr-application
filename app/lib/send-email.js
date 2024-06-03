@@ -64,18 +64,27 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
   let carbonEmail = false
   let email = data?.email
 
+  let isSuccessful = true
+
   const { orgData, reference } = data || {}
   const personalisation = {
     reference,
     amount: data?.amount || '£[amount]'
   }
 
+  if (!email && !orgData?.orgEmail) {
+    console.error(`Email address not found for ${reference}`)
+    isSuccessful = false
+  }
+  isSuccessful = await sendEmail(email, personalisation, reference, templateId)
+
   if (orgData?.orgEmail && orgData?.orgEmail !== email) {
     email = orgData?.orgEmail
     carbonEmail = true
+    isSuccessful = await sendEmail(email, personalisation, reference, templateId) 
   }
 
-  return await sendEmail(email, personalisation, reference, templateId, carbonEmail)
+  return isSuccessful
 }
 
 module.exports = {
