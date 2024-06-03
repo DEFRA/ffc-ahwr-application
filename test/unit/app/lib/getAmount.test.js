@@ -1,39 +1,32 @@
 const { getAmount } = require('../../../../app/lib/getAmount')
 const { livestockTypes } = require('../../../../app/constants/claim')
-
+const pricesConfig = require('../../../data/claim-prices-config.json')
 describe('getAmount', () => {
-  const pricesConfig = {
-    [livestockTypes.beef]: {
-      value: {
-        Negative: 100,
-        Positive: 300
-      },
-      code: 200
-    },
-    [livestockTypes.dairy]: {
-      value: {
-        Negative: 400,
-        Positive: 600
-      },
-      code: 500
-    },
-    [livestockTypes.pig]: {
-      value: 700,
-      code: 800
-    }
-  }
-
-  test('returns correct amount for beef with test results', () => {
-    expect(getAmount(livestockTypes.beef, 'Negative', pricesConfig)).toBe('100')
-    expect(getAmount(livestockTypes.beef, 'Positive', pricesConfig)).toBe('300')
+  test('returns correct amount for beef for claim type review', () => {
+    expect(getAmount(livestockTypes.beef, 'negative', pricesConfig, true, false)).toBe(522)
+    expect(getAmount(livestockTypes.beef, 'positive', pricesConfig, true, false)).toBe(522)
+  })
+  test('returns correct amount for beef for claim type endemics follow up', () => {
+    expect(getAmount(livestockTypes.beef, 'negative', pricesConfig, false, true)).toBe(215)
+    expect(getAmount(livestockTypes.beef, 'positive', pricesConfig, false, true)).toBe(837)
+  })
+  test('returns correct amount for dairy for claim type review', () => {
+    expect(getAmount(livestockTypes.dairy, 'negative', pricesConfig, true, false)).toBe(372)
+    expect(getAmount(livestockTypes.dairy, 'positive', pricesConfig, true, false)).toBe(372)
   })
 
-  test('returns correct amount for dairy with test results', () => {
-    expect(getAmount(livestockTypes.dairy, 'Negative', pricesConfig)).toBe('400')
-    expect(getAmount(livestockTypes.dairy, 'Positive', pricesConfig)).toBe('600')
+  test('returns correct amount for dairy for claim type follow up', () => {
+    expect(getAmount(livestockTypes.dairy, 'negative', pricesConfig, false, true)).toBe(215)
+    expect(getAmount(livestockTypes.dairy, 'positive', pricesConfig, false, true)).toBe(1714)
   })
 
-  test('returns correct amount for pig without test results', () => {
-    expect(getAmount(livestockTypes.pig, null, pricesConfig)).toBe('700')
+  test('returns correct amount for pig for claim type review', () => {
+    expect(getAmount(livestockTypes.pigs, 'negative', pricesConfig, true, false)).toBe(557)
+    expect(getAmount(livestockTypes.pigs, 'positive', pricesConfig, true, false)).toBe(557)
+  })
+
+  test('returns correct amount for pig for claim type follow up', () => {
+    expect(getAmount(livestockTypes.pigs, 'negative', pricesConfig, false, true)).toBe(923)
+    expect(getAmount(livestockTypes.pigs, 'positive', pricesConfig, false, true)).toBe(923)
   })
 })
