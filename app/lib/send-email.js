@@ -61,7 +61,7 @@ const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
 }
 
 const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templateIdFarmerEndemicsClaimComplete) => {
-  const carbonEmail = true
+  let carbonEmail = true
   let email = data?.email
 
   let isSuccessful = true
@@ -76,10 +76,11 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
     console.error(`Email addresses not found for ${reference}`)
     return false
   }
-  isSuccessful = email && await sendEmail(email, personalisation, reference, templateId, carbonEmail)
+  isSuccessful = email && await sendEmail(email, personalisation, reference, templateId)
 
   if (orgData?.orgEmail && orgData?.orgEmail !== email) {
     email = orgData?.orgEmail
+    carbonEmail = true
     isSuccessful = await sendEmail(email, personalisation, reference, templateId, carbonEmail)
   }
   return isSuccessful
