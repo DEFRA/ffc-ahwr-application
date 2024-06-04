@@ -129,7 +129,8 @@ module.exports = [
     options: {
       handler: async (request, h) => {
         const { error } = isClaimDataValid(request.payload)
-
+        const isReviewClaim = isReview(request.payload)
+        const isEndemicsFollowUpClaim = isEndemicsFollowUp(request.payload)
         if (error) {
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
@@ -153,8 +154,8 @@ module.exports = [
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
-        const claim = await set({ ...data, data: { ...data?.data, reviewTestResults: undefined }, statusId: statusIds.inCheck })
-        const amount = getAmount(data.data.typeOfLivestock, data.data.testResults, claimPricesConfig)
+        const amount = getAmount(data.data.typeOfLivestock, data.data.reviewTestResults, claimPricesConfig, isReviewClaim, isEndemicsFollowUpClaim)
+        const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId: statusIds.inCheck })
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           amount,
@@ -165,8 +166,7 @@ module.exports = [
             orgEmail: application?.dataValues?.data?.organisation?.orgEmail
           }
         }))
-
-        return h.response({ ...claim, amount }).code(200)
+        return h.response(claim).code(200)
       }
     }
   },
@@ -200,7 +200,8 @@ module.exports = [
               sbi: application.dataValues.data.organisation.sbi,
               whichReview: claim.dataValues.data.typeOfLivestock,
               isEndemics: true,
-              testResults: claim.dataValues.data.testResults,
+              claimType: claim.dataValues.data?.claimType,
+              reviewTestResults: claim.dataValues.data.reviewTestResults,
               frn: application.dataValues.data.organisation.frn
             },
             submitPaymentRequestMsgType,

@@ -1,4 +1,23 @@
 {
+  "review": {
+    "beef": {
+      "value": 522,
+      "code": "AHWR-Beef"
+    },
+    "dairy": {
+      "value": 372,
+      "code": "AHWR-Dairy"
+    },
+    "pigs": {
+      "value": 557,
+      "code": "AHWR-Pigs"
+    },
+    "sheep": {
+      "value": 436,
+      "code": "AHWR-Sheep"
+    }
+  },
+  "followUp": {
     "beef": {
       "value": {
         "positive": 837,
@@ -22,3 +41,4 @@
       "code": "AHWR-Sheep"
     }
   }
+}
