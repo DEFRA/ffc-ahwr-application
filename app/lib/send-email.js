@@ -75,8 +75,7 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
     console.error(`Email addresses not found for ${reference}`)
     return false
   }
-
-  sendCarbonCopy(personalisation, reference, templateId)
+  await sendCarbonCopy(templateId, personalisation)
 
   isSuccessful = email && await sendEmail(email, personalisation, reference, templateId)
 
