@@ -73,17 +73,16 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
   }
 
   if (!email && !orgData?.orgEmail) {
-    console.error(`Email address not found for ${reference}`)
+    console.error(`Email addresses not found for ${reference}`)
     isSuccessful = false
   }
-  isSuccessful = await sendEmail(email, personalisation, reference, templateId)
+  isSuccessful = email && await sendEmail(email, personalisation, reference, templateId)
 
   if (orgData?.orgEmail && orgData?.orgEmail !== email) {
     email = orgData?.orgEmail
     carbonEmail = true
-    isSuccessful = await sendEmail(email, personalisation, reference, templateId) 
+    isSuccessful = await sendEmail(email, personalisation, reference, templateId, carbonEmail)
   }
-
   return isSuccessful
 }
 
