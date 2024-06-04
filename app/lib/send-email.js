@@ -74,7 +74,7 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
 
   if (!email && !orgData?.orgEmail) {
     console.error(`Email addresses not found for ${reference}`)
-    isSuccessful = false
+    return false
   }
   isSuccessful = email && await sendEmail(email, personalisation, reference, templateId)
 
