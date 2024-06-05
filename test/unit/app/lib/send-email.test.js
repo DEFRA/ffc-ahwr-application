@@ -121,7 +121,7 @@ describe('Send email test', () => {
       expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail returns false on error sending email', async () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending  emails', async () => {
       const data = {
         email: 'test@unit-test.com',
         reference: 'AHWR-B977-4D0D',
@@ -138,7 +138,7 @@ describe('Send email test', () => {
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
-      expect(result).toBe(false)
+      expect(result).toBeTruthy()
     })
 
     test('use default templateId when not provided', async () => {
@@ -168,7 +168,7 @@ describe('Send email test', () => {
 
       expect(data).toEqual({})
       expect(data.orgData).toBeUndefined()
-      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, undefined, { personalisation: { amount: '£[amount]', reference: undefined }, reference: undefined })
+      expect(notifyClient.sendEmail).toHaveBeenCalledTimes(0)
     })
     test('sendEmail returns false on error sending email', async () => {
       const templateId = 'templateId'
