@@ -159,6 +159,7 @@ module.exports = [
         try {
           claim && (await sendFarmerEndemicsClaimConfirmationEmail({
             reference: claim?.dataValues?.reference,
+            applicationReference: claim?.dataValues?.applicationReference,
             amount,
             email: application?.dataValues?.data?.email,
             farmerName: application?.dataValues?.data?.farmerName,

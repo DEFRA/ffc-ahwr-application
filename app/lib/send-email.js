@@ -65,9 +65,10 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
 
   let isSuccessful = true
 
-  const { orgData, reference } = data || {}
+  const { orgData, reference, applicationReference } = data || {}
   const personalisation = {
     reference,
+    applicationReference,
     amount: data?.amount
   }
 
