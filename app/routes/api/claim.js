@@ -168,7 +168,7 @@ module.exports = [
             }
           }))
         } catch (error) {
-          console.log("Error on sending email to the farmer: ", error)
+          console.log('Error on sending email to the farmer: ', error)
         }
         return h.response(claim).code(200)
       }
