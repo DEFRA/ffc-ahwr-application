@@ -23,10 +23,7 @@ function isPastTimeLimit (dates) {
 
 function isPreviousApplicationRelevant (existingApplication) {
   if (endemics.enabled) {
-    if (existingApplication?.type === 'EE') {
-      return true
-    }
-    return false
+    return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
   } else if (tenMonthRule.enabled) {
     return existingApplication &&
       ((existingApplication.statusId !== applicationStatus.withdrawn &&
