@@ -68,7 +68,7 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
   const { orgData, reference } = data || {}
   const personalisation = {
     reference,
-    amount: data?.amount || '£[amount]'
+    amount: data?.amount
   }
 
   if (!email && !orgData?.orgEmail) {
