@@ -156,16 +156,20 @@ module.exports = [
 
         const amount = getAmount(data.data.typeOfLivestock, data.data.reviewTestResults, claimPricesConfig, isReviewClaim, isEndemicsFollowUpClaim)
         const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId: statusIds.inCheck })
-        claim && (await sendFarmerEndemicsClaimConfirmationEmail({
-          reference: claim?.dataValues?.reference,
-          amount,
-          email: application?.dataValues?.data?.email,
-          farmerName: application?.dataValues?.data?.farmerName,
-          orgData: {
-            orgName: application?.dataValues?.data?.organisation?.name,
-            orgEmail: application?.dataValues?.data?.organisation?.orgEmail
-          }
-        }))
+        try {
+          claim && (await sendFarmerEndemicsClaimConfirmationEmail({
+            reference: claim?.dataValues?.reference,
+            amount,
+            email: application?.dataValues?.data?.email,
+            farmerName: application?.dataValues?.data?.farmerName,
+            orgData: {
+              orgName: application?.dataValues?.data?.organisation?.name,
+              orgEmail: application?.dataValues?.data?.organisation?.orgEmail
+            }
+          }))
+        } catch (error) {
+          console.log("Error on sending email to the farmer: ", error)
+        }
         return h.response(claim).code(200)
       }
     }
