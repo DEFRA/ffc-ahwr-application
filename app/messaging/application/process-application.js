@@ -66,7 +66,6 @@ const processApplication = async (data) => {
     const existingApplication = await applicationRepository.getBySbi(
       data.organisation.sbi
     )
-    console.log('🚀 ~ processApplication ~ existingApplication:', existingApplication)
 
     if (isPreviousApplicationRelevant(existingApplication)) {
       existingApplicationReference = existingApplication.dataValues.reference
