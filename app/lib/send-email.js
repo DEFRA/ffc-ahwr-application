@@ -61,11 +61,10 @@ const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
 }
 
 const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templateIdFarmerEndemicsClaimComplete) => {
+  const { orgData, reference, applicationReference } = data || {}
   let email = data?.email
-
   let isSuccessful = true
 
-  const { orgData, reference, applicationReference } = data || {}
   const personalisation = {
     reference,
     applicationReference,
@@ -76,7 +75,7 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId = templ
     console.error(`Email addresses not found for ${reference}`)
     return false
   }
-  await sendCarbonCopy(templateId, personalisation)
+  await sendCarbonCopy(templateId, { personalisation })
 
   isSuccessful = email && await sendEmail(email, personalisation, reference, templateId)
 
