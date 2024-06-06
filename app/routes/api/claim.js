@@ -160,8 +160,8 @@ module.exports = [
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
           amount,
-          email: application?.dataValues?.data?.email,
-          farmerName: application?.dataValues?.data?.farmerName,
+          email: application?.dataValues?.data?.organisation?.email,
+          farmerName: application?.dataValues?.data?.organisation?.farmerName,
           orgData: {
             orgName: application?.dataValues?.data?.organisation?.name,
             orgEmail: application?.dataValues?.data?.organisation?.orgEmail
