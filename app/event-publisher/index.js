@@ -48,14 +48,13 @@ const raise = async (event) => {
   ])
 }
 
-const raiseClaimEvents = async (event) => {
-  console.log(event)
+const raiseClaimEvents = async (event, sbi = 'none') => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
       name: 'application-status-event',
       properties: {
         id: `${event.claim.id}`,
-        sbi: 'none',
+        sbi,
         cph: 'n/a',
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
         status: 'success',
@@ -76,7 +75,7 @@ const raiseClaimEvents = async (event) => {
       name: 'send-session-event',
       properties: {
         id: `${event.claim.id}`,
-        sbi: 'none',
+        sbi,
         cph: 'n/a',
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
         status: 'success',
