@@ -90,7 +90,7 @@ module.exports = [{
         case 'Recommend to reject':
           statusId = statusIds.recommendToReject
           break
-        // Shouldn't this be 'Ready to Pay'/ 9, not 'Paid / 8 ???
+        // To refactor this after MVP release
         case 'Paid':
           statusId = statusIds.paid
           break
