@@ -145,17 +145,18 @@ module.exports = [
         if (!application?.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
+
         const claimPricesConfig = await getBlob('claim-prices-config.json')
+        const sbi = application?.dataValues?.data?.organisation?.sbi || 'not-found'
 
         if (laboratoryURN) {
-          const sbi = application?.dataValues?.data?.organisation?.sbi
           const { isURNUnique } = await isURNNumberUnique(sbi, laboratoryURN)
 
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
         const amount = getAmount(data.data.typeOfLivestock, data.data.reviewTestResults, claimPricesConfig, isReviewClaim, isEndemicsFollowUpClaim)
-        const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId: statusIds.inCheck })
+        const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId: statusIds.inCheck, sbi })
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
@@ -191,10 +192,10 @@ module.exports = [
         if (!claim.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
+        const application = await get(claim.dataValues.applicationReference)
+        const sbi = application?.dataValues?.data?.organisation?.sbi
 
         if (request.payload.status === statusIds.readyToPay) {
-          const application = await get(claim.dataValues.applicationReference)
-
           await sendMessage(
             {
               reference: request.payload.reference,
@@ -211,7 +212,7 @@ module.exports = [
           )
         }
 
-        await updateByReference({ reference: request.payload.reference, statusId: request.payload.status, updatedBy: request.payload.user })
+        await updateByReference({ reference: request.payload.reference, statusId: request.payload.status, updatedBy: request.payload.user, sbi })
 
         console.log(`Status of claim with reference ${request.payload.reference} successfully updated to ${request.payload.status}`)
 

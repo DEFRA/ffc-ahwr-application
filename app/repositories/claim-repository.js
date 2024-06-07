@@ -44,13 +44,14 @@ async function getByApplicationReference (applicationReference) {
  * @returns
  */
 async function set (data) {
+  const sbi = data.sbi
   const result = await models.claim.create(data)
   eventPublisher.raiseClaimEvents({
     message: 'New claim has been created',
     claim: result.dataValues,
     raisedBy: result.dataValues.createdBy,
     raisedOn: result.dataValues.createdAt
-  })
+  }, sbi)
   return result
 }
 
@@ -70,6 +71,7 @@ async function updateByReference (data) {
 
     const updatedRows = result[0] // Number of affected rows
     const updatedRecords = result[1] // Assuming this is the array of updated records
+    const sbi = data.sbi
 
     for (let i = 0; i < updatedRows; i++) {
       const updatedRecord = updatedRecords[i]
@@ -78,7 +80,7 @@ async function updateByReference (data) {
         claim: updatedRecord.dataValues,
         raisedBy: updatedRecord.dataValues.updatedBy,
         raisedOn: updatedRecord.dataValues.updatedAt
-      })
+      }, sbi)
     }
     return result
   } catch (error) {

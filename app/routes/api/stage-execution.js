@@ -61,6 +61,7 @@ module.exports = [{
     },
     handler: async (request, h) => {
       let application
+      let sbi
 
       if (request.payload.claimOrApplication === 'claim') {
         application = await claim.getByReference(request.payload.applicationReference)
@@ -89,6 +90,7 @@ module.exports = [{
         case 'Recommend to reject':
           statusId = statusIds.recommendToReject
           break
+        // To refactor this after MVP release
         case 'Paid':
           statusId = statusIds.paid
           break
@@ -99,7 +101,9 @@ module.exports = [{
 
       if (statusId) {
         if (request.payload.claimOrApplication === 'claim') {
-          await claim.updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
+          const mainApplication = await get(application.dataValues.applicationReference)
+          sbi = mainApplication?.dataValues?.data?.organisation?.sbi
+          await claim.updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
         } else {
           await updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
         }
