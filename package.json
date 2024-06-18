@@ -1,6 +1,6 @@
 {
   "name": "ffc-ahwr-application",
-  "version": "0.44.80",
+  "version": "0.44.81",
   "description": "Application manager for AHWR",
   "homepage": "https://github.com/DEFRA/ffc-ahwr-application",
   "main": "app/index.js",
@@ -22,7 +22,7 @@
   "license": "OGL-UK-3.0",
   "dependencies": {
     "@azure/data-tables": "^13.2.1",
-    "@azure/identity": "^2.0.4",
+    "@azure/identity": "^4.2.1",
     "@azure/storage-blob": "^12.11.0",
     "@hapi/hapi": "^20.1.5",
     "applicationinsights": "^2.1.6",
@@ -32,7 +32,7 @@
     "ffc-messaging": "^2.3.4",
     "joi": "^17.6.0",
     "node-cron": "^3.0.2",
-    "notifications-node-client": "^7.0.6",
+    "notifications-node-client": "^8.1.0",
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.16.2",
@@ -40,11 +40,8 @@
     "xml2js": "^0.5.0"
   },
   "overrides": {
-    "notifications-node-client": {
-      "jsonwebtoken": "9.0.0"
-    },
-    "@azure/identity": {
-      "jsonwebtoken": "9.0.0"
+    "mssql": {
+      "@azure/identity": "4.2.1"
     },
     "standard": {
       "json5": "2.2.2"
