@@ -19,7 +19,8 @@ const schema = Joi.object({
   submitClaimResponseMsgType: Joi.string(),
   submitPaymentRequestMsgType: Joi.string(),
   compliance: {
-    complianceCheckRatio: Joi.number().default(5)
+    complianceCheckRatio: Joi.number().default(5),
+    endemicsComplianceCheckRatio: Joi.number().default(1)
   },
   tenMonthRule: {
     enabled: Joi.bool().default(false)
@@ -44,7 +45,8 @@ const config = {
   submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
   submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
   compliance: {
-    complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO
+    complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
+    endemicsComplianceCheckRatio: process.env.ENDEMICS_CLAIM_COMPLIANCE_CHECK_RATIO
   },
   tenMonthRule: {
     enabled: process.env.TEN_MONTH_RULE_ENABLED
