@@ -10,7 +10,7 @@ const { get } = require('../../repositories/application-repository')
 const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-email')
 const { getBlob } = require('../../storage')
 const { getAmount } = require('../../lib/getAmount')
-// const requiresComplianceCheck = require('../../lib/requires-compliance-check')
+const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 
 const isReview = (payload) => payload.type === review
 const isEndemicsFollowUp = (payload) => payload.type === endemics
@@ -156,7 +156,8 @@ module.exports = [
         }
 
         const amount = getAmount(data.data.typeOfLivestock, data.data.reviewTestResults, claimPricesConfig, isReviewClaim, isEndemicsFollowUpClaim)
-        const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId: statusIds.inCheck, sbi })
+        const { statusId } = await requiresComplianceCheck('application')
+        const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,

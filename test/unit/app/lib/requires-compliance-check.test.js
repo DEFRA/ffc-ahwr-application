@@ -9,7 +9,7 @@ jest.mock('../../../../app/repositories/claim-repository', () => ({
 }))
 
 describe('Test requires compliance check', () => {
-  jest.mock('../../../../app/config', () => ({ ...jest.requireActual('../../../../app/config'), compliance: { complianceCheckRatio: 2 } }))
+  jest.mock('../../../../app/config', () => ({ ...jest.requireActual('../../../../app/config'), compliance: { complianceCheckRatio: 2, endemicsComplianceCheckRatio: 1 } }))
   test.each([
     { claimOrApplication: 'application', expectedStatusId: 5, totalClaimedApplicationsOrClaims: 1 },
     { claimOrApplication: 'claim', expectedStatusId: 5, totalClaimedApplicationsOrClaims: 1 }
@@ -33,7 +33,7 @@ describe('Test requires compliance check', () => {
   })
   test.each([
     { claimOrApplication: 'application', expectedStatusId: 11, totalClaimedApplicationsOrClaims: 2 },
-    { claimOrApplication: 'claim', expectedStatusId: 11, totalClaimedApplicationsOrClaims: 2 }
+    { claimOrApplication: 'claim', expectedStatusId: 5, totalClaimedApplicationsOrClaims: 2 }
   ])('validate compliance check for $claimOrApplication', async ({ claimOrApplication, expectedStatusId, totalClaimedApplicationsOrClaims }) => {
     const requiresComplianceCheck = require('../../../../app/lib/requires-compliance-check')
     if (claimOrApplication === 'application') {
