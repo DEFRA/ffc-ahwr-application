@@ -57,6 +57,7 @@ container:
   claimComplianceCheckRatio:
   tenMonthRuleEnabled:
   endemicsEnabled:
+  endemicsClaimComplianceCheckRatio:
   azureStorageEndemicsSettingsContainerName: 
 
 postgresService:
