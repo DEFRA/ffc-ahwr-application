@@ -108,7 +108,7 @@ describe('Stage execution test', () => {
 
   describe(`POST ${url} route`, () => {
     test.each([
-      { action: 'Paid' },
+      { action: 'Ready to pay' },
       { action: 'Rejected' },
       { action: 'Recommend to pay' },
       { action: 'Recommend to reject' }

@@ -62,6 +62,15 @@ async function set (data) {
  */
 async function updateByReference (data) {
   try {
+    const claim = await models.claim.findOne({
+      where: {
+        reference: data.reference
+      },
+      returning: true
+    })
+
+    if (claim?.dataValues?.statusId === data?.statusId) return claim
+
     const result = await models.claim.update(data, {
       where: {
         reference: data.reference
