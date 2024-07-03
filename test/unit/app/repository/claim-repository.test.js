@@ -560,6 +560,27 @@ describe('Claim repository test', () => {
       )
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
     })
+    test('Update status of a claim which is holding same status', async () => {
+      const reference = 'AHWR-7C72-8871'
+
+      when(data.models.claim.findOne)
+        .calledWith({
+          where: {
+            reference
+          },
+          returning: true
+        })
+        .mockResolvedValue({ dataValues: { statusId: 3 } })
+
+      const result = await repository.updateByReference({
+        reference,
+        statusId: 3,
+        updatedBy: 'admin'
+      })
+
+      expect(data.models.claim.findOne).toHaveBeenCalledTimes(1)
+      expect(result).toEqual({ dataValues: { statusId: 3 } })
+    })
 
     test('Update record for data by reference - throw exception', async () => {
       process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'

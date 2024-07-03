@@ -91,8 +91,8 @@ module.exports = [{
           statusId = statusIds.recommendToReject
           break
         // To refactor this after MVP release
-        case 'Paid':
-          statusId = statusIds.paid
+        case 'Ready to pay':
+          statusId = statusIds.readyToPay
           break
         case 'Rejected':
           statusId = statusIds.rejected
