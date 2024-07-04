@@ -156,7 +156,7 @@ module.exports = [
         }
 
         const amount = getAmount(data.data.typeOfLivestock, data.data.reviewTestResults, claimPricesConfig, isReviewClaim, isEndemicsFollowUpClaim)
-        const { statusId } = await requiresComplianceCheck('application')
+        const { statusId } = await requiresComplianceCheck('claim')
         const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
