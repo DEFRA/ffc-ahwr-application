@@ -33,7 +33,10 @@ const beefDairyBiosecurity = (payload) => [beef, dairy].includes(payload.data.ty
 const pigsBiosecurity = (payload) => isPigsEndemics(payload) && Joi.alternatives().try(Joi.string().valid(biosecurity.no), Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
 const isBiosecurityValid = (payload) => pigsBiosecurity(payload) || beefDairyBiosecurity(payload)
 const isTestResultValid = (payload) => !isNegativeBeefReviewTestResult(payload) && (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
-
+const validateNumberAnimalsTested = (payload) => {
+  const threshold = minimumNumberOfAnimalsTested[payload.data.typeOfLivestock][payload.type]
+  return isPigsEndemics(payload) ? Joi.number().valid(threshold) : Joi.number().min(threshold).required()
+}
 const isClaimDataValid = (payload) => {
   const claimDataModel = Joi.object({
     applicationReference: Joi.string().required(),
@@ -58,7 +61,7 @@ const isClaimDataValid = (payload) => {
       ...(!!isTestResultValid(payload) && { testResults: pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload) }),
       ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && { vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional() }),
       ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && { reviewTestResults: Joi.string().valid(positive, negative).required() }),
-      ...(!isNegativeBeefReviewTestResult(payload) && [beef, sheep, pigs].includes(payload.data.typeOfLivestock) && { numberAnimalsTested: isPigsEndemics(payload) ? Joi.number().valid(30) : Joi.number().min(minimumNumberOfAnimalsTested[payload.data.typeOfLivestock][payload.type]).required() })
+      ...(!isNegativeBeefReviewTestResult(payload) && [beef, sheep, pigs].includes(payload.data.typeOfLivestock) && { numberAnimalsTested: validateNumberAnimalsTested(payload) })
     })
   })
 
