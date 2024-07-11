@@ -88,7 +88,7 @@ module.exports = [
           }
 
           if (contactHistory.length > 0) {
-            await updateByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user })
+            await updateByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user }, false)
             contactHistory.forEach(async (contact) => {
               await contactHistoryRepository.set({
                 applicationReference: application.reference,
