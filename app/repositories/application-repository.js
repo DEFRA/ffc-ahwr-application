@@ -1,6 +1,7 @@
 const { models, sequelize } = require('../data')
 const eventPublisher = require('../event-publisher')
 const { Op } = require('sequelize')
+const { startandEndDate } = require('../lib/date-utils')
 
 /**
  * Get application by reference number
@@ -146,6 +147,14 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
       case 'ref':
         query.where = { reference: searchText }
         break
+      case 'date':
+        query.where = {
+          createdAt: {
+            [Op.gte]: startandEndDate(searchText).startDate,
+            [Op.lt]: startandEndDate(searchText).endDate
+          }
+        }
+        break
       case 'status':
         query.include = [
           {
@@ -166,7 +175,7 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
       }
     ]
   }
-
+  console.log('query for application ====>', query)
   total = await models.application.count(query)
   if (total > 0) {
     applicationStatus = await models.application.findAll({
