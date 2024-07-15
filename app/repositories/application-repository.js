@@ -175,7 +175,6 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
       }
     ]
   }
-  console.log('query for application ====>', query)
   total = await models.application.count(query)
   if (total > 0) {
     applicationStatus = await models.application.findAll({
