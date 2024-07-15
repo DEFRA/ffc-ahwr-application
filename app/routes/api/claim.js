@@ -2,6 +2,7 @@ const Joi = require('joi')
 const { v4: uuid } = require('uuid')
 const sendMessage = require('../../messaging/send-message')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
+const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../config').notify
 const appInsights = require('applicationinsights')
 const { speciesNumbers: { yes, no }, biosecurity, minimumNumberOfAnimalsTested, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep } } = require('../../constants/claim')
 const { set, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } = require('../../repositories/claim-repository')
@@ -171,7 +172,9 @@ module.exports = [
             orgName: application?.dataValues?.data?.organisation?.name,
             orgEmail: application?.dataValues?.data?.organisation?.orgEmail
           }
-        }))
+        },
+        isEndemicsFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
+        ))
         return h.response(claim).code(200)
       }
     }
