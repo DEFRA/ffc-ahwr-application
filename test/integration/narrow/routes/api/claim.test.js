@@ -188,6 +188,10 @@ describe('Post claim test', () => {
         useConnectionString: false,
         endemicsSettingsContainer: 'endemics-settings',
         connectionString: 'connectionString'
+      },
+      notify: {
+        templateIdFarmerEndemicsReviewComplete: 'template-id-farmer-endemics-review-complete',
+        templateIdFarmerEndemicsFollowupComplete: 'template-id-farmer-endemics-followup-complete'
       }
     }))
     getBlob.mockReturnValue(JSON.stringify(pricesConfig))
@@ -376,12 +380,19 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
 
     await server.inject(options)
 
     expect(claimRepository.set).toHaveBeenCalledTimes(1)
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
+    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      reference: 'AHWR-0F5D-4A26',
+      email: 'test@test-unit.com',
+      amount: '£[amount]',
+      farmerName: 'farmerName',
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
+    }), 'template-id-farmer-endemics-followup-complete')
   })
   test('Post claim with wrong application reference return 400', async () => {
     const options = {
@@ -604,7 +615,7 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
 
     await server.inject(options)
 
@@ -616,7 +627,7 @@ describe('Post claim test', () => {
       amount: '£[amount]',
       farmerName: 'farmerName',
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
-    }))
+    }), 'template-id-farmer-endemics-followup-complete')
   })
   test('send email Data object with values ', async () => {
     const options = {
@@ -847,7 +858,6 @@ describe('PUT claim test', () => {
         user: 'admin'
       }
     }
-
     claimRepository.getByReference.mockResolvedValue({})
 
     const res = await server.inject(options)
