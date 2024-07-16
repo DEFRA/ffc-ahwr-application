@@ -8,8 +8,8 @@ const schema = Joi.object({
   templateIdFarmerApplicationComplete: Joi.string().uuid(),
   templateIdFarmerClaimComplete: Joi.string().uuid(),
   templateIdFarmerEndemicsClaimComplete: Joi.string().uuid(),
-  templateIdFarmerEndemicsReviewComplete: Joi.string().uuid(),
-  templateIdFarmerEndemicsFollowupComplete: Joi.string().uuid()
+  templateIdFarmerEndemicsReviewComplete: Joi.string().uuid().default('183565fc-5684-40c1-a11d-85f55aff4d45'),
+  templateIdFarmerEndemicsFollowupComplete: Joi.string().uuid().default('99dab1c1-ebdb-47dc-a208-daebca873924')
 })
 
 const config = {
