@@ -611,6 +611,7 @@ describe('Application Repository test', () => {
       { limit, offset, searchText: '', searchType: 'ref' },
       { limit, offset, searchText: undefined, searchType: 'status' },
       { limit, offset, searchText: '333333333', searchType: 'status' },
+      { limit, offset, searchText: '17/01/2023', searchType: 'date' },
       { limit, offset, searchText: '', searchType: 'status' },
       { limit, offset, searchText: 'dodgyorganisation', searchType: 'organisation' },
       { limit, offset, searchText: '', searchType: 'organisation' }
