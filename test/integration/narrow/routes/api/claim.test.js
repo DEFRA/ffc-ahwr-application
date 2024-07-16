@@ -695,7 +695,7 @@ describe('Post claim test', () => {
       payload: {
       }
     }
-
+    jest.mock('../../../../../app/lib/send-email')
     claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     applicationRepository.get.mockResolvedValue({})
     claimRepository.set = jest.fn().mockRejectedValueOnce(false)
