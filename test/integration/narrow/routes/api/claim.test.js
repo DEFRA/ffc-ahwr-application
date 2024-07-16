@@ -693,11 +693,35 @@ describe('Post claim test', () => {
       method: 'POST',
       url: '/api/claim',
       payload: {
+        ...claim
       }
     }
-    jest.mock('../../../../../app/lib/send-email')
     claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({})
+    applicationRepository.get.mockResolvedValue({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-0F5D-4A26',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {
+          vetsName: 'Afshin',
+          dateOfVisit: '2024-01-22T00:00:00.000Z',
+          testResults: 'positive',
+          typeOfReview: 'review one',
+          dateOfTesting: '2024-01-22T00:00:00.000Z',
+          laboratoryURN: 'AK-2024',
+          vetRCVSNumber: 'AK-2024',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'pigs',
+          numberAnimalsTested: 30
+        },
+        statusId: 1,
+        type: 'R',
+        createdBy: 'admin'
+      }
+    })
     claimRepository.set = jest.fn().mockRejectedValueOnce(false)
     await server.inject(options)
 
