@@ -158,7 +158,7 @@ module.exports = [
 
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
-      
+
         const amount = getAmount(data.data.typeOfLivestock, data.data.reviewTestResults, claimPricesConfig, isReviewClaim, isEndemicsFollowUpClaim)
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
