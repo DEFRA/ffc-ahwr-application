@@ -7,7 +7,9 @@ const schema = Joi.object({
   carbonCopyEmailAddress: Joi.string().email().allow(null, ''),
   templateIdFarmerApplicationComplete: Joi.string().uuid(),
   templateIdFarmerClaimComplete: Joi.string().uuid(),
-  templateIdFarmerEndemicsClaimComplete: Joi.string().uuid()
+  templateIdFarmerEndemicsClaimComplete: Joi.string().uuid(),
+  templateIdFarmerEndemicsReviewComplete: Joi.string().uuid().default('183565fc-5684-40c1-a11d-85f55aff4d45'),
+  templateIdFarmerEndemicsFollowupComplete: Joi.string().uuid().default('99dab1c1-ebdb-47dc-a208-daebca873924')
 })
 
 const config = {
@@ -15,7 +17,8 @@ const config = {
   carbonCopyEmailAddress: process.env.CARBON_COPY_EMAIL_ADDRESS,
   templateIdFarmerApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE,
   templateIdFarmerClaimComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE,
-  templateIdFarmerEndemicsClaimComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_CLAIM_COMPLETE
+  templateIdFarmerEndemicsReviewComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE,
+  templateIdFarmerEndemicsFollowupComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })
