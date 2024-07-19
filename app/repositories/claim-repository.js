@@ -1,5 +1,7 @@
-const { models } = require('../data')
+const { models, sequelize } = require('../data')
 const eventPublisher = require('../event-publisher')
+const { startandEndDate } = require('../lib/date-utils')
+const { Op } = require('sequelize')
 
 /**
  * Get claim by reference number
@@ -127,9 +129,124 @@ async function isURNNumberUnique (sbi, laboratoryURN) {
 
   return { isURNUnique: claims.length === 0 }
 }
+function evalSortField (sort) {
+  if (sort !== null && sort !== undefined && sort.field !== undefined) {
+    switch (sort.field.toLowerCase()) {
+      case 'status':
+        return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
+      case 'claim date':
+        return ['createdAt', sort.direction ?? 'ASC']
+      case 'sbi':
+        return ['data.organisation.sbi', sort.direction ?? 'ASC']
+      case 'claim number':
+        return ['reference', sort.direction ?? 'ASC']
+      case 'type of visit':
+        return ['type', sort.direction ?? 'ASC']
+      case 'species':
+        return ['data.typeOfLivestock', sort.direction ?? 'ASC']
+    }
+  }
+  return ['createdAt', sort.direction ?? 'ASC']
+}
+/**
+ * Search claims by Search Type and Search Text.
+ * Currently Support type, type of visit, claim date,Status, SBI number, claim Reference Number and species
+ *
+ * @param {string} searchText contain status, type of visit, claim date,Status, SBI number, claim Reference Number and species
+ * @param {string} searchType contain any of keyword ['status','ref','sbi', 'type', 'species', 'date']
+ * @param {integer} offset index of row where page should start from
+ * @param {integer} limit page limit
+ * @param {object} object contain field and direction for sort order
+ * @returns all claims with page
+ */
+async function searchClaims (searchText, searchType, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+  let query = {
+    include: [
+      {
+        model: models.status,
+        attributes: ['status']
+      }, {
+        model: models.application,
+        attributes: ['data']
+      }
+    ]
+  }
+  let total = 0
+  let claims = []
+  let claimStatus = []
+
+  if (!['ref', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(searchType)) return { claims, total, claimStatus }
+  if (searchText) {
+    switch (searchType) {
+      case 'ref':
+        query.where = { reference: searchText }
+        break
+      case 'type':
+        query.where = { type: searchText }
+        break
+      case 'species':
+        query.where = { 'data.typeOfLivestock': searchText }
+        break
+      case 'status':
+        query.include = [
+          {
+            model: models.application,
+            attributes: ['data']
+          },
+          {
+            model: models.status,
+            attributes: ['status'],
+            where: { status: searchText }
+          }]
+        break
+      case 'sbi':
+        query.include = [
+          {
+            model: models.status,
+            attributes: ['status']
+          },
+          {
+            model: models.application,
+            attributes: ['data'],
+            where: { 'data.organisation.sbi': searchText }
+          }]
+        break
+      case 'date':
+        query.where = {
+          createdAt: {
+            [Op.gte]: startandEndDate(searchText).startDate,
+            [Op.lt]: startandEndDate(searchText).endDate
+          }
+        }
+        break
+    }
+  }
+
+  total = await models.claim.count(query)
+  if (total > 0) {
+    claimStatus = await models.claim.findAll({
+      attributes: ['status.status', [sequelize.fn('COUNT', 'claim.id'), 'total']],
+      ...query,
+      group: ['status.status', 'application.data'],
+      raw: true
+    })
+    sort = evalSortField(sort)
+    query = {
+      ...query,
+      order: [sort],
+      limit,
+      offset
+    }
+    claims = await models.claim.findAll(query)
+  }
+  return {
+    claims, total, claimStatus
+  }
+}
 
 module.exports = {
   set,
+  searchClaims,
   getByReference,
   isURNNumberUnique,
   updateByReference,

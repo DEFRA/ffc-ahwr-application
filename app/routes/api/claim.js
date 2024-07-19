@@ -5,7 +5,7 @@ const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../confi
 const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../config').notify
 const appInsights = require('applicationinsights')
 const { speciesNumbers: { yes, no }, biosecurity, minimumNumberOfAnimalsTested, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep } } = require('../../constants/claim')
-const { set, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } = require('../../repositories/claim-repository')
+const { set, searchClaims, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
 const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-email')
@@ -108,8 +108,33 @@ module.exports = [
         }
       }
     }
-  },
-  {
+  }, {
+    method: 'POST',
+    path: '/api/claim/search',
+    options: {
+      validate: {
+        payload: Joi.object({
+          offset: Joi.number().default(0),
+          limit: Joi.number().greater(0).default(20),
+          search: Joi.object({
+            text: Joi.string().valid().optional().allow(''),
+            type: Joi.string().valid().optional().allow('')
+          }).optional(),
+          sort: Joi.object({
+            field: Joi.string().valid().optional().allow(''),
+            direction: Joi.string().valid().optional().allow('')
+          }).optional()
+        }),
+        failAction: async (_request, h, err) => {
+          return h.response({ err }).code(400).takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const { claims, total, claimStatus } = await searchClaims(request.payload.search.text ?? '', request.payload.search.type, request.payload.offset, request.payload.limit, request.payload.sort)
+        return h.response({ claims, total, claimStatus }).code(200)
+      }
+    }
+  }, {
     method: 'POST',
     path: '/api/claim/is-urn-unique',
     options: {

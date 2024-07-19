@@ -624,4 +624,29 @@ describe('Claim repository test', () => {
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
     })
   })
+  describe('Search Claim', () => {
+    test.each([
+      { searchText: 'AHWR-7C72-8871', searchType: 'ref', sort: { field: 'claim number', direction: undefined } },
+      { searchText: 'AHWR-7C72-8871', searchType: 'ref', sort: { field: 'claim number', direction: 'DESC' } },
+      { searchText: '12/07/2024', searchType: 'date', sort: { field: 'claim date', direction: undefined } },
+      { searchText: '12/07/2024', searchType: 'date', sort: { field: 'claim date', direction: 'DESC' } },
+      { searchText: 'R', searchType: 'type', sort: { field: 'type of visit', direction: undefined } },
+      { searchText: 'R', searchType: 'type', sort: { field: 'type of visit', direction: 'DESC' } },
+      { searchText: 'Sheep', searchType: 'species', sort: { field: 'species', direction: undefined } },
+      { searchText: 'Sheep', searchType: 'species', sort: { field: 'species', direction: 'DESC' } },
+      { searchText: 'Agreed', searchType: 'status', sort: { field: 'status', direction: undefined } },
+      { searchText: 'Agreed', searchType: 'status', sort: { field: 'status', direction: 'DESC' } },
+      { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: undefined } },
+      { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: 'DECS' } },
+      { searchText: '113494460', searchType: 'sbi', sort: undefined },
+      { searchText: 'dfdf', searchType: 'adsdf', sort: undefined }
+    ])('Search claim by search text $searchText, search type $searchType ', async ({ searchText, searchType, sort }) => {
+      when(data.models.claim.count).mockResolvedValue(2)
+      when(data.models.claim.findAll).mockResolvedValue(['claims1', 'claims2'])
+      await repository.searchClaims(searchText, searchType, undefined, undefined, sort)
+
+      expect(data.models.claim.count).toHaveBeenCalledTimes(searchType !== 'adsdf' ? 1 : 0)
+      expect(data.models.claim.findAll).toHaveBeenCalledTimes(searchType !== 'adsdf' ? 2 : 0)
+    })
+  })
 })
