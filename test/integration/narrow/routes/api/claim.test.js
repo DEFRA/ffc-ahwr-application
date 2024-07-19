@@ -899,6 +899,46 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }))
   })
+  test.each([
+    { search: { text: '444444444', type: 'sbi' } },
+    { search: { text: 'AHWR-555A-FD6E', type: 'ref' } },
+    { search: { text: 'applied', type: 'status' } },
+    { search: { text: 'data inputted', type: 'status' } },
+    { search: { text: 'claimed', type: 'status' } },
+    { search: { text: 'check', type: 'status' } },
+    { search: { text: 'accepted', type: 'status' } },
+    { search: { text: 'rejected', type: 'status' } },
+    { search: { text: 'paid', type: 'status' } },
+    { search: { text: 'withdrawn', type: 'status' } },
+    { search: { text: 'on hold', type: 'status' } }
+  ])('returns success when post %p', async ({ search }) => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim/search',
+      payload: { search }
+    }
+
+    claimRepository.searchClaims.mockResolvedValueOnce({ claims: ['claim one', 'claim 2'], total: 2, claimStatus: ['claim status one', 'claim status two'] })
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(claimRepository.searchClaims).toHaveBeenCalledTimes(1)
+  })
+  test.each([
+    { search: { xyz: 'xyz' } }
+  ])('returns 400 when post %p', async ({ search }) => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim/search',
+      payload: { search }
+    }
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(400)
+    expect(claimRepository.searchClaims).toHaveBeenCalledTimes(0)
+  })
 })
 
 describe('PUT claim test', () => {
