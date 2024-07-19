@@ -1,4 +1,4 @@
-const { models, sequelize } = require('../data')
+const { models } = require('../data')
 const eventPublisher = require('../event-publisher')
 const { startandEndDate } = require('../lib/date-utils')
 const { Op } = require('sequelize')
@@ -160,7 +160,7 @@ function evalSortField (sort) {
  * @returns all claims with page
  */
 async function searchClaims (searchText, searchType, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
-  let query = {
+  const query = {
     include: [
       {
         model: models.status,
@@ -171,11 +171,8 @@ async function searchClaims (searchText, searchType, offset = 0, limit = 10, sor
       }
     ]
   }
-  let total = 0
-  let claims = []
-  let claimStatus = []
 
-  if (!['ref', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(searchType)) return { claims, total, claimStatus }
+  if (!['ref', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(searchType)) return { total: 0, claims: [] }
   if (searchText) {
     switch (searchType) {
       case 'ref':
@@ -222,25 +219,9 @@ async function searchClaims (searchText, searchType, offset = 0, limit = 10, sor
     }
   }
 
-  total = await models.claim.count(query)
-  if (total > 0) {
-    claimStatus = await models.claim.findAll({
-      attributes: ['status.status', [sequelize.fn('COUNT', 'claim.id'), 'total']],
-      ...query,
-      group: ['status.status', 'application.data'],
-      raw: true
-    })
-    sort = evalSortField(sort)
-    query = {
-      ...query,
-      order: [sort],
-      limit,
-      offset
-    }
-    claims = await models.claim.findAll(query)
-  }
   return {
-    claims, total, claimStatus
+    total: await models.claim.count(query),
+    claims: await models.claim.findAll({ ...query, order: [evalSortField(sort)], limit, offset })
   }
 }
 

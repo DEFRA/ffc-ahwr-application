@@ -641,12 +641,13 @@ describe('Claim repository test', () => {
       { searchText: '113494460', searchType: 'sbi', sort: undefined },
       { searchText: 'dfdf', searchType: 'adsdf', sort: undefined }
     ])('Search claim by search text $searchText, search type $searchType ', async ({ searchText, searchType, sort }) => {
+      const callTimes = searchType !== 'adsdf' ? 1 : 0
       when(data.models.claim.count).mockResolvedValue(2)
       when(data.models.claim.findAll).mockResolvedValue(['claims1', 'claims2'])
       await repository.searchClaims(searchText, searchType, undefined, undefined, sort)
 
-      expect(data.models.claim.count).toHaveBeenCalledTimes(searchType !== 'adsdf' ? 1 : 0)
-      expect(data.models.claim.findAll).toHaveBeenCalledTimes(searchType !== 'adsdf' ? 2 : 0)
+      expect(data.models.claim.count).toHaveBeenCalledTimes(callTimes)
+      expect(data.models.claim.findAll).toHaveBeenCalledTimes(callTimes)
     })
   })
 })
