@@ -149,11 +149,11 @@ function evalSortField (sort) {
   return ['createdAt', sort.direction ?? 'ASC']
 }
 /**
- * Search application by Search Type and Search Text.
- * Currently Support Status, SBI number, Application Reference Number
+ * Search claims by Search Type and Search Text.
+ * Currently Support type, type of visit, claim date,Status, SBI number, claim Reference Number and species
  *
- * @param {string} searchText contain status, sbi number or application reference number
- * @param {string} searchType contain any of keyword ['status','ref','sbi']
+ * @param {string} searchText contain status, type of visit, claim date,Status, SBI number, claim Reference Number and species
+ * @param {string} searchType contain any of keyword ['status','ref','sbi', 'type', 'species', 'date']
  * @param {integer} offset index of row where page should start from
  * @param {integer} limit page limit
  * @param {object} object contain field and direction for sort order
