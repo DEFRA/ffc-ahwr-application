@@ -193,7 +193,7 @@ async function searchClaims (searchText, searchType, offset = 0, limit = 10, sor
           {
             model: models.status,
             attributes: ['status'],
-            where: { status: searchText }
+            where: { status: { [Op.iLike]: `%${searchText}%` } }
           }]
         break
       case 'sbi':
