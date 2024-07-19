@@ -118,11 +118,11 @@ module.exports = [
           limit: Joi.number().greater(0).default(20),
           search: Joi.object({
             text: Joi.string().valid().optional().allow(''),
-            type: Joi.string().valid().optional().default('sbi')
+            type: Joi.string().valid().optional().allow('')
           }).optional(),
           sort: Joi.object({
-            field: Joi.string().valid().optional().default('CREATEDAT'),
-            direction: Joi.string().valid().optional().allow('ASC')
+            field: Joi.string().valid().optional().allow(''),
+            direction: Joi.string().valid().optional().allow('')
           }).optional()
         }),
         failAction: async (_request, h, err) => {
