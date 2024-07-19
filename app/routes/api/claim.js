@@ -130,8 +130,8 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        const { claims, total, claimStatus } = await searchClaims(request.payload.search.text ?? '', request.payload.search.type, request.payload.offset, request.payload.limit, request.payload.sort)
-        return h.response({ claims, total, claimStatus }).code(200)
+        const { total, claims } = await searchClaims(request.payload.search.text ?? '', request.payload.search.type, request.payload.offset, request.payload.limit, request.payload.sort)
+        return h.response({ total, claims }).code(200)
       }
     }
   }, {
