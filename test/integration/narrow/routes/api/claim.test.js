@@ -292,7 +292,7 @@ describe('Post claim test', () => {
   test.each([
     { type: 'E', typeOfLivestock: 'sheep', numberAnimalsTested: 30, numberOfSamplesTested: undefined, testResults: sheepTestResultsMockData, biosecurity: undefined, sheepEndemicsPackage: 'sheepEndemicsPackage', herdVaccinationStatus: undefined, diseaseStatus: undefined },
     { type: 'E', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfSamplesTested: 6, testResults: undefined, biosecurity: { biosecurity: 'yes', assessmentPercentage: '10' }, sheepEndemicsPackage: undefined, herdVaccinationStatus: 'vaccinated', diseaseStatus: '1', reviewTestResults: 'positive' },
-    { type: 'E', typeOfLivestock: 'beef', numberAnimalsTested: 30, numberOfSamplesTested: undefined, testResults: 'positive', biosecurity: 'yes', sheepEndemicsPackage: undefined, herdVaccinationStatus: undefined, diseaseStatus: undefined, reviewTestResults: 'positive', piHunt: 'yes' }
+    { type: 'E', typeOfLivestock: 'beef', numberAnimalsTested: undefined, numberOfSamplesTested: undefined, testResults: 'positive', biosecurity: 'yes', sheepEndemicsPackage: undefined, herdVaccinationStatus: undefined, diseaseStatus: undefined, reviewTestResults: 'positive', piHunt: 'yes' }
   ])(
     'Post claim with Type: $type and Type of Livestock: $typeOfLivestock and return 200',
     async ({ type, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, reviewTestResults, piHunt }) => {
@@ -710,7 +710,7 @@ describe('Post claim test', () => {
   })
 
   test('sent the correct parameters to send sendFarmerEndemicsClaimConfirmationEmail when claim type is follow-up', async () => {
-    const data = { typeOfLivestock: 'beef', numberAnimalsTested: 30, biosecurity: 'yes', reviewTestResults: 'positive', dateOfTesting: '2024-01-22T00:00:00.000Z', dateOfVisit: '2024-01-22T00:00:00.000Z', vetsName: 'Afshin', vetRCVSNumber: 'AK-2024', speciesNumbers: 'yes', testResults: 'negative', piHunt: 'yes', numberOfOralFluidSamples: undefined, numberOfSamplesTested: undefined }
+    const data = { typeOfLivestock: 'beef', numberAnimalsTested: undefined, biosecurity: 'yes', reviewTestResults: 'positive', dateOfTesting: '2024-01-22T00:00:00.000Z', dateOfVisit: '2024-01-22T00:00:00.000Z', vetsName: 'Afshin', vetRCVSNumber: 'AK-2024', speciesNumbers: 'yes', testResults: 'negative', piHunt: 'yes', numberOfOralFluidSamples: undefined, numberOfSamplesTested: undefined }
     const options = {
       method: 'POST',
       url: '/api/claim',

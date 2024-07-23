@@ -62,7 +62,7 @@ const isClaimDataValid = (payload) => {
       ...(!!isTestResultValid(payload) && { testResults: pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload) }),
       ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && { vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional() }),
       ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && { reviewTestResults: Joi.string().valid(positive, negative).required() }),
-      ...(!isNegativeBeefReviewTestResult(payload) && [beef, sheep, pigs].includes(payload.data.typeOfLivestock) && { numberAnimalsTested: validateNumberAnimalsTested(payload) })
+      ...([beef, sheep, pigs].includes(payload.data.typeOfLivestock) && !isBeefEndemics(payload) && { numberAnimalsTested: validateNumberAnimalsTested(payload) })
     })
   })
 
