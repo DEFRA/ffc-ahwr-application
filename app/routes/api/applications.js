@@ -5,6 +5,7 @@ const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../confi
 const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
 const { processApplicationApi } = require('../../messaging/application/process-application')
+const { searchPayloadValidations } = require('./helpers')
 
 module.exports = [{
   method: 'GET',
@@ -30,12 +31,7 @@ module.exports = [{
   options: {
     validate: {
       payload: Joi.object({
-        offset: Joi.number().default(0),
-        limit: Joi.number().greater(0).default(20),
-        search: Joi.object({
-          text: Joi.string().valid().optional().allow(''),
-          type: Joi.string().valid().optional().default('sbi')
-        }).optional(),
+        ...searchPayloadValidations(),
         sort: Joi.object({
           field: Joi.string().valid().optional().default('CREATEDAT'),
           direction: Joi.string().valid().optional().allow('ASC')
