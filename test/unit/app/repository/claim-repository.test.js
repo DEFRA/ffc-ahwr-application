@@ -322,7 +322,7 @@ describe('Claim repository test', () => {
     { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }], response: { isURNUnique: false } },
     { urnNumber: 'URN123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }], response: { isURNUnique: false } },
     { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN123' } } }], response: { isURNUnique: false } },
-    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN1234' } } }], response: { isURNUnique: true } },
+    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN1234' } } }], response: { isURNUnique: true } }
   ])('check if URN is unique for all previous claims made by same SBI', async ({ urnNumber, applications, claims, response }) => {
     when(data.models.application.findAll).mockResolvedValue(applications)
     when(data.models.claim.findAll).mockResolvedValue(claims)
