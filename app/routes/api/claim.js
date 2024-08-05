@@ -12,6 +12,7 @@ const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-ema
 const { getBlob } = require('../../storage')
 const { getAmount } = require('../../lib/getAmount')
 const requiresComplianceCheck = require('../../lib/requires-compliance-check')
+const { searchPayloadValidations } = require('./helpers')
 
 const isReview = (payload) => payload.type === review
 const isEndemicsFollowUp = (payload) => payload.type === endemics
@@ -115,12 +116,7 @@ module.exports = [
     options: {
       validate: {
         payload: Joi.object({
-          offset: Joi.number().default(0),
-          limit: Joi.number().greater(0).default(20),
-          search: Joi.object({
-            text: Joi.string().valid().optional().allow(''),
-            type: Joi.string().valid().optional().allow('')
-          }).optional(),
+          ...searchPayloadValidations(),
           sort: Joi.object({
             field: Joi.string().valid().optional().allow(''),
             direction: Joi.string().valid().optional().allow('')
