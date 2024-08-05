@@ -306,17 +306,29 @@ describe('Claim repository test', () => {
     expect(data.models.claim.count).toHaveBeenCalledTimes(1)
     expect(result).toEqual(1)
   })
+
   test.each([
-    { applications: undefined, response: { isURNUnique: true } },
-    { applications: [{ dataValues: { data: { urnResult: '12345566' } } }], response: { isURNUnique: false } },
-    { applications: [{ dataValues: { data: { urnResult: '123455663434' }, reference: '123456' } }], response: { isURNUnique: false } }
-  ])('check if URN number is unique', async ({ applications, response }) => {
+    { urnNumber: '123456', applications: [], claims: [], response: { isURNUnique: true } },
+
+    { urnNumber: '123456', applications: [{ dataValues: { data: { urnResult: '123456' } } }], claims: [], response: { isURNUnique: false } },
+    { urnNumber: '123456', applications: [{ dataValues: { data: { urnResult: '654321' } } }], claims: [], response: { isURNUnique: true } },
+    { urnNumber: 'urn123', applications: [{ dataValues: { data: { urnResult: 'urn123' } } }], claims: [], response: { isURNUnique: false } },
+    { urnNumber: 'URN123', applications: [{ dataValues: { data: { urnResult: 'urn123' } } }], claims: [], response: { isURNUnique: false } },
+    { urnNumber: 'urn123', applications: [{ dataValues: { data: { urnResult: 'URN123' } } }], claims: [], response: { isURNUnique: false } },
+    { urnNumber: 'urn123', applications: [{ dataValues: { data: { urnResult: 'URN1234' } } }], claims: [], response: { isURNUnique: true } },
+
+    { urnNumber: '123456', applications: [], claims: [{ dataValues: { data: { laboratoryURN: '123456' } } }], response: { isURNUnique: false } },
+    { urnNumber: '123456', applications: [], claims: [{ dataValues: { data: { laboratoryURN: '654321' } } }], response: { isURNUnique: true } },
+    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }], response: { isURNUnique: false } },
+    { urnNumber: 'URN123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }], response: { isURNUnique: false } },
+    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN123' } } }], response: { isURNUnique: false } },
+    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN1234' } } }], response: { isURNUnique: true } },
+  ])('check if URN is unique for all previous claims made by same SBI', async ({ urnNumber, applications, claims, response }) => {
     when(data.models.application.findAll).mockResolvedValue(applications)
-    when(data.models.claim.findAll).mockResolvedValue(['claim 1', 'claim 2'])
+    when(data.models.claim.findAll).mockResolvedValue(claims)
 
-    const result = await repository.isURNNumberUnique('106785889', '12345566')
+    const result = await repository.isURNNumberUnique('sbi', urnNumber)
 
-    expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
     expect(result).toEqual(response)
   })
 

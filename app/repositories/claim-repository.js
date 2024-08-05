@@ -121,14 +121,15 @@ async function getAllClaimedClaims (claimStatusIds) {
 async function isURNNumberUnique (sbi, laboratoryURN) {
   const applications = await models.application.findAll({ where: { 'data.organisation.sbi': sbi } })
 
-  if (!applications) return { isURNUnique: true }
-  if (applications.find((application) => application.dataValues?.data?.urnResult === laboratoryURN)) return { isURNUnique: false }
+  if (applications.find((application) => application.dataValues?.data?.urnResult?.toLowerCase() === laboratoryURN.toLowerCase())) return { isURNUnique: false }
 
   const applicationsReferences = applications.map((application) => application.dataValues.reference)
-  const claims = await models.claim.findAll({ where: { applicationReference: applicationsReferences, 'data.laboratoryURN': laboratoryURN } })
+  const claims = await models.claim.findAll({ where: { applicationReference: applicationsReferences } })
+  if (claims.find((claim) => claim.dataValues?.data?.laboratoryURN?.toLowerCase() === laboratoryURN.toLowerCase())) return { isURNUnique: false }
 
-  return { isURNUnique: claims.length === 0 }
+  return { isURNUnique: true }
 }
+
 function evalSortField (sort) {
   if (sort !== null && sort !== undefined && sort.field !== undefined) {
     switch (sort.field.toLowerCase()) {
