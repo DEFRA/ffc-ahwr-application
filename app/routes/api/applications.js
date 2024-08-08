@@ -1,6 +1,6 @@
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
-const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
+const { get, searchApplications, updateByReference, getAllRecordsByCrn } = require('../../repositories/application-repository')
 const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
 const sendMessage = require('../../messaging/send-message')
 const statusIds = require('../../constants/application-status')
@@ -133,4 +133,33 @@ module.exports = [{
       return h.response().code(200)
     }
   }
-}]
+},
+{
+  method: 'GET',
+  path: '/api/application/{crn}',
+  options: {
+    validate:{
+      params: Joi.object({
+        crn: Joi.string().valid()
+      }),
+      failAction: async (_request, h, err) => {
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      try {
+        const application = (await getAllRecordsByCrn(request.params.crn))
+       
+      if (application) {
+        return h.response(application).code(200)
+      } else {
+        return h.response('Not Found').code(404).takeover()
+      }
+    }catch(err){
+     return h.response({ error: err.message }).code(400).takeover()
+    }
+    }
+  }
+
+}
+]
