@@ -2,6 +2,7 @@ const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/application-repository')
 const data = require('../../../../app/data')
 const { Op } = require('sequelize')
+const { getAllRecordsByCrn } = require('../../../../app/repositories/application-repository')
 
 jest.mock('../../../../app/data')
 
@@ -11,6 +12,7 @@ data.models.application.findAll = jest.fn()
 data.models.application.count.mockReturnValue(10)
 data.models.application.findOne = jest.fn()
 data.models.status = jest.fn()
+data.models.application.findAll = jest.fn()
 
 const MOCK_SEND_EVENTS = jest.fn()
 
@@ -1095,6 +1097,53 @@ describe('Application Repository test', () => {
         'data.organisation.email': email
       },
       order: [['createdAt', 'DESC']]
+    })
+  })
+
+  describe('getAllRecordsByCrn', () => {
+    test('should return all records for a given CRN', async () => {
+      const crn = '123456789'
+      const expectedRecords = [
+        {
+          id: 'eaf9b180-9993-4f3f-a1ec-4422d48edf92',
+          reference: 'AHWR-5C1C-DD6A',
+          data: {
+            reference: 'string',
+            declaration: true,
+            offerStatus: 'accepted',
+            whichReview: 'sheep',
+            organisation: {
+              crn: 112222,
+              sbi: 112222,
+              name: 'My Amazing Farm',
+              email: 'business@email.com',
+              address: '1 Example Road',
+              farmerName: 'Mr Farmer'
+            },
+            eligibleSpecies: 'yes',
+            confirmCheckDetails: 'yes'
+          },
+          claimed: false,
+          createdAt: '2023-01-17 13:55:20',
+          updatedAt: '2023-01-17 13:55:20',
+          createdBy: 'David Jones',
+          updatedBy: 'David Jones',
+          statusId: 1
+        }
+      ]
+
+      data.models.application.findAll = jest.fn().mockResolvedValue(expectedRecords)
+
+      const result = await getAllRecordsByCrn(crn)
+
+      expect(data.models.application.findAll).toHaveBeenCalledTimes(1)
+      expect(data.models.application.findAll).toHaveBeenCalledWith({
+        where: {
+          'data.organisation.crn': crn
+        },
+        order: [['createdAt', 'DESC']]
+      })
+      expect(result).toEqual(expectedRecords)
     })
   })
 })
