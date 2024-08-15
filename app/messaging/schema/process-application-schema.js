@@ -1,12 +1,12 @@
-const joi = require('joi')
-const appInsights = require('applicationinsights')
-const endemicsEnabled = require('../../config/index').endemics.enabled
+const joi = require("joi");
+const appInsights = require("applicationinsights");
+const endemicsEnabled = require("../../config/index").endemics.enabled;
 
 const commonValidations = () => ({
   reference: joi.string().allow(null).required(),
   declaration: joi.boolean().required(),
-  offerStatus: joi.string().required()
-})
+  offerStatus: joi.string().required(),
+});
 
 const organisationValidations = () => ({
   farmerName: joi.string().required(),
@@ -17,9 +17,14 @@ const organisationValidations = () => ({
   frn: joi.string().optional(),
   address: joi.string().required(),
   email: joi.string().required().lowercase().email({ tlds: false }),
-  orgEmail: joi.string().allow(null).optional().lowercase().email({ tlds: false }),
-  isTest: joi.boolean().optional()
-})
+  orgEmail: joi
+    .string()
+    .allow(null)
+    .optional()
+    .lowercase()
+    .email({ tlds: false }),
+  isTest: joi.boolean().optional(),
+});
 
 const applicationSchema = joi.object({
   confirmCheckDetails: joi.string().required(),
@@ -27,18 +32,21 @@ const applicationSchema = joi.object({
   eligibleSpecies: joi.string().required(),
   ...commonValidations(),
   organisation: joi.object({
-    ...organisationValidations()
+    ...organisationValidations(),
   }),
   contactHistory: joi.array().items(
-    joi.object({
-      createdBy: joi.string(),
-      createdOn: joi.string(),
-      field: joi.string(),
-      oldValue: joi.string(),
-      newValue: joi.string()
-    }).allow(null).optional()
-  )
-})
+    joi
+      .object({
+        createdBy: joi.string(),
+        createdOn: joi.string(),
+        field: joi.string(),
+        oldValue: joi.string(),
+        newValue: joi.string(),
+      })
+      .allow(null)
+      .optional()
+  ),
+});
 
 const endemicsApplicationSchema = joi.object({
   confirmCheckDetails: joi.string().required(),
@@ -47,30 +55,41 @@ const endemicsApplicationSchema = joi.object({
   ...commonValidations(),
   organisation: joi.object({
     ...organisationValidations(),
-    userType: joi.string().valid('newUser', 'existingUser').required()
+    userType: joi.string().valid("newUser", "existingUser").required(),
   }),
-  type: joi.string().valid('VV', 'EE').required(),
+  type: joi.string().valid("VV", "EE").required(),
   contactHistory: joi.array().items(
-    joi.object({
-      createdBy: joi.string(),
-      createdOn: joi.string(),
-      field: joi.string(),
-      oldValue: joi.string(),
-      newValue: joi.string()
-    }).allow(null).optional()
-  )
-})
+    joi
+      .object({
+        createdBy: joi.string(),
+        createdOn: joi.string(),
+        field: joi.string(),
+        oldValue: joi.string(),
+        newValue: joi.string(),
+      })
+      .allow(null)
+      .optional()
+  ),
+  oldWorldRejectedAgreement10months: joi
+    .object({
+      isValid: joi.boolean(),
+      message: joi.string(),
+    })
+    .optional(),
+});
 
 const validateApplication = (event) => {
-  const validate = endemicsEnabled ? endemicsApplicationSchema.validate(event) : applicationSchema.validate(event)
+  const validate = endemicsEnabled
+    ? endemicsApplicationSchema.validate(event)
+    : applicationSchema.validate(event);
 
   if (validate.error) {
-    console.error(`Application validation error - ${validate.error}.`)
-    appInsights.defaultClient.trackException({ exception: validate.error })
-    return false
+    console.error(`Application validation error - ${validate.error}.`);
+    appInsights.defaultClient.trackException({ exception: validate.error });
+    return false;
   }
 
-  return true
-}
+  return true;
+};
 
-module.exports = validateApplication
+module.exports = validateApplication;

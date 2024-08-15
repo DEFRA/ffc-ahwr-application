@@ -9,7 +9,8 @@ const schema = Joi.object({
   templateIdFarmerClaimComplete: Joi.string().uuid(),
   templateIdFarmerEndemicsClaimComplete: Joi.string().uuid(),
   templateIdFarmerEndemicsReviewComplete: Joi.string().uuid().default('183565fc-5684-40c1-a11d-85f55aff4d45'),
-  templateIdFarmerEndemicsFollowupComplete: Joi.string().uuid().default('99dab1c1-ebdb-47dc-a208-daebca873924')
+  templateIdFarmerEndemicsFollowupComplete: Joi.string().uuid().default('99dab1c1-ebdb-47dc-a208-daebca873924'),
+  templateIdFarmerApplicationCompleteExistingUserRejectedWithinTenMonths: Joi.string().uuid().default('97b97236-2b7b-47f8-9ea9-9ad78e653d08')
 })
 
 const config = {
@@ -18,7 +19,8 @@ const config = {
   templateIdFarmerApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE,
   templateIdFarmerClaimComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE,
   templateIdFarmerEndemicsReviewComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE,
-  templateIdFarmerEndemicsFollowupComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE
+  templateIdFarmerEndemicsFollowupComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE,
+  templateIdFarmerApplicationCompleteExistingUserRejectedWithinTenMonths: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE_EXISTING_USER_REJECTED_WITHIN_10_MONTHS
 }
 
 const { error, value } = schema.validate(config, { abortEarly: false })

@@ -19,6 +19,7 @@ data:
   NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerClaimComplete }}
   NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerEndemicsReviewComplete }}
   NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerEndemicsFollowupComplete }}
+  NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE_EXISTING_USER_REJECTED_WITHIN_10_MONTHS: {{ quote .Values.container.notifyTemplateIdFarmerApplicationCompleteExistingUserRejectedWithinTenMonths}}
   SERVICE_URI: {{ quote .Values.container.serviceUri }}
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
