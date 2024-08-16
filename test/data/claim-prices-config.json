@@ -21,14 +21,20 @@
     "beef": {
       "value": {
         "positive": 837,
-        "negative": 215
+        "negative": {
+          "piHunt": 215,
+          "noPiHunt": 1714
+        }
       },
       "code": "AHWR-Beef"
     },
     "dairy": {
       "value": {
         "positive": 1714,
-        "negative": 215
+        "negative": {
+          "piHunt": 215,
+          "noPiHunt": 1714
+        }
       },
       "code": "AHWR-Dairy"
     },
