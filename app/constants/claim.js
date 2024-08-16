@@ -25,6 +25,21 @@ const biosecurity = {
   no: 'no'
 }
 
+const piHunt = {
+  yes: 'yes',
+  no: 'no'
+}
+
+const piHuntRecommended = {
+  yes: 'yes',
+  no: 'no'
+}
+
+const piHuntAllAnimals = {
+  yes: 'yes',
+  no: 'no'
+}
+
 const minimumNumberOfAnimalsTested = {
   [livestockTypes.beef]: {
     [claimType.review]: 5,
@@ -50,6 +65,9 @@ module.exports = {
   testResults,
   speciesNumbers,
   biosecurity,
+  piHunt,
+  piHuntRecommended,
+  piHuntAllAnimals,
   minimumNumberOfOralFluidSamples: 5,
   minimumNumberOfAnimalsTested
 }
