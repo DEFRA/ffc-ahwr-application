@@ -1,6 +1,6 @@
 const notifyClient = require('./notify-client')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../config')
-const { carbonCopyEmailAddress, templateIdFarmerClaimComplete, templateIdFarmerApplicationCompleteExistingUserRejectedWithinTenMonths } = require('../config').notify
+const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
 const appInsights = require('applicationinsights')
 
