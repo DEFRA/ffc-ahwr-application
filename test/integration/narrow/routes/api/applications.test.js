@@ -280,4 +280,52 @@ describe('Applications test', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to process application : Error')
     })
   })
+  //
+  describe('GET /api/application/{crn}', () => {
+    test('returns  data for a CRN  ', async () => {
+      const options = {
+        method: 'GET',
+        url: '/api/application/1'
+      }
+
+      const res = await server.inject(options)
+
+      await applicationRepository.getAllRecordsByCrn.mockResolvedValue({ dataValues: {} })
+      expect(res.statusCode).toBe(404)
+      expect(applicationRepository.getAllRecordsByCrn).toHaveBeenCalledTimes(1)
+    })
+    test('returns 404 if CRN not available ', async () => {
+      const options = {
+        method: 'GET',
+        url: '/api/application/1'
+      }
+      const expectedResult = {
+        confirmCheckDetails: 'yes',
+        whichReview: 'sheep',
+        eligibleSpecies: 'yes',
+        reference: 'AHWR-5C1C-DD6Z',
+        declaration: true,
+        offerStatus: 'accepted',
+        organisation: {
+          farmerName: 'Mr Farmer',
+          name: 'My Amazing Farm',
+          sbi: '112223',
+          cph: '123/456/789',
+          crn: '112223',
+          address: '1 Example Road',
+          email: 'business@email.com',
+          isTest: true,
+          userType: 'newUser'
+        },
+        type: 'VV'
+      }
+
+      const res = await server.inject(options)
+
+      await applicationRepository.getAllRecordsByCrn.mockResolvedValue({ dataValues: expectedResult })
+      expect(res.statusCode).toBe(200)
+      expect(applicationRepository.getAllRecordsByCrn).toHaveBeenCalledTimes(1)
+    })
+  })
+  //
 })
