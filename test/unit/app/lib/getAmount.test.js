@@ -8,15 +8,12 @@ describe('getAmount', () => {
   beforeAll(() => {
     getBlob.mockReturnValue(pricesConfig)
   })
+
   describe('optionalPiHunt flag TRUE', () => {
-    beforeAll(() => {
-      jest.mock('../../../../app/config', () => ({
-        ...jest.requireActual('../../../../app/config'),
-        optionalPIHunt: {
-          enabled: true
-        }
-      }))
+    beforeEach(async () => {
+      jest.mock('../../../../app/config', () => ({ ...jest.requireActual('../../../../app/config'), optionalPIHunt: { enabled: true }}));
     })
+
     test.each([
       {
         payload: {
@@ -181,14 +178,10 @@ describe('getAmount', () => {
   })
 
   describe('optionalPiHunt flag false', () => {
-    beforeAll(() => {
-      jest.mock('../../../../app/config', () => ({
-        ...jest.requireActual('../../../../app/config'),
-        optionalPIHunt: {
-          enabled: false
-        }
-      }))
+    beforeEach(async () => {
+      jest.mock('../../../../app/config', () => ({ ...jest.requireActual('../../../../app/config'), optionalPIHunt: { enabled: false }}));
     })
+
     test('returns correct amount for beef for claim type review', async () => {
       expect(await getAmount({
         type: review,
