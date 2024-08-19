@@ -1,3 +1,4 @@
+const { optionalPIHunt } = require('../../config')
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
 const sendMessage = require('../../messaging/send-message')
@@ -9,7 +10,6 @@ const { set, searchClaims, getByReference, updateByReference, getByApplicationRe
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
 const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-email')
-const { getBlob } = require('../../storage')
 const { getAmount } = require('../../lib/getAmount')
 const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 const { searchPayloadValidations } = require('./helpers')
@@ -213,14 +213,14 @@ module.exports = [
     options: {
       handler: async (request, h) => {
         const { error } = isClaimDataValid(request.payload)
-        const isReviewClaim = isReview(request.payload)
-        const isEndemicsFollowUpClaim = isFollowUp(request.payload)
+        
         if (error) {
           console.error(error)
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
-
+        
+        const isEndemicsFollowUpClaim = isEndemicsFollowUp(request.payload)
         const data = request.payload
         const applicationReference = data?.applicationReference
         const laboratoryURN = data?.data?.laboratoryURN
@@ -231,7 +231,7 @@ module.exports = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        const claimPricesConfig = await getBlob('claim-prices-config.json')
+        
         const sbi = application?.dataValues?.data?.organisation?.sbi || 'not-found'
 
         if (laboratoryURN) {
@@ -240,7 +240,8 @@ module.exports = [
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
-        const amount = getAmount(data.data.typeOfLivestock, data.data.reviewTestResults, claimPricesConfig, isReviewClaim, isEndemicsFollowUpClaim)
+        const amount = await getAmount(request.payload.type, data)
+
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
         claim && (await sendFarmerEndemicsClaimConfirmationEmail({
