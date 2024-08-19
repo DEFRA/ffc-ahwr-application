@@ -5,7 +5,7 @@ const sendMessage = require('../../messaging/send-message')
 const { submitPaymentRequestMsgType, submitRequestQueue, optionalPiHunt: { enabled: optionalPiHuntEnabled } } = require('../../config')
 const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../config').notify
 const appInsights = require('applicationinsights')
-const { speciesNumbers, biosecurity, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep }, testResults, biosecurity } = require('../../constants/claim')
+const { speciesNumbers, biosecurity: biosecurityValues, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep } } = require('../../constants/claim')
 const { set, searchClaims, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
@@ -35,8 +35,8 @@ const getNumberAnimalsTestedValidation = (payload) => {
 }
 
 const getBiosecurityValidation = (payload) => pigsBiosecurity(payload) || beefDairyBiosecurity(payload)
-const beefDairyBiosecurity = (payload) => (isBeef || isDairy) && isFollowUp(payload) && Joi.string().valid(biosecurity.yes, biosecurity.no).required()
-const pigsBiosecurity = (payload) => (isPigs(payload) && isFollowUp(payload)) && Joi.alternatives().try(Joi.string().valid(biosecurity.no), Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
+const beefDairyBiosecurity = (payload) => (isBeef || isDairy) && isFollowUp(payload) && Joi.string().valid(biosecurityValues.yes, biosecurityValues.no).required()
+const pigsBiosecurity = (payload) => (isPigs(payload) && isFollowUp(payload)) && Joi.alternatives().try(Joi.string().valid(biosecurityValues.no), Joi.object({ biosecurity: Joi.string().valid(biosecurityValues.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
 
 const optionalPiHuntModel = (payload, laboratoryURN, testResults, biosecurity) => {
   const validations = []
@@ -240,7 +240,7 @@ module.exports = [
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
-        const amount = await getAmount(request.payload.type, data)
+        const amount = await getAmount(request.payload)
 
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
