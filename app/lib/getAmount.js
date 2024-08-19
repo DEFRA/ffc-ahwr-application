@@ -1,5 +1,5 @@
 const { getBlob } = require('../storage')
-const { optionalPIHunt: { enabled: optionalPIHuntEnabled } } = require('../config')
+const { optionalPIHunt } = require('../config')
 const { livestockTypes, claimType: claimTypeValues, testResults: testResultsValues, piHunt: piHuntValues, piHuntAllAnimals: piHuntAllAnimalsValues } = require('./../constants/claim')
 
 const getAmount = async (payload) => {
@@ -9,9 +9,10 @@ const getAmount = async (payload) => {
   const { typeOfLivestock, testResults, piHunt, piHuntAllAnimals } = data
 
   if ((typeOfLivestock === livestockTypes.beef || typeOfLivestock === livestockTypes.dairy) && testResults && type === claimTypeValues.endemics) {
-    if (optionalPIHuntEnabled) {
-      const optionalPiHunt = piHunt === piHuntValues.yes && piHuntAllAnimals === piHuntAllAnimalsValues.yes ? 'yesPiHunt' : 'noPiHunt'
-      return pricesConfig[claimType][typeOfLivestock].value[testResults][optionalPiHunt]
+    if (optionalPIHunt.enabled) {
+      const optionalPiHuntValue = piHunt === piHuntValues.yes && piHuntAllAnimals === piHuntAllAnimalsValues.yes ? 'yesPiHunt' : 'noPiHunt'
+      if (testResults === testResultsValues.positive) return pricesConfig[claimType][typeOfLivestock].value[testResults]
+      return pricesConfig[claimType][typeOfLivestock].value[testResults][optionalPiHuntValue]
     } else {
       if (testResults === testResultsValues.positive) {
         return pricesConfig[claimType][typeOfLivestock].value[testResults]
