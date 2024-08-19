@@ -1,11 +1,10 @@
-const { optionalPIHunt } = require('../../config')
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
 const sendMessage = require('../../messaging/send-message')
-const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
+const { submitPaymentRequestMsgType, submitRequestQueue, optionalPiHunt: { enabled: optionalPiHuntEnabled } } = require('../../config')
 const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../config').notify
 const appInsights = require('applicationinsights')
-const { speciesNumbers: { yes, no }, biosecurity, minimumNumberOfAnimalsTested, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep } } = require('../../constants/claim')
+const { speciesNumbers, biosecurity: biosecurityValues, minimumNumberOfAnimalsTested, piHunt: piHuntValues, piHuntRecommended, piHuntAllAnimals, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep }, claimType } = require('../../constants/claim')
 const { set, searchClaims, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
 const { get } = require('../../repositories/application-repository')
@@ -15,60 +14,113 @@ const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 const { searchPayloadValidations } = require('./helpers')
 
 const isReview = (payload) => payload.type === review
-const isEndemicsFollowUp = (payload) => payload.type === endemics
+const isFollowUp = (payload) => payload.type === endemics
 const isPigs = (payload) => payload.data.typeOfLivestock === pigs
 const isBeef = (payload) => payload.data.typeOfLivestock === beef
 const isDairy = (payload) => payload.data.typeOfLivestock === dairy
 const isSheep = (payload) => payload.data.typeOfLivestock === sheep
-const isPigsReview = (payload) => isPigs(payload) && isReview(payload)
-const isPigsEndemics = (payload) => isPigs(payload) && isEndemicsFollowUp(payload)
-const isSheepEndemics = (payload) => isSheep(payload) && isEndemicsFollowUp(payload)
-const isBeefEndemics = (payload) => isBeef(payload) && isEndemicsFollowUp(payload)
 const isPositiveReviewTestResult = (payload) => payload.data.reviewTestResults === 'positive'
-const isNegativeReviewTestResult = (payload) => payload.data.reviewTestResults === 'negative'
-const isPositiveBeefOrDairyReviewTestResult = (payload) => (isBeef(payload) || isDairy(payload)) && isEndemicsFollowUp(payload) && isPositiveReviewTestResult(payload)
-const isNegativeBeefOrDairyReviewTestResult = (payload) => (isBeef(payload) || isDairy(payload)) && isEndemicsFollowUp(payload) && isNegativeReviewTestResult(payload)
+const isPiHuntYes = (payload) => payload.data.piHunt === piHuntValues.yes
+const isPiHuntRecommendedYes = (payload) => payload.data.piHuntRecommended === piHuntRecommended.yes
 
-const pigsTestResults = (payload) => isPigsReview(payload) && Joi.string().valid(positive, negative).required()
-const sheepTestResults = (payload) => isSheepEndemics(payload) && Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.string() }))) })).required()
-const beefDairyTestResults = (payload) => [beef, dairy].includes(payload.data.typeOfLivestock) && Joi.string().valid(positive, negative).required()
-const beefDairyBiosecurity = (payload) => [beef, dairy].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && Joi.string().valid(biosecurity.yes, biosecurity.no).required()
-const pigsBiosecurity = (payload) => isPigsEndemics(payload) && Joi.alternatives().try(Joi.string().valid(biosecurity.no), Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
-const isBiosecurityValid = (payload) => pigsBiosecurity(payload) || beefDairyBiosecurity(payload)
-const isTestResultValid = (payload) => !isNegativeBeefOrDairyReviewTestResult(payload) && (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
-const validateNumberAnimalsTested = (payload) => {
+const getTestResultsValidation = (payload) => (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
+const pigsTestResults = (payload) => isPigs(payload) && Joi.string().valid(positive, negative).required()
+const sheepTestResults = (payload) => (isSheep(payload) && isFollowUp(payload)) && Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.string() }))) })).required()
+const beefDairyTestResults = (payload) => (isBeef || isDairy) && Joi.string().valid(positive, negative).required()
+
+const getNumberAnimalsTestedValidation = (payload) => {
   const threshold = minimumNumberOfAnimalsTested[payload.data.typeOfLivestock][payload.type]
-  return isPigsEndemics(payload) ? Joi.number().valid(threshold) : Joi.number().min(threshold).required()
+  return (isPigs(payload) && isFollowUp(payload)) ? Joi.number().valid(threshold) : Joi.number().min(threshold).required()
 }
+
+const getBiosecurityValidation = (payload) => pigsBiosecurity(payload) || beefDairyBiosecurity(payload)
+const beefDairyBiosecurity = (payload) => (isBeef || isDairy) && isFollowUp(payload) && Joi.string().valid(biosecurityValues.yes, biosecurityValues.no).required()
+const pigsBiosecurity = (payload) => (isPigs(payload) && isFollowUp(payload)) && Joi.alternatives().try(Joi.string().valid(biosecurityValues.no), Joi.object({ biosecurity: Joi.string().valid(biosecurityValues.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
+
+const optionalPiHuntModel = (payload, laboratoryURN, testResults, biosecurity) => {
+  const validations = []
+
+  if (isPositiveReviewTestResult(payload)) {
+    validations.push({ piHunt: Joi.string().valid(piHuntValues.yes).required() })
+  } else {
+    validations.push({ piHunt: Joi.string().valid(piHuntValues.yes, piHuntValues.no).required() })
+  }
+
+  if (isPiHuntYes(payload)) {
+    if (isPositiveReviewTestResult(payload)) {
+      validations.push({ piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required() })
+    } else {
+      validations.push({ piHuntRecommended: Joi.string().valid(piHuntRecommended.yes, piHuntRecommended.no).required() })
+
+      if (isPiHuntRecommendedYes(payload)) {
+        validations.push({ piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required() })
+      }
+    }
+
+    if (payload.data.piHuntRecommended !== piHuntRecommended.no && payload.data.piHuntAllAnimals === piHuntAllAnimals.yes) {
+      validations.push(laboratoryURN)
+      validations.push(testResults)
+    }
+
+    validations.push(biosecurity)
+  }
+
+  return validations
+}
+
 const isClaimDataValid = (payload) => {
-  const claimDataModel = Joi.object({
+  const dateOfTesting = { dateOfTesting: Joi.date().required() }
+  const laboratoryURN = { laboratoryURN: Joi.string().required() }
+  const numberAnimalsTested = { numberAnimalsTested: getNumberAnimalsTestedValidation(payload) }
+  const testResults = { testResults: getTestResultsValidation(payload) }
+  const numberOfOralFluidSamples = { numberOfOralFluidSamples: Joi.number().min(minimumNumberOfOralFluidSamples).required() }
+  const vetVisitsReviewTestResults = { vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional() }
+  const reviewTestResults = { reviewTestResults: Joi.string().valid(positive, negative).required() }
+  const piHunt = { piHunt: Joi.string().valid(piHuntValues.yes, piHuntValues.no).required() }
+  const herdVaccinationStatus = { herdVaccinationStatus: Joi.string().valid('vaccinated', 'notVaccinated').required() }
+  const numberOfSamplesTested = { numberOfSamplesTested: Joi.number().valid(6, 30).required() }
+  const diseaseStatus = { diseaseStatus: Joi.string().valid('1', '2', '3', '4').required() }
+  const biosecurity = { biosecurity: getBiosecurityValidation(payload) }
+  const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
+  const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, biosecurity)
+
+  const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
+  const beefReviewValidations = { ...numberAnimalsTested, ...testResults }
+  const dairyReviewValidations = { ...testResults }
+  const pigReviewValidations = { ...numberOfOralFluidSamples, ...testResults }
+  const sheepReviewValidations = { ...numberAnimalsTested }
+
+  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt) }
+  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt) }
+  const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
+  const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
+
+  const dataModel = Joi.object({
+    amount: Joi.string().optional(),
+    typeOfLivestock: Joi.string().valid(beef, dairy, pigs, sheep).required(),
+    dateOfVisit: Joi.date().required(),
+    speciesNumbers: Joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
+    vetsName: Joi.string().required(),
+    vetRCVSNumber: Joi.string().required(),
+    ...(isReview(payload) && reviewValidations),
+    ...((isReview(payload) && isBeef(payload)) && beefReviewValidations),
+    ...((isReview(payload) && isDairy(payload)) && dairyReviewValidations),
+    ...((isReview(payload) && isPigs(payload)) && pigReviewValidations),
+    ...((isReview(payload) && isSheep(payload)) && sheepReviewValidations),
+    ...((isFollowUp(payload) && isBeef(payload)) && beefFollowUpValidations),
+    ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
+    ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
+    ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations)
+  })
+
+  const claimModel = Joi.object({
     applicationReference: Joi.string().required(),
     type: Joi.string().valid(review, endemics).required(),
     createdBy: Joi.string().required(),
-    data: Joi.object({
-      amount: Joi.string().optional(),
-      vetsName: Joi.string().required(),
-      dateOfVisit: Joi.date().required(),
-      vetRCVSNumber: Joi.string().required(),
-      speciesNumbers: Joi.string().valid(yes, no).required(),
-      typeOfLivestock: Joi.string().valid(beef, dairy, pigs, sheep).required(),
-      ...(isSheepEndemics(payload) && { sheepEndemicsPackage: Joi.string().required() }),
-      ...(!isNegativeBeefOrDairyReviewTestResult(payload) && { dateOfTesting: Joi.date().required() }),
-      ...(isPigsEndemics(payload) && { numberOfSamplesTested: Joi.number().valid(6, 30).required() }),
-      ...(isPositiveBeefOrDairyReviewTestResult(payload) && { piHunt: Joi.string().valid(yes, no).required() }),
-      ...(isPigsEndemics(payload) && { diseaseStatus: Joi.string().valid('1', '2', '3', '4').required() }),
-      ...(!!isBiosecurityValid(payload) && { biosecurity: pigsBiosecurity(payload) || beefDairyBiosecurity(payload) }),
-      ...(isPigsEndemics(payload) && { herdVaccinationStatus: Joi.string().valid('vaccinated', 'notVaccinated').required() }),
-      ...(!isNegativeBeefOrDairyReviewTestResult(payload) && !isSheepEndemics(payload) && { laboratoryURN: Joi.string().required() }),
-      ...(isPigsReview(payload) && { numberOfOralFluidSamples: Joi.number().min(minimumNumberOfOralFluidSamples).required() }),
-      ...(isTestResultValid(payload) && { testResults: pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload) }),
-      ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && { vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional() }),
-      ...([beef, dairy, pigs].includes(payload.data.typeOfLivestock) && isEndemicsFollowUp(payload) && { reviewTestResults: Joi.string().valid(positive, negative).required() }),
-      ...([beef, sheep, pigs].includes(payload.data.typeOfLivestock) && !isBeefEndemics(payload) && { numberAnimalsTested: validateNumberAnimalsTested(payload) })
-    })
+    data: dataModel
   })
 
-  return claimDataModel.validate(payload)
+  return claimModel.validate(payload)
 }
 
 module.exports = [
@@ -155,14 +207,14 @@ module.exports = [
     options: {
       handler: async (request, h) => {
         const { error } = isClaimDataValid(request.payload)
-        
+
         if (error) {
           console.error(error)
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
-        
-        const isEndemicsFollowUpClaim = isEndemicsFollowUp(request.payload)
+
+        const isFollowUp = request.payload.type === claimType.endemics
         const data = request.payload
         const applicationReference = data?.applicationReference
         const laboratoryURN = data?.data?.laboratoryURN
@@ -173,7 +225,6 @@ module.exports = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        
         const sbi = application?.dataValues?.data?.organisation?.sbi || 'not-found'
 
         if (laboratoryURN) {
@@ -182,7 +233,7 @@ module.exports = [
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
-        const amount = await getAmount(request.payload.type, data)
+        const amount = await getAmount(request.payload)
 
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
@@ -197,7 +248,7 @@ module.exports = [
             orgEmail: application?.dataValues?.data?.organisation?.orgEmail
           }
         },
-        isEndemicsFollowUpClaim ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
+        isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         ))
         return h.response(claim).code(200)
       }
