@@ -77,6 +77,7 @@ const isClaimDataValid = (payload) => {
   const numberOfOralFluidSamples = { numberOfOralFluidSamples: Joi.number().min(minimumNumberOfOralFluidSamples).required() }
   const vetVisitsReviewTestResults = { vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional() }
   const reviewTestResults = { reviewTestResults: Joi.string().valid(positive, negative).required() }
+  const piHunt = { piHunt: Joi.string().valid(piHunt.yes, piHunt.no).required() }
   const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, biosecurity)
   const herdVaccinationStatus = { herdVaccinationStatus: Joi.string().valid('vaccinated', 'notVaccinated').required() }
   const numberOfSamplesTested = { numberOfSamplesTested: Joi.number().valid(6, 30).required() }
@@ -90,16 +91,10 @@ const isClaimDataValid = (payload) => {
   const pigReviewValidations = { ...numberOfOralFluidSamples, ...testResults }
   const sheepReviewValidations = { ...numberAnimalsTested }
 
-  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...optionalPiHunt }
-  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...optionalPiHunt }
+  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt) }
+  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt) }
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults}
-
-  if (optionalPiHuntEnabled) {
-
-  } else {
-
-  }
 
   const dataModel = Joi.object({
     amount: Joi.string().optional(),
