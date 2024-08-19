@@ -1,7 +1,7 @@
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
 const sendMessage = require('../../messaging/send-message')
-const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
+const { submitPaymentRequestMsgType, submitRequestQueue, optionalPiHunt: { enabled: optionalPiHuntEnabled } } = require('../../config')
 const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../config').notify
 const appInsights = require('applicationinsights')
 const { speciesNumbers, biosecurity, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep }, testResults, biosecurity } = require('../../constants/claim')
@@ -95,6 +95,11 @@ const isClaimDataValid = (payload) => {
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults}
 
+  if (optionalPiHuntEnabled) {
+
+  } else {
+
+  }
 
   const dataModel = Joi.object({
     amount: Joi.string().optional(),
