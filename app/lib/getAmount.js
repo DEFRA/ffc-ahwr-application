@@ -17,7 +17,7 @@ const getAmount = async (payload) => {
         return pricesConfig[claimType][typeOfLivestock].value[testResults]
       } else {
         // when the flag is off there is no option, if negative they can't have done a pi hunt
-        return pricesConfig[claimType][typeOfLivestock].value[testResults]['noPiHunt']
+        return pricesConfig[claimType][typeOfLivestock].value[testResults].noPiHunt
       }
     }
   } else {

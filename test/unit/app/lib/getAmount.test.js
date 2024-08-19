@@ -1,5 +1,5 @@
 const { getAmount } = require('../../../../app/lib/getAmount')
-const { livestockTypes: { beef, dairy, pigs, sheep }, claimType: { review, endemics }, testResults, piHuntAllAnimals } = require('../../../../app/constants/claim')
+const { livestockTypes: { beef, dairy, pigs, sheep }, claimType: { review, endemics }, testResults } = require('../../../../app/constants/claim')
 const { getBlob } = require('../../../../app/storage')
 const pricesConfig = require('../../../data/claim-prices-config.json')
 jest.mock('../../../../app/storage')
@@ -53,7 +53,7 @@ describe('getAmount', () => {
           }
         },
         amount: 436
-      },
+      }
     ])('for type: $payload.type $payload.data.typeOfLivestock should return $amount', async ({ payload, amount }) => {
       expect(await getAmount(payload)).toBe(amount)
     })
@@ -174,7 +174,7 @@ describe('getAmount', () => {
           }
         },
         amount: 639
-      },
+      }
     ])('for type: $payload.type $payload.data.typeOfLivestock $payload.data.testResults $payload.data.piHunt should return $amount', async ({ payload, amount }) => {
       expect(await getAmount(payload)).toBe(amount)
     })
@@ -194,16 +194,16 @@ describe('getAmount', () => {
         type: review,
         data: {
           typeOfLivestock: beef,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(522)
 
       expect(await getAmount({
         type: review,
         data: {
           typeOfLivestock: beef,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(522)
     })
 
@@ -212,16 +212,16 @@ describe('getAmount', () => {
         type: endemics,
         data: {
           typeOfLivestock: beef,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(837)
 
       expect(await getAmount({
         type: endemics,
         data: {
           typeOfLivestock: beef,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(215)
     })
 
@@ -230,16 +230,16 @@ describe('getAmount', () => {
         type: review,
         data: {
           typeOfLivestock: dairy,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(372)
 
       expect(await getAmount({
         type: review,
         data: {
           typeOfLivestock: dairy,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(372)
     })
 
@@ -248,16 +248,16 @@ describe('getAmount', () => {
         type: endemics,
         data: {
           typeOfLivestock: dairy,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(1714)
 
       expect(await getAmount({
         type: endemics,
         data: {
           typeOfLivestock: dairy,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(215)
     })
 
@@ -266,16 +266,16 @@ describe('getAmount', () => {
         type: review,
         data: {
           typeOfLivestock: pigs,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(557)
 
       expect(await getAmount({
         type: review,
         data: {
           typeOfLivestock: pigs,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(557)
     })
 
@@ -284,16 +284,16 @@ describe('getAmount', () => {
         type: endemics,
         data: {
           typeOfLivestock: pigs,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(923)
 
       expect(await getAmount({
         type: endemics,
         data: {
           typeOfLivestock: pigs,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(923)
     })
 
@@ -302,16 +302,16 @@ describe('getAmount', () => {
         type: review,
         data: {
           typeOfLivestock: sheep,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(436)
 
       expect(await getAmount({
         type: review,
         data: {
           typeOfLivestock: sheep,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(436)
     })
 
@@ -320,18 +320,17 @@ describe('getAmount', () => {
         type: endemics,
         data: {
           typeOfLivestock: sheep,
-          testResults: 'positive',
-        },
+          testResults: 'positive'
+        }
       })).toBe(639)
 
       expect(await getAmount({
         type: endemics,
         data: {
           typeOfLivestock: sheep,
-          testResults: 'negative',
-        },
+          testResults: 'negative'
+        }
       })).toBe(639)
     })
-    
   })
 })
