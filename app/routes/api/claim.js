@@ -1,7 +1,7 @@
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
 const sendMessage = require('../../messaging/send-message')
-const { submitPaymentRequestMsgType, submitRequestQueue, optionalPiHunt: { enabled: optionalPiHuntEnabled } } = require('../../config')
+const { submitPaymentRequestMsgType, submitRequestQueue, optionalPIHunt: { enabled: optionalPiHuntEnabled } } = require('../../config')
 const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../config').notify
 const appInsights = require('applicationinsights')
 const { speciesNumbers, biosecurity: biosecurityValues, minimumNumberOfAnimalsTested, piHunt: piHuntValues, piHuntRecommended, piHuntAllAnimals, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep }, claimType } = require('../../constants/claim')
