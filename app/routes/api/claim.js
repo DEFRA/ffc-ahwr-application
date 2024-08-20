@@ -255,6 +255,29 @@ module.exports = [
     }
   },
   {
+    method: 'POST',
+    path: '/api/claim/get-amount',
+    options: {
+      validate: {
+        payload: Joi.object({
+          typeOfLivestock: Joi.string().valid(beef, dairy, pigs, sheep).required(),
+          testResults: Joi.string().valid(positive, negative).optional(),
+          type: Joi.string().valid(review, endemics).required(),
+          piHunt: Joi.string().valid(piHuntValues.yes, piHuntValues.no).optional(),
+          piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional()
+        }),
+        failAction: async (_request, h, err) => {
+          console.log(`Payload validation error ${err}`)
+          return h.response({ err }).code(400).takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const amount = await getAmount({ type: request.payload.type, data: request.payload })
+        return h.response(amount).code(200)
+      }
+    }
+  },
+  {
     method: 'PUT',
     path: '/api/claim/update-by-reference',
     options: {
