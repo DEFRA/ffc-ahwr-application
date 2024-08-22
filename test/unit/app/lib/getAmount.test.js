@@ -63,7 +63,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: beef,
-          testResults: testResults.positive,
+          reviewTestResults: testResults.positive,
           piHunt: 'yes',
           piHuntAllAnimals: 'yes'
         }
@@ -75,7 +75,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: beef,
-          testResults: testResults.negative,
+          reviewTestResults: testResults.negative,
           piHunt: 'yes',
           piHuntRecommended: 'yes',
           piHuntAllAnimals: 'yes'
@@ -88,7 +88,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: beef,
-          testResults: testResults.negative,
+          reviewTestResults: testResults.negative,
           piHunt: 'no',
           piHuntRecommended: 'no',
           piHuntAllAnimals: 'no'
@@ -101,7 +101,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: dairy,
-          testResults: testResults.positive,
+          reviewTestResults: testResults.positive,
           piHunt: 'yes',
           piHuntAllAnimals: 'yes'
         }
@@ -113,7 +113,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: dairy,
-          testResults: testResults.negative,
+          reviewTestResults: testResults.negative,
           piHunt: 'yes',
           piHuntRecommended: 'yes',
           piHuntAllAnimals: 'yes'
@@ -126,7 +126,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: dairy,
-          testResults: testResults.negative,
+          reviewTestResults: testResults.negative,
           piHunt: 'no',
           piHuntRecommended: 'no',
           piHuntAllAnimals: 'no'
@@ -139,7 +139,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: pigs,
-          testResults: testResults.negative
+          reviewTestResults: testResults.negative
         }
       },
       amount: 923
@@ -149,7 +149,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: pigs,
-          testResults: testResults.positive
+          reviewTestResults: testResults.positive
         }
       },
       amount: 923
@@ -159,7 +159,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: sheep,
-          testResults: testResults.negative
+          reviewTestResults: testResults.negative
         }
       },
       amount: 639
@@ -169,7 +169,7 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
         type: endemics,
         data: {
           typeOfLivestock: sheep,
-          testResults: testResults.positive
+          reviewTestResults: testResults.positive
         }
       },
       amount: 639
@@ -213,7 +213,7 @@ describe('getAmount when optionalPiHunt flag false', () => {
       type: endemics,
       data: {
         typeOfLivestock: beef,
-        testResults: 'positive'
+        reviewTestResults: 'positive'
       }
     })).toBe(837)
 
@@ -221,7 +221,7 @@ describe('getAmount when optionalPiHunt flag false', () => {
       type: endemics,
       data: {
         typeOfLivestock: beef,
-        testResults: 'negative'
+        reviewTestResults: 'negative'
       }
     })).toBe(215)
   })
@@ -249,7 +249,7 @@ describe('getAmount when optionalPiHunt flag false', () => {
       type: endemics,
       data: {
         typeOfLivestock: dairy,
-        testResults: 'positive'
+        reviewTestResults: 'positive'
       }
     })).toBe(1714)
 
@@ -257,7 +257,7 @@ describe('getAmount when optionalPiHunt flag false', () => {
       type: endemics,
       data: {
         typeOfLivestock: dairy,
-        testResults: 'negative'
+        reviewTestResults: 'negative'
       }
     })).toBe(215)
   })
