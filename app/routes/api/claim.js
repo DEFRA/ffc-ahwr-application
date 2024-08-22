@@ -19,7 +19,7 @@ const isPigs = (payload) => payload.data.typeOfLivestock === pigs
 const isBeef = (payload) => payload.data.typeOfLivestock === beef
 const isDairy = (payload) => payload.data.typeOfLivestock === dairy
 const isSheep = (payload) => payload.data.typeOfLivestock === sheep
-const isPositiveReviewTestResult = (payload) => payload.data.reviewTestResults === 'positive'
+const isPositiveReviewTestResult = (payload) => payload.data.reviewTestResults === positive
 const isPiHuntYes = (payload) => payload.data.piHunt === piHuntValues.yes
 const isPiHuntRecommendedYes = (payload) => payload.data.piHuntRecommended === piHuntRecommended.yes
 
@@ -37,32 +37,42 @@ const getBiosecurityValidation = (payload) => pigsBiosecurity(payload) || beefDa
 const beefDairyBiosecurity = (payload) => (isBeef || isDairy) && isFollowUp(payload) && Joi.string().valid(biosecurityValues.yes, biosecurityValues.no).required()
 const pigsBiosecurity = (payload) => (isPigs(payload) && isFollowUp(payload)) && Joi.alternatives().try(Joi.string().valid(biosecurityValues.no), Joi.object({ biosecurity: Joi.string().valid(biosecurityValues.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
 
-const optionalPiHuntModel = (payload, laboratoryURN, testResults, biosecurity) => {
-  const validations = []
+const piHuntModel = (payload, laboratoryURN, testResults) => {
+  const validations = {}
 
   if (isPositiveReviewTestResult(payload)) {
-    validations.push({ piHunt: Joi.string().valid(piHuntValues.yes).required() })
+    validations.piHunt = Joi.string().valid(piHuntValues.yes, piHuntValues.no).required()
+    Object.assign(validations, laboratoryURN)
+    Object.assign(validations, testResults)
+  }
+
+  return validations
+}
+
+const optionalPiHuntModel = (payload, laboratoryURN, testResults) => {
+  const validations = {}
+
+  if (isPositiveReviewTestResult(payload)) {
+    validations.piHunt = Joi.string().valid(piHuntValues.yes).required()
   } else {
-    validations.push({ piHunt: Joi.string().valid(piHuntValues.yes, piHuntValues.no).required() })
+    validations.piHunt = Joi.string().valid(piHuntValues.yes, piHuntValues.no).required()
   }
 
   if (isPiHuntYes(payload)) {
     if (isPositiveReviewTestResult(payload)) {
-      validations.push({ piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required() })
+      validations.piHuntAllAnimals = Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required()
     } else {
-      validations.push({ piHuntRecommended: Joi.string().valid(piHuntRecommended.yes, piHuntRecommended.no).required() })
+      validations.piHuntRecommended = Joi.string().valid(piHuntRecommended.yes, piHuntRecommended.no).required()
 
       if (isPiHuntRecommendedYes(payload)) {
-        validations.push({ piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required() })
+        validations.piHuntAllAnimals = Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required()
       }
     }
 
     if (payload.data.piHuntRecommended !== piHuntRecommended.no && payload.data.piHuntAllAnimals === piHuntAllAnimals.yes) {
-      validations.push(laboratoryURN)
-      validations.push(testResults)
+      Object.assign(validations, laboratoryURN)
+      Object.assign(validations, testResults)
     }
-
-    validations.push(biosecurity)
   }
 
   return validations
@@ -76,24 +86,26 @@ const isClaimDataValid = (payload) => {
   const numberOfOralFluidSamples = { numberOfOralFluidSamples: Joi.number().min(minimumNumberOfOralFluidSamples).required() }
   const vetVisitsReviewTestResults = { vetVisitsReviewTestResults: Joi.string().valid(positive, negative).optional() }
   const reviewTestResults = { reviewTestResults: Joi.string().valid(positive, negative).required() }
-  const piHunt = { piHunt: Joi.string().valid(piHuntValues.yes, piHuntValues.no).required() }
+  const piHunt = piHuntModel(payload, laboratoryURN, testResults)
   const herdVaccinationStatus = { herdVaccinationStatus: Joi.string().valid('vaccinated', 'notVaccinated').required() }
   const numberOfSamplesTested = { numberOfSamplesTested: Joi.number().valid(6, 30).required() }
   const diseaseStatus = { diseaseStatus: Joi.string().valid('1', '2', '3', '4').required() }
   const biosecurity = { biosecurity: getBiosecurityValidation(payload) }
   const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
-  const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, biosecurity)
+  const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults)
 
   const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
   const beefReviewValidations = { ...numberAnimalsTested, ...testResults }
   const dairyReviewValidations = { ...testResults }
-  const pigReviewValidations = { ...numberOfOralFluidSamples, ...testResults }
+  const pigReviewValidations = { ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults }
   const sheepReviewValidations = { ...numberAnimalsTested }
 
-  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt) }
-  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt) }
+  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt), ...biosecurity }
+  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt), ...biosecurity }
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
+
+  console.log('beefFollowUpValidations', Object.keys(beefFollowUpValidations))
 
   const dataModel = Joi.object({
     amount: Joi.string().optional(),
