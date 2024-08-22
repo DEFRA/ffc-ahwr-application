@@ -6,20 +6,18 @@ const getAmount = async (payload) => {
   const { type, data } = payload
   const claimType = type === claimTypeValues.review ? 'review' : 'followUp'
   const pricesConfig = await getBlob('claim-prices-config.json')
-  const { typeOfLivestock, testResults, piHunt, piHuntAllAnimals } = data
+  const { typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals } = data
 
-  if ((typeOfLivestock === livestockTypes.beef || typeOfLivestock === livestockTypes.dairy) && testResults && type === claimTypeValues.endemics) {
+  if ((typeOfLivestock === livestockTypes.beef || typeOfLivestock === livestockTypes.dairy) && reviewTestResults && type === claimTypeValues.endemics) {
     if (optionalPIHunt.enabled) {
       const optionalPiHuntValue = piHunt === piHuntValues.yes && piHuntAllAnimals === piHuntAllAnimalsValues.yes ? 'yesPiHunt' : 'noPiHunt'
-      if (testResults === testResultsValues.positive) return pricesConfig[claimType][typeOfLivestock].value[testResults]
-      return pricesConfig[claimType][typeOfLivestock].value[testResults][optionalPiHuntValue]
+      if (reviewTestResults === testResultsValues.positive) return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
+      return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults][optionalPiHuntValue]
+    } else if (reviewTestResults === testResultsValues.positive) {
+      return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
     } else {
-      if (testResults === testResultsValues.positive) {
-        return pricesConfig[claimType][typeOfLivestock].value[testResults]
-      } else {
-        // when the flag is off there is no option, if negative they can't have done a pi hunt
-        return pricesConfig[claimType][typeOfLivestock].value[testResults].noPiHunt
-      }
+      // when the flag is off there is no option, if negative they can't have done a pi hunt
+      return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults].noPiHunt
     }
   } else {
     return pricesConfig[claimType][typeOfLivestock].value
