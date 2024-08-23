@@ -49,7 +49,7 @@ const piHuntModel = (payload, laboratoryURN, testResults) => {
   return validations
 }
 
-const optionalPiHuntModel = (payload, laboratoryURN, testResults) => {
+const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting) => {
   const validations = {}
 
   if (isPositiveReviewTestResult(payload)) {
@@ -72,6 +72,7 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults) => {
     if (payload.data.piHuntRecommended !== piHuntRecommended.no && payload.data.piHuntAllAnimals === piHuntAllAnimals.yes) {
       Object.assign(validations, laboratoryURN)
       Object.assign(validations, testResults)
+      Object.assign(validations, dateOfTesting)
     }
   }
 
@@ -92,7 +93,7 @@ const isClaimDataValid = (payload) => {
   const diseaseStatus = { diseaseStatus: Joi.string().valid('1', '2', '3', '4').required() }
   const biosecurity = { biosecurity: getBiosecurityValidation(payload) }
   const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
-  const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults)
+  const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, dateOfTesting)
 
   const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
   const beefReviewValidations = { ...numberAnimalsTested, ...testResults }
