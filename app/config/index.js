@@ -27,6 +27,9 @@ const schema = Joi.object({
   },
   endemics: {
     enabled: Joi.bool().default(false)
+  },
+  optionalPIHunt: {
+    enabled: Joi.bool().default(false)
   }
 })
 
@@ -53,6 +56,9 @@ const config = {
   },
   endemics: {
     enabled: process.env.ENDEMICS_ENABLED
+  },
+  optionalPIHunt: {
+    enabled: process.env.OPTIONAL_PIHUNT_ENABLED
   }
 }
 
