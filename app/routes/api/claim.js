@@ -274,7 +274,7 @@ module.exports = [
       validate: {
         payload: Joi.object({
           typeOfLivestock: Joi.string().valid(beef, dairy, pigs, sheep).required(),
-          testResults: Joi.string().valid(positive, negative).optional(),
+          reviewTestResults: Joi.string().valid(positive, negative).optional(),
           type: Joi.string().valid(review, endemics).required(),
           piHunt: Joi.string().valid(piHuntValues.yes, piHuntValues.no).optional(),
           piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional()
