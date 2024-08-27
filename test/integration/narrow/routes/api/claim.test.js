@@ -928,17 +928,17 @@ describe('Post claim test', () => {
   test.each([
     {
       type: 'E',
-      testResults: 'positive',
+      reviewTestResults: 'positive',
       typeOfLivestock: 'beef',
       piHunt: 'yes',
       piHuntAllAnimals: 'yes',
       amount: 837
     }
-  ])('Post required payment data to get the amount', async ({ type, testResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
+  ])('Post required payment data to get the amount', async ({ type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
-      payload: { type, testResults, typeOfLivestock, piHunt, piHuntAllAnimals }
+      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals }
     }
 
     getAmount.mockReturnValue(amount)
@@ -951,11 +951,11 @@ describe('Post claim test', () => {
     {
       type: 'E'
     }
-  ])('Post wrong payment data to must return bad request', async ({ type, testResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
+  ])('Post wrong payment data to must return bad request', async ({ type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
-      payload: { type, testResults, typeOfLivestock, piHunt, piHuntAllAnimals }
+      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals }
     }
 
     getAmount.mockReturnValue(amount)
