@@ -60,7 +60,7 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
 
   if (isPiHuntYes(payload)) {
     if (isPositiveReviewTestResult(payload)) {
-      validations.piHuntAllAnimals = Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required()
+      validations.piHuntAllAnimals = Joi.string().valid(piHuntAllAnimals.yes).required()
     } else {
       validations.piHuntRecommended = Joi.string().valid(piHuntRecommended.yes, piHuntRecommended.no).required()
 
