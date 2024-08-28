@@ -262,14 +262,6 @@ module.exports = [
         isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         ))
 
-        console.log('claim-submitted-success', JSON.stringify(claim))
-        appInsights.defaultClient.trackEvent({
-          name: 'claim-submitted-success',
-          properties: {
-            ...claim
-          }
-        })
-
         return h.response(claim).code(200)
       }
     }
