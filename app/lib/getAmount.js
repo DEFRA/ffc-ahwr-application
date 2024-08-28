@@ -16,7 +16,7 @@ const getAmount = async (payload) => {
       }
       return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults][optionalPiHuntValue]
     }
-    
+
     if (reviewTestResults === testResultsValues.positive) {
       return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
     } else {
