@@ -1,9 +1,9 @@
 const Joi = require('joi')
 const { v4: uuid } = require('uuid')
+const appInsights = require('applicationinsights')
 const sendMessage = require('../../messaging/send-message')
 const { submitPaymentRequestMsgType, submitRequestQueue, optionalPIHunt: { enabled: optionalPiHuntEnabled } } = require('../../config')
 const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../config').notify
-const appInsights = require('applicationinsights')
 const { speciesNumbers, biosecurity: biosecurityValues, minimumNumberOfAnimalsTested, piHunt: piHuntValues, piHuntRecommended, piHuntAllAnimals, claimType: { review, endemics }, minimumNumberOfOralFluidSamples, testResults: { positive, negative }, livestockTypes: { beef, dairy, pigs, sheep }, claimType } = require('../../constants/claim')
 const { set, searchClaims, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } = require('../../repositories/claim-repository')
 const statusIds = require('../../constants/application-status')
@@ -105,8 +105,6 @@ const isClaimDataValid = (payload) => {
   const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt), ...biosecurity }
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
-
-  console.log('beefFollowUpValidations', Object.keys(beefFollowUpValidations))
 
   const dataModel = Joi.object({
     amount: Joi.string().optional(),
@@ -263,6 +261,15 @@ module.exports = [
         },
         isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         ))
+
+        console.log('claim-submitted-success', JSON.stringify(claim))
+        appInsights.defaultClient.trackEvent({
+          name: 'claim-submitted-success',
+          properties: {
+            ...claim
+          }
+        })
+
         return h.response(claim).code(200)
       }
     }
