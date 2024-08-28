@@ -11,17 +11,22 @@ const getAmount = async (payload) => {
   if ((typeOfLivestock === livestockTypes.beef || typeOfLivestock === livestockTypes.dairy) && reviewTestResults && type === claimTypeValues.endemics) {
     if (optionalPIHunt.enabled) {
       const optionalPiHuntValue = piHunt === piHuntValues.yes && piHuntAllAnimals === piHuntAllAnimalsValues.yes ? 'yesPiHunt' : 'noPiHunt'
-      if (reviewTestResults === testResultsValues.positive) return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
+      if (reviewTestResults === testResultsValues.positive) {
+        return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
+      }
       return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults][optionalPiHuntValue]
-    } else if (reviewTestResults === testResultsValues.positive) {
+    }
+    
+    if (reviewTestResults === testResultsValues.positive) {
       return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
     } else {
       // when the flag is off there is no option, if negative they can't have done a pi hunt
       return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults].noPiHunt
     }
-  } else {
-    return pricesConfig[claimType][typeOfLivestock].value
   }
+
+  // not a beef/dairy cattle follow-up
+  return pricesConfig[claimType][typeOfLivestock].value
 }
 
 module.exports = {
