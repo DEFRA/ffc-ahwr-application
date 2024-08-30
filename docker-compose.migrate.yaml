@@ -15,7 +15,7 @@ x-common-postgres: &common-postgres
 
 services:
   database-up:
-    image: liquibase/liquibase:4.29.1
+    image: liquibase/liquibase:3.10.x
     environment:
       << : [*common-migration, *common-postgres]
     entrypoint: >
@@ -27,7 +27,7 @@ services:
       - ./scripts:/scripts
 
   database-down:
-    image: liquibase/liquibase:4.29.1
+    image: liquibase/liquibase:3.10.x
     environment:
       << : [*common-migration, *common-postgres]
     entrypoint: >
