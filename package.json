@@ -23,7 +23,7 @@
   "dependencies": {
     "@azure/data-tables": "^13.2.1",
     "@azure/identity": "^4.2.1",
-    "@azure/storage-blob": "^12.11.0",
+    "@azure/storage-blob": "^12.24.0",
     "@hapi/hapi": "^20.1.5",
     "applicationinsights": "^2.1.6",
     "axios": "^1.6.4",
