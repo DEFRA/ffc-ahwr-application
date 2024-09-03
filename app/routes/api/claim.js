@@ -182,7 +182,8 @@ module.exports = [
           ...searchPayloadValidations(),
           sort: Joi.object({
             field: Joi.string().valid().optional().allow(''),
-            direction: Joi.string().valid().optional().allow('')
+            direction: Joi.string().valid().optional().allow(''),
+            reference: Joi.string().valid().optional().allow('')
           }).optional()
         }),
         failAction: async (_request, h, err) => {
