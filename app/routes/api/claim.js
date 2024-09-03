@@ -182,7 +182,8 @@ module.exports = [
           ...searchPayloadValidations(),
           sort: Joi.object({
             field: Joi.string().valid().optional().allow(''),
-            direction: Joi.string().valid().optional().allow('')
+            direction: Joi.string().valid().optional().allow(''),
+            reference: Joi.string().valid().optional().allow('')
           }).optional()
         }),
         failAction: async (_request, h, err) => {
@@ -191,6 +192,7 @@ module.exports = [
       },
       handler: async (request, h) => {
         const { total, claims } = await searchClaims(request.payload.search.text ?? '', request.payload.search.type, request.payload.offset, request.payload.limit, request.payload.sort)
+        console.log('$$$$$$$$$$$$$$$$', claims)
         return h.response({ total, claims }).code(200)
       }
     }
