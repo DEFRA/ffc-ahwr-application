@@ -173,11 +173,14 @@ async function searchClaims (searchText, searchType, offset = 0, limit = 10, sor
     ]
   }
 
-  if (!['ref', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(searchType)) return { total: 0, claims: [] }
+  if (!['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(searchType)) return { total: 0, claims: [] }
   if (searchText) {
     switch (searchType) {
       case 'ref':
         query.where = { reference: searchText }
+        break
+      case 'appRef':
+        query.where = { applicationReference: searchText }
         break
       case 'type':
         query.where = { type: searchText }
