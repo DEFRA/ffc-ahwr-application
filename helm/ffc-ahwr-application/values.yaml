@@ -60,6 +60,7 @@ container:
   claimComplianceCheckRatio:
   tenMonthRuleEnabled:
   endemicsEnabled:
+  optionalPIHuntEnabled:
   endemicsClaimComplianceCheckRatio:
   azureStorageEndemicsSettingsContainerName: 
 

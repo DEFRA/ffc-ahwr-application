@@ -40,6 +40,7 @@ services:
       CLAIM_COMPLIANCE_CHECK_RATIO: ${CLAIM_COMPLIANCE_CHECK_RATIO:-1}
       TEN_MONTH_RULE_ENABLED: ${TEN_MONTH_RULE_ENABLED:-false}
       ENDEMICS_ENABLED: ${ENDEMICS_ENABLED:-false}
+      OPTIONAL_PIHUNT_ENABLED: ${OPTIONAL_PIHUNT_ENABLED:-false}
 
   ffc-ahwr-application-postgres:
     image: postgres:11.4-alpine

@@ -27,5 +27,6 @@ data:
   ENDEMICS_CLAIM_COMPLIANCE_CHECK_RATIO: {{ quote .Values.container.endemicsClaimComplianceCheckRatio }}
   TEN_MONTH_RULE_ENABLED: {{ quote .Values.container.tenMonthRuleEnabled }}
   ENDEMICS_ENABLED: {{ quote .Values.container.endemicsEnabled }}
+  OPTIONAL_PIHUNT_ENABLED: {{ quote .Values.container.optionalPIHuntEnabled }}
   AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER: {{ quote .Values.container.azureStorageEndemicsSettingsContainerName }}
 {{- end -}}

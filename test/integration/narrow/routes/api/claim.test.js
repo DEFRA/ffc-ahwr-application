@@ -18,21 +18,7 @@ const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
   { diseaseType: 'sheepScab', result: 'positive' }
 ]
-// const mockDownloadResponse = {
-//   readableStreamBody: {
-//     on: jest.fn(),
-//     read: jest.fn(),
-//     once: jest.fn(),
-//     pause: jest.fn(),
-//     resume: jest.fn(),
-//     isPaused: jest.fn(),
-//     pipe: jest.fn(),
-//     unpipe: jest.fn(),
-//     unshift: jest.fn(),
-//     wrap: jest.fn(),
-//     [Symbol.asyncIterator]: jest.fn()
-//   }
-// }
+
 describe('Get claims test', () => {
   const server = require('../../../../../app/server')
 
@@ -938,6 +924,44 @@ describe('Post claim test', () => {
 
     expect(res.statusCode).toBe(400)
     expect(claimRepository.searchClaims).toHaveBeenCalledTimes(0)
+  })
+  test.each([
+    {
+      type: 'E',
+      reviewTestResults: 'positive',
+      typeOfLivestock: 'beef',
+      piHunt: 'yes',
+      piHuntAllAnimals: 'yes',
+      amount: 837
+    }
+  ])('Post required payment data to get the amount', async ({ type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim/get-amount',
+      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals }
+    }
+
+    getAmount.mockReturnValue(amount)
+
+    const res = await server.inject(options)
+    expect(res.statusCode).toBe(200)
+    expect(Number(res.payload)).toBe(amount)
+  })
+  test.each([
+    {
+      type: 'E'
+    }
+  ])('Post wrong payment data to must return bad request', async ({ type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim/get-amount',
+      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals }
+    }
+
+    getAmount.mockReturnValue(amount)
+
+    const res = await server.inject(options)
+    expect(res.statusCode).toBe(400)
   })
 })
 
