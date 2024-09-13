@@ -296,15 +296,6 @@ async function updateByReference (data, publishEvent = true) {
   }
 }
 
-async function getAllRecordsByCrn (crn) {
-  return models.application.findAll({
-    where: {
-      'data.organisation.crn': crn
-    },
-    order: [['createdAt', 'DESC']]
-  })
-}
-
 module.exports = {
   get,
   getBySbi,
@@ -314,6 +305,5 @@ module.exports = {
   set,
   updateByReference,
   searchApplications,
-  getAllClaimedApplications,
-  getAllRecordsByCrn
+  getAllClaimedApplications
 }

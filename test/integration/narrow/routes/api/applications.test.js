@@ -281,8 +281,8 @@ describe('Applications test', () => {
     })
   })
   //
-  describe('GET /api/application/{crn}', () => {
-    test('returns  data for a CRN  ', async () => {
+  describe('GET /api/application/{sbi}', () => {
+    test('returns  data for a SBI  ', async () => {
       const options = {
         method: 'GET',
         url: '/api/application/1'
@@ -290,11 +290,11 @@ describe('Applications test', () => {
 
       const res = await server.inject(options)
 
-      await applicationRepository.getAllRecordsByCrn.mockResolvedValue({ dataValues: {} })
+      await applicationRepository.getLatestApplicationsBySbi.mockResolvedValue({ dataValues: {} })
       expect(res.statusCode).toBe(404)
-      expect(applicationRepository.getAllRecordsByCrn).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.getLatestApplicationsBySbi).toHaveBeenCalledTimes(1)
     })
-    test('returns 404 if CRN not available ', async () => {
+    test('returns 404 if sbi not available ', async () => {
       const options = {
         method: 'GET',
         url: '/api/application/1'
@@ -322,9 +322,9 @@ describe('Applications test', () => {
 
       const res = await server.inject(options)
 
-      await applicationRepository.getAllRecordsByCrn.mockResolvedValue({ dataValues: expectedResult })
+      await applicationRepository.getLatestApplicationsBySbi.mockResolvedValue({ dataValues: expectedResult })
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.getAllRecordsByCrn).toHaveBeenCalledTimes(1)
+      expect(applicationRepository.getLatestApplicationsBySbi).toHaveBeenCalledTimes(1)
     })
   })
   //

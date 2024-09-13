@@ -4,7 +4,7 @@ const {
   get,
   searchApplications,
   updateByReference,
-  getAllRecordsByCrn
+  getLatestApplicationsBySbi
 } = require('../../repositories/application-repository')
 const {
   submitPaymentRequestMsgType,
@@ -174,11 +174,11 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: '/api/application/{crn}',
+    path: '/api/application/{sbi}',
     options: {
       validate: {
         params: Joi.object({
-          crn: Joi.string().valid()
+          sbi: Joi.string().valid()
         }),
         failAction: async (_request, h, err) => {
           return h.response({ err }).code(400).takeover()
@@ -186,7 +186,7 @@ module.exports = [
       },
       handler: async (request, h) => {
         try {
-          const application = await getAllRecordsByCrn(request.params.crn)
+          const application = await getLatestApplicationsBySbi(request.params.sbi)
           if (application) {
             return h.response(application).code(200)
           } else {
