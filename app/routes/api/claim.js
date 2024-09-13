@@ -12,6 +12,7 @@ const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-ema
 const { getAmount } = require('../../lib/getAmount')
 const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 const { searchPayloadValidations } = require('./helpers')
+const { optionalPIHunt } = require('../../config')
 
 const isReview = (payload) => payload.type === review
 const isFollowUp = (payload) => payload.type === endemics
@@ -312,6 +313,10 @@ module.exports = [
         }
         const application = await get(claim.dataValues.applicationReference)
         const sbi = application?.dataValues?.data?.organisation?.sbi
+        let optionalPiHuntValue = ''
+        if (optionalPIHunt.enabled) {
+          optionalPiHuntValue = claim.dataValues.data.piHunt === piHuntValues.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
+        }
 
         if (request.payload.status === statusIds.readyToPay) {
           await sendMessage(
@@ -322,7 +327,8 @@ module.exports = [
               isEndemics: true,
               claimType: claim.dataValues.data?.claimType,
               reviewTestResults: claim.dataValues.data.reviewTestResults,
-              frn: application.dataValues.data.organisation.frn
+              frn: application.dataValues.data.organisation.frn,
+              optionalPiHuntValue
             },
             submitPaymentRequestMsgType,
             submitRequestQueue,
