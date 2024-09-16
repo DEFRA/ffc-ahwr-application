@@ -99,6 +99,14 @@ async function getByEmail (email) {
     })
 }
 
+/**
+ * Evaluates the sort field and direction for an application search query.
+ *
+ * @param {object} sort - An object containing the field and direction for sorting.
+ * @param {string} sort.field - The field to sort by.
+ * @param {string} [sort.direction=ASC] - The sort direction, either 'ASC' or 'DESC'.
+ * @returns {array} - An array containing the field to sort by and the sort direction.
+ */
 function evalSortField (sort) {
   if (sort !== null && sort !== undefined && sort?.field !== undefined) {
     switch (sort.field.toLowerCase()) {
