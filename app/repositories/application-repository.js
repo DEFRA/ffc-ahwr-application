@@ -99,15 +99,19 @@ async function getByEmail (email) {
     })
 }
 
-function evalSortField (sort) {
+function evalSortField(sort) {
   if (sort !== null && sort !== undefined && sort.field !== undefined) {
     switch (sort.field.toLowerCase()) {
       case 'status':
         return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
       case 'apply date':
         return ['createdAt', sort.direction ?? 'ASC']
+      case 'reference':
+        return ['reference', sort.direction ?? 'ASC']
       case 'sbi':
         return ['data.organisation.sbi', sort.direction ?? 'ASC']
+      case 'organisation':
+        return ['data.organisation.name', sort.direction ?? 'ASC']
     }
   }
   return ['createdAt', sort.direction ?? 'ASC']
