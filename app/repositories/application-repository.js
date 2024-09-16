@@ -99,7 +99,7 @@ async function getByEmail (email) {
     })
 }
 
-function evalSortField(sort) {
+function evalSortField (sort) {
   if (sort !== null && sort !== undefined && sort.field !== undefined) {
     switch (sort.field.toLowerCase()) {
       case 'status':
