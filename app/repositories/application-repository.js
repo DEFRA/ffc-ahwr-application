@@ -100,7 +100,7 @@ async function getByEmail (email) {
 }
 
 function evalSortField (sort) {
-  if (sort !== null && sort !== undefined && sort.field !== undefined) {
+  if (sort !== null && sort !== undefined && sort?.field !== undefined) {
     switch (sort.field.toLowerCase()) {
       case 'status':
         return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
@@ -114,7 +114,7 @@ function evalSortField (sort) {
         return ['data.organisation.name', sort.direction ?? 'ASC']
     }
   }
-  return ['createdAt', sort.direction ?? 'ASC']
+  return ['createdAt', sort?.direction ?? 'ASC']
 }
 /**
  * Search application by Search Type and Search Text.
@@ -288,5 +288,6 @@ module.exports = {
   set,
   updateByReference,
   searchApplications,
-  getAllClaimedApplications
+  getAllClaimedApplications,
+  evalSortField
 }
