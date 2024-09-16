@@ -8,7 +8,7 @@ const { startandEndDate } = require('../lib/date-utils')
  * @param {string} reference
  * @returns application object with status.
  */
-async function get (reference) {
+async function get(reference) {
   return models.application.findOne(
     {
       where: { reference: reference.toUpperCase() },
@@ -57,7 +57,7 @@ async function get (reference) {
     }
   ]
  */
-async function getLatestApplicationsBySbi (sbi) {
+async function getLatestApplicationsBySbi(sbi) {
   console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
     sbi
   })}`)
@@ -77,7 +77,7 @@ async function getLatestApplicationsBySbi (sbi) {
  * @param {number} sbi
  * @returns application object.
  */
-async function getBySbi (sbi) {
+async function getBySbi(sbi) {
   return models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
@@ -91,7 +91,7 @@ async function getBySbi (sbi) {
  * @param {string} email
  * @returns application object with vetVisit data.
  */
-async function getByEmail (email) {
+async function getByEmail(email) {
   return models.application.findOne(
     {
       order: [['createdAt', 'DESC']],
@@ -107,8 +107,8 @@ async function getByEmail (email) {
  * @param {string} [sort.direction=ASC] - The sort direction, either 'ASC' or 'DESC'.
  * @returns {array} - An array containing the field to sort by and the sort direction.
  */
-function evalSortField (sort) {
-  if (sort !== null && sort !== undefined && sort?.field !== undefined) {
+function evalSortField(sort) {
+  if (sort && sort?.field !== undefined) {
     switch (sort.field.toLowerCase()) {
       case 'status':
         return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
@@ -136,7 +136,7 @@ function evalSortField (sort) {
  * @param {object} object contain field and direction for sort order
  * @returns all application with page
  */
-async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+async function searchApplications(searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
   let query = {
     include: [
       {
@@ -212,7 +212,7 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
  * Get all applications
  * @returns
  */
-async function getAll () {
+async function getAll() {
   const query = {
     order: [['createdAt', 'DESC']]
   }
@@ -224,7 +224,7 @@ async function getAll () {
  * @param {*} claimStatusIds an array of status IDs which indicate that an application has been claimed
  * @returns a list of applications
  */
-async function getAllClaimedApplications (claimStatusIds) {
+async function getAllClaimedApplications(claimStatusIds) {
   return models.application.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
@@ -237,7 +237,7 @@ async function getAllClaimedApplications (claimStatusIds) {
  * @param {*} data
  * @returns
  */
-async function set (data) {
+async function set(data) {
   const result = await models.application.create(data)
   eventPublisher.raise({
     message: 'New application has been created',
@@ -256,7 +256,7 @@ async function set (data) {
  * @return {Array} contains a single element, 1 equates to success, 0 equates
  * to failure.
  */
-async function updateByReference (data, publishEvent = true) {
+async function updateByReference(data, publishEvent = true) {
   try {
     const result = await models.application.update(data, {
       where: {
