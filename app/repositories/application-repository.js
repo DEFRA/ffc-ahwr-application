@@ -108,7 +108,7 @@ async function getByEmail (email) {
  * @returns {array} - An array containing the field to sort by and the sort direction.
  */
 function evalSortField (sort) {
-  if (sort && sort?.field !== undefined) {
+  if (sort?.field) {
     switch (sort.field.toLowerCase()) {
       case 'status':
         return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
