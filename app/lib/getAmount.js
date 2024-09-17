@@ -4,7 +4,7 @@ const { livestockTypes, claimType: claimTypeValues, testResults: testResultsValu
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
   const optionalPiHuntValue = (piHunt === piHuntValues.yes && piHuntAllAnimals === piHuntAllAnimalsValues.yes) ? 'yesPiHunt' : 'noPiHunt'
-  
+
   if (reviewTestResults === testResultsValues.positive) {
     return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
   }
@@ -26,7 +26,7 @@ const getBeefDairyAmount = (data, pricesConfig, claimType) => {
   if (optionalPIHunt.enabled) {
     return getPiHuntValue(reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock)
   }
-  
+
   return getNonPiHuntValue(reviewTestResults, pricesConfig, claimType, typeOfLivestock)
 }
 
