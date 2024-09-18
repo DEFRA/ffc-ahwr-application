@@ -9,16 +9,15 @@ const { startandEndDate } = require('../lib/date-utils')
  * @returns application object with status.
  */
 async function get (reference) {
-  return models.application.findOne(
-    {
-      where: { reference: reference.toUpperCase() },
-      include: [
-        {
-          model: models.status,
-          attributes: ['status']
-        }
-      ]
-    })
+  return models.application.findOne({
+    where: { reference: reference.toUpperCase() },
+    include: [
+      {
+        model: models.status,
+        attributes: ['status']
+      }
+    ]
+  })
 }
 
 /**
@@ -58,17 +57,21 @@ async function get (reference) {
   ]
  */
 async function getLatestApplicationsBySbi (sbi) {
-  console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
-    sbi
-  })}`)
-  const result = await models.application
-    .findAll(
+  console.log(
+    `${new Date().toISOString()} Getting latest applications by: ${JSON.stringify(
       {
-        where: { 'data.organisation.sbi': sbi },
-        order: [['createdAt', 'DESC']],
-        raw: true
-      })
-  return result.sort((a, b) => new Date(a.createdAt) > new Date(b.createdAt) ? a : b)
+        sbi
+      }
+    )}`
+  )
+  const result = await models.application.findAll({
+    where: { 'data.organisation.sbi': sbi },
+    order: [['createdAt', 'DESC']],
+    raw: true
+  })
+  return result.sort((a, b) =>
+    new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+  )
 }
 
 /**
@@ -92,11 +95,10 @@ async function getBySbi (sbi) {
  * @returns application object with vetVisit data.
  */
 async function getByEmail (email) {
-  return models.application.findOne(
-    {
-      order: [['createdAt', 'DESC']],
-      where: { 'data.organisation.email': email.toLowerCase() }
-    })
+  return models.application.findOne({
+    order: [['createdAt', 'DESC']],
+    where: { 'data.organisation.email': email.toLowerCase() }
+  })
 }
 
 /**
@@ -111,7 +113,11 @@ function evalSortField (sort) {
   if (sort?.field) {
     switch (sort.field.toLowerCase()) {
       case 'status':
-        return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
+        return [
+          models.status,
+          sort.field.toLowerCase(),
+          sort.direction ?? 'ASC'
+        ]
       case 'apply date':
         return ['createdAt', sort.direction ?? 'ASC']
       case 'reference':
@@ -136,7 +142,14 @@ function evalSortField (sort) {
  * @param {object} object contain field and direction for sort order
  * @returns all application with page
  */
-async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+async function searchApplications (
+  searchText,
+  searchType,
+  filter,
+  offset = 0,
+  limit = 10,
+  sort = { field: 'createdAt', direction: 'DESC' }
+) {
   let query = {
     include: [
       {
@@ -154,7 +167,9 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
         query.where = { 'data.organisation.sbi': searchText }
         break
       case 'organisation':
-        query.where = { 'data.organisation.name': { [Op.iLike]: `%${searchText}%` } }
+        query.where = {
+          'data.organisation.name': { [Op.iLike]: `%${searchText}%` }
+        }
         break
       case 'ref':
         query.where = { reference: searchText }
@@ -173,7 +188,8 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
             model: models.status,
             attributes: ['status'],
             where: { status: { [Op.iLike]: `%${searchText}%` } }
-          }]
+          }
+        ]
         break
     }
   }
@@ -190,7 +206,10 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
   total = await models.application.count(query)
   if (total > 0) {
     applicationStatus = await models.application.findAll({
-      attributes: ['status.status', [sequelize.fn('COUNT', 'application.id'), 'total']],
+      attributes: [
+        'status.status',
+        [sequelize.fn('COUNT', 'application.id'), 'total']
+      ],
       ...query,
       group: ['status.status'],
       raw: true
@@ -205,7 +224,9 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
     applications = await models.application.findAll(query)
   }
   return {
-    applications, total, applicationStatus
+    applications,
+    total,
+    applicationStatus
   }
 }
 /**

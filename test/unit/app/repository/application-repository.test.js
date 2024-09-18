@@ -11,6 +11,7 @@ data.models.application.findAll = jest.fn()
 data.models.application.count.mockReturnValue(10)
 data.models.application.findOne = jest.fn()
 data.models.status = jest.fn()
+data.models.application.findAll = jest.fn()
 
 const MOCK_SEND_EVENTS = jest.fn()
 
