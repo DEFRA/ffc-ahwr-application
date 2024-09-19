@@ -50,6 +50,7 @@ container:
   notifyTemplateIdFarmerEndemicsClaimComplete: 4ddc3c1e-ab9a-4e08-aa12-960878519d91
   notifyTemplateIdFarmerEndemicsReviewComplete: 183565fc-5684-40c1-a11d-85f55aff4d45
   notifyTemplateIdFarmerEndemicsFollowupComplete: 99dab1c1-ebdb-47dc-a208-daebca873924
+  notifyTemplateIdFarmerApplicationCompleteExistingUserRejectedWithinTenMonths: 97b97236-2b7b-47f8-9ea9-9ad78e653d08
   port: 3000
   eventQueueAddress: ffc-ahwr-event
   serviceUri:
