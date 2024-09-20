@@ -200,8 +200,19 @@ describe('Application Repository test', () => {
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
       expect(result).toEqual(updateResult)
     })
+    test('should not update an application by reference that current status and prev status are same', async () => {
+      data.models.application.findOne.mockResolvedValue({ dataValues: { ...mockData } })
+      MOCK_SEND_EVENTS.mockResolvedValue(null)
+
+      const result = await repository.updateByReference(mockData)
+
+      expect(data.models.application.update).not.toHaveBeenCalled()
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
+      expect(result).toEqual({ dataValues: { ...mockData } })
+    })
 
     test('should handle failure to update an application by reference', async () => {
+      data.models.application.findOne.mockResolvedValue()
       data.models.application.update.mockRejectedValue(new Error('Update failed'))
 
       await expect(repository.updateByReference(mockData)).rejects.toThrow('Update failed')
