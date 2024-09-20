@@ -279,6 +279,15 @@ async function set (data) {
  */
 async function updateByReference (data, publishEvent = true) {
   try {
+    const application = await models.application.findOne({
+      where: {
+        reference: data.reference
+      },
+      returning: true
+    })
+
+    if (application?.dataValues?.statusId === data?.statusId) return application
+
     const result = await models.application.update(data, {
       where: {
         reference: data.reference
