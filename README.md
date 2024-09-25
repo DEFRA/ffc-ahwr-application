@@ -12,6 +12,16 @@ Optional:
 - Kubernetes
 - Helm
 
+### Create development queues
+
+To complete an application locally, Azure Service Bus queues need to be configured. The queue names derive from a combination of queue addresses and developer initials suffix.
+
+For example with `APPLICATIONREQUEST_QUEUE_ADDRESS` set as `application-request` and `MESSAGE_QUEUE_SUFFIX` set as `-jd` (John Doe), a queue named `application-request-jd` needs to be created in Azure. For the supply and claim journeys this application service relies upon:
+
+- `${APPLICATIONREQUEST_QUEUE_ADDRESS}${MESSAGE_QUEUE_SUFFIX}` (application-request-jd): sessions disabled
+- `${APPLICATIONRESPONSE_QUEUE_ADDRESS}${MESSAGE_QUEUE_SUFFIX}` (application-response-jd): sessions **enabled**
+- `${EVENT_QUEUE_ADDRESS}${MESSAGE_QUEUE_SUFFIX}` (event-queue-jd): sessions disabled
+
 ### Environment variables
 
 The following environment variables are required by the application.
@@ -19,23 +29,24 @@ Values for development are set in the Docker Compose configuration. Default
 values for production-like deployments are set in the Helm chart and may be
 overridden by build and release pipelines.
 
-| Name                                            | Description                                                                                      |
-| ----                                            | -----------                                                                                      |
-| MESSAGE_QUEUE_HOST                              | Azure Service Bus hostname, e.g. `myservicebus.servicebus.windows.net`                           |
-| MESSAGE_QUEUE_PASSWORD                          | Azure Service Bus SAS policy key                                                                 |
-| MESSAGE_QUEUE_SUFFIX                            | Developer initials                                                                               |
-| MESSAGE_QUEUE_USER                              | Azure Service Bus SAS policy name, e.g. `RootManageSharedAccessKey`                              |
-| APPLICATIONREQUEST_QUEUE_ADDRESS                | Azure Service Bus message request queue name, e.g. `application-request`                             |
-| APPLICATIONRESPONSE_QUEUE_ADDRESS               | Azure Service Bus message response queue name, e.g. `application-response`                            |
-| PAYMENTREQUEST_QUEUE_ADDRESS                    | Azure Service Bus message request queue name, e.g. `payment-request`                                 |
-| NOTIFY_API_KEY                                  | GOV.UK Notify API Key                                                                            |
-| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE  | Id of email template used for farmer application complete                                        |
-| NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE        | Id of email template used to notify farmer for claim being completed                             |
-| NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE | Id of email template used to notify farmer for Endemics Review claim being completed
-| NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE | Id of email template used to notify farmer for Endemics Follow-up claim being completed
-| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE_EXISTING_USER_REJECTED_WITHIN_10_MONTHS | Id of email tmeplate used to notify farmers with rejected old world agreements within 10months |
-| SERVICE_URI                                     | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
-| CLAIM_COMPLIANCE_CHECK_RATIO                    | The ratio in which claims require a compliance check, e.g. 3 means one in every 3 claims         |
+| Name                                                                                   | Description                                                                                      |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MESSAGE_QUEUE_HOST                                                                     | Azure Service Bus hostname, e.g. `myservicebus.servicebus.windows.net`                           |
+| MESSAGE_QUEUE_PASSWORD                                                                 | Azure Service Bus SAS policy key                                                                 |
+| MESSAGE_QUEUE_SUFFIX                                                                   | Developer initials                                                                               |
+| MESSAGE_QUEUE_USER                                                                     | Azure Service Bus SAS policy name, e.g. `RootManageSharedAccessKey`                              |
+| APPLICATIONREQUEST_QUEUE_ADDRESS                                                       | Azure Service Bus message request queue name, e.g. `application-request`                         |
+| APPLICATIONRESPONSE_QUEUE_ADDRESS                                                      | Azure Service Bus message response queue name, e.g. `application-response`                       |
+| PAYMENTREQUEST_QUEUE_ADDRESS                                                           | Azure Service Bus message request queue name, e.g. `payment-request`                             |
+| NOTIFY_API_KEY                                                                         | GOV.UK Notify API Key                                                                            |
+| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE                                         | Id of email template used for farmer application complete                                        |
+| NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE                                               | Id of email template used to notify farmer for claim being completed                             |
+| NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE                                     | Id of email template used to notify farmer for Endemics Review claim being completed             |
+| NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE                                   | Id of email template used to notify farmer for Endemics Follow-up claim being completed          |
+| NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE_EXISTING_USER_REJECTED_WITHIN_10_MONTHS | Id of email template used to notify farmers with rejected old world agreements within 10months   |
+| SERVICE_URI                                                                            | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
+| CLAIM_COMPLIANCE_CHECK_RATIO                                                           | The ratio in which claims require a compliance check, e.g. 3 means one in every 3 claims         |
+
 
 ## Running the application
 

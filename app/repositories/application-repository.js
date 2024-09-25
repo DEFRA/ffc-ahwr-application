@@ -101,8 +101,16 @@ async function getByEmail (email) {
   })
 }
 
+/**
+ * Evaluates the sort field and direction for an application search query.
+ *
+ * @param {object} sort - An object containing the field and direction for sorting.
+ * @param {string} sort.field - The field to sort by.
+ * @param {string} [sort.direction=ASC] - The sort direction, either 'ASC' or 'DESC'.
+ * @returns {array} - An array containing the field to sort by and the sort direction.
+ */
 function evalSortField (sort) {
-  if (sort !== null && sort !== undefined && sort.field !== undefined) {
+  if (sort?.field) {
     switch (sort.field.toLowerCase()) {
       case 'status':
         return [
@@ -112,11 +120,15 @@ function evalSortField (sort) {
         ]
       case 'apply date':
         return ['createdAt', sort.direction ?? 'ASC']
+      case 'reference':
+        return ['reference', sort.direction ?? 'ASC']
       case 'sbi':
         return ['data.organisation.sbi', sort.direction ?? 'ASC']
+      case 'organisation':
+        return ['data.organisation.name', sort.direction ?? 'ASC']
     }
   }
-  return ['createdAt', sort.direction ?? 'ASC']
+  return ['createdAt', sort?.direction ?? 'ASC']
 }
 /**
  * Search application by Search Type and Search Text.
@@ -267,6 +279,15 @@ async function set (data) {
  */
 async function updateByReference (data, publishEvent = true) {
   try {
+    const application = await models.application.findOne({
+      where: {
+        reference: data.reference
+      },
+      returning: true
+    })
+
+    if (application?.dataValues?.statusId === data?.statusId) return application
+
     const result = await models.application.update(data, {
       where: {
         reference: data.reference
@@ -305,5 +326,6 @@ module.exports = {
   set,
   updateByReference,
   searchApplications,
-  getAllClaimedApplications
+  getAllClaimedApplications,
+  evalSortField
 }

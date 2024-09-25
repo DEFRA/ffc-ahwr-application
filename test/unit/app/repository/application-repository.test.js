@@ -201,8 +201,19 @@ describe('Application Repository test', () => {
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
       expect(result).toEqual(updateResult)
     })
+    test('should not update an application by reference that current status and prev status are same', async () => {
+      data.models.application.findOne.mockResolvedValue({ dataValues: { ...mockData } })
+      MOCK_SEND_EVENTS.mockResolvedValue(null)
+
+      const result = await repository.updateByReference(mockData)
+
+      expect(data.models.application.update).not.toHaveBeenCalled()
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
+      expect(result).toEqual({ dataValues: { ...mockData } })
+    })
 
     test('should handle failure to update an application by reference', async () => {
+      data.models.application.findOne.mockResolvedValue()
       data.models.application.update.mockRejectedValue(new Error('Update failed'))
 
       await expect(repository.updateByReference(mockData)).rejects.toThrow('Update failed')
@@ -1097,5 +1108,51 @@ describe('Application Repository test', () => {
       },
       order: [['createdAt', 'DESC']]
     })
+  })
+})
+describe('evalSortField function', () => {
+  test('returns default sort when sort is null', () => {
+    const result = repository.evalSortField(null)
+    expect(result).toEqual(['createdAt', 'ASC'])
+  })
+
+  test('returns default sort when sort is undefined', () => {
+    const result = repository.evalSortField(undefined)
+    expect(result).toEqual(['createdAt', 'ASC'])
+  })
+
+  test('returns default sort when sort field is undefined', () => {
+    const result = repository.evalSortField({ direction: 'DESC' })
+    expect(result).toEqual(['createdAt', 'DESC'])
+  })
+
+  test('returns correct sort for status field', () => {
+    const result = repository.evalSortField({ field: 'status', direction: 'DESC' })
+    expect(result).toEqual([data.models.status, 'status', 'DESC'])
+  })
+
+  test('returns correct sort for reference field', () => {
+    const result = repository.evalSortField({ field: 'reference', direction: 'ASC' })
+    expect(result).toEqual(['reference', 'ASC'])
+  })
+
+  test('returns correct sort for organisation field', () => {
+    const result = repository.evalSortField({ field: 'organisation', direction: 'DESC' })
+    expect(result).toEqual(['data.organisation.name', 'DESC'])
+  })
+
+  test('returns correct sort when direction is not specified', () => {
+    const result = repository.evalSortField({ field: 'sbi' })
+    expect(result).toEqual(['data.organisation.sbi', 'ASC'])
+  })
+
+  test('is case insensitive for field names', () => {
+    const result = repository.evalSortField({ field: 'APPLY DATE', direction: 'DESC' })
+    expect(result).toEqual(['createdAt', 'DESC'])
+  })
+
+  test('returns default sort for unrecognized field', () => {
+    const result = repository.evalSortField({ field: 'unknownField', direction: 'ASC' })
+    expect(result).toEqual(['createdAt', 'ASC'])
   })
 })
