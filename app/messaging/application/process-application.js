@@ -121,8 +121,8 @@ const processApplication = async (data) => {
           userType: data.organisation.userType,
           email: data.organisation.email,
           farmerName: data.organisation.farmerName,
-          oldWorldRejectedAgreement10months:
-            data.oldWorldRejectedAgreement10months,
+          userTypeStatus:
+            data.userTypeStatus,
           orgData: {
             orgName: data.organisation.name,
             orgEmail: data.organisation.orgEmail
