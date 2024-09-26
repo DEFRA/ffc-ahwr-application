@@ -113,6 +113,7 @@ const isClaimDataValid = (payload) => {
     dateOfVisit: Joi.date().required(),
     speciesNumbers: Joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: Joi.string().required(),
+    ...(isSheep(payload) && { sheepName: Joi.string().required() }),
     vetRCVSNumber: Joi.string().required(),
     ...(isReview(payload) && reviewValidations),
     ...((isReview(payload) && isBeef(payload)) && beefReviewValidations),
@@ -261,7 +262,7 @@ module.exports = [
             orgEmail: application?.dataValues?.data?.organisation?.orgEmail
           }
         },
-        isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
+          isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         ))
 
         return h.response(claim).code(200)
