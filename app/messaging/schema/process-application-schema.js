@@ -70,10 +70,10 @@ const endemicsApplicationSchema = joi.object({
       .allow(null)
       .optional()
   ),
-  oldWorldRejectedAgreement10months: joi
+  userTypeStatus: joi
     .object({
       isExistingUserRejectedAgreementWithin10months: joi.boolean(),
-      message: joi.string()
+      isExistingUserReadyToPayAgreementWithin10months: joi.boolean()
     })
     .optional()
 })
