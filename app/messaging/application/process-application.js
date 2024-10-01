@@ -1,11 +1,6 @@
 const states = require('./states')
 const applicationStatus = require('../../constants/application-status')
-const {
-  applicationResponseMsgType,
-  applicationResponseQueue,
-  tenMonthRule,
-  endemics
-} = require('../../config')
+const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule, endemics } = require('../../config')
 const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
 const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
@@ -28,27 +23,18 @@ function isPastTimeLimit (dates) {
 
 function isPreviousApplicationRelevant (existingApplication) {
   if (endemics.enabled) {
-    return (
-      existingApplication?.type === 'EE' &&
-      ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(
-        existingApplication?.statusId
-      )
-    )
+    return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
   } else if (tenMonthRule.enabled) {
-    return (
-      existingApplication &&
+    return existingApplication &&
       ((existingApplication.statusId !== applicationStatus.withdrawn &&
         existingApplication.statusId !== applicationStatus.notAgreed &&
         // check if it passes 10 month rule here and chuck error if it doesn't
         isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
         existingApplication.statusId === applicationStatus.agreed)
-    )
   } else {
-    return (
-      existingApplication &&
+    return existingApplication &&
       existingApplication.statusId !== applicationStatus.withdrawn &&
       existingApplication.statusId !== applicationStatus.notAgreed
-    )
   }
 }
 
@@ -62,6 +48,7 @@ const processApplicationApi = async (body) => {
       reference: response?.applicationReference,
       sbi: body?.organisation?.sbi
     }
+
   })
   return response
 }
@@ -69,6 +56,7 @@ const processApplicationApi = async (body) => {
 const processApplication = async (data) => {
   let existingApplicationReference = null
 
+  console.log(`processing Application : ${JSON.stringify(data)}`)
   try {
     // validation
     if (!validateApplication(data)) {
@@ -83,10 +71,10 @@ const processApplication = async (data) => {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
-          `Recent application already exists: ${JSON.stringify({
-            reference: existingApplication.dataValues.reference,
-            createdAt: existingApplication.createdAt
-          })}`
+            `Recent application already exists: ${JSON.stringify({
+              reference: existingApplication.dataValues.reference,
+              createdAt: existingApplication.createdAt
+            })}`
         ),
         {
           applicationState: states.alreadyExists
@@ -121,13 +109,12 @@ const processApplication = async (data) => {
           userType: data.organisation.userType,
           email: data.organisation.email,
           farmerName: data.organisation.farmerName,
-          userTypeStatus:
-            data.userTypeStatus,
           orgData: {
             orgName: data.organisation.name,
             orgEmail: data.organisation.orgEmail
           }
-        })
+        }
+        )
       } catch (error) {
         console.error('Failed to send farmer confirmation email', error)
       }
@@ -151,12 +138,7 @@ const processApplicationQueue = async (msg) => {
 
   const response = await processApplication(applicationData)
 
-  await sendMessage(
-    response,
-    applicationResponseMsgType,
-    applicationResponseQueue,
-    { sessionId }
-  )
+  await sendMessage(response, applicationResponseMsgType, applicationResponseQueue, { sessionId })
 
   appInsights.defaultClient.trackEvent({
     name: 'process-application-queue',

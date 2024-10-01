@@ -313,7 +313,6 @@ module.exports = [
         }
         const application = await get(claim.dataValues.applicationReference)
         const sbi = application?.dataValues?.data?.organisation?.sbi
-
         let optionalPiHuntValue
         if (optionalPIHunt.enabled) {
           optionalPiHuntValue = claim.dataValues.data.piHunt === piHuntValues.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
