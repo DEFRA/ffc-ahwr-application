@@ -17,12 +17,7 @@ const organisationValidations = () => ({
   frn: joi.string().optional(),
   address: joi.string().required(),
   email: joi.string().required().lowercase().email({ tlds: false }),
-  orgEmail: joi
-    .string()
-    .allow(null)
-    .optional()
-    .lowercase()
-    .email({ tlds: false }),
+  orgEmail: joi.string().allow(null).optional().lowercase().email({ tlds: false }),
   isTest: joi.boolean().optional()
 })
 
@@ -35,16 +30,13 @@ const applicationSchema = joi.object({
     ...organisationValidations()
   }),
   contactHistory: joi.array().items(
-    joi
-      .object({
-        createdBy: joi.string(),
-        createdOn: joi.string(),
-        field: joi.string(),
-        oldValue: joi.string(),
-        newValue: joi.string()
-      })
-      .allow(null)
-      .optional()
+    joi.object({
+      createdBy: joi.string(),
+      createdOn: joi.string(),
+      field: joi.string(),
+      oldValue: joi.string(),
+      newValue: joi.string()
+    }).allow(null).optional()
   )
 })
 
@@ -59,33 +51,22 @@ const endemicsApplicationSchema = joi.object({
   }),
   type: joi.string().valid('VV', 'EE').required(),
   contactHistory: joi.array().items(
-    joi
-      .object({
-        createdBy: joi.string(),
-        createdOn: joi.string(),
-        field: joi.string(),
-        oldValue: joi.string(),
-        newValue: joi.string()
-      })
-      .allow(null)
-      .optional()
-  ),
-  userTypeStatus: joi
-    .object({
-      isExistingUserRejectedAgreementWithin10months: joi.boolean(),
-      isExistingUserReadyToPayAgreementWithin10months: joi.boolean()
-    })
-    .optional()
+    joi.object({
+      createdBy: joi.string(),
+      createdOn: joi.string(),
+      field: joi.string(),
+      oldValue: joi.string(),
+      newValue: joi.string()
+    }).allow(null).optional()
+  )
 })
 
 const validateApplication = (event) => {
-  const validate = endemicsEnabled
-    ? endemicsApplicationSchema.validate(event)
-    : applicationSchema.validate(event)
+  const validate = endemicsEnabled ? endemicsApplicationSchema.validate(event) : applicationSchema.validate(event)
 
   if (validate.error) {
     console.error(`Application validation error - ${validate.error}.`)
-    appInsights.defaultClient.trackException({ event: event, exception: validate.error })
+    appInsights.defaultClient.trackException({ exception: validate.error })
     return false
   }
 
