@@ -70,10 +70,10 @@ const endemicsApplicationSchema = joi.object({
       .allow(null)
       .optional()
   ),
-  userTypeStatus: joi
+  oldWorldRejectedAgreement10months: joi
     .object({
       isExistingUserRejectedAgreementWithin10months: joi.boolean(),
-      isExistingUserReadyToPayAgreementWithin10months: joi.boolean()
+      message: joi.string()
     })
     .optional()
 })
@@ -85,7 +85,7 @@ const validateApplication = (event) => {
 
   if (validate.error) {
     console.error(`Application validation error - ${validate.error}.`)
-    appInsights.defaultClient.trackException({ event: event, exception: validate.error })
+    appInsights.defaultClient.trackException({ exception: validate.error })
     return false
   }
 
