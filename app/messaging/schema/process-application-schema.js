@@ -85,7 +85,7 @@ const validateApplication = (event) => {
 
   if (validate.error) {
     console.error(`Application validation error - ${validate.error}.`)
-    appInsights.defaultClient.trackException({ exception: validate.error })
+    appInsights.defaultClient.trackException({ event: event, exception: validate.error })
     return false
   }
 
