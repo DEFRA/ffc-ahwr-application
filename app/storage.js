@@ -12,16 +12,11 @@ if (useConnectionString === true) {
 }
 
 const getBlob = async (filename) => {
-  try {
-    const container = blobServiceClient.getContainerClient(endemicsSettingsContainer)
-    const blobClient = container.getBlobClient(filename)
-    const downloadResponse = await blobClient.download()
-    const downloaded = await streamToBuffer(downloadResponse.readableStreamBody)
-    return JSON.parse(downloaded.toString())
-  } catch (error) {
-    console.error('Error:', error)
-    throw error
-  }
+  const container = blobServiceClient.getContainerClient(endemicsSettingsContainer)
+  const blobClient = container.getBlobClient(filename)
+  const downloadResponse = await blobClient.download()
+  const downloaded = await streamToBuffer(downloadResponse.readableStreamBody)
+  return JSON.parse(downloaded.toString())
 }
 
 module.exports = {

@@ -38,7 +38,8 @@ module.exports = [{
         }).optional(),
         filter: Joi.array().optional()
       }),
-      failAction: async (_request, h, err) => {
+      failAction: async (request, h, err) => {
+        request.logger.error({ err })
         return h.response({ err }).code(400).takeover()
       }
     },
@@ -59,19 +60,21 @@ module.exports = [{
         status: Joi.number().valid(2, 5),
         user: Joi.string()
       }),
-      failAction: async (_request, h, err) => {
-        console.log(`Payload validation error ${err}`)
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
         return h.response({ err }).code(400).takeover()
       }
     },
     handler: async (request, h) => {
+      const { status } = request.payload
+      request.logger.setBindings({ status })
       const application = (await get(request.params.ref))
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
       }
 
-      await updateByReference({ reference: request.params.ref, statusId: request.payload.status, updatedBy: request.payload.user })
-      console.log(`Status of application with reference ${request.params.ref} successfully updated to ${request.payload.status}`)
+      await updateByReference({ reference: request.params.ref, statusId: status, updatedBy: request.payload.user })
+
       return h.response().code(200)
     }
   }
@@ -81,11 +84,11 @@ module.exports = [{
   path: '/api/application/processor',
   handler: async (request, h) => {
     try {
-      const appData = request.payload
-      const appProcessed = await processApplicationApi(appData)
+      request.logger.setBindings({ sbi: request.payload?.sbi })
+      const appProcessed = await processApplicationApi(request.payload)
       return h.response(appProcessed).code(200)
     } catch (error) {
-      console.error(`Failed to process application : ${error}`)
+      request.logger.setBindings({ err: error })
       return h.response({ error }).code(400).takeover()
     }
   }
@@ -100,12 +103,17 @@ module.exports = [{
         reference: Joi.string().valid(),
         user: Joi.string().required()
       }),
-      failAction: async (_request, h, err) => {
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
         return h.response({ err }).code(400).takeover()
       }
     },
     handler: async (request, h) => {
-      const application = (await get(request.payload.reference))
+      const { reference } = request.payload
+
+      request.logger.setBindings({ reference })
+
+      const application = (await get(reference))
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
       }
@@ -118,17 +126,18 @@ module.exports = [{
 
           await sendMessage(
             {
-              reference: request.payload.reference,
+              reference,
               sbi: application.dataValues.data.organisation.sbi,
               whichReview: application.dataValues.data.whichReview
             }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId: uuid() }
           )
         }
 
-        await updateByReference({ reference: request.payload.reference, statusId, updatedBy: request.payload.user })
-        console.log(`Status of application with reference ${request.payload.reference} successfully updated`)
-      } catch (error) {
-        console.error(`Status of application with reference ${request.payload.reference} failed to update`)
+        request.logger.setBindings({ statusId })
+
+        await updateByReference({ reference, statusId, updatedBy: request.payload.user })
+      } catch (err) {
+        request.logger.setBindings({ applicationUpdateError: err })
       }
       return h.response().code(200)
     }

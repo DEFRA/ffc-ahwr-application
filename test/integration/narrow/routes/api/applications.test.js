@@ -169,8 +169,7 @@ describe('Applications test', () => {
 
   describe(`POST ${url} route`, () => {
     const method = 'POST'
-    const consoleLogSpy = jest.spyOn(console, 'log')
-    const consoleErrorSpy = jest.spyOn(console, 'error')
+
     test.each([
       { approved: false, user: 'test', reference, payment: 0, statusId: statusIds.rejected },
       { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay }
@@ -187,8 +186,6 @@ describe('Applications test', () => {
       expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, statusId, updatedBy: user })
       expect(sendMessage).toHaveBeenCalledTimes(payment)
-      expect(consoleLogSpy).toHaveBeenCalledTimes(1)
-      expect(consoleLogSpy).toHaveBeenCalledWith(`Status of application with reference ${reference} successfully updated`)
     })
     test('returns a 200, payment failure & status not updated', async () => {
       applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
@@ -203,8 +200,6 @@ describe('Applications test', () => {
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
       expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(applicationRepository.updateByReference).not.toBeCalled()
-      expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(`Status of application with reference ${reference} failed to update`)
     })
     test('returns 404', async () => {
       applicationRepository.get.mockResolvedValue({ dataValues: null })
@@ -271,13 +266,10 @@ describe('Applications test', () => {
     })
 
     test('submiting an application fail', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error')
       processApplicationApi.mockImplementation(async () => { throw new Error() })
       const res = await server.inject(options)
       expect(res.statusCode).toBe(400)
       expect(processApplicationApi).toHaveBeenCalledTimes(1)
-      expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to process application : Error')
     })
   })
 })

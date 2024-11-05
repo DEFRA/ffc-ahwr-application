@@ -31,7 +31,6 @@ const sendEmail = async (email, personalisation, reference, templateId, carbonEm
   } catch (e) {
     appInsights.defaultClient.trackException({ exception: e })
     success = false
-    console.error(`Error occurred during sending email: ${JSON.stringify(e.response.data)}`)
   }
   return success
 }
@@ -43,8 +42,6 @@ const sendCarbonCopy = async (templateId, personalisation) => {
       carbonCopyEmailAddress,
       personalisation
     )
-
-    console.log(`Carbon copy email sent to ${carbonCopyEmailAddress} for ${personalisation.reference}`)
   }
 }
 
@@ -72,7 +69,6 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {
   }
 
   if (!email && !orgData?.orgEmail) {
-    console.error(`Email addresses not found for ${reference}`)
     return false
   }
   await sendCarbonCopy(templateId, { personalisation })

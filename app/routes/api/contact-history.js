@@ -38,13 +38,16 @@ module.exports = [
           address: Joi.string(),
           sbi: SBI_SCHEMA
         }),
-        failAction: async (_request, h, err) => {
-          console.log(`Payload validation error ${err}`)
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ err, sbi: request.payload.sbi })
           return h.response({ err }).code(400).takeover()
         }
       },
       handler: async (request, h) => {
-        const applications = await getLatestApplicationsBySbi(request.payload.sbi)
+        const { sbi } = request.payload
+        request.logger.setBindings({ sbi })
+
+        const applications = await getLatestApplicationsBySbi(sbi)
         if (!applications.length) {
           return h.response('No applications found to update').code(200).takeover()
         }

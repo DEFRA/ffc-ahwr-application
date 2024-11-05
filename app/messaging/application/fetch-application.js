@@ -1,4 +1,3 @@
-const util = require('util')
 const { get } = require('../../repositories/application-repository')
 const sendMessage = require('../send-message')
 const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../../config')
@@ -9,7 +8,6 @@ const fetchApplication = async (message) => {
   const { sessionId } = message
   try {
     const msgBody = message.body
-    console.log('received application fetch request', util.inspect(msgBody, false, null, true))
 
     if (validateFetchApplication(msgBody)) {
       const application = (await get(msgBody.applicationReference)).dataValues
@@ -27,7 +25,7 @@ const fetchApplication = async (message) => {
       return sendMessage({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
     }
   } catch (error) {
-    console.error(`failed to fetch application for request ${JSON.stringify(message.body)}`, error)
+    console.error('failed to fetch application for request', error)
     return sendMessage({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   }
 }

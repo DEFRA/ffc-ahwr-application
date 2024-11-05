@@ -22,7 +22,8 @@ module.exports = [{
       params: Joi.object({
         id: Joi.number().greater(0).required()
       }),
-      failAction: async (_request, h, err) => {
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
         return h.response({ err }).code(400).takeover()
       }
     },
@@ -30,9 +31,8 @@ module.exports = [{
       const stageConfiguration = await getById(request.params.id)
       if (stageConfiguration) {
         return h.response(stageConfiguration).code(200)
-      } else {
-        return h.response('Not Found').code(404).takeover()
       }
+      return h.response('Not Found').code(404).takeover()
     }
   }
 }]

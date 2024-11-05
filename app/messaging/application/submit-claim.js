@@ -16,7 +16,6 @@ const submitClaim = async (message) => {
   try {
     const msgBody = message.body
     if (validateSubmitClaim(msgBody)) {
-      console.log(`Received claim submit request - ${JSON.stringify(msgBody)}`)
       const { reference, data } = msgBody
       const application = await get(reference)
 
@@ -67,7 +66,7 @@ const submitClaim = async (message) => {
     }
   } catch (err) {
     appInsights.defaultClient.trackException({ exception: err })
-    console.error(`failed to submit claim for request ${JSON.stringify(message.body)}`, err)
+    console.error('failed to submit claim for request', err)
     return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   }
 }

@@ -187,7 +187,8 @@ module.exports = [
             reference: Joi.string().valid().optional().allow('')
           }).optional()
         }),
-        failAction: async (_request, h, err) => {
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ err })
           return h.response({ err }).code(400).takeover()
         }
       },
@@ -222,7 +223,7 @@ module.exports = [
         const { error } = isClaimDataValid(request.payload)
 
         if (error) {
-          console.error(error)
+          request.logger.setBindings({ error })
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
@@ -232,6 +233,11 @@ module.exports = [
         const applicationReference = data?.applicationReference
         const laboratoryURN = data?.data?.laboratoryURN
 
+        request.logger.setBindings({
+          isFollowUp,
+          applicationReference,
+          laboratoryURN
+        })
         const application = await get(applicationReference)
 
         if (!application?.dataValues) {
@@ -239,6 +245,8 @@ module.exports = [
         }
 
         const sbi = application?.dataValues?.data?.organisation?.sbi || 'not-found'
+
+        request.logger.setBindings({ sbi })
 
         if (laboratoryURN) {
           const { isURNUnique } = await isURNNumberUnique(sbi, laboratoryURN)
@@ -250,7 +258,7 @@ module.exports = [
 
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
-        claim && (await sendFarmerEndemicsClaimConfirmationEmail({
+        const claimConfirmationEmailSent = claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
           amount,
@@ -263,6 +271,8 @@ module.exports = [
         },
         isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         ))
+
+        request.logger.setBindings({ claimConfirmationEmailSent })
 
         return h.response(claim).code(200)
       }
@@ -280,8 +290,8 @@ module.exports = [
           piHunt: Joi.string().valid(piHuntValues.yes, piHuntValues.no).optional(),
           piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional()
         }),
-        failAction: async (_request, h, err) => {
-          console.log(`Payload validation error ${err}`)
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ err })
           return h.response({ err }).code(400).takeover()
         }
       },
@@ -301,28 +311,38 @@ module.exports = [
           status: Joi.number().valid(5, 9, 10).required(),
           user: Joi.string().required()
         }),
-        failAction: async (_request, h, err) => {
-          console.log(`Payload validation error ${err}`)
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ err })
+
           return h.response({ err }).code(400).takeover()
         }
       },
       handler: async (request, h) => {
-        const claim = await getByReference(request.payload.reference)
+        const { reference, status } = request.payload
+
+        request.logger.setBindings({
+          reference,
+          status
+        })
+
+        const claim = await getByReference(reference)
         if (!claim.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
         const application = await get(claim.dataValues.applicationReference)
         const sbi = application?.dataValues?.data?.organisation?.sbi
 
+        request.logger.setBindings({ sbi })
+
         let optionalPiHuntValue
         if (optionalPIHunt.enabled) {
           optionalPiHuntValue = claim.dataValues.data.piHunt === piHuntValues.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
         }
 
-        if (request.payload.status === statusIds.readyToPay) {
+        if (status === statusIds.readyToPay) {
           await sendMessage(
             {
-              reference: request.payload.reference,
+              reference,
               sbi: application.dataValues.data.organisation.sbi,
               whichReview: claim.dataValues.data.typeOfLivestock,
               isEndemics: true,
@@ -337,9 +357,7 @@ module.exports = [
           )
         }
 
-        await updateByReference({ reference: request.payload.reference, statusId: request.payload.status, updatedBy: request.payload.user, sbi })
-
-        console.log(`Status of claim with reference ${request.payload.reference} successfully updated to ${request.payload.status}`)
+        await updateByReference({ reference, statusId: status, updatedBy: request.payload.user, sbi })
 
         return h.response().code(200)
       }
