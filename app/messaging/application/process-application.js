@@ -56,13 +56,11 @@ const processApplicationApi = async (body) => {
 const processApplication = async (data) => {
   let existingApplicationReference = null
 
-  console.log(`processing Application : ${JSON.stringify(data)}`)
   try {
-    // validation
     if (!validateApplication(data)) {
       throw new Error('Application validation error')
     }
-    // exisiting application
+
     const existingApplication = await applicationRepository.getBySbi(
       data.organisation.sbi
     )
@@ -97,7 +95,6 @@ const processApplication = async (data) => {
       applicationState: states.submitted,
       applicationReference: application.reference
     }
-    // send email to farmer if application is accepted
 
     if (data.offerStatus === 'accepted') {
       try {

@@ -1,4 +1,3 @@
-const util = require('util')
 const { getByEmail } = require('../../repositories/application-repository')
 const sendMessage = require('../send-message')
 const { fetchClaimResponseMsgType, applicationResponseQueue } = require('../../config')
@@ -9,7 +8,6 @@ const fetchClaim = async (message) => {
   const { sessionId } = message
   try {
     const msgBody = message.body
-    console.log('received claim fetch request', util.inspect(msgBody, false, null, true))
 
     if (validateFetchClaim(msgBody)) {
       const claim = (await getByEmail(msgBody.email)).dataValues
@@ -23,7 +21,7 @@ const fetchClaim = async (message) => {
       return sendMessage({ applicationState: failed }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
     }
   } catch (error) {
-    console.error(`failed to fetch claim for request ${JSON.stringify(message.body)}`, error)
+    console.error('failed to fetch claim for request', error)
     return sendMessage({ applicationState: failed }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
   }
 }

@@ -58,9 +58,6 @@ async function get (reference) {
   ]
  */
 async function getLatestApplicationsBySbi (sbi) {
-  console.log(`${new Date().toISOString()} Getting latest applications by: ${JSON.stringify({
-    sbi
-  })}`)
   const result = await models.application
     .findAll(
       {

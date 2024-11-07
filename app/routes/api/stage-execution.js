@@ -46,22 +46,15 @@ module.exports = [{
           action: Joi.string().required()
         }).allow(null).optional()
       }),
-      failAction: async (_request, h, err) => {
-        console.log(JSON.stringify({
-          timestamp: new Date().toISOString(),
-          level: 'error',
-          message: 'Error when validating payload',
-          context: {
-            errorMessage: err.message,
-            payload: _request.payload
-          }
-        }))
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
         return h.response({ err }).code(400).takeover()
       }
     },
     handler: async (request, h) => {
       let application
       let sbi
+      request.logger.setBindings({ payload: request.payload })
 
       if (request.payload.claimOrApplication === 'claim') {
         application = await claim.getByReference(request.payload.applicationReference)
@@ -71,7 +64,7 @@ module.exports = [{
         application = await get(request.payload.applicationReference)
       }
 
-      if (!application.dataValues) {
+      if (!application?.dataValues) {
         return h.response('Reference not found').code(400).takeover()
       }
 
@@ -79,6 +72,8 @@ module.exports = [{
         request.payload,
         application
       )
+
+      request.logger.setBindings({ response })
 
       // Update status on basis of action
       let statusId = null
@@ -108,7 +103,7 @@ module.exports = [{
           await updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
         }
       }
-      console.log('Stage execution inserted: ', response.dataValues)
+
       return h.response(response).code(200)
     }
   }
@@ -120,12 +115,16 @@ module.exports = [{
       params: Joi.object({
         id: Joi.number().greater(0).required()
       }),
-      failAction: async (_request, h, err) => {
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
         return h.response({ err }).code(400).takeover()
       }
     },
     handler: async (request, h) => {
-      const stageExecution = await getById(request.params.id)
+      const { id } = request.params
+
+      request.logger.setBindings({ stageExecutionId: id })
+      const stageExecution = await getById(id)
       if (!stageExecution) {
         return h.response('Not Found').code(404).takeover()
       }

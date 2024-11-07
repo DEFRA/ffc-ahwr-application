@@ -1,5 +1,6 @@
 require('./insights').setup()
 const Hapi = require('@hapi/hapi')
+const logger = require('./logger')
 
 const server = Hapi.server({
   port: process.env.PORT
@@ -20,5 +21,7 @@ const routes = [].concat(
 )
 
 server.route(routes)
+
+server.register(logger)
 
 module.exports = server
