@@ -5,6 +5,7 @@ const sendEmail = require('../../../../../app/lib/send-email')
 const pricesConfig = require('../../../../data/claim-prices-config.json')
 const { getBlob } = require('../../../../../app/storage')
 const { getAmount } = require('../../../../../app/lib/getAmount')
+const appInsights = require('applicationinsights')
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
@@ -46,7 +47,7 @@ describe('Get claims test', () => {
     expect(res.statusCode).toBe(200)
     expect(claimRepository.getByReference).toHaveBeenCalledTimes(1)
   })
-  test('When claim is not exist and return 404', async () => {
+  test('When claim does not exist, return 404', async () => {
     const options = {
       method: 'GET',
       url: '/api/claim/get-by-reference/AHWR-5602-BAC6'
@@ -184,6 +185,19 @@ describe('Post claim test', () => {
     await server.stop()
   })
 
+  function expectAppInsightsEventRaised (data, reference, statusId, sbi) {
+    expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+      name: 'process-claim',
+      properties: {
+        data,
+        reference,
+        status: statusId,
+        sbi,
+        scheme: 'new-world'
+      }
+    })
+  }
+
   test('Post a new claim with duplicated URN ', async () => {
     const options = {
       method: 'POST',
@@ -316,6 +330,7 @@ describe('Post claim test', () => {
       await server.inject(options)
 
       expect(claimRepository.set).toHaveBeenCalledTimes(1)
+      // Not sure what is going on here. Of course it has been called as we did it 5 lines above?
       expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
     }
   )
@@ -611,7 +626,7 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }), 'template-id-farmer-endemics-followup-complete')
   })
-  test('sent the correct parameters to send sendFarmerEndemicsClaimConfirmationEmail when claim type is review', async () => {
+  test('sent the correct parameters to send sendFarmerEndemicsClaimConfirmationEmail when claim type is review, and raise appInsights event', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',
@@ -671,15 +686,7 @@ describe('Post claim test', () => {
         }
       }
     })
-    // const mockEmailData = {
-    //   reference: 'AHWR-0F5D-4A26',
-    //   email: 'test@test-unit.com',
-    //   amount: '£[amount]',
-    //   farmerName: 'farmerName',
-    //   orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
-    // }
-
-    // await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    sendEmail.sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
 
     await server.inject(options)
 
@@ -693,16 +700,19 @@ describe('Post claim test', () => {
       farmerName: 'farmerName',
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }), '183565fc-5684-40c1-a11d-85f55aff4d45')
+
+    expectAppInsightsEventRaised(claim, 'AHWR-0F5D-4A26', 11, 'not-found')
   })
 
   test('sent the correct parameters to send sendFarmerEndemicsClaimConfirmationEmail when claim type is follow-up', async () => {
     const data = { typeOfLivestock: 'beef', numberAnimalsTested: undefined, biosecurity: 'yes', reviewTestResults: 'positive', dateOfTesting: '2024-01-22T00:00:00.000Z', dateOfVisit: '2024-01-22T00:00:00.000Z', vetsName: 'Afshin', vetRCVSNumber: 'AK-2024', speciesNumbers: 'yes', testResults: 'negative', piHunt: 'yes', numberOfOralFluidSamples: undefined, numberOfSamplesTested: undefined }
+    const modifiedClaim = {
+      ...{ ...claim, type: 'E', data: { ...claim.data, ...data } }
+    }
     const options = {
       method: 'POST',
       url: '/api/claim',
-      payload: {
-        ...{ ...claim, type: 'E', data: { ...claim.data, ...data } }
-      }
+      payload: { ...modifiedClaim }
     }
 
     claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
@@ -756,6 +766,8 @@ describe('Post claim test', () => {
         }
       }
     })
+    sendEmail.sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
+
     await server.inject(options)
 
     expect(claimRepository.set).toHaveBeenCalledTimes(1)
@@ -768,8 +780,10 @@ describe('Post claim test', () => {
       farmerName: 'farmerName',
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }), '99dab1c1-ebdb-47dc-a208-daebca873924')
+
+    expectAppInsightsEventRaised(modifiedClaim, 'AHWR-0F5D-4A26', 11, 'not-found')
   })
-  test('no Email sent when claim is false ', async () => {
+  test('no Email sent, and no appInsights even raised when claim is false', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',
@@ -807,6 +821,7 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledTimes(0)
   })
   test('Check if laboratoryURN is unique ', async () => {
     const options = {
