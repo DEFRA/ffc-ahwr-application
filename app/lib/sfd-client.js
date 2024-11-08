@@ -24,7 +24,7 @@ const sendSFDEmail = async (templateId, email, personalisation) => {
             notifyTemplateId: templateId,
             emailAddress: email,
             customParams: personalisation,
-            dateTime: Date.now()
+            dateTime: new Date().toISOString()
         }
 
         if (validateSFDClaim(sfdMessage)) {
