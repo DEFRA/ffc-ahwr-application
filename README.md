@@ -107,16 +107,19 @@ A convenience script is provided to run automated tests in a containerised
 environment. This will rebuild images before running tests via docker compose,
 using a combination of `docker-compose.yaml` and `docker-compose.test.yaml`.
 The command given to `docker compose run` may be customised by passing
-arguments to the test script.
+arguments to the test script. ```(scripts/test)```
+Note that executing this script will load any .env
+file you have locally automatically which may affect test results. Please run
+testlocal instead which wraps this and temporarily moves any present .env file
 
 Examples:
 
 ```sh
 # Run all tests
-scripts/test
+scripts/testlocal
 
 # Run tests with file watch
-scripts/test -w
+scripts/testlocal -w
 ```
 
 ## CI pipeline

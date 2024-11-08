@@ -58,7 +58,8 @@ const submitClaim = async (message) => {
           data,
           reference,
           status: statusId,
-          sbi: application.dataValues.data.organisation.sbi
+          sbi: application.dataValues.data.organisation.sbi,
+          scheme: 'old-world'
         }
       })
     } else {

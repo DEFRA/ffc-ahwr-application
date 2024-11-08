@@ -1,6 +1,7 @@
 const submitClaim = require('../../../../../app/messaging/application/submit-claim')
 const { submitClaimResponseMsgType, applicationResponseQueue, submitPaymentRequestMsgType, submitRequestQueue } = require('../../../../../app/config')
 const { alreadyClaimed, failed, error, notFound, success } = require('../../../../../app/messaging/application/states')
+const appInsights = require('applicationinsights')
 
 jest.mock('../../../../../app/repositories/application-repository')
 const applicationRepository = require('../../../../../app/repositories/application-repository')
@@ -42,7 +43,8 @@ describe(('Submit claim tests'), () => {
     const orgEmail = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
-    const applicationMock = { dataValues: { reference: 'AHWR-1234-5678', data: { whichReview, organisation: { email, sbi, orgEmail } } } }
+    const reference = 'AHWR-1234-5678'
+    const applicationMock = { dataValues: { reference, data: { whichReview, organisation: { email, sbi, orgEmail } } } }
     applicationRepository.get.mockResolvedValueOnce(applicationMock)
     requiresComplianceCheck.mockResolvedValueOnce({
       statusId,
@@ -57,6 +59,11 @@ describe(('Submit claim tests'), () => {
     expect(applicationRepository.get).toHaveBeenCalledWith(reference)
     expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
     !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
+
+    if (state === success) {
+      expectAppInsightsEventRaised(reference, statusId, sbi)
+    }
+
     if (state === success && statusId === 9) {
       // if ready to pay reply message and payment message should be sent
       !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(2)
@@ -74,6 +81,19 @@ describe(('Submit claim tests'), () => {
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     }
   })
+
+  function expectAppInsightsEventRaised (reference, statusId, sbi) {
+    expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+      name: 'process-claim',
+      properties: {
+        data: undefined,
+        reference,
+        status: statusId,
+        sbi,
+        scheme: 'old-world'
+      }
+    })
+  }
 
   test.each([
     { desc: 'no application exists returns notFound state', applicationMock: null, state: notFound },

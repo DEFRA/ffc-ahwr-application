@@ -274,6 +274,19 @@ module.exports = [
 
         request.logger.setBindings({ claimConfirmationEmailSent })
 
+        if (claimConfirmationEmailSent) {
+          appInsights.defaultClient.trackEvent({
+            name: 'process-claim',
+            properties: {
+              data,
+              reference: claim?.dataValues?.reference,
+              status: statusId,
+              sbi,
+              scheme: 'new-world'
+            }
+          })
+        }
+
         return h.response(claim).code(200)
       }
     }
