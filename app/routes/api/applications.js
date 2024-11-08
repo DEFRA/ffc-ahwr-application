@@ -17,8 +17,8 @@ module.exports = [{
       })
     },
     handler: async (request, h) => {
-      const application = (await get(request.params.ref))
-      if (application.dataValues) {
+      const application = await get(request.params.ref)
+      if (application?.dataValues) {
         return h.response(application.dataValues).code(200)
       } else {
         return h.response('Not Found').code(404).takeover()
