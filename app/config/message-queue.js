@@ -35,6 +35,11 @@ const schema = Joi.object({
     address: process.env.EVENT_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfigSchema
+  },
+  sfdMessageQueue: {
+    address: process.env.SFD_MESSAGE_QUEUE_ADDRESS,
+    type: 'queue',
+    ...sharedConfigSchema
   }
 })
 
@@ -69,6 +74,11 @@ const config = {
   },
   eventQueue: {
     address: process.env.EVENT_QUEUE_ADDRESS,
+    type: 'queue',
+    ...sharedConfig
+  },
+  sfdMessageQueue: {
+    address: process.env.SFD_MESSAGE_QUEUE_ADDRESS,
     type: 'queue',
     ...sharedConfig
   }

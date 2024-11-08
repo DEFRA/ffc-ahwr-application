@@ -30,6 +30,10 @@ const schema = Joi.object({
   },
   optionalPIHunt: {
     enabled: Joi.bool().default(false)
+  },
+  sfdRequestMsgType: Joi.string(),
+  sfdMessage: {
+    enabled: Joi.bool().default(false)
   }
 })
 
@@ -59,6 +63,10 @@ const config = {
   },
   optionalPIHunt: {
     enabled: process.env.OPTIONAL_PIHUNT_ENABLED
+  },
+  sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
+  sfdMessage: {
+    enabled: process.env.SFD_MESSAGE_ENABLED
   }
 }
 
