@@ -3,8 +3,17 @@ const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue }
 const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
 const appInsights = require('applicationinsights')
+const sendSFDEmail = require('./sfd-client')
+const { sfdMessage } = require('../config')
 
 const send = async (templateId, email, personalisation) => {
+  if (sfdMessage.enabled) {
+    return sendSFDEmail(
+      templateId,
+      email,
+      personalisation
+    )
+  }
   return notifyClient.sendEmail(
     templateId,
     email,
