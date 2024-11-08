@@ -37,7 +37,7 @@ describe('Applications test', () => {
       expect(applicationRepository.get).toHaveBeenCalledTimes(1)
     })
     test('returns 404', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: null })
+      applicationRepository.get.mockResolvedValue(null)
       const options = {
         method: 'GET',
         url: '/api/application/get/ABC-1234'
