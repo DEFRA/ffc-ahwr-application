@@ -126,7 +126,7 @@ describe('Send email test', () => {
       const expectedPersonalisation = {
         reference: data.reference,
         applicationReference: data.applicationReference,
-        amount: data.amount || '£[amount]',
+        amount: data.amount || '£[amount]'
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
