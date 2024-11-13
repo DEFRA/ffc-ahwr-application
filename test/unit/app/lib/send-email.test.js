@@ -63,7 +63,8 @@ describe('Send email test', () => {
   describe('sendFarmerEndemicsClaimConfirmationEmail', () => {
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email', async () => {
       const data = {
-        reference: 'AHWR-B977-4D0D',
+        reference: 'RESH-DFEF-6037',
+        applicationReference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
@@ -74,7 +75,10 @@ describe('Send email test', () => {
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
       const expectedPersonalisation = {
         reference: data.reference,
-        amount: data.amount
+        applicationReference: data.applicationReference,
+        amount: data.amount || '£[amount]',
+        crn: data.orgData.crn,
+        sbi: data.orgData.sbi
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
@@ -86,7 +90,8 @@ describe('Send email test', () => {
     test('sendFarmerEndemicsClaimConfirmationEmail sends carbon copy email to organization email', async () => {
       const data = {
         email: 'test@unit-test.com',
-        reference: 'AHWR-B977-4D0D',
+        reference: 'RESH-DFEF-6037',
+        applicationReference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
@@ -97,7 +102,10 @@ describe('Send email test', () => {
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
       const expectedPersonalisation = {
         reference: data.reference,
-        amount: data.amount
+        applicationReference: data.applicationReference,
+        amount: data.amount || '£[amount]',
+        crn: data.orgData.crn,
+        sbi: data.orgData.sbi
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
@@ -109,14 +117,16 @@ describe('Send email test', () => {
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email when orgEmail is not provided', async () => {
       const data = {
         email: 'test@unit-test.com',
-        reference: 'AHWR-B977-4D0D',
+        reference: 'RESH-DFEF-6037',
+        applicationReference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {}
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
       const expectedPersonalisation = {
         reference: data.reference,
-        amount: data.amount
+        applicationReference: data.applicationReference,
+        amount: data.amount || '£[amount]',
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
@@ -128,7 +138,8 @@ describe('Send email test', () => {
     test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending  emails', async () => {
       const data = {
         email: 'test@unit-test.com',
-        reference: 'AHWR-B977-4D0D',
+        reference: 'RESH-DFEF-6037',
+        applicationReference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
@@ -150,7 +161,8 @@ describe('Send email test', () => {
     test('use default templateId when not provided', async () => {
       const data = {
         email: 'test@test-unit.com',
-        reference: 'AHWR-B977-4D0D',
+        reference: 'RESH-DFEF-6037',
+        applicationReference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@test-unit.org',
@@ -161,7 +173,10 @@ describe('Send email test', () => {
       }
       const expectedPersonalisation = {
         reference: data.reference,
-        amount: data.amount || '£[amount]'
+        applicationReference: data.applicationReference,
+        amount: data.amount || '£[amount]',
+        crn: data.orgData.crn,
+        sbi: data.orgData.sbi
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data)
