@@ -1,6 +1,6 @@
 # FFC AHWR Application Manager
 
-> Application Manager for Animal Health and Welfare Review  
+> Application Manager for Animal Health and Welfare Review 
 
 ## Prerequisites
 
