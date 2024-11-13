@@ -63,7 +63,7 @@ container:
   endemicsClaimComplianceCheckRatio:
   azureStorageEndemicsSettingsContainerName: 
   sfdMessageQueueAddress: ffc-ahwr-sfd-message
-  sfdMessageEnabled:
+  sfdMessageEnabled: false
 
 postgresService:
   postgresDb: ffc_ahwr_application

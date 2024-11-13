@@ -66,7 +66,9 @@ describe('Send email test', () => {
         reference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {
-          orgEmail: 'test@unit-test.org'
+          orgEmail: 'test@unit-test.org',
+          crn: '1234567890',
+          sbi: '123456789'
         }
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
@@ -87,7 +89,9 @@ describe('Send email test', () => {
         reference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {
-          orgEmail: 'test@unit-test.org'
+          orgEmail: 'test@unit-test.org',
+          crn: '1234567890',
+          sbi: '123456789'
         }
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
@@ -127,7 +131,9 @@ describe('Send email test', () => {
         reference: 'AHWR-B977-4D0D',
         amount: '£[amount]',
         orgData: {
-          orgEmail: 'test@unit-test.org'
+          orgEmail: 'test@unit-test.org',
+          crn: '1234567890',
+          sbi: '123456789'
         }
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
@@ -148,7 +154,9 @@ describe('Send email test', () => {
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@test-unit.org',
-          orgName: 'Farmer'
+          orgName: 'Farmer',
+          crn: '1234567890',
+          sbi: '123456789'
         }
       }
       const expectedPersonalisation = {

@@ -75,8 +75,8 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {
     reference,
     applicationReference,
     amount: data?.amount,
-    crn: orgData.crn,
-    sbi: orgData.sbi
+    crn: orgData?.crn,
+    sbi: orgData?.sbi
   }
 
   if (!email && !orgData?.orgEmail) {
