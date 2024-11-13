@@ -10,7 +10,7 @@ const email = joi
   .max(320)
 
 const submitSFDSchema = joi.object({
-  crn: tenDigitId.required(),
+  crn: tenDigitId,
   sbi: nineDigitId.required(),
   agreementReference: joi.string().required(),
   claimReference: joi.string().max(14),
