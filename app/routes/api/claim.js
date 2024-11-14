@@ -266,7 +266,9 @@ module.exports = [
           farmerName: application?.dataValues?.data?.organisation?.farmerName,
           orgData: {
             orgName: application?.dataValues?.data?.organisation?.name,
-            orgEmail: application?.dataValues?.data?.organisation?.orgEmail
+            orgEmail: application?.dataValues?.data?.organisation?.orgEmail,
+            crn: application?.dataValues?.data?.organisation?.crn,
+            sbi: application?.dataValues?.data?.organisation?.sbi
           }
         },
         isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete

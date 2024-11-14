@@ -3,8 +3,17 @@ const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue }
 const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
 const sendMessage = require('../messaging/send-message')
 const appInsights = require('applicationinsights')
+const sendSFDEmail = require('./sfd-client')
+const { sfdMessage } = require('../config')
 
 const send = async (templateId, email, personalisation) => {
+  if (sfdMessage.enabled) {
+    return sendSFDEmail(
+      templateId,
+      email,
+      personalisation
+    )
+  }
   return notifyClient.sendEmail(
     templateId,
     email,
@@ -46,9 +55,9 @@ const sendCarbonCopy = async (templateId, personalisation) => {
 }
 
 const sendFarmerConfirmationEmail = async (emailParams) => {
-  const { reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData: { orgName, orgEmail } } = emailParams
+  const { reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData: { orgName, orgEmail, crn } } = emailParams
 
-  return await sendMessage({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  return await sendMessage({ reference, crn, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
 const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
@@ -65,7 +74,9 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {
   const personalisation = {
     reference,
     applicationReference,
-    amount: data?.amount
+    amount: data?.amount,
+    crn: orgData?.crn,
+    sbi: orgData?.sbi
   }
 
   if (!email && !orgData?.orgEmail) {

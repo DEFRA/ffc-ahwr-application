@@ -28,4 +28,6 @@ data:
   ENDEMICS_ENABLED: {{ quote .Values.container.endemicsEnabled }}
   OPTIONAL_PIHUNT_ENABLED: {{ quote .Values.container.optionalPIHuntEnabled }}
   AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER: {{ quote .Values.container.azureStorageEndemicsSettingsContainerName }}
+  SFD_MESSAGE_QUEUE_ADDRESS: {{ quote .Values.container.sfdMessageQueueAddress }}
+  SFD_MESSAGE_ENABLED: {{ quote .Values.container.sfdMessageEnabled }}
 {{- end -}}
