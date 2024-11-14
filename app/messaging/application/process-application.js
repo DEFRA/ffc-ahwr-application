@@ -109,7 +109,7 @@ const processApplication = async (data) => {
           orgData: {
             orgName: data.organisation.name,
             orgEmail: data.organisation.orgEmail,
-            crn: data.organisation.crn
+            crn: data.organisation?.crn
           }
         }
         )

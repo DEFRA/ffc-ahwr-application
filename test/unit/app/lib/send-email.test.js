@@ -1,6 +1,7 @@
 const sendEmail = require('../../../../app/lib/send-email')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../../../../app/config')
 const { templateIdFarmerClaimComplete, templateIdFarmerEndemicsClaimComplete } = require('../../../../app/config').notify
+const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../../../app/config').notify
 // const appInsights = require('applicationinsights')
 
 const error = new Error('Test exception')
@@ -15,17 +16,22 @@ const farmerName = 'farmer'
 const orgName = 'Farmer org'
 const orgEmail = 'test@unit-test.org'
 const userType = 'newUser'
+const conf = require('../../../../app/config')
 
 jest.mock('../../../../app/lib/notify-client')
 const notifyClient = require('../../../../app/lib/notify-client')
+
+jest.mock('../../../../app/lib/sfd-client')
+let sendSFDEmail = require('../../../../app/lib/sfd-client')
 
 jest.mock('../../../../app/messaging/send-message')
 const sendMessage = require('../../../../app/messaging/send-message')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
-describe('Send email test', () => {
-  beforeEach(async () => {
+describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s', (enabled) => {
+  beforeEach(() => {
     jest.clearAllMocks()
+    conf.sfdMessage.enabled = enabled
   })
 
   test('sendFarmerConfirmationEmail calls sendMessage', async () => {
@@ -45,16 +51,31 @@ describe('Send email test', () => {
   })
 
   test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
-    notifyClient.sendEmail.mockResolvedValueOnce(true)
+    if (enabled) {
+      sendSFDEmail.mockResolvedValueOnce(error)
+    }
+    else {
+      notifyClient.sendEmail.mockResolvedValueOnce(error)
+    }
 
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
-    expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
+    if (enabled) {
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
+    } else {
+      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
+    }
+
     expect(response).toBeTruthy()
   })
 
   test('sendFarmerClaimConfirmationEmail returns false on error sending email', async () => {
-    notifyClient.sendEmail.mockRejectedValueOnce(error)
+    if (enabled) {
+      sendSFDEmail.mockRejectedValueOnce(error)
+    }
+    else {
+      notifyClient.sendEmail.mockRejectedValueOnce(error)
+    }
 
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
 
@@ -68,8 +89,7 @@ describe('Send email test', () => {
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
-          crn: '1234567890',
-          sbi: '123456789'
+          ...(enabled && { crn: '1234567890', sbi: '123456789' })
         }
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
@@ -77,14 +97,18 @@ describe('Send email test', () => {
         reference: data.reference,
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
-        crn: data.orgData.crn,
-        sbi: data.orgData.sbi
+        ...(enabled && { crn: data.orgData.crn, sbi: data.orgData.sbi })
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
-      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      if (enabled) {
+        expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
+      else {
+        expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends carbon copy email to organization email', async () => {
@@ -95,8 +119,7 @@ describe('Send email test', () => {
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
-          crn: '1234567890',
-          sbi: '123456789'
+          ...(enabled && { crn: '1234567890', sbi: '123456789' })
         }
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
@@ -104,14 +127,18 @@ describe('Send email test', () => {
         reference: data.reference,
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
-        crn: data.orgData.crn,
-        sbi: data.orgData.sbi
+        ...(enabled && { crn: data.orgData.crn, sbi: data.orgData.sbi })
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
-      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      if (enabled) {
+        expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
+      else {
+        expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email when orgEmail is not provided', async () => {
@@ -132,7 +159,12 @@ describe('Send email test', () => {
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
-      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+      if (enabled) {
+        expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
+      else {
+        expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending  emails', async () => {
@@ -143,15 +175,20 @@ describe('Send email test', () => {
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
-          crn: '1234567890',
-          sbi: '123456789'
+          ...(enabled && { crn: '1234567890', sbi: '123456789' })
         }
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
 
       const error = new Error('Test exception')
       error.response = { data: 'failed to send email' }
-      notifyClient.sendEmail.mockRejectedValueOnce(error)
+
+      if (enabled) {
+        sendSFDEmail.mockRejectedValueOnce(error)
+      }
+      else {
+        notifyClient.sendEmail.mockRejectedValueOnce(error)
+      }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
@@ -167,22 +204,25 @@ describe('Send email test', () => {
         orgData: {
           orgEmail: 'test@test-unit.org',
           orgName: 'Farmer',
-          crn: '1234567890',
-          sbi: '123456789'
+          ...(enabled && { crn: '1234567890', sbi: '123456789' })
         }
       }
       const expectedPersonalisation = {
         reference: data.reference,
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
-        crn: data.orgData.crn,
-        sbi: data.orgData.sbi
+        ...(enabled && { crn: data.orgData.crn, sbi: data.orgData.sbi })
       }
 
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data)
       expect(result).toBe(true)
       expect([data.amount, '£[amount]']).toContain(expectedPersonalisation.amount)
-      expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      if (enabled) {
+        expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
+      else {
+        expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      }
     })
     test('if data is empty - no email sent', async () => {
       const data = {}
@@ -191,7 +231,12 @@ describe('Send email test', () => {
 
       expect(data).toEqual({})
       expect(data.orgData).toBeUndefined()
-      expect(notifyClient.sendEmail).toHaveBeenCalledTimes(0)
+      if (enabled) {
+        expect(sendSFDEmail).toHaveBeenCalledTimes(0)
+      }
+      else {
+        expect(notifyClient.sendEmail).toHaveBeenCalledTimes(0)
+      }
     })
     test('sendEmail returns false on error sending email', async () => {
       const templateId = 'templateId'
@@ -199,7 +244,13 @@ describe('Send email test', () => {
       const personalisation = { name: 'farmer' }
       const reference = 'AHWR-B977-4D0D'
 
+      if (enabled) {
+        sendSFDEmail = jest.fn().mockRejectedValueOnce(error)
+      }
+      else {
       notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+      }
+
       sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
 
       const response = await sendEmail.sendEmail(email, personalisation, reference, templateId)
@@ -211,7 +262,12 @@ describe('Send email test', () => {
     const personalisation = { name: 'farmer' }
     const reference = 'AHWR-B977-4D0D'
 
+    if (enabled) {
+      sendSFDEmail = jest.fn().mockRejectedValueOnce(error)
+    }
+    else {
     notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+    }
     sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
 
     const response = await sendEmail.sendEmail(personalisation, reference, templateId)
