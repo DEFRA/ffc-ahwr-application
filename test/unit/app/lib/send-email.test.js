@@ -125,7 +125,7 @@ describe('sendEmail', () => {
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
-          crn: '1234567890', 
+          crn: '1234567890',
           sbi: '123456789'
         }
       }
@@ -134,7 +134,7 @@ describe('sendEmail', () => {
         reference: data.reference,
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
-        crn: data.orgData.crn, 
+        crn: data.orgData.crn,
         sbi: data.orgData.sbi
       }
 
@@ -174,7 +174,7 @@ describe('sendEmail', () => {
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
-          crn: '1234567890', 
+          crn: '1234567890',
           sbi: '123456789'
         }
       }
@@ -183,7 +183,7 @@ describe('sendEmail', () => {
         reference: data.reference,
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
-        crn: data.orgData.crn, 
+        crn: data.orgData.crn,
         sbi: data.orgData.sbi
       }
 
@@ -262,7 +262,7 @@ describe('sendEmail', () => {
         amount: '£[amount]',
         orgData: {
           orgEmail: 'test@unit-test.org',
-          crn: '1234567890', 
+          crn: '1234567890',
           sbi: '123456789'
         }
       }
@@ -309,7 +309,7 @@ describe('sendEmail', () => {
         orgData: {
           orgEmail: 'test@test-unit.org',
           orgName: 'Farmer',
-          crn: '1234567890', 
+          crn: '1234567890',
           sbi: '123456789'
         }
       }
@@ -317,7 +317,7 @@ describe('sendEmail', () => {
         reference: data.reference,
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
-        crn: data.orgData.crn, 
+        crn: data.orgData.crn,
         sbi: data.orgData.sbi
       }
 
@@ -396,4 +396,3 @@ describe('sendEmail', () => {
     expect(sendEmail.sendEmail).toHaveBeenCalledWith(personalisation, reference, templateId)
   })
 })
-
