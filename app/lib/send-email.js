@@ -56,10 +56,11 @@ const sendCarbonCopy = async (templateId, personalisation) => {
 
 const sendFarmerConfirmationEmail = async (emailParams) => {
   const { reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData: { orgName, orgEmail, crn } } = emailParams
+  const message = { reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }
   if (sfdMessage.enabled) {
-    return await sendMessage({ reference, crn, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    return await sendMessage({ ...message, crn }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   }
-  return await sendMessage({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  return await sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
 const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
