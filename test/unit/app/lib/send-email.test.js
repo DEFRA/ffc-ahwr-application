@@ -1,7 +1,6 @@
 const sendEmail = require('../../../../app/lib/send-email')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../../../../app/config')
 const { templateIdFarmerClaimComplete, templateIdFarmerEndemicsClaimComplete } = require('../../../../app/config').notify
-const { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } = require('../../../../app/config').notify
 // const appInsights = require('applicationinsights')
 
 const error = new Error('Test exception')
@@ -53,8 +52,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
   test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
     if (enabled) {
       sendSFDEmail.mockResolvedValueOnce(error)
-    }
-    else {
+    } else {
       notifyClient.sendEmail.mockResolvedValueOnce(error)
     }
 
@@ -72,8 +70,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
   test('sendFarmerClaimConfirmationEmail returns false on error sending email', async () => {
     if (enabled) {
       sendSFDEmail.mockRejectedValueOnce(error)
-    }
-    else {
+    } else {
       notifyClient.sendEmail.mockRejectedValueOnce(error)
     }
 
@@ -105,8 +102,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
       expect(result).toBe(true)
       if (enabled) {
         expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
-      }
-      else {
+      } else {
         expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       }
     })
@@ -135,8 +131,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
       expect(result).toBe(true)
       if (enabled) {
         expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
-      }
-      else {
+      } else {
         expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       }
     })
@@ -161,8 +156,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
       expect(result).toBe(true)
       if (enabled) {
         expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
-      }
-      else {
+      } else {
         expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
       }
     })
@@ -185,8 +179,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
 
       if (enabled) {
         sendSFDEmail.mockRejectedValueOnce(error)
-      }
-      else {
+      } else {
         notifyClient.sendEmail.mockRejectedValueOnce(error)
       }
 
@@ -219,8 +212,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
       expect([data.amount, '£[amount]']).toContain(expectedPersonalisation.amount)
       if (enabled) {
         expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
-      }
-      else {
+      } else {
         expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       }
     })
@@ -233,8 +225,7 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
       expect(data.orgData).toBeUndefined()
       if (enabled) {
         expect(sendSFDEmail).toHaveBeenCalledTimes(0)
-      }
-      else {
+      } else {
         expect(notifyClient.sendEmail).toHaveBeenCalledTimes(0)
       }
     })
@@ -246,9 +237,8 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
 
       if (enabled) {
         sendSFDEmail = jest.fn().mockRejectedValueOnce(error)
-      }
-      else {
-      notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+      } else {
+        notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
       }
 
       sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
@@ -264,9 +254,8 @@ describe.each([true, false])('Send email tests with conf.sfdMessage.enabled = %s
 
     if (enabled) {
       sendSFDEmail = jest.fn().mockRejectedValueOnce(error)
-    }
-    else {
-    notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+    } else {
+      notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
     }
     sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
 
