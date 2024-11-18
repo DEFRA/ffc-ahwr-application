@@ -143,7 +143,7 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail sends carbon copy email to organization email', async () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and organization', async () => {
       const data = {
         email: 'test@unit-test.com',
         reference: 'RESH-DFEF-6037',
@@ -165,7 +165,7 @@ describe('sendEmail', () => {
       expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail sends carbon copy email to organization email via SFD', async () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and organization via SFD', async () => {
       conf.sfdMessage.enabled = true
       const data = {
         email: 'test@unit-test.com',
@@ -190,6 +190,7 @@ describe('sendEmail', () => {
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
       expect(result).toBe(true)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      expect(sendSFDEmail).toHaveBeenCalledTimes(2)
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email when orgEmail is not provided', async () => {
@@ -233,7 +234,7 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending  emails', async () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending emails', async () => {
       const data = {
         email: 'test@unit-test.com',
         reference: 'RESH-DFEF-6037',
@@ -253,7 +254,7 @@ describe('sendEmail', () => {
       expect(result).toBeTruthy()
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending  emails via SFD', async () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending emails via SFD', async () => {
       conf.sfdMessage.enabled = true
       const data = {
         email: 'test@unit-test.com',
