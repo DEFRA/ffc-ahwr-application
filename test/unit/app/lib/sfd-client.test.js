@@ -47,7 +47,7 @@ describe('sendSFDEmail', () => {
 
     expect(sfdMessageSend).toHaveBeenCalledTimes(1)
     expect(sfdMessageSend).toHaveBeenCalledWith({
-      applicationState: 'failed'
+      sfdMessage: 'failed'
     },
     'uk.gov.ffc.ahwr.sfd.request', expect.anything(), { templateId: '99ef9794-67eb-4f18-bb38-541f30f955f8' })
   })

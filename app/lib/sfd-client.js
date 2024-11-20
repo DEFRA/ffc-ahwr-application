@@ -1,13 +1,11 @@
 const sendMessage = require('../messaging/send-message')
 const { sfdRequestMsgType, sfdMessageQueue } = require('../config')
-const validateSFDClaim = require('../messaging/schema/submit-sfd-schema')
+const validateSFDSchema = require('../messaging/schema/submit-sfd-schema')
 const states = require('../messaging/application/states')
 
 const sendSFDEmail = async (templateId, email, emailInput) => {
-  const { personalisation: { applicationReference, reference, crn, sbi } } = emailInput
-  const customParams = { ...emailInput.personalisation }
-  delete customParams.crn
-  delete customParams.sbi
+  const { personalisation: { applicationReference, reference } } = emailInput
+  const { crn, sbi, ...filteredPersonalisation } = emailInput.personalisation
 
   const sfdMessage = {
     crn,
@@ -16,14 +14,14 @@ const sendSFDEmail = async (templateId, email, emailInput) => {
     claimReference: reference,
     notifyTemplateId: templateId,
     emailAddress: email,
-    customParams,
+    customParams: filteredPersonalisation,
     dateTime: new Date().toISOString()
   }
 
-  if (validateSFDClaim(sfdMessage)) {
+  if (validateSFDSchema(sfdMessage)) {
     return await sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
   } else {
-    return sendMessage({ applicationState: states.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
+    return sendMessage({ sfdMessage: states.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
   }
 }
 
