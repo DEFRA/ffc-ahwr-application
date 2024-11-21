@@ -20,14 +20,14 @@ const submitSFDSchema = joi.object({
   dateTime: joi.date().required()
 })
 
-const validateSFDClaim = (event) => {
+const validateSFDSchema = (event) => {
   const validate = submitSFDSchema.validate(event)
 
   if (validate.error) {
-    console.log('Submit claim validation error:', util.inspect(validate.error, false, null, true))
+    console.log('Submit SFD message validation error:', util.inspect(validate.error, false, null, true))
     return false
   }
   return true
 }
 
-module.exports = validateSFDClaim
+module.exports = validateSFDSchema
