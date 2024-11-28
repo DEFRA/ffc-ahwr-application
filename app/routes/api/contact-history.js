@@ -33,7 +33,7 @@ module.exports = [
         payload: Joi.object({
           user: Joi.string(),
           farmerName: Joi.string(),
-          orgEmail: Joi.string(),
+          orgEmail: Joi.string().allow(null),
           email: Joi.string().required().lowercase().email({ tlds: false }),
           address: Joi.string(),
           sbi: SBI_SCHEMA

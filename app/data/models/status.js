@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  const status = sequelize.define('status', {
+const status = (sequelize, DataTypes) => {
+  const Status = sequelize.define('status', {
     statusId: {
       type: DataTypes.SMALLINT,
       primaryKey: true,
@@ -16,10 +16,12 @@ module.exports = (sequelize, DataTypes) => {
     freezeTableName: true,
     tableName: 'status'
   })
-  status.associate = function (models) {
-    status.hasMany(models.application, {
+  Status.associate = function (models) {
+    Status.hasMany(models.application, {
       foreignKey: 'statusId'
     })
   }
-  return status
+  return Status
 }
+
+module.exports = { status }

@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  const stageExecution = sequelize.define('stage_execution', {
+const stageExecution = (sequelize, DataTypes) => {
+  const StageExecution = sequelize.define('stage_execution', {
     id: {
       type: DataTypes.SMALLINT,
       primaryKey: true,
@@ -40,16 +40,18 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'stage_execution',
     timestamps: false
   })
-  stageExecution.associate = function (models) {
-    stageExecution.hasMany(models.application, {
+  StageExecution.associate = function (models) {
+    StageExecution.hasMany(models.application, {
       sourceKey: 'applicationReference',
       foreignKey: 'reference'
     })
-    stageExecution.hasMany(models.stage_configuration, {
+    StageExecution.hasMany(models.stage_configuration, {
       sourceKey: 'stageConfigurationId',
       foreignKey: 'id'
     })
   }
 
-  return stageExecution
+  return StageExecution
 }
+
+module.exports = { stageExecution }

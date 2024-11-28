@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const claim = require('../../../app/data/models/claim')
+const { claim } = require('../../../app/data/models/claim')
 const generatePreTextForClaim = require('../../../app/lib/generate-pre-text-for-claim')
 jest.mock('../../../app/lib/create-agreement-number')
 jest.mock('../../../app/lib/create-reference')
