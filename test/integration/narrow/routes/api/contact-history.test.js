@@ -105,6 +105,22 @@ describe('Update contact history test', () => {
       expect(contactHistoryRepository.set).toHaveBeenCalledTimes(4)
     })
 
+    test('accepts null orgEmail', async () => {
+      const options = {
+        method: 'PUT',
+        url: '/api/application/contact-history',
+        payload: {
+          orgEmail: null,
+          email: 'test@example.com',
+          sbi: 107544286
+        }
+      }
+
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+    })
+
     test('Return 200 without updating contact history if no application found for the sbi', async () => {
       const options = {
         method: 'PUT',
@@ -127,7 +143,7 @@ describe('Update contact history test', () => {
       expect(contactHistoryRepository.set).toHaveBeenCalledTimes(0)
     })
 
-    test('Will not call set contact history and updateByReference if there is no change in email and the address', async () => {
+    test('does not update when email, orgEmail & address are unchanged', async () => {
       const options = {
         method: 'PUT',
         url: '/api/application/contact-history',
@@ -177,7 +193,7 @@ describe('Update contact history test', () => {
       expect(contactHistoryRepository.set).toHaveBeenCalledTimes(0)
     })
 
-    test('should through error if the sbi is not send', async () => {
+    test('returns 400 when sbi is missing', async () => {
       const options = {
         method: 'PUT',
         url: '/api/application/contact-history',
