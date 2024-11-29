@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  const holiday = sequelize.define('holiday', {
+const holiday = (sequelize, DataTypes) => {
+  const Holiday = sequelize.define('holiday', {
     date: {
       type: DataTypes.DATE,
       primaryKey: true
@@ -13,5 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'holiday',
     timestamps: false
   })
-  return holiday
+  return Holiday
 }
+
+module.exports = { holiday }

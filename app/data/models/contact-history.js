@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  const contactHistory = sequelize.define('contact_history',
+const contactHistory = (sequelize, DataTypes) => {
+  const ContactHistory = sequelize.define('contact_history',
     {
       id: {
         type: DataTypes.UUID,
@@ -42,15 +42,17 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   )
-  contactHistory.associate = function (models) {
-    contactHistory.hasOne(models.application, {
+  ContactHistory.associate = function (models) {
+    ContactHistory.hasOne(models.application, {
       sourceKey: 'applicationReference',
       foreignKey: 'reference'
     })
-    contactHistory.hasOne(models.claim, {
+    ContactHistory.hasOne(models.claim, {
       sourceKey: 'claimReference',
       foreignKey: 'reference'
     })
   }
-  return contactHistory
+  return ContactHistory
 }
+
+module.exports = { contactHistory }

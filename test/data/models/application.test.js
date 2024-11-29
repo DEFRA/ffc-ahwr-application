@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const application = require('../../../app/data/models/application')
+const { application } = require('../../../app/data/models/application')
 jest.mock('../../../app/lib/create-agreement-number')
 jest.mock('../../../app/lib/create-reference')
 

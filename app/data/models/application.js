@@ -1,7 +1,7 @@
 const createAgreementNumber = require('../../lib/create-agreement-number')
 
-module.exports = (sequelize, DataTypes) => {
-  const application = sequelize.define('application', {
+const application = (sequelize, DataTypes) => {
+  const Application = sequelize.define('application', {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
@@ -34,11 +34,14 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   })
-  application.associate = function (models) {
-    application.hasOne(models.status, {
+  Application.associate = function (models) {
+    Application.hasOne(models.status, {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
   }
-  return application
+
+  return Application
 }
+
+module.exports = { application }

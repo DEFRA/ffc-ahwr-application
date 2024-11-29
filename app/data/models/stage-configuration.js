@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  const stageConfiguration = sequelize.define('stage_configuration', {
+const stageConfiguration = (sequelize, DataTypes) => {
+  const StageConfiguration = sequelize.define('stage_configuration', {
     id: {
       type: DataTypes.SMALLINT,
       primaryKey: true,
@@ -28,5 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'stage_configuration',
     timestamps: false
   })
-  return stageConfiguration
+  return StageConfiguration
 }
+
+module.exports = { stageConfiguration }
