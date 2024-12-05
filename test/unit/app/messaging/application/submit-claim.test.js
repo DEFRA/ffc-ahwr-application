@@ -67,7 +67,7 @@ describe(('Submit claim tests'), () => {
     if (state === success && statusId === 9) {
       // if ready to pay reply message and payment message should be sent
       !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(2)
-      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference, orgEmail)
+      expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference, orgEmail, sbi)
       !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
       expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     } else if (state === success && statusId === 5) {
