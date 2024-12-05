@@ -63,8 +63,8 @@ const sendFarmerConfirmationEmail = async (emailParams) => {
   return await sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
-const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail) => {
-  const personalisation = { reference }
+const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail, sbi) => {
+  const personalisation = { reference, sbi }
   if (orgEmail && orgEmail !== email) { sendEmail(orgEmail, personalisation, reference, templateIdFarmerClaimComplete) }
   return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
 }
