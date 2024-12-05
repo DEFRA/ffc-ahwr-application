@@ -64,7 +64,7 @@ const sendFarmerConfirmationEmail = async (emailParams) => {
 }
 
 const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail, sbi) => {
-  const personalisation = { reference, sbi }
+  const personalisation = { applicationReference: reference, sbi }
   if (orgEmail && orgEmail !== email) { sendEmail(orgEmail, personalisation, reference, templateIdFarmerClaimComplete) }
   return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
 }

@@ -70,7 +70,7 @@ describe('sendEmail', () => {
   test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
     notifyClient.sendEmail.mockResolvedValueOnce(error)
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
-    expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
+    expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { applicationReference: reference }, reference })
     expect(response).toBeTruthy()
   })
 
@@ -78,7 +78,7 @@ describe('sendEmail', () => {
     conf.sfdMessage.enabled = true
     sendSFDEmail.mockResolvedValueOnce(error)
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
-    expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { reference }, reference })
+    expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { applicationReference: reference }, reference })
     expect(response).toBeTruthy()
   })
 
