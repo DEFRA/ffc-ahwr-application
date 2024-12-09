@@ -8,14 +8,24 @@ fi
 set -e
 projectRoot="$(a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; cd "$a/.." || return; pwd)"
 
+# Determine which docker compose command is available
+if command -v docker compose &> /dev/null; then
+  compose_cmd="docker compose"
+elif command -v docker-compose &> /dev/null; then
+  compose_cmd="docker-compose"
+else
+  echo "Neither 'docker compose' nor 'docker-compose' is installed." >&2
+  exit 1
+fi
+
 cd "${projectRoot}"
 
-docker-compose down
-docker-compose -f docker-compose.migrate.yaml down
+$compose_cmd down
+$compose_cmd -f docker-compose.migrate.yaml down
 # Ensure container images are up to date
-docker-compose -f docker-compose.migrate.yaml run database-up
+$compose_cmd -f docker-compose.migrate.yaml run database-up
 
-docker-compose \
+$compose_cmd \
   -f docker-compose.yaml \
   -f docker-compose.override.yaml \
   up "$@"

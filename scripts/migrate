@@ -1,4 +1,14 @@
 #!/usr/bin/env sh
 
-docker-compose down
-docker-compose -f docker-compose.migrate.yaml up database-up && docker-compose -f docker-compose.migrate.yaml down
+# Determine which docker compose command is available
+if command -v docker compose &> /dev/null; then
+  compose_cmd="docker compose"
+elif command -v docker-compose &> /dev/null; then
+  compose_cmd="docker-compose"
+else
+  echo "Neither 'docker compose' nor 'docker-compose' is installed." >&2
+  exit 1
+fi
+
+$compose_cmd down
+$compose_cmd -f docker-compose.migrate.yaml up database-up && $compose_cmd -f docker-compose.migrate.yaml down

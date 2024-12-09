@@ -5,6 +5,16 @@ projectRoot="$(a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; cd "$a/.." || return; p
 
 service="ffc-ahwr-application"
 
+# Determine which docker compose command is available
+if command -v docker compose &> /dev/null; then
+  compose_cmd="docker compose"
+elif command -v docker-compose &> /dev/null; then
+  compose_cmd="docker-compose"
+else
+  echo "Neither 'docker compose' nor 'docker-compose' is installed." >&2
+  exit 1
+fi
+
 show_help() {
   echo "
     Usage: scripts/test [OPTION...]
@@ -40,11 +50,11 @@ done
 
 compose() {
   if [ "${watch}" = "true" ]; then
-    docker-compose -f docker-compose.yaml -f docker-compose.test.yaml -f docker-compose.test.watch.yaml -p "${service}-test" "$@"
+    $compose_cmd -f docker-compose.yaml -f docker-compose.test.yaml -f docker-compose.test.watch.yaml -p "${service}-test" "$@"
   elif [ "${debug}" = "true" ]; then
-    docker-compose -f docker-compose.yaml -f docker-compose.test.yaml -f docker-compose.test.watch.yaml -f docker-compose.test.debug.yaml -p "${service}-test" "$@"
+    $compose_cmd -f docker-compose.yaml -f docker-compose.test.yaml -f docker-compose.test.watch.yaml -f docker-compose.test.debug.yaml -p "${service}-test" "$@"
   else
-    docker-compose -f docker-compose.yaml -f docker-compose.test.yaml -p "${service}-test" "$@"
+    $compose_cmd -f docker-compose.yaml -f docker-compose.test.yaml -p "${service}-test" "$@"
   fi
 }
 
@@ -53,11 +63,11 @@ compose() {
 
   # Guarantee clean environment
   compose down -v
-  docker-compose -f docker-compose.migrate.yaml -p "${service}-test" down -v
+  $compose_cmd -f docker-compose.migrate.yaml -p "${service}-test" down -v
 
   # Ensure container images are up to date
   compose build
-  docker-compose -f docker-compose.migrate.yaml -p "${service}-test" run --rm database-up
+  $compose_cmd -f docker-compose.migrate.yaml -p "${service}-test" run --rm database-up
 
   # Run tests
   if [ "${debug}" = "true" ]; then
