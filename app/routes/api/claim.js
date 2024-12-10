@@ -167,11 +167,7 @@ module.exports = [
       handler: async (request, h) => {
         const claims = await getByApplicationReference(request.params.ref)
 
-        if (claims.length) {
-          return h.response(claims).code(200)
-        } else {
-          return h.response('Not Found').code(404).takeover()
-        }
+        return h.response(claims).code(200)
       }
     }
   }, {
