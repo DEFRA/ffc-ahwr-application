@@ -130,7 +130,7 @@ describe('Get claims test', () => {
     claimRepository.getByApplicationReference.mockResolvedValue(data)
 
     const { result } = await server.inject(options)
-    console.log(result)
+
     expect(result).toEqual(data)
   })
 
