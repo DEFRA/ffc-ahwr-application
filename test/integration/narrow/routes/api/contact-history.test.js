@@ -19,12 +19,13 @@ describe('Update contact history test', () => {
   describe('GET contact history route', () => {
     const reference = 'ABC-1234'
     const url = `/api/application/contact-history/${reference}`
-    test('returns 200', async () => {
+
+    test('returns contact history', async () => {
       const options = {
         method: 'GET',
         url
       }
-      contactHistoryRepository.getAllByApplicationReference.mockResolvedValueOnce([
+      const data = [
         {
           dataValues: {
             id: '67f8930f-a674-4fff-998a-3e11317aa2be',
@@ -38,22 +39,28 @@ describe('Update contact history test', () => {
             updatedBy: null
           }
         }
-      ])
-      const res = await server.inject(options)
-      expect(res.statusCode).toBe(200)
-      expect(contactHistoryRepository.getAllByApplicationReference).toHaveBeenCalledTimes(1)
+      ]
+      contactHistoryRepository.getAllByApplicationReference.mockResolvedValueOnce(data)
+
+      const { result } = await server.inject(options)
+
+      expect(result).toEqual(data)
     })
-    test('returns 404', async () => {
+
+    test('returns empty history array', async () => {
       const options = {
         method: 'GET',
         url
       }
-      contactHistoryRepository.getAllByApplicationReference.mockResolvedValueOnce([])
-      const res = await server.inject(options)
-      expect(res.statusCode).toBe(404)
-      expect(contactHistoryRepository.getAllByApplicationReference).toHaveBeenCalledTimes(1)
+      const data = []
+      contactHistoryRepository.getAllByApplicationReference.mockResolvedValueOnce(data)
+
+      const { result } = await server.inject(options)
+
+      expect(result).toEqual(data)
     })
   })
+
   describe('PUT route', () => {
     test('Update email, orgEmail, farmerName and address fields in application and add the changed fields to contact history table', async () => {
       const options = {

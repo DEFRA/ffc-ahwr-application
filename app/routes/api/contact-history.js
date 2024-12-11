@@ -17,11 +17,8 @@ module.exports = [
       },
       handler: async (request, h) => {
         const history = await contactHistoryRepository.getAllByApplicationReference(request.params.ref)
-        if (history.length) {
-          return h.response(history).code(200)
-        } else {
-          return h.response('Not Found').code(404).takeover()
-        }
+
+        return h.response(history).code(200)
       }
     }
   },

@@ -61,13 +61,14 @@ describe('Get claims test', () => {
     expect(claimRepository.getByReference).toHaveBeenCalledTimes(1)
     expect(res.payload).toBe('Not Found')
   })
-  test('Get claims by application reference and return 200', async () => {
+
+  test('get-by-application-reference returns claims', async () => {
     const options = {
       method: 'GET',
       url: '/api/claim/get-by-application-reference/AHWR-0AD3-3322'
     }
 
-    claimRepository.getByApplicationReference.mockResolvedValue([
+    const data = [
       {
         id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
         reference: 'AHWR-5602-BAC6',
@@ -124,26 +125,28 @@ describe('Get claims test', () => {
           status: 'ON HOLD'
         }
       }
-    ])
+    ]
 
-    const res = await server.inject(options)
+    claimRepository.getByApplicationReference.mockResolvedValue(data)
 
-    expect(res.statusCode).toBe(200)
-    expect(claimRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
+    const { result } = await server.inject(options)
+
+    expect(result).toEqual(data)
   })
-  test('When application does not have any claims return 404', async () => {
+
+  test('get-by-application-reference returns empty claims array', async () => {
     const options = {
       method: 'GET',
       url: '/api/claim/get-by-application-reference/AHWR-5602-BAC6'
     }
 
-    claimRepository.getByApplicationReference.mockResolvedValue([])
+    const data = []
 
-    const res = await server.inject(options)
+    claimRepository.getByApplicationReference.mockResolvedValue(data)
 
-    expect(res.statusCode).toBe(404)
-    expect(claimRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
-    expect(res.payload).toBe('Not Found')
+    const { result } = await server.inject(options)
+
+    expect(result).toEqual(data)
   })
 })
 
