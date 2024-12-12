@@ -1,4 +1,4 @@
-const { DefaultAzureCredential } = require('@azure/identity')
+const { DefaultAzureCredential, getBearerTokenProvider } = require('@azure/identity')
 
 function isProd () {
   return process.env.NODE_ENV === 'production'
@@ -7,9 +7,12 @@ function isProd () {
 const hooks = {
   beforeConnect: async (cfg) => {
     if (isProd()) {
-      const credential = new DefaultAzureCredential()
-      const accessToken = await credential.getToken('https://ossrdbms-aad.database.windows.net')
-      cfg.password = accessToken.token
+      const credential = new DefaultAzureCredential({ managedIdentityClientId: process.env.AZURE_CLIENT_ID })
+      const tokenProvider = getBearerTokenProvider(
+        credential,
+        'https://ossrdbms-aad.database.windows.net/.default'
+      )
+      cfg.password = tokenProvider
     }
   }
 }

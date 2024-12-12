@@ -8,7 +8,7 @@ if (useConnectionString === true) {
   blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
 } else {
   const uri = `https://${storageAccount}.blob.core.windows.net`
-  blobServiceClient = new BlobServiceClient(uri, new DefaultAzureCredential())
+  blobServiceClient = new BlobServiceClient(uri, new DefaultAzureCredential({ managedIdentityClientId: process.env.AZURE_CLIENT_ID }))
 }
 
 const getBlob = async (filename) => {
