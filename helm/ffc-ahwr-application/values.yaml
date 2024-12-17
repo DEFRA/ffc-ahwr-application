@@ -6,7 +6,7 @@ workstream: ffc-ahwr
 
 labels: {}
 
-aadPodIdentity: true
+workloadIdentity: true
 
 appInsights:
   connectionString:

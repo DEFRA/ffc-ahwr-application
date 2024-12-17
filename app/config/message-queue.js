@@ -7,7 +7,8 @@ const sharedConfigSchema = {
   username: Joi.string(),
   useCredentialChain: Joi.bool().default(false),
   retries: 50,
-  retryWaitInMs: 100
+  retryWaitInMs: 100,
+  managedIdentityClientId: Joi.string().optional()
 }
 
 const schema = Joi.object({
@@ -48,7 +49,8 @@ const sharedConfig = {
   host: process.env.MESSAGE_QUEUE_HOST,
   password: process.env.MESSAGE_QUEUE_PASSWORD,
   username: process.env.MESSAGE_QUEUE_USER,
-  useCredentialChain: process.env.NODE_ENV === 'production'
+  useCredentialChain: process.env.NODE_ENV === 'production',
+  managedIdentityClientId: process.env.AZURE_CLIENT_ID
 }
 
 const config = {
