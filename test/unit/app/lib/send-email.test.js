@@ -1,10 +1,6 @@
 const sendEmail = require('../../../../app/lib/send-email')
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../../../../app/config')
 const { templateIdFarmerClaimComplete, templateIdFarmerEndemicsClaimComplete } = require('../../../../app/config').notify
-// const appInsights = require('applicationinsights')
-
-const error = new Error('Test exception')
-error.response = { data: 'failed to send email' }
 
 const email = 'test@unit-test.com'
 const reference = 'AHWR-B977-4D0D'
@@ -68,7 +64,6 @@ describe('sendEmail', () => {
   })
 
   test('sendFarmerClaimConfirmationEmail returns true on successful email', async () => {
-    notifyClient.sendEmail.mockResolvedValueOnce(error)
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
     expect(notifyClient.sendEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { applicationReference: reference }, reference })
     expect(response).toBeTruthy()
@@ -76,21 +71,20 @@ describe('sendEmail', () => {
 
   test('sendFarmerClaimConfirmationEmail returns true on successful email via SFD', async () => {
     conf.sfdMessage.enabled = true
-    sendSFDEmail.mockResolvedValueOnce(error)
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
     expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerClaimComplete, email, { personalisation: { applicationReference: reference }, reference })
     expect(response).toBeTruthy()
   })
 
   test('sendFarmerClaimConfirmationEmail returns false on error sending email', async () => {
-    notifyClient.sendEmail.mockRejectedValueOnce(error)
+    notifyClient.sendEmail.mockRejectedValueOnce(new Error())
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
     expect(response).toBe(false)
   })
 
   test('sendFarmerClaimConfirmationEmail returns false on error sending email via SFD', async () => {
     conf.sfdMessage.enabled = true
-    sendSFDEmail.mockRejectedValueOnce(error)
+    sendSFDEmail.mockRejectedValueOnce(new Error())
     const response = await sendEmail.sendFarmerClaimConfirmationEmail(email, reference)
     expect(response).toBe(false)
   })
@@ -246,10 +240,6 @@ describe('sendEmail', () => {
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
 
-      const error = new Error('Test exception')
-      error.response = { data: 'failed to send email' }
-
-      notifyClient.sendEmail.mockRejectedValueOnce(error)
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
       expect(result).toBeTruthy()
     })
@@ -269,10 +259,6 @@ describe('sendEmail', () => {
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
 
-      const error = new Error('Test exception')
-      error.response = { data: 'failed to send email' }
-
-      sendSFDEmail.mockRejectedValueOnce(error)
       const result = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
       expect(result).toBeTruthy()
     })
@@ -353,7 +339,7 @@ describe('sendEmail', () => {
       const personalisation = { name: 'farmer' }
       const reference = 'AHWR-B977-4D0D'
 
-      notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+      notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(new Error())
       sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
       const response = await sendEmail.sendEmail(email, personalisation, reference, templateId)
       expect(response).toBe(false)
@@ -366,31 +352,31 @@ describe('sendEmail', () => {
       const personalisation = { name: 'farmer' }
       const reference = 'AHWR-B977-4D0D'
 
-      sendSFDEmail = jest.fn().mockRejectedValueOnce(error)
+      sendSFDEmail = jest.fn().mockRejectedValueOnce(new Error())
       sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
       const response = await sendEmail.sendEmail(email, personalisation, reference, templateId)
       expect(response).toBe(false)
     })
   })
-  test(' fail to sendEmail  if values  missing or incomplete', async () => {
+  test('fails to sendEmail if values missing or incomplete', async () => {
     const templateId = 'templateId'
     const personalisation = { name: 'farmer' }
     const reference = 'AHWR-B977-4D0D'
 
-    notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(error)
+    notifyClient.sendEmail = jest.fn().mockRejectedValueOnce(new Error())
     sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
     const response = await sendEmail.sendEmail(personalisation, reference, templateId)
     expect(response).toBe(false)
     expect(sendEmail.sendEmail).toHaveBeenCalledWith(personalisation, reference, templateId)
   })
 
-  test(' fail to sendEmail  if values  missing or incomplete via SFD', async () => {
+  test('fails to sendEmail if values missing or incomplete via SFD', async () => {
     conf.sfdMessage.enabled = true
     const templateId = 'templateId'
     const personalisation = { name: 'farmer' }
     const reference = 'AHWR-B977-4D0D'
 
-    sendSFDEmail = jest.fn().mockRejectedValueOnce(error)
+    sendSFDEmail = jest.fn().mockRejectedValueOnce(new Error())
     sendEmail.sendEmail = jest.fn().mockReturnValueOnce(false)
     const response = await sendEmail.sendEmail(personalisation, reference, templateId)
     expect(response).toBe(false)

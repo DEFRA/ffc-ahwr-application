@@ -113,7 +113,8 @@ module.exports = [{
 
       request.logger.setBindings({ reference })
 
-      const application = (await get(reference))
+      const application = await get(reference)
+
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
       }

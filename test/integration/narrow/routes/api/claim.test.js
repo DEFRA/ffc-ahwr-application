@@ -148,6 +148,32 @@ describe('Get claims test', () => {
 
     expect(result).toEqual(data)
   })
+
+  test('get-by-application-reference accepts a valid typeOfLivestock query string', async () => {
+    const options = {
+      method: 'GET',
+      url: '/api/claim/get-by-application-reference/AHWR-0AD3-3322?typeOfLivestock=pigs'
+    }
+
+    const data = []
+
+    claimRepository.getByApplicationReference.mockResolvedValue(data)
+
+    const { result } = await server.inject(options)
+
+    expect(result).toEqual(data)
+  })
+
+  test('get-by-application-reference rejects an invalid typeOfLivestock query string', async () => {
+    const options = {
+      method: 'GET',
+      url: '/api/claim/get-by-application-reference/AHWR-0AD3-3322?typeOfLivestock=cows'
+    }
+
+    const { result } = await server.inject(options)
+
+    expect(result).toEqual({ error: 'Bad Request', message: 'Invalid request query input', statusCode: 400 })
+  })
 })
 
 describe('Post claim test', () => {

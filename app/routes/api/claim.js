@@ -12,7 +12,7 @@ const { sendFarmerEndemicsClaimConfirmationEmail } = require('../../lib/send-ema
 const { getAmount } = require('../../lib/getAmount')
 const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 const { searchPayloadValidations } = require('./helpers')
-const { optionalPIHunt } = require('../../config')
+const { livestockTypes } = require('../../constants/claim')
 
 const isReview = (payload) => payload.type === review
 const isFollowUp = (payload) => payload.type === endemics
@@ -161,16 +161,21 @@ module.exports = [
     options: {
       validate: {
         params: Joi.object({
-          ref: Joi.string().valid()
+          ref: Joi.string()
+        }),
+        query: Joi.object({
+          typeOfLivestock: Joi.string().optional().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep)
         })
       },
       handler: async (request, h) => {
-        const claims = await getByApplicationReference(request.params.ref)
+        const { typeOfLivestock } = request.query
+        const claims = await getByApplicationReference(request.params.ref, typeOfLivestock)
 
         return h.response(claims).code(200)
       }
     }
-  }, {
+  },
+  {
     method: 'POST',
     path: '/api/claim/search',
     options: {
@@ -193,7 +198,8 @@ module.exports = [
         return h.response({ total, claims }).code(200)
       }
     }
-  }, {
+  },
+  {
     method: 'POST',
     path: '/api/claim/is-urn-unique',
     options: {
@@ -346,7 +352,8 @@ module.exports = [
         request.logger.setBindings({ sbi })
 
         let optionalPiHuntValue
-        if (optionalPIHunt.enabled) {
+
+        if (optionalPiHuntEnabled) {
           optionalPiHuntValue = claim.dataValues.data.piHunt === piHuntValues.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
         }
 
