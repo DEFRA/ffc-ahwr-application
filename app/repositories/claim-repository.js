@@ -23,11 +23,18 @@ async function getByReference (reference) {
 /**
  * Get claims by applicationReference number
  * @param {string} applicationReference
+ * @param {string} typeOfLivestock
  * @returns an array of claims object with their statuses.
  */
-async function getByApplicationReference (applicationReference) {
+async function getByApplicationReference (applicationReference, typeOfLivestock) {
+  let where = { applicationReference: applicationReference.toUpperCase() }
+
+  if (typeOfLivestock) {
+    where = { ...where, 'data.typeOfLivestock': typeOfLivestock }
+  }
+
   const result = await models.claim.findAll({
-    where: { applicationReference: applicationReference.toUpperCase() },
+    where,
     include: [
       {
         model: models.status,
@@ -37,7 +44,7 @@ async function getByApplicationReference (applicationReference) {
     order: [['createdAt', 'DESC']]
   })
 
-  return result.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? a : b))
+  return result
 }
 
 /**
@@ -114,9 +121,9 @@ async function getAllClaimedClaims (claimStatusIds) {
 }
 /**
  * Get a boolean value indicating if the URN number is unique
- * @param {number} SBI
+ * @param {number} sbi
  * @param {string} laboratoryURN
- * @returns {boolean} isURNUnique
+ * @returns {Promise<{ isURNUnique: boolean }>} isURNUnique
  */
 async function isURNNumberUnique (sbi, laboratoryURN) {
   const applications = await models.application.findAll({ where: { 'data.organisation.sbi': sbi } })
@@ -153,11 +160,11 @@ function evalSortField (sort) {
  * Search claims by Search Type and Search Text.
  * Currently Support type, type of visit, claim date,Status, SBI number, claim Reference Number and species
  *
- * @param {string} searchText contain status, type of visit, claim date,Status, SBI number, claim Reference Number and species
- * @param {string} searchType contain any of keyword ['status','ref','sbi', 'type', 'species', 'date']
- * @param {integer} offset index of row where page should start from
- * @param {integer} limit page limit
- * @param {object} object contain field and direction for sort order
+ * @param {string} searchText contains status, type of visit, claim date,Status, SBI number, claim Reference Number and species
+ * @param {string} searchType contains any of keyword ['status','ref','sbi', 'type', 'species', 'date']
+ * @param {number} offset index of row where page should start from
+ * @param {number} limit page limit
+ * @param {object} sort contains field and direction for sort order
  * @returns all claims with page
  */
 async function searchClaims (searchText, searchType, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
@@ -174,6 +181,7 @@ async function searchClaims (searchText, searchType, offset = 0, limit = 10, sor
   }
 
   if (!['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(searchType)) return { total: 0, claims: [] }
+
   if (searchText) {
     switch (searchType) {
       case 'ref':
