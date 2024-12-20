@@ -1,6 +1,7 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/claim-repository')
 const data = require('../../../../app/data')
+const { livestockTypes } = require('../../../../app/constants/claim')
 
 jest.mock('../../../../app/data')
 
@@ -180,11 +181,62 @@ describe('Claim repository test', () => {
       .mockResolvedValue(claims)
 
     const result = await repository.getByApplicationReference(
-      application.reference
+      application.reference, undefined
     )
 
     expect(data.models.claim.findAll).toHaveBeenCalledTimes(1)
     expect(claims).toEqual(result)
+  })
+  test('Get all claims by application reference when a query string is passed to the function', async () => {
+    const application = {
+      id: '0ad33322-c833-40c9-8116-0a293f0850a1',
+      reference: 'AHWR-0AD3-3322',
+      data: {
+        reference: null,
+        declaration: true,
+        offerStatus: 'accepted',
+        whichReview: 'sheep',
+        organisation: {
+          sbi: '106785889',
+          name: 'Mr Jack Whaling',
+          email: 'johnallany@nallanhoje.com.test',
+          address:
+            'Elmtree Farm,Gamlingay,NORTH MILFORD GRANGE,LISKEARD,DL12 9TY,United Kingdom',
+          farmerName: 'John Allan'
+        },
+        eligibleSpecies: 'yes',
+        confirmCheckDetails: 'yes'
+      },
+      claimed: false,
+      createdAt: '2023-12-20T15:32:59.262Z',
+      updatedAt: '2023-12-20T15:32:59.359Z',
+      createdBy: 'admin',
+      updatedBy: null,
+      statusId: 1,
+      type: 'VV',
+      status: {
+        status: 'AGREED'
+      }
+    }
+
+    data.models.claim.findAll.mockResolvedValueOnce([])
+
+    const result = await repository.getByApplicationReference(
+      application.reference, livestockTypes.beef
+    )
+
+    expect(data.models.claim.findAll).toHaveBeenCalledWith({
+      include: [{
+        attributes: ['status'],
+        model: expect.anything()
+      }],
+      order: [['createdAt', 'DESC']],
+      where: {
+        applicationReference: 'AHWR-0AD3-3322',
+        'data.typeOfLivestock': livestockTypes.beef
+      }
+    })
+    expect(result).toEqual([])
   })
   test('Get claim by reference', async () => {
     const claim = {
