@@ -1,4 +1,5 @@
-const createAgreementNumber = require('../../lib/create-agreement-number')
+const createReference = require('../../lib/create-reference')
+const { mappedClaimType } = require('../../constants/claim')
 
 const claim = (sequelize, DataTypes) => {
   const Claim = sequelize.define('claim',
@@ -35,7 +36,10 @@ const claim = (sequelize, DataTypes) => {
       tableName: 'claim',
       hooks: {
         afterCreate: async (claimRecord, _) => {
-          claimRecord.dataValues.reference = createAgreementNumber('claim', { id: claimRecord?.id, type: claimRecord?.type, typeOfLivestock: claimRecord?.dataValues?.data?.typeOfLivestock })
+          const typeOfClaimAsLetter = claimRecord.type
+          const typeOfClaim = mappedClaimType[typeOfClaimAsLetter]
+          const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
+          claimRecord.dataValues.reference = createReference(typeOfClaim, typeOfLivestock)
           claimRecord.dataValues.updatedBy = 'admin'
           await claimRecord.update(claimRecord.dataValues)
         }
