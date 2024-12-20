@@ -1,6 +1,16 @@
 const { createClaimReference } = require('../../lib/create-reference')
 const { mappedClaimType } = require('../../constants/claim')
 
+const afterCreate = async (claimRecord, _) => {
+  const typeOfClaimAsLetter = claimRecord.type
+  const typeOfClaim = mappedClaimType[typeOfClaimAsLetter]
+  const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
+  claimRecord.dataValues.reference = createClaimReference(claimRecord.dataValues.reference, typeOfClaim, typeOfLivestock)
+  claimRecord.dataValues.updatedBy = 'admin'
+  claimRecord.dataValues.updatedAt = new Date()
+  await claimRecord.update(claimRecord.dataValues)
+}
+
 const claim = (sequelize, DataTypes) => {
   const Claim = sequelize.define('claim',
     {
@@ -35,14 +45,7 @@ const claim = (sequelize, DataTypes) => {
       freezeTableName: true,
       tableName: 'claim',
       hooks: {
-        afterCreate: async (claimRecord, _) => {
-          const typeOfClaimAsLetter = claimRecord.type
-          const typeOfClaim = mappedClaimType[typeOfClaimAsLetter]
-          const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
-          claimRecord.dataValues.reference = createClaimReference(typeOfClaim, typeOfLivestock)
-          claimRecord.dataValues.updatedBy = 'admin'
-          await claimRecord.update(claimRecord.dataValues)
-        }
+        afterCreate
       }
     }
   )
@@ -59,4 +62,4 @@ const claim = (sequelize, DataTypes) => {
   return Claim
 }
 
-module.exports = { claim }
+module.exports = { claim, afterCreate }

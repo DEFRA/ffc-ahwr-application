@@ -12,41 +12,28 @@ describe('createApplicationReference', () => {
 
 describe('createClaimReference', () => {
   test('should throw an error if an incorrect claim type is passed', () => {
-    expect(() => createClaimReference('claim', 'beef')).toThrow()
+    expect(() => createClaimReference('TEMP-A2SQ-PFNF', 'claim', 'beef')).toThrow()
   })
 
   test('should throw an error if an incorrect livestock type is passed', () => {
-    expect(() => createClaimReference('review', 'beef cattle')).toThrow()
+    expect(() => createClaimReference('TEMP-A2SQ-PFNF', 'review', 'beef cattle')).toThrow()
   })
 
-  test('should return a string temp reference for an beef review claim', () => {
-    const tempRef = createClaimReference('review', 'beef')
+  test('should return a temp reference for an beef review claim', () => {
+    const result = createClaimReference('TEMP-A2SQ-PFNF', 'review', 'beef')
 
-    // A-Z excluding O, and 1-9
-    const regex = /^REBC-[A-NP-Z1-9]{4}-[A-NP-Z1-9]{4}$/
-    expect(tempRef).toMatch(regex)
+    expect(result).toEqual('REBC-A2SQ-PFNF')
   })
 
-  test('should return a string temp reference for an sheep endemics claim', () => {
-    const tempRef = createClaimReference('endemics', 'sheep')
+  test('should return a temp reference for an sheep endemics claim', () => {
+    const result = createClaimReference('TEMP-A2SQ-PFNF', 'endemics', 'sheep')
 
-    // A-Z excluding O, and 1-9
-    const regex = /^FUSH-[A-NP-Z1-9]{4}-[A-NP-Z1-9]{4}$/
-    expect(tempRef).toMatch(regex)
+    expect(result).toEqual('FUSH-A2SQ-PFNF')
   })
 
-  test('should not generate the same ID twice in 20,000 IDs', () => {
-    const ids = []
-    const numberToCreate = 20000
+  test('should return a temp reference for an dairy endemics claim', () => {
+    const result = createClaimReference('TEMP-A2SQ-PFNF', 'endemics', 'dairy')
 
-    for (let index = 0; index < numberToCreate; index++) {
-      ids.push(createClaimReference('review', 'pigs'))
-    }
-
-    expect(ids.length).toEqual(numberToCreate)
-
-    const set = new Set(ids)
-
-    expect(set.size).toEqual(numberToCreate)
+    expect(result).toEqual('FUDC-A2SQ-PFNF')
   })
 })

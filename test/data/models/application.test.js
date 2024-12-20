@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize')
-const { application } = require('../../../app/data/models/application')
-jest.mock('../../../app/lib/create-reference')
+const { application, afterCreate } = require('../../../app/data/models/application')
 
 // Mocking the sequelize instance
 const mockSequelize = {
@@ -14,9 +13,6 @@ const mockSequelize = {
   UUIDV4: 'mock-uuid-v4'
 }
 describe('application', () => {
-  beforeAll(() => {
-    Date.now = jest.fn(() => 1482363367071)
-  })
   afterAll(async () => {
     jest.clearAllMocks()
   })
@@ -46,53 +42,32 @@ describe('application', () => {
     expect(applicationModel.create).toBeDefined()
     expect(applicationModel.associate).toBeDefined()
   })
+})
 
-  test('should call createAgreementNumber when endemics is true  ', async () => {
-    application(mockSequelize, DataTypes)
+describe('afterCreate', () => {
+  test('it updates the record as required, and sets the updated at to now', async () => {
+    jest
+      .useFakeTimers()
+      .setSystemTime(new Date('2020-01-01'))
 
-    const mockEndemics = {
-      enabled: true
-    }
-    const mockCreateReference = jest.fn().mockReturnValue('AHWR-1234-APP1')
-    const mockCreateAgreementNumber = jest.fn().mockReturnValue('IAHW-1234-2345')
-
-    mockCreateAgreementNumber()
-    const mockApplicationRecord = {
-      id: 'mock-id',
+    const mockUpdateFunction = jest.fn()
+    const applicationRecord = {
       dataValues: {
-        reference: 'IAHW-1234-2345'
+        reference: 'TEMP-E31F-HG76',
+        updatedBy: '',
+        updatedAt: new Date(2000, 0, 1)
       },
-      update: jest.fn()
+      update: mockUpdateFunction
     }
 
-    expect(mockEndemics.enabled).toBe(true)
-    expect(mockCreateReference).toHaveBeenCalledTimes(0)
-    expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(1)
-    expect(mockApplicationRecord.dataValues.reference).toMatch('IAHW-1234-2345')
-  })
-  test('should call createReference when endemics is false  ', async () => {
-    application(mockSequelize, DataTypes)
+    await afterCreate(applicationRecord)
 
-    const mockEndemics = {
-      enabled: false
-    }
+    expect(mockUpdateFunction).toHaveBeenCalledWith({
+      reference: 'IAHW-E31F-HG76',
+      updatedBy: 'admin',
+      updatedAt: new Date('2020-01-01')
+    })
 
-    const mockCreateAgreementNumber = jest.fn().mockReturnValue('IAHW-1234-2345')
-    const mockCreateReference = jest.fn().mockImplementation((id) => ('AHWR-1234-APP1'))
-    const mockApplicationRecord = {
-      id: 'mock-id',
-      dataValues: {
-        reference: mockEndemics.enabled ? mockCreateAgreementNumber() : mockCreateReference()
-      },
-      update: jest.fn()
-    }
-    mockCreateReference(mockApplicationRecord.id)
-
-    expect(mockEndemics.enabled).toBe(false)
-    expect(mockCreateReference).toHaveBeenCalled()
-    expect(mockCreateAgreementNumber).toHaveBeenCalledTimes(0)
-    expect(mockApplicationRecord.dataValues.reference).toMatch('AHWR-1234-APP1')
-    expect(mockApplicationRecord.dataValues.reference).toMatch(mockApplicationRecord.dataValues.reference.toUpperCase())
-    expect(mockCreateReference).toHaveBeenCalledWith(mockApplicationRecord.id)
+    jest.useRealTimers()
   })
 })

@@ -1,5 +1,3 @@
-const { randomInt } = require('node:crypto')
-
 /**
  * Generate prefix according to the type of claim the reference being created for
  * and for which species of livestock.
@@ -44,21 +42,17 @@ const getPrefix = (typeOfReference, typeOfLivestock) => {
 }
 
 /**
- * Generate unique reference number prefixed by specific codes for claims
- * e.g. FUBC-A1DD-AAEE for a follow up beef cattle claim
+ * Replaces the TEMP part of the reference ID to the appropriate 4 characters
+ * e.g. TEMP-A1DD-AAEE becomes FUBC-A1DD-AAEE for a follow up beef cattle claim
+ * @param {string} id temp reference
  * @param {('review' | 'endemics')} typeOfReference type of claim reference to be generated
  * @param {('beef' | 'dairy' | 'pigs' | 'sheep' | undefined)} [typeOfLivestock] which species is the reference being generated for
  * @returns {string} unique reference
  */
-const createClaimReference = (typeOfReference, typeOfLivestock) => {
+const createClaimReference = (id, typeOfReference, typeOfLivestock) => {
   const prefix = getPrefix(typeOfReference, typeOfLivestock)
 
-  const charset = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'
-  const id = Array.from({ length: 8 }, () => charset.charAt(randomInt(0, charset.length))).join('')
-  const firstFour = id.slice(0, 4)
-  const secondFour = id.slice(4)
-
-  return `${prefix}-${firstFour}-${secondFour}`
+  return id.replace('TEMP', prefix)
 }
 
 /**
