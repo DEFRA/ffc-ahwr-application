@@ -1,18 +1,16 @@
 const { randomInt } = require('node:crypto')
 
 /**
- * Generate prefix according to the type of reference being created,
+ * Generate prefix according to the type of claim the reference being created for
  * and for which species of livestock.
- * @param {('application' | 'review' | 'endemics')} typeOfReference type of reference to be generated
- * @param {('beef' | 'dairy' | 'pigs' | 'sheep' | undefined)} [typeOfLivestock] which species is the reference being generated for
+ * @param {('review' | 'endemics')} typeOfReference type of reference to be generated
+ * @param {('beef' | 'dairy' | 'pigs' | 'sheep')} typeOfLivestock which species is the reference being generated for
  * @returns {string} prefix
  */
 const getPrefix = (typeOfReference, typeOfLivestock) => {
   let firstTwoCharacters = ''
 
   switch (typeOfReference) {
-    case 'application':
-      return 'IAHW'
     case 'review':
       firstTwoCharacters = 'RE'
       break
@@ -46,15 +44,13 @@ const getPrefix = (typeOfReference, typeOfLivestock) => {
 }
 
 /**
- * Generate unique reference number, prefixed by IAHW for applications
- * or prefixed by specific codes for claims.
- * e.g. IAHW-Z4F1-F2PC for an application
- * or FUBC-A1DD-AAEE for a follow up beef cattle claim
- * @param {('application' | 'review' | 'endemics')} typeOfReference type of reference to be generated
+ * Generate unique reference number prefixed by specific codes for claims
+ * e.g. FUBC-A1DD-AAEE for a follow up beef cattle claim
+ * @param {('review' | 'endemics')} typeOfReference type of claim reference to be generated
  * @param {('beef' | 'dairy' | 'pigs' | 'sheep' | undefined)} [typeOfLivestock] which species is the reference being generated for
  * @returns {string} unique reference
  */
-const createReference = (typeOfReference, typeOfLivestock) => {
+const createClaimReference = (typeOfReference, typeOfLivestock) => {
   const prefix = getPrefix(typeOfReference, typeOfLivestock)
 
   const charset = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'
@@ -65,4 +61,13 @@ const createReference = (typeOfReference, typeOfLivestock) => {
   return `${prefix}-${firstFour}-${secondFour}`
 }
 
-module.exports = createReference
+/**
+ * Takes an existing claim and replaces the prefix with IAHW
+ * @param {string} id temp reference
+ * @returns {string} unique reference
+ */
+const createApplicationReference = (id) => {
+  return id.replace('TEMP', 'IAHW')
+}
+
+module.exports = { createClaimReference, createApplicationReference }

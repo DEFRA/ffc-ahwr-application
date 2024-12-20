@@ -1,4 +1,4 @@
-const createReference = require('../../lib/create-reference')
+const { createClaimReference } = require('../../lib/create-reference')
 const { mappedClaimType } = require('../../constants/claim')
 
 const claim = (sequelize, DataTypes) => {
@@ -39,7 +39,7 @@ const claim = (sequelize, DataTypes) => {
           const typeOfClaimAsLetter = claimRecord.type
           const typeOfClaim = mappedClaimType[typeOfClaimAsLetter]
           const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
-          claimRecord.dataValues.reference = createReference(typeOfClaim, typeOfLivestock)
+          claimRecord.dataValues.reference = createClaimReference(typeOfClaim, typeOfLivestock)
           claimRecord.dataValues.updatedBy = 'admin'
           await claimRecord.update(claimRecord.dataValues)
         }

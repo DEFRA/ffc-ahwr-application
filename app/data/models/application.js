@@ -1,4 +1,4 @@
-const createReference = require('../../lib/create-reference')
+const { createApplicationReference } = require('../../lib/create-reference')
 
 const application = (sequelize, DataTypes) => {
   const Application = sequelize.define('application', {
@@ -27,7 +27,7 @@ const application = (sequelize, DataTypes) => {
     tableName: 'application',
     hooks: {
       afterCreate: async (applicationRecord, _) => {
-        applicationRecord.dataValues.reference = createReference('application')
+        applicationRecord.dataValues.reference = createApplicationReference(applicationRecord.dataValues.reference)
         applicationRecord.dataValues.updatedBy = 'admin'
         applicationRecord.dataValues.updatedAt = new Date()
         await applicationRecord.update(applicationRecord.dataValues)
