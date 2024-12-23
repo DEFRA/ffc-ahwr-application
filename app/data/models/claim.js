@@ -1,7 +1,7 @@
 const { createClaimReference } = require('../../lib/create-reference')
 const { mappedClaimType } = require('../../constants/claim')
 
-const afterCreate = async (claimRecord, _) => {
+const updateClaimRecord = async (claimRecord, _) => {
   const typeOfClaimAsLetter = claimRecord.type
   const typeOfClaim = mappedClaimType[typeOfClaimAsLetter]
   const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
@@ -45,7 +45,7 @@ const claim = (sequelize, DataTypes) => {
       freezeTableName: true,
       tableName: 'claim',
       hooks: {
-        afterCreate
+        afterCreate: updateClaimRecord
       }
     }
   )
@@ -62,4 +62,4 @@ const claim = (sequelize, DataTypes) => {
   return Claim
 }
 
-module.exports = { claim, afterCreate }
+module.exports = { claim, updateClaimRecord }

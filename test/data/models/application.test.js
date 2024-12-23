@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const { application, afterCreate } = require('../../../app/data/models/application')
+const { application, updateApplicationRecord } = require('../../../app/data/models/application')
 
 // Mocking the sequelize instance
 const mockSequelize = {
@@ -44,7 +44,7 @@ describe('application', () => {
   })
 })
 
-describe('afterCreate', () => {
+describe('updateApplicationRecord', () => {
   test('it updates the record as required, and sets the updated at to now', async () => {
     jest
       .useFakeTimers()
@@ -60,7 +60,7 @@ describe('afterCreate', () => {
       update: mockUpdateFunction
     }
 
-    await afterCreate(applicationRecord)
+    await updateApplicationRecord(applicationRecord)
 
     expect(mockUpdateFunction).toHaveBeenCalledWith({
       reference: 'IAHW-E31F-HG76',

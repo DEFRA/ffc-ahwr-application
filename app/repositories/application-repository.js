@@ -65,7 +65,7 @@ async function getLatestApplicationsBySbi (sbi) {
         order: [['createdAt', 'DESC']],
         raw: true
       })
-  return result.sort((a, b) => new Date(a.createdAt) > new Date(b.createdAt) ? a : b)
+  return result
 }
 
 /**
@@ -245,14 +245,6 @@ async function set (data) {
   return result
 }
 
-/**
- * Update the record by reference.
- *
- * @param {object} data must contain the `reference` of the record to be
- * updated.
- * @return {Array} contains a single element, 1 equates to success, 0 equates
- * to failure.
- */
 async function updateByReference (data, publishEvent = true) {
   try {
     const application = await models.application.findOne({

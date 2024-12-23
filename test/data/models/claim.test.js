@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const { claim, afterCreate } = require('../../../app/data/models/claim')
+const { claim, updateClaimRecord } = require('../../../app/data/models/claim')
 
 const mockSequelize = {
   define: jest.fn().mockReturnValue({
@@ -42,7 +42,7 @@ describe('claim model', () => {
   })
 })
 
-describe('afterCreate', () => {
+describe('updateClaimRecord', () => {
   test('it updates the record as required, and sets the updated at to now', async () => {
     jest
       .useFakeTimers()
@@ -60,7 +60,7 @@ describe('afterCreate', () => {
       update: mockUpdateFunction
     }
 
-    await afterCreate(claimRecord)
+    await updateClaimRecord(claimRecord)
 
     expect(mockUpdateFunction).toHaveBeenCalledWith({
       ...claimRecord.dataValues,
