@@ -1,4 +1,11 @@
-const createAgreementNumber = require('../../lib/create-agreement-number')
+const { createApplicationReference } = require('../../lib/create-reference')
+
+const updateApplicationRecord = async (applicationRecord, _) => {
+  applicationRecord.dataValues.reference = createApplicationReference(applicationRecord.dataValues.reference)
+  applicationRecord.dataValues.updatedBy = 'admin'
+  applicationRecord.dataValues.updatedAt = new Date()
+  await applicationRecord.update(applicationRecord.dataValues)
+}
 
 const application = (sequelize, DataTypes) => {
   const Application = sequelize.define('application', {
@@ -26,12 +33,7 @@ const application = (sequelize, DataTypes) => {
     freezeTableName: true,
     tableName: 'application',
     hooks: {
-      afterCreate: async (applicationRecord, _) => {
-        applicationRecord.dataValues.reference = createAgreementNumber('apply', { id: applicationRecord?.id })
-        applicationRecord.dataValues.updatedBy = 'admin'
-        applicationRecord.dataValues.updatedAt = new Date()
-        await applicationRecord.update(applicationRecord.dataValues)
-      }
+      afterCreate: updateApplicationRecord
     }
   })
   Application.associate = function (models) {
@@ -44,4 +46,4 @@ const application = (sequelize, DataTypes) => {
   return Application
 }
 
-module.exports = { application }
+module.exports = { application, updateApplicationRecord }

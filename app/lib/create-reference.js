@@ -1,9 +1,39 @@
-/**
- * Generate unique reference number
- * ex. VV22-B471-F25C
- * @returns string
- */
-module.exports = (id) => {
-  const appRef = id.split('-').shift().toLocaleUpperCase('en-GB').match(/.{1,4}/g).join('-')
-  return `AHWR-${appRef}`
+const getPrefix = (typeOfClaim, typeOfLivestock) => {
+  const claimTypeMap = {
+    R: 'RE',
+    E: 'FU'
+  }
+
+  const firstTwoCharacters = claimTypeMap[typeOfClaim]
+
+  if (!firstTwoCharacters) {
+    throw new Error(`Reference cannot be created due to invalid type of reference: ${typeOfClaim}`)
+  }
+
+  const typeOfLivestockMap = {
+    beef: 'BC',
+    dairy: 'DC',
+    pigs: 'PI',
+    sheep: 'SH'
+  }
+
+  const lastTwoCharacters = typeOfLivestockMap[typeOfLivestock]
+
+  if (!lastTwoCharacters) {
+    throw new Error(`Reference cannot be created due to invalid type of livestock: ${typeOfLivestock}`)
+  }
+
+  return `${firstTwoCharacters}${lastTwoCharacters}`
 }
+
+const createClaimReference = (id, typeOfClaim, typeOfLivestock) => {
+  const prefix = getPrefix(typeOfClaim, typeOfLivestock)
+
+  return id.replace('TEMP-CLAIM', prefix)
+}
+
+const createApplicationReference = (id) => {
+  return id.replace('TEMP', 'IAHW')
+}
+
+module.exports = { createClaimReference, createApplicationReference }
