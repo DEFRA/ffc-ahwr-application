@@ -37,7 +37,7 @@ const getPrefix = (typeOfReference, typeOfLivestock) => {
 const createClaimReference = (id, typeOfReference, typeOfLivestock) => {
   const prefix = getPrefix(typeOfReference, typeOfLivestock)
 
-  return id.replace('TEMP', prefix)
+  return id.replace('TEMP-CLAIM', prefix)
 }
 
 const createApplicationReference = (id) => {
