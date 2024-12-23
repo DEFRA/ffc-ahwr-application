@@ -1,11 +1,9 @@
 const { createClaimReference } = require('../../lib/create-reference')
-const { mappedClaimType } = require('../../constants/claim')
 
 const updateClaimRecord = async (claimRecord, _) => {
-  const typeOfClaimAsLetter = claimRecord.type
-  const typeOfClaim = mappedClaimType[typeOfClaimAsLetter]
+  const { type } = claimRecord
   const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
-  claimRecord.dataValues.reference = createClaimReference(claimRecord.dataValues.reference, typeOfClaim, typeOfLivestock)
+  claimRecord.dataValues.reference = createClaimReference(claimRecord.dataValues.reference, type, typeOfLivestock)
   claimRecord.dataValues.updatedBy = 'admin'
   claimRecord.dataValues.updatedAt = new Date()
   await claimRecord.update(claimRecord.dataValues)

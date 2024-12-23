@@ -5,11 +5,6 @@ const livestockTypes = {
   sheep: 'sheep'
 }
 
-const mappedClaimType = {
-  R: 'review',
-  E: 'endemics'
-}
-
 const claimType = {
   review: 'R',
   endemics: 'E'
@@ -74,6 +69,5 @@ module.exports = {
   piHuntRecommended,
   piHuntAllAnimals,
   minimumNumberOfOralFluidSamples: 5,
-  minimumNumberOfAnimalsTested,
-  mappedClaimType
+  minimumNumberOfAnimalsTested
 }
