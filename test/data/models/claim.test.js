@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const { claim, updateClaimRecord } = require('../../../app/data/models/claim')
+const { claim, updateClaimRecord } = require('../../../app/data/models/claim').default
 
 const mockSequelize = {
   define: jest.fn().mockReturnValue({

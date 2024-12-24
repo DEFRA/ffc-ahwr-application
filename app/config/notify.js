@@ -1,4 +1,5 @@
-const Joi = require('joi')
+import Joi from 'joi'
+
 const uuidRegex = '[0-9a-f]{8}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{12}'
 const notifyApiKeyRegex = new RegExp(`.*-${uuidRegex}-${uuidRegex}`)
 
@@ -12,7 +13,7 @@ const schema = Joi.object({
   templateIdFarmerEndemicsFollowupComplete: Joi.string().uuid().default('99dab1c1-ebdb-47dc-a208-daebca873924')
 })
 
-const config = {
+const unvalidatedConfig = {
   apiKey: process.env.NOTIFY_API_KEY,
   carbonCopyEmailAddress: process.env.CARBON_COPY_EMAIL_ADDRESS,
   templateIdFarmerApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE,
@@ -21,10 +22,10 @@ const config = {
   templateIdFarmerEndemicsFollowupComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE
 }
 
-const { error, value } = schema.validate(config, { abortEarly: false })
+const { error } = schema.validate(unvalidatedConfig, { abortEarly: false })
 
 if (error) {
   throw new Error(`Notify config is invalid. ${error.message}`)
 }
 
-module.exports = value
+export const notifyConfig = unvalidatedConfig

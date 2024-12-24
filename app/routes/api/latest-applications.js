@@ -1,7 +1,7 @@
-const Joi = require('joi')
-const Boom = require('@hapi/boom')
-const { getLatestApplicationsBySbi } = require('../../repositories/application-repository')
-const SBI_SCHEMA = require('./schema/sbi.schema.js')
+import Joi from 'joi'
+import Boom from '@hapi/boom'
+import { getLatestApplicationsBySbi } from '../../repositories/application-repository'
+import { sbiSchema } from './schema/sbi.schema.js'
 
 const ERROR_MESSAGE = {
   mandatoryQueryParameters: '"sbi" query param must be provided',
@@ -9,14 +9,14 @@ const ERROR_MESSAGE = {
   sbiNumberOutOfRange: 'The single business identifier (SBI) number is not recognised'
 }
 
-module.exports = [
+export const latestApplicationsHandlers = [
   {
     method: 'GET',
     path: '/api/applications/latest',
     options: {
       validate: {
         query: Joi.object({
-          sbi: SBI_SCHEMA
+          sbi: sbiSchema
         }).min(1).messages({
           'object.min': ERROR_MESSAGE.mandatoryQueryParameters,
           'number.base': ERROR_MESSAGE.enterSbiNumberThatHas9Digits,
@@ -26,7 +26,7 @@ module.exports = [
           'number.min': ERROR_MESSAGE.sbiNumberOutOfRange,
           'number.max': ERROR_MESSAGE.sbiNumberOutOfRange
         }),
-        failAction (request, h, err) {
+        failAction (_request, _h, err) {
           throw Boom.badRequest(err.message)
         }
       },

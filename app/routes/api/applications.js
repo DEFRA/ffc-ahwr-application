@@ -1,13 +1,15 @@
-const Joi = require('joi')
-const { v4: uuid } = require('uuid')
-const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
-const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
-const sendMessage = require('../../messaging/send-message')
-const statusIds = require('../../constants/application-status')
-const { processApplicationApi } = require('../../messaging/application/process-application')
-const { searchPayloadValidations } = require('./helpers')
+import Joi from 'joi'
+import { v4 as uuid } from 'uuid'
+import { get, searchApplications, updateByReference } from '../../repositories/application-repository'
+import { config } from '../../config'
+import { sendMessage } from '../../messaging/send-message'
+import { applicationStatus } from '../../constants/application-status'
+import { processApplicationApi } from '../../messaging/application/process-application'
+import { searchPayloadSchema } from './schema/search-payload.schema'
 
-module.exports = [{
+const { submitPaymentRequestMsgType, submitRequestQueue } = config
+
+export const applicationHandlers = [{
   method: 'GET',
   path: '/api/application/get/{ref}',
   options: {
@@ -31,7 +33,7 @@ module.exports = [{
   options: {
     validate: {
       payload: Joi.object({
-        ...searchPayloadValidations(),
+        ...searchPayloadSchema,
         sort: Joi.object({
           field: Joi.string().valid().optional().default('CREATEDAT'),
           direction: Joi.string().valid().optional().allow('ASC')
@@ -120,10 +122,10 @@ module.exports = [{
       }
 
       try {
-        let statusId = statusIds.rejected
+        let statusId = applicationStatus.rejected
 
         if (request.payload.approved) {
-          statusId = statusIds.readyToPay
+          statusId = applicationStatus.readyToPay
 
           await sendMessage(
             {

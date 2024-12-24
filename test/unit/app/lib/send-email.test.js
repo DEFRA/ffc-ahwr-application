@@ -1,4 +1,4 @@
-const sendEmail = require('../../../../app/lib/send-email')
+const sendEmail = require('../../../../app/lib/send-email').default
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../../../../app/config')
 const { templateIdFarmerClaimComplete, templateIdFarmerEndemicsClaimComplete } = require('../../../../app/config').notify
 
@@ -14,7 +14,7 @@ const userType = 'newUser'
 const conf = require('../../../../app/config')
 
 jest.mock('../../../../app/lib/notify-client')
-const notifyClient = require('../../../../app/lib/notify-client')
+const notifyClient = require('../../../../app/lib/notify-client').default
 
 jest.mock('../../../../app/lib/sfd-client')
 let sendSFDEmail = require('../../../../app/lib/sfd-client')

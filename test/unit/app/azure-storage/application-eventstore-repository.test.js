@@ -1,4 +1,4 @@
-const repository = require('../../../../app/azure-storage/application-eventstore-repository')
+const repository = require('../../../../app/azure-storage/application-eventstore-repository').default
 const queryEntities = require('../../../../app/azure-storage/query-entities')
 jest.mock('../../../../app/azure-storage/query-entities')
 

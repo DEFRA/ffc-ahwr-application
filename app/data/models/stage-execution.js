@@ -1,4 +1,4 @@
-const stageExecution = (sequelize, DataTypes) => {
+export const stageExecution = (sequelize, DataTypes) => {
   const StageExecution = sequelize.define('stage_execution', {
     id: {
       type: DataTypes.SMALLINT,
@@ -54,4 +54,3 @@ const stageExecution = (sequelize, DataTypes) => {
   return StageExecution
 }
 
-module.exports = { stageExecution }

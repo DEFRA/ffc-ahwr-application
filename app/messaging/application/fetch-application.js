@@ -1,10 +1,13 @@
-const { get } = require('../../repositories/application-repository')
-const sendMessage = require('../send-message')
-const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../../config')
-const states = require('./states')
-const validateFetchApplication = require('../schema/fetch-application-schema')
+import { get } from '../../repositories/application-repository'
+import { sendMessage } from '../send-message'
+import { config } from '../../config'
+import { states } from './states'
+import validateFetchApplication from '../schema/fetch-application-schema'
 
-const fetchApplication = async (message) => {
+const { fetchApplicationResponseMsgType, applicationResponseQueue } = config
+const { notFound, alreadySubmitted, notSubmitted, failed } = states
+
+export const fetchApplication = async (message) => {
   const { sessionId } = message
   try {
     const msgBody = message.body
@@ -13,21 +16,19 @@ const fetchApplication = async (message) => {
       const application = (await get(msgBody.applicationReference)).dataValues
 
       if (!application) {
-        return sendMessage({ applicationState: states.notFound, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+        return sendMessage({ applicationState: notFound, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
       }
 
       if (application?.vetVisit?.dataValues) {
-        return sendMessage({ applicationState: states.alreadySubmitted, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+        return sendMessage({ applicationState: alreadySubmitted, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
       }
 
-      await sendMessage({ applicationState: states.notSubmitted, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+      await sendMessage({ applicationState: notSubmitted, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
     } else {
-      return sendMessage({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+      return sendMessage({ applicationState: failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
     }
   } catch (error) {
     console.error('failed to fetch application for request', error)
-    return sendMessage({ applicationState: states.failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
+    return sendMessage({ applicationState: failed }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })
   }
 }
-
-module.exports = fetchApplication

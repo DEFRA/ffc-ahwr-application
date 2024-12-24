@@ -1,6 +1,5 @@
-const Joi = require('joi')
+import Joi from 'joi'
 
-// Define config schema
 const schema = Joi.object({
   connectionString: Joi.string().required(),
   usersContainer: Joi.string().default('users'),
@@ -11,22 +10,19 @@ const schema = Joi.object({
   useConnectionString: Joi.bool().default(true)
 })
 
-// Build config
-const config = {
+const unvalidatedConfig = {
   connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
   useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
   endemicsSettingsContainer: process.env.AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER,
   storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME
 }
 
-// Validate config
-const result = schema.validate(config, {
+const { error } = schema.validate(unvalidatedConfig, {
   abortEarly: false
 })
 
-// Throw if config is invalid
-if (result.error) {
-  throw new Error(`The blob storage config is invalid. ${result.error.message}`)
+if (error) {
+  throw new Error(`The blob storage config is invalid. ${error.message}`)
 }
 
-module.exports = result.value
+export const storageConfig = unvalidatedConfig

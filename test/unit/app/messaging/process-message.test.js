@@ -1,7 +1,7 @@
 // const dbHelper = require('../../../db-helper')
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../../../../app/config')
-const fetchApplication = require('../../../../app/messaging/application/fetch-application')
-const fetchClaim = require('../../../../app/messaging/application/fetch-claim')
+const fetchApplication = require('../../../../app/messaging/application/fetch-application').default
+const fetchClaim = require('../../../../app/messaging/application/fetch-claim').default
 const processApplicationMessage = require('../../../../app/messaging/process-message')
 const submitClaim = require('../../../../app/messaging/application/submit-claim')
 const { processApplicationQueue } = require('../../../../app/messaging/application/process-application')

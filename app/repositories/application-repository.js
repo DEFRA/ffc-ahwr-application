@@ -1,14 +1,11 @@
-const { models, sequelize } = require('../data')
-const eventPublisher = require('../event-publisher')
-const { Op } = require('sequelize')
-const { startandEndDate } = require('../lib/date-utils')
+import { buildData } from '../data'
+import eventPublisher from '../event-publisher'
+import { Op } from 'sequelize'
+import { startandEndDate } from '../lib/date-utils'
 
-/**
- * Get application by reference number
- * @param {string} reference
- * @returns application object with status.
- */
-async function get (reference) {
+const { models, sequelize } = buildData
+
+export async function get (reference) {
   return models.application.findOne(
     {
       where: { reference: reference.toUpperCase() },
@@ -21,43 +18,7 @@ async function get (reference) {
     })
 }
 
-/**
- * Get latest applications for Single Business Identifier (SBI)
- *
- * @param {number} sbi
- * @returns latest applications for each SBI number
- *
- * Example result:
-  [
-    {
-      "id": "eaf9b180-9993-4f3f-a1ec-4422d48edf92",
-      "reference": "AHWR-5C1C-DD6A",
-      "data": {
-        "reference": "string",
-        "declaration": true,
-        "offerStatus": "accepted",
-        "whichReview": "sheep",
-        "organisation": {
-          "crn": 112222,
-          "sbi": 112222,
-          "name": "My Amazing Farm",
-          "email": "business@email.com",
-          "address": "1 Example Road",
-          "farmerName": "Mr Farmer"
-        },
-        "eligibleSpecies": "yes",
-        "confirmCheckDetails": "yes"
-      },
-      "claimed": false,
-      "createdAt": "2023-01-17 13:55:20",
-      "updatedAt": "2023-01-17 13:55:20",
-      "createdBy": "David Jones",
-      "updatedBy": "David Jones",
-      "statusId": 1
-    }
-  ]
- */
-async function getLatestApplicationsBySbi (sbi) {
+export async function getLatestApplicationsBySbi (sbi) {
   const result = await models.application
     .findAll(
       {
@@ -68,13 +29,7 @@ async function getLatestApplicationsBySbi (sbi) {
   return result
 }
 
-/**
- * Get the latest application by Single Business Identifier (SBI) number.
- *
- * @param {number} sbi
- * @returns application object.
- */
-async function getBySbi (sbi) {
+export async function getBySbi (sbi) {
   return models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
@@ -83,12 +38,7 @@ async function getBySbi (sbi) {
   })
 }
 
-/**
- * Get application by email
- * @param {string} email
- * @returns application object with vetVisit data.
- */
-async function getByEmail (email) {
+export async function getByEmail (email) {
   return models.application.findOne(
     {
       order: [['createdAt', 'DESC']],
@@ -96,14 +46,6 @@ async function getByEmail (email) {
     })
 }
 
-/**
- * Evaluates the sort field and direction for an application search query.
- *
- * @param {object} sort - An object containing the field and direction for sorting.
- * @param {string} sort.field - The field to sort by.
- * @param {string} [sort.direction=ASC] - The sort direction, either 'ASC' or 'DESC'.
- * @returns {array} - An array containing the field to sort by and the sort direction.
- */
 function evalSortField (sort) {
   if (sort?.field) {
     switch (sort.field.toLowerCase()) {
@@ -121,19 +63,8 @@ function evalSortField (sort) {
   }
   return ['createdAt', sort?.direction ?? 'ASC']
 }
-/**
- * Search application by Search Type and Search Text.
- * Currently Support Status, SBI number, Application Reference Number
- *
- * @param {string} searchText contain status, sbi number or application reference number
- * @param {string} searchType contain any of keyword ['status','ref','sbi']
- * @param {array} filter contains array of status ['CLAIMED','DATA INPUTTED','APPLIED']
- * @param {integer} offset index of row where page should start from
- * @param {integer} limit page limit
- * @param {object} object contain field and direction for sort order
- * @returns all application with page
- */
-async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+
+export async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
   let query = {
     include: [
       {
@@ -205,23 +136,15 @@ async function searchApplications (searchText, searchType, filter, offset = 0, l
     applications, total, applicationStatus
   }
 }
-/**
- * Get all applications
- * @returns
- */
-async function getAll () {
+
+export async function getAll () {
   const query = {
     order: [['createdAt', 'DESC']]
   }
   return models.application.findAll(query)
 }
 
-/**
- * Get all applications that have been claimed
- * @param {*} claimStatusIds an array of status IDs which indicate that an application has been claimed
- * @returns a list of applications
- */
-async function getAllClaimedApplications (claimStatusIds) {
+export async function getAllClaimedApplications (claimStatusIds) {
   return models.application.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
@@ -229,12 +152,7 @@ async function getAllClaimedApplications (claimStatusIds) {
   })
 }
 
-/**
- *
- * @param {*} data
- * @returns
- */
-async function set (data) {
+export async function set (data) {
   const result = await models.application.create(data)
   eventPublisher.raise({
     message: 'New application has been created',
@@ -245,7 +163,7 @@ async function set (data) {
   return result
 }
 
-async function updateByReference (data, publishEvent = true) {
+export async function updateByReference (data, publishEvent = true) {
   try {
     const application = await models.application.findOne({
       where: {
@@ -283,17 +201,4 @@ async function updateByReference (data, publishEvent = true) {
     console.error('Error updating application by reference:', error)
     throw error // re-throw the error after logging or handle it as needed
   }
-}
-
-module.exports = {
-  get,
-  getBySbi,
-  getLatestApplicationsBySbi,
-  getByEmail,
-  getAll,
-  set,
-  updateByReference,
-  searchApplications,
-  getAllClaimedApplications,
-  evalSortField
 }

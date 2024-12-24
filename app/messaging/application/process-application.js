@@ -1,44 +1,17 @@
-const states = require('./states')
-const applicationStatus = require('../../constants/application-status')
-const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule, endemics } = require('../../config')
-const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
-const sendMessage = require('../send-message')
-const applicationRepository = require('../../repositories/application-repository')
-const validateApplication = require('../schema/process-application-schema')
-const appInsights = require('applicationinsights')
+import { states } from './states'
+import { applicationStatus } from '../../constants/application-status'
+import { config } from '../../config'
+import { sendFarmerConfirmationEmail } from '../../lib/send-email'
+import { sendMessage } from '../send-message'
+import applicationRepository from '../../repositories/application-repository'
+import validateApplication from '../schema/process-application-schema'
+import appInsights from 'applicationinsights'
 
-function timeLimitDates (application) {
-  const start = new Date(application.createdAt)
-  const end = new Date(start)
-  // refactor to set time limit to a constant - config??
-  end.setMonth(end.getMonth() + 10)
-  end.setHours(23, 59, 59, 999) // set to midnight of agreement end day
-  return { startDate: start, endDate: end }
+export const isPreviousApplicationRelevant = (existingApplication) => {
+  return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
 }
 
-function isPastTimeLimit (dates) {
-  const { endDate } = dates
-  return Date.now() > endDate
-}
-
-function isPreviousApplicationRelevant (existingApplication) {
-  if (endemics.enabled) {
-    return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
-  } else if (tenMonthRule.enabled) {
-    return existingApplication &&
-      ((existingApplication.statusId !== applicationStatus.withdrawn &&
-        existingApplication.statusId !== applicationStatus.notAgreed &&
-        // check if it passes 10 month rule here and chuck error if it doesn't
-        isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
-        existingApplication.statusId === applicationStatus.agreed)
-  } else {
-    return existingApplication &&
-      existingApplication.statusId !== applicationStatus.withdrawn &&
-      existingApplication.statusId !== applicationStatus.notAgreed
-  }
-}
-
-const processApplicationApi = async (body) => {
+export const processApplicationApi = async (body) => {
   const response = await processApplication(body)
 
   appInsights.defaultClient.trackEvent({
@@ -53,7 +26,7 @@ const processApplicationApi = async (body) => {
   return response
 }
 
-const processApplication = async (data) => {
+export const processApplication = async (data) => {
   let existingApplicationReference = null
 
   try {
@@ -71,7 +44,7 @@ const processApplication = async (data) => {
         new Error(
             `Recent application already exists: ${JSON.stringify({
               reference: existingApplication.dataValues.reference,
-              createdAt: existingApplication.createdAt
+              createdAt: 'TODO' // createdAt doesnt exist on the application object
             })}`
         ),
         {
@@ -80,7 +53,6 @@ const processApplication = async (data) => {
       )
     }
 
-    // create application = save in database
     const result = await applicationRepository.set({
       reference: '',
       data,
@@ -130,13 +102,13 @@ const processApplication = async (data) => {
   }
 }
 
-const processApplicationQueue = async (msg) => {
+export const processApplicationQueue = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
 
   const response = await processApplication(applicationData)
 
-  await sendMessage(response, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+  await sendMessage(response, config.applicationResponseMsgType, config.applicationResponseQueue, { sessionId })
 
   appInsights.defaultClient.trackEvent({
     name: 'process-application-queue',
@@ -149,8 +121,3 @@ const processApplicationQueue = async (msg) => {
   })
 }
 
-module.exports = {
-  processApplication,
-  processApplicationApi,
-  processApplicationQueue
-}

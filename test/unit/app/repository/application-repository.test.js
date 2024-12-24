@@ -1,6 +1,6 @@
 const { when, resetAllWhenMocks } = require('jest-when')
-const repository = require('../../../../app/repositories/application-repository')
-const data = require('../../../../app/data')
+const repository = require('../../../../app/repositories/application-repository').default
+const data = require('../../../../app/data').default
 const { Op } = require('sequelize')
 
 jest.mock('../../../../app/data')

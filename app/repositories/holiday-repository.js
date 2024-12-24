@@ -1,10 +1,8 @@
-const { models } = require('../data')
+import { buildData } from '../data'
 
-/**
- * Check today is Holiday
- * @returns true if today is holiday
- */
-async function IsTodayHoliday () {
+const { models } = buildData
+
+export const isTodayHoliday = async () => {
   const today = new Date().toISOString().split('T')[0]
 
   const holiday = await models.holiday.findOne({
@@ -16,14 +14,10 @@ async function IsTodayHoliday () {
   return !!holiday
 }
 
-async function set (date, description) {
+export const set = async (date, description) => {
   return await models.holiday.upsert({
     date,
     description
   })
 }
 
-module.exports = {
-  IsTodayHoliday,
-  set
-}

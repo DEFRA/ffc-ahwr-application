@@ -1,5 +1,5 @@
 const statusIds = require('../../../../../app/constants/application-status')
-const applicationRepository = require('../../../../../app/repositories/application-repository')
+const applicationRepository = require('../../../../../app/repositories/application-repository').default
 const sendMessage = require('../../../../../app/messaging/send-message')
 const { processApplicationApi } = require('../../../../../app/messaging/application/process-application')
 jest.mock('../../../../../app/repositories/application-repository')

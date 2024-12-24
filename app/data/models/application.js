@@ -1,13 +1,13 @@
-const { createApplicationReference } = require('../../lib/create-reference')
+import { createApplicationReference } from '../../lib/create-reference'
 
-const updateApplicationRecord = async (applicationRecord, _) => {
+export const updateApplicationRecord = async (applicationRecord, _) => {
   applicationRecord.dataValues.reference = createApplicationReference(applicationRecord.dataValues.reference)
   applicationRecord.dataValues.updatedBy = 'admin'
   applicationRecord.dataValues.updatedAt = new Date()
   await applicationRecord.update(applicationRecord.dataValues)
 }
 
-const application = (sequelize, DataTypes) => {
+export const application = (sequelize, DataTypes) => {
   const Application = sequelize.define('application', {
     id: {
       type: DataTypes.UUID,
@@ -45,5 +45,3 @@ const application = (sequelize, DataTypes) => {
 
   return Application
 }
-
-module.exports = { application, updateApplicationRecord }

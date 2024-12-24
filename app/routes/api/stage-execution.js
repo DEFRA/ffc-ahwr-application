@@ -1,8 +1,8 @@
-const Joi = require('joi')
-const claim = require('../../repositories/claim-repository')
+import Joi from 'joi'
+import { getByReference } from '../../repositories/claim-repository'
 const { get, updateByReference } = require('../../repositories/application-repository')
 const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
-const statusIds = require('../../constants/application-status')
+import  { applicationStatus } from '../../constants/application-status'
 
 module.exports = [{
   method: 'GET',
@@ -57,7 +57,7 @@ module.exports = [{
       request.logger.setBindings({ payload: request.payload })
 
       if (request.payload.claimOrApplication === 'claim') {
-        application = await claim.getByReference(request.payload.applicationReference)
+        application = await getByReference(request.payload.applicationReference)
       }
 
       if (request.payload.claimOrApplication === 'application') {
@@ -68,10 +68,7 @@ module.exports = [{
         return h.response('Reference not found').code(400).takeover()
       }
 
-      const response = await set(
-        request.payload,
-        application
-      )
+      const response = await set(request.payload)
 
       request.logger.setBindings({ response })
 
@@ -80,17 +77,17 @@ module.exports = [{
 
       switch (request.payload.action.action) {
         case 'Recommend to pay':
-          statusId = statusIds.recommendToPay
+          statusId = applicationStatus.recommendToPay
           break
         case 'Recommend to reject':
-          statusId = statusIds.recommendToReject
+          statusId = applicationStatus.recommendToReject
           break
         // To refactor this after MVP release
         case 'Ready to pay':
-          statusId = statusIds.readyToPay
+          statusId = applicationStatus.readyToPay
           break
         case 'Rejected':
-          statusId = statusIds.rejected
+          statusId = applicationStatus.rejected
           break
       }
 

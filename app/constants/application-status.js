@@ -1,4 +1,4 @@
-module.exports = {
+export const applicationStatus = {
   agreed: 1,
   inCheck: 5,
   notAgreed: 7,

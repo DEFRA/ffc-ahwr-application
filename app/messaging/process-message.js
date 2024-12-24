@@ -1,6 +1,6 @@
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../config')
-const fetchApplication = require('./application/fetch-application')
-const fetchClaim = require('./application/fetch-claim')
+const fetchApplication = require('./application/fetch-application').default
+const fetchClaim = require('./application/fetch-claim').default
 const { processApplicationQueue } = require('./application/process-application')
 const submitClaim = require('./application/submit-claim')
 

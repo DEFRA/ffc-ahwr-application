@@ -1,4 +1,4 @@
-const { getAmount } = require('../../../../app/lib/getAmount')
+const { getAmount } = require('../../../../app/lib/getAmount').default
 const { setOptionalPIHuntEnabled } = require('../../../mocks/config')
 const { livestockTypes: { beef, dairy, pigs, sheep }, claimType: { review, endemics }, testResults } = require('../../../../app/constants/claim')
 const { getBlob } = require('../../../../app/storage')

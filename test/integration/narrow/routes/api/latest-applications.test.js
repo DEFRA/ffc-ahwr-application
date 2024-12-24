@@ -1,7 +1,7 @@
 const { resetAllWhenMocks } = require('jest-when')
 
 jest.mock('../../../../../app/repositories/application-repository')
-const applicationRepositoryMock = require('../../../../../app/repositories/application-repository')
+const applicationRepositoryMock = require('../../../../../app/repositories/application-repository').default
 
 const server = require('../../../../../app/server')
 

@@ -1,4 +1,4 @@
-const repository = require('../../../../../app/azure-storage/application-eventstore-repository')
+const repository = require('../../../../../app/azure-storage/application-eventstore-repository').default
 jest.mock('../../../../../app/azure-storage/application-eventstore-repository')
 
 describe('Application events test', () => {

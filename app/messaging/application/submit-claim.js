@@ -1,8 +1,8 @@
 const { alreadyClaimed, failed, error, notFound, success } = require('./states')
 const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
-const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email')
+const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email').default
 const sendMessage = require('../send-message')
-const { get, updateByReference } = require('../../repositories/application-repository')
+const { get, updateByReference } = require('../../repositories/application-repository').default
 const validateSubmitClaim = require('../schema/submit-claim-schema')
 const statusIds = require('../../constants/application-status')
 const appInsights = require('applicationinsights')

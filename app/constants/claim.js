@@ -1,46 +1,48 @@
-const livestockTypes = {
+export const livestockTypes = {
   beef: 'beef',
   dairy: 'dairy',
   pigs: 'pigs',
   sheep: 'sheep'
 }
 
-const claimType = {
+export const claimType = {
   review: 'R',
   endemics: 'E'
 }
 
-const testResults = {
+export const testResults = {
   positive: 'positive',
   negative: 'negative'
 }
 
-const speciesNumbers = {
+export const speciesNumbers = {
   yes: 'yes',
   no: 'no'
 }
 
-const biosecurity = {
+export const biosecurity = {
   yes: 'yes',
   no: 'no'
 }
 
-const piHunt = {
+export const piHunt = {
   yes: 'yes',
   no: 'no'
 }
 
-const piHuntRecommended = {
+export const piHuntRecommended = {
   yes: 'yes',
   no: 'no'
 }
 
-const piHuntAllAnimals = {
+export const piHuntAllAnimals = {
   yes: 'yes',
   no: 'no'
 }
 
-const minimumNumberOfAnimalsTested = {
+export const minimumNumberOfOralFluidSamples = 5
+
+export const minimumNumberOfAnimalsTested = {
   [livestockTypes.beef]: {
     [claimType.review]: 5,
     [claimType.endemics]: 11
@@ -59,15 +61,3 @@ const minimumNumberOfAnimalsTested = {
   }
 }
 
-module.exports = {
-  livestockTypes,
-  claimType,
-  testResults,
-  speciesNumbers,
-  biosecurity,
-  piHunt,
-  piHuntRecommended,
-  piHuntAllAnimals,
-  minimumNumberOfOralFluidSamples: 5,
-  minimumNumberOfAnimalsTested
-}

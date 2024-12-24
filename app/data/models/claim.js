@@ -1,6 +1,6 @@
-const { createClaimReference } = require('../../lib/create-reference')
+import { createClaimReference } from '../../lib/create-reference'
 
-const updateClaimRecord = async (claimRecord, _) => {
+export const updateClaimRecord = async (claimRecord, _) => {
   const { type } = claimRecord
   const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
   claimRecord.dataValues.reference = createClaimReference(claimRecord.dataValues.reference, type, typeOfLivestock)
@@ -9,7 +9,7 @@ const updateClaimRecord = async (claimRecord, _) => {
   await claimRecord.update(claimRecord.dataValues)
 }
 
-const claim = (sequelize, DataTypes) => {
+export const claim = (sequelize, DataTypes) => {
   const Claim = sequelize.define('claim',
     {
       id: {
@@ -59,5 +59,3 @@ const claim = (sequelize, DataTypes) => {
   }
   return Claim
 }
-
-module.exports = { claim, updateClaimRecord }

@@ -1,9 +1,9 @@
-const fetchApplication = require('../../../../../app/messaging/application/fetch-application')
+const fetchApplication = require('../../../../../app/messaging/application/fetch-application').default
 const { fetchApplicationResponseMsgType, applicationResponseQueue } = require('../../../../../app/config')
 const states = require('../../../../../app/messaging/application/states')
 
 jest.mock('../../../../../app/repositories/application-repository')
-const applicationRepository = require('../../../../../app/repositories/application-repository')
+const applicationRepository = require('../../../../../app/repositories/application-repository').default
 jest.mock('../../../../../app/messaging/send-message')
 const sendMessage = require('../../../../../app/messaging/send-message')
 

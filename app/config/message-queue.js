@@ -1,4 +1,4 @@
-const Joi = require('joi')
+import Joi from 'joi'
 
 const sharedConfigSchema = {
   appInsights: Joi.object(),
@@ -51,7 +51,7 @@ const sharedConfig = {
   useCredentialChain: process.env.NODE_ENV === 'production'
 }
 
-const config = {
+const unvalidatedConfig = {
   applicationdDocCreationRequestQueue: {
     address: process.env.APPLICATIONDOCCREATIONREQUEST_QUEUE_ADDRESS,
     type: 'queue',
@@ -84,10 +84,10 @@ const config = {
   }
 }
 
-const { error, value } = schema.validate(config, { abortEarly: false })
+const { error } = schema.validate(unvalidatedConfig, { abortEarly: false })
 
 if (error) {
   throw new Error(`The message queue config is invalid. ${error.message}`)
 }
 
-module.exports = value
+export const messageQueueConfig = unvalidatedConfig

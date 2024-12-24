@@ -1,4 +1,4 @@
-module.exports = {
+export const states = {
   alreadyClaimed: 'already_claimed',
   alreadySubmitted: 'already_submitted',
   alreadyExists: 'already_exists',

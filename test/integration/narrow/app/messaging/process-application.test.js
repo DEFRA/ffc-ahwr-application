@@ -1,7 +1,7 @@
 const { processApplication } = require('../../../../../app/messaging/application/process-application')
 const boom = require('@hapi/boom')
 
-const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
+const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email').default
 jest.mock('../../../../../app/lib/send-email')
 
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))

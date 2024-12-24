@@ -1,11 +1,11 @@
-const { DefaultAzureCredential } = require('@azure/identity')
-const { TableClient } = require('@azure/data-tables')
-const { storage: { connectionString, useConnectionString, storageAccount } } = require('../config')
+import { DefaultAzureCredential } from '@azure/identity'
+import { TableClient } from '@azure/data-tables'
+import { config } from '../config'
 
-const createTableClient = (tableName) => {
-  if (useConnectionString) {
+export const createTableClient = (tableName) => {
+  if (config.storage.useConnectionString) {
     return TableClient.fromConnectionString(
-      connectionString,
+      config.storage.connectionString,
       tableName,
       {
         allowInsecureConnection: true
@@ -13,11 +13,9 @@ const createTableClient = (tableName) => {
     )
   } else {
     return new TableClient(
-      `https://${storageAccount}.table.core.windows.net`,
+      `https://${config.storage.storageAccount}.table.core.windows.net`,
       tableName,
       new DefaultAzureCredential()
     )
   }
 }
-
-module.exports = createTableClient

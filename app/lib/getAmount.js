@@ -1,11 +1,11 @@
-const { getBlob } = require('../storage')
-const { optionalPIHunt } = require('../config')
-const { livestockTypes, claimType: claimTypeValues, testResults: testResultsValues, piHunt: piHuntValues, piHuntAllAnimals: piHuntAllAnimalsValues } = require('./../constants/claim')
+import { getBlob } from '../storage'
+import { config } from '../config'
+import { livestockTypes, claimType, testResults, piHunt, piHuntAllAnimals } from './../constants/claim'
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
-  const optionalPiHuntValue = (piHunt === piHuntValues.yes && piHuntAllAnimals === piHuntAllAnimalsValues.yes) ? 'yesPiHunt' : 'noPiHunt'
+  const optionalPiHuntValue = (piHunt === piHunt.yes && piHuntAllAnimals === piHuntAllAnimals.yes) ? 'yesPiHunt' : 'noPiHunt'
 
-  if (reviewTestResults === testResultsValues.positive) {
+  if (reviewTestResults === testResults.positive) {
     return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
   }
 
@@ -13,7 +13,7 @@ const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfi
 }
 
 const getNonPiHuntValue = (reviewTestResults, pricesConfig, claimType, typeOfLivestock) => {
-  if (reviewTestResults === testResultsValues.positive) {
+  if (reviewTestResults === testResults.positive) {
     return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
   }
 
@@ -23,27 +23,22 @@ const getNonPiHuntValue = (reviewTestResults, pricesConfig, claimType, typeOfLiv
 const getBeefDairyAmount = (data, pricesConfig, claimType) => {
   const { typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals } = data
 
-  if (optionalPIHunt.enabled) {
+  if (config.optionalPIHunt.enabled) {
     return getPiHuntValue(reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock)
   }
 
   return getNonPiHuntValue(reviewTestResults, pricesConfig, claimType, typeOfLivestock)
 }
 
-const getAmount = async (payload) => {
+export const getAmount = async (payload) => {
   const { type, data } = payload
-  const claimType = type === claimTypeValues.review ? 'review' : 'followUp'
+  const typeOfClaim = type === claimType.review ? 'review' : 'followUp'
   const pricesConfig = await getBlob('claim-prices-config.json')
   const { typeOfLivestock } = data
 
-  if ((typeOfLivestock === livestockTypes.beef || typeOfLivestock === livestockTypes.dairy) && data.reviewTestResults && type === claimTypeValues.endemics) {
+  if ([livestockTypes.beef, livestockTypes.dairy].includes(typeOfLivestock) && data.reviewTestResults && type === claimType.endemics) {
     return getBeefDairyAmount(data, pricesConfig, claimType)
   }
 
-  // not a beef/dairy cattle follow-up
-  return pricesConfig[claimType][typeOfLivestock].value
-}
-
-module.exports = {
-  getAmount
+  return pricesConfig[typeOfClaim][typeOfLivestock].value
 }

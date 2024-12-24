@@ -3,8 +3,8 @@ const stageExecutionRepository = require('../../../../../app/repositories/stage-
 jest.mock('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
-const { get, updateByReference } = require('../../../../../app/repositories/application-repository')
-const claim = require('../../../../../app/repositories/claim-repository')
+const { get, updateByReference } = require('../../../../../app/repositories/application-repository').default
+const claim = require('../../../../../app/repositories/claim-repository').default
 const { when, resetAllWhenMocks } = require('jest-when')
 
 const data = {

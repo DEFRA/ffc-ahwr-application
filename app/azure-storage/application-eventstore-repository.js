@@ -1,7 +1,7 @@
-const queryEntitiesByPartitionKey = require('./query-entities')
-const { odata } = require('@azure/data-tables')
+import { queryEntitiesByPartitionKey } from './query-entities'
+import { odata } from '@azure/data-tables'
 
-const getApplicationEvents = async (sbi) => {
+export const getApplicationEvents = async (sbi) => {
   const eventRecords = await queryEntitiesByPartitionKey(
     'ahwreventstore',
     sbi,
@@ -13,5 +13,3 @@ const getApplicationEvents = async (sbi) => {
   if (eventRecords.length === 0) { return null }
   return eventRecords
 }
-
-module.exports = { getApplicationEvents }

@@ -1,10 +1,10 @@
-const claimRepository = require('../../../../../app/repositories/claim-repository')
-const applicationRepository = require('../../../../../app/repositories/application-repository')
+const claimRepository = require('../../../../../app/repositories/claim-repository').default
+const applicationRepository = require('../../../../../app/repositories/application-repository').default
 const sendMessage = require('../../../../../app/messaging/send-message')
-const sendEmail = require('../../../../../app/lib/send-email')
+const sendEmail = require('../../../../../app/lib/send-email').default
 const pricesConfig = require('../../../../data/claim-prices-config.json')
 const { getBlob } = require('../../../../../app/storage')
-const { getAmount } = require('../../../../../app/lib/getAmount')
+const { getAmount } = require('../../../../../app/lib/getAmount').default
 const appInsights = require('applicationinsights')
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))

@@ -9,14 +9,14 @@ module.exports = {
     'text-summary',
     'lcov'
   ],
-  moduleNameMapper: {
-    axios: require.resolve('axios')
-  },
+  // moduleNameMapper: {
+  //   axios: require.resolve('axios')
+  // },
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/test-output/',
     '<rootDir>/test/',
-    '<rootDir>/jest.config.js'
+    '<rootDir>/jest.config.cjs'
   ],
   modulePathIgnorePatterns: [
     'node_modules'

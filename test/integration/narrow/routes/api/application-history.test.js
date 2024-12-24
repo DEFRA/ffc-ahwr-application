@@ -1,4 +1,4 @@
-const applicationStatusRepository = require('../../../../../app/azure-storage/application-status-repository')
+const applicationStatusRepository = require('../../../../../app/azure-storage/application-status-repository').default
 jest.mock('../../../../../app/azure-storage/application-status-repository')
 
 describe('Application history test', () => {

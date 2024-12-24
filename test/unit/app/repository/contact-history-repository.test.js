@@ -1,6 +1,6 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/contact-history-repository')
-const data = require('../../../../app/data')
+const data = require('../../../../app/data').default
 
 jest.mock('../../../../app/data')
 

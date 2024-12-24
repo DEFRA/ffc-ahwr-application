@@ -1,6 +1,6 @@
-const createTableClient = require('./create-table-client')
+import { createTableClient } from './create-table-client'
 
-const queryEntitiesByPartitionKey = async (tableName, partitionKey, queryFilter) => {
+export const queryEntitiesByPartitionKey = async (tableName, partitionKey, queryFilter) => {
   const events = []
   if (tableName && partitionKey) {
     const tableClient = createTableClient(tableName)
@@ -19,5 +19,3 @@ const queryEntitiesByPartitionKey = async (tableName, partitionKey, queryFilter)
 
   return events
 }
-
-module.exports = queryEntitiesByPartitionKey

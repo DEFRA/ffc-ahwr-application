@@ -1,7 +1,7 @@
-const Joi = require('joi')
-const { getApplicationHistory } = require('../../azure-storage/application-status-repository')
+import Joi from 'joi'
+import { getApplicationHistory } from '../../azure-storage/application-status-repository'
 
-module.exports = [
+export const applicationHistoryHandlers = [
   {
     method: 'GET',
     path: '/api/application/history/{ref}',

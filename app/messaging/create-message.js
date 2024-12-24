@@ -1,4 +1,4 @@
-const createMessage = (body, type, options) => {
+export const createMessage = (body, type, options) => {
   return {
     body,
     type,
@@ -7,4 +7,3 @@ const createMessage = (body, type, options) => {
   }
 }
 
-module.exports = createMessage

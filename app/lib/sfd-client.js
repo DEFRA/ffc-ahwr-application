@@ -1,9 +1,11 @@
-const sendMessage = require('../messaging/send-message')
-const { sfdRequestMsgType, sfdMessageQueue } = require('../config')
-const validateSFDSchema = require('../messaging/schema/submit-sfd-schema')
-const states = require('../messaging/application/states')
+import { sendMessage } from '../messaging/send-message'
+import { config } from '../config'
+import { validateSFDSchema } from '../messaging/schema/submit-sfd-schema'
+import { states } from '../messaging/application/states'
 
-const sendSFDEmail = async (templateId, email, emailInput) => {
+const { sfdRequestMsgType, sfdMessageQueue } = config
+
+export const sendSFDEmail = async (templateId, email, emailInput) => {
   const { personalisation: { applicationReference, reference } } = emailInput
   const { crn, sbi, ...filteredPersonalisation } = emailInput.personalisation
 
@@ -24,5 +26,3 @@ const sendSFDEmail = async (templateId, email, emailInput) => {
     return sendMessage({ sfdMessage: states.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
   }
 }
-
-module.exports = sendSFDEmail

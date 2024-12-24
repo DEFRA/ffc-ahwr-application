@@ -1,6 +1,6 @@
 const { when, resetAllWhenMocks } = require('jest-when')
-const repository = require('../../../../app/repositories/claim-repository')
-const data = require('../../../../app/data')
+const repository = require('../../../../app/repositories/claim-repository').default
+const data = require('../../../../app/data').default
 const { livestockTypes } = require('../../../../app/constants/claim')
 
 jest.mock('../../../../app/data')

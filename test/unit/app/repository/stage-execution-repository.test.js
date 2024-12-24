@@ -1,7 +1,7 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const repository = require('../../../../app/repositories/stage-execution-repository')
-const data = require('../../../../app/data')
-const eventPublisher = require('../../../../app/event-publisher')
+const data = require('../../../../app/data').default
+const eventPublisher = require('../../../../app/event-publisher').default
 const stageExecutionActions = require('../../../../app/constants/stage-execution-actions')
 
 jest.mock('../../../../app/data')

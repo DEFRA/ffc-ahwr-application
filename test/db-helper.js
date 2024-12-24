@@ -1,4 +1,4 @@
-const { models, sequelize } = require('../app/data')
+const { models, sequelize } = require('../app/data').default
 
 async function truncate () {
   await models.application.destroy({ truncate: { cascade: true } })

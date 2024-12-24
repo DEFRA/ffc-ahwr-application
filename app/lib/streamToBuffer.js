@@ -1,4 +1,4 @@
-const streamToBuffer = async (readableStream) => {
+export const streamToBuffer = async (readableStream) => {
   return new Promise((resolve, reject) => {
     const chunks = []
     readableStream.on('data', (data) => {
@@ -11,6 +11,3 @@ const streamToBuffer = async (readableStream) => {
   })
 }
 
-module.exports = {
-  streamToBuffer
-}

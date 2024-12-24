@@ -1,29 +1,29 @@
-const { compliance } = require('../config')
-const statusIds = require('../constants/application-status')
-const { getAllClaimedClaims } = require('../repositories/claim-repository')
-const { getAllClaimedApplications } = require('../repositories/application-repository')
+import { config } from '../config'
+import { applicationStatus } from '../constants/application-status'
+import { getAllClaimedClaims } from '../repositories/claim-repository'
+import { getAllClaimedApplications } from '../repositories/application-repository'
 
-module.exports = async function requiresComplianceCheck (claimOrApplication) {
-  const claimStatusIds = [statusIds.inCheck, statusIds.readyToPay, statusIds.rejected, statusIds.onHold, statusIds.recommendToPay, statusIds.recommendToReject]
+export const requiresComplianceCheck = async (claimOrApplication) => {
+  const claimStatusIds = [applicationStatus.inCheck, applicationStatus.readyToPay, applicationStatus.rejected, applicationStatus.onHold, applicationStatus.recommendToPay, applicationStatus.recommendToReject]
   let complianceCheckRatio
 
   let claimedApplicationsCount
+  
   if (claimOrApplication === 'claim') {
     claimedApplicationsCount = await getAllClaimedClaims(claimStatusIds)
-    complianceCheckRatio = compliance.endemicsComplianceCheckRatio
+    complianceCheckRatio = Number(config.compliance.endemicsComplianceCheckRatio)
   } else {
     claimedApplicationsCount = await getAllClaimedApplications(claimStatusIds)
-    complianceCheckRatio = compliance.complianceCheckRatio
+    complianceCheckRatio = Number(config.compliance.complianceCheckRatio)
   }
 
-  // default to IN_CHECK status
-  let statusId = statusIds.inCheck
+  let statusId = applicationStatus.inCheck
   let claimed = false
 
   if (complianceCheckRatio <= 0 || (claimedApplicationsCount + 1) % complianceCheckRatio !== 0) {
-    // if the claim does not trigger the configurable compliance check volume ratio set as onHold
+    // if the claim does not trigger the configurable compliance check volume ratio, set as onHold
     // if complianceCheckRatio is 0 or less this means compliance checks are turned off
-    statusId = statusIds.onHold
+    statusId = applicationStatus.onHold
     claimed = true
   }
   return { claimed, statusId }

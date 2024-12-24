@@ -1,5 +1,5 @@
 const contactHistoryRepository = require('../../../../../app/repositories/contact-history-repository')
-const applicationRepository = require('../../../../../app/repositories/application-repository')
+const applicationRepository = require('../../../../../app/repositories/application-repository').default
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))

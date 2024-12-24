@@ -1,7 +1,7 @@
 const { when, resetAllWhenMocks } = require('jest-when')
 const appInsights = require('applicationinsights')
-const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
-const applicationRepository = require('../../../../../app/repositories/application-repository')
+const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email').default
+const applicationRepository = require('../../../../../app/repositories/application-repository').default
 const { processApplication, processApplicationApi, processApplicationQueue } = require('../../../../../app/messaging/application/process-application')
 const applicationStatus = require('../../../../../app/constants/application-status')
 const sendMessage = require('../../../../../app/messaging/send-message')

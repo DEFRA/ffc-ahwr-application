@@ -1,5 +1,5 @@
-const { PublishEventBatch } = require('ffc-ahwr-event-publisher')
-const config = require('../config')
+import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
+import { config } from '../config'
 
 const raise = async (event) => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
@@ -95,7 +95,7 @@ const raiseClaimEvents = async (event, sbi = 'none') => {
   ])
 }
 
-module.exports = {
+export default {
   raise,
   raiseClaimEvents
 }

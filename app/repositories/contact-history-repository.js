@@ -1,33 +1,19 @@
-const { models } = require('../data')
+import { buildData } from '../data'
 
-/**
- * Get contact history by application reference number
- * @param {string} applicationReference
- * @returns contact history object.
- */
-async function getAllByApplicationReference (applicationReference) {
+const { models } = buildData
+
+export const getAllByApplicationReference = async (applicationReference) => {
   const result = await models.contact_history.findAll({
     where: {
       applicationReference: applicationReference.toUpperCase()
     },
     order: [['createdAt', 'DESC']]
   })
-  return result.sort((a, b) =>
-    new Date(a.createdAt) > new Date(b.createdAt) ? a : b
-  )
+  return result
 }
 
-/**
- *
- * @param {*} data
- * @returns
- */
-async function set (data) {
+export const set = async (data) => {
   const result = await models.contact_history.create(data)
   return result
 }
 
-module.exports = {
-  set,
-  getAllByApplicationReference
-}

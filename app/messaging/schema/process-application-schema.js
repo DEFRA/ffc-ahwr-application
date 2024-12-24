@@ -1,6 +1,5 @@
 const joi = require('joi')
 const appInsights = require('applicationinsights')
-const endemicsEnabled = require('../../config/index').endemics.enabled
 
 const commonValidations = () => ({
   reference: joi.string().allow(null).required(),
@@ -62,7 +61,7 @@ const endemicsApplicationSchema = joi.object({
 })
 
 const validateApplication = (event) => {
-  const validate = endemicsEnabled ? endemicsApplicationSchema.validate(event) : applicationSchema.validate(event)
+  const validate = endemicsApplicationSchema.validate(event)
 
   if (validate.error) {
     console.error(`Application validation error - ${validate.error}.`)

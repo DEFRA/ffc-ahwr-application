@@ -1,10 +1,13 @@
-const { getByEmail } = require('../../repositories/application-repository')
-const sendMessage = require('../send-message')
-const { fetchClaimResponseMsgType, applicationResponseQueue } = require('../../config')
-const { failed, notFound } = require('./states')
-const validateFetchClaim = require('../schema/fetch-claim-schema')
+import { getByEmail } from '../../repositories/application-repository'
+import { sendMessage } from '../send-message'
+import { config } from '../../config'
+import { states } from './states'
+import validateFetchClaim from '../schema/fetch-claim-schema'
 
-const fetchClaim = async (message) => {
+const { fetchClaimResponseMsgType, applicationResponseQueue } = config
+const { failed, notFound } = states
+
+export const fetchClaim = async (message) => {
   const { sessionId } = message
   try {
     const msgBody = message.body
@@ -26,4 +29,3 @@ const fetchClaim = async (message) => {
   }
 }
 
-module.exports = fetchClaim
