@@ -9,6 +9,8 @@ const sendMessage = require('../../../../../app/messaging/send-message')
 const consoleErrorSpy = jest.spyOn(console, 'error')
 
 const MOCK_REFERENCE = 'AHWR-5C1C-DD6Z'
+const MOCK_NW_REFERENCE = 'IAHW-5C1C-DD6Z'
+const MOCK_TEMP_NW_REFERENCE = 'TEMP-5C1C-DD6Z'
 const MOCK_NOW = new Date()
 
 const mockMonthsAgo = (months) => {
@@ -47,7 +49,7 @@ describe(('Store application in database'), () => {
     confirmCheckDetails: 'yes',
     whichReview: 'beef',
     eligibleSpecies: 'yes',
-    reference: 'AHWR-5C1C-DD6Z',
+    reference: MOCK_REFERENCE,
     declaration: true,
     offerStatus: 'accepted',
     organisation: {
@@ -62,6 +64,11 @@ describe(('Store application in database'), () => {
     }
   }
 
+  const nwData = {
+    ...data,
+    reference: MOCK_TEMP_NW_REFERENCE
+  }
+
   beforeEach(() => {
     applicationRepository.set.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
@@ -72,26 +79,29 @@ describe(('Store application in database'), () => {
   afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
+    toggleEndemics(false)
   })
 
   test('successfully submits application', async () => {
     await processApplication(data)
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
-      reference: '',
+      reference: MOCK_REFERENCE,
       data,
       createdBy: 'admin',
       createdAt: expect.any(Date),
       statusId: applicationStatus.agreed
     }))
   })
-  test('successfully submits application', async () => {
-    await processApplication(data)
+
+  test('successfully submits application - with endemics enabled', async () => {
+    toggleEndemics(true)
+    await processApplication(nwData)
 
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
-      reference: '',
-      data,
+      reference: MOCK_NW_REFERENCE,
+      data : nwData,
       createdBy: 'admin',
       createdAt: expect.any(Date),
       statusId: applicationStatus.agreed
@@ -135,7 +145,7 @@ describe(('Store application in database'), () => {
 
       expect(applicationRepository.set).toHaveBeenCalledTimes(1)
       expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
-        reference: '',
+        reference: MOCK_REFERENCE,
         data,
         createdBy: 'admin',
         createdAt: expect.any(Date),
@@ -145,6 +155,7 @@ describe(('Store application in database'), () => {
 
     describe('when endemics toggle is enabled', () => {
       beforeEach(() => toggleEndemics(true))
+
       test('throws an error when existing endemics application', async () => {
         const mockApplicationDate = mockMonthsAgo(30)
 
@@ -154,7 +165,7 @@ describe(('Store application in database'), () => {
           )
           .mockResolvedValue({
             dataValues: {
-              reference: MOCK_REFERENCE
+              reference: MOCK_NW_REFERENCE
             },
             statusId: applicationStatus.readyToPay,
             createdAt: mockApplicationDate,
@@ -168,7 +179,7 @@ describe(('Store application in database'), () => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to process application',
           new Error(`Recent application already exists: ${JSON.stringify({
-            reference: MOCK_REFERENCE,
+            reference: MOCK_NW_REFERENCE,
             createdAt: mockApplicationDate
           })}`)
         )
@@ -324,7 +335,7 @@ describe(('Store application in database'), () => {
 
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
-      reference: '',
+      reference: MOCK_REFERENCE,
       data,
       createdBy: 'admin',
       createdAt: expect.any(Date),
@@ -439,7 +450,7 @@ describe(('Store application in database'), () => {
       expect(sendMessage).toHaveBeenCalledTimes(1)
     })
 
-    test('fail to process application via API', async () => {
+    test('fail to process application via queue', async () => {
       const consoleErrorSpy = jest.spyOn(console, 'error')
       await processApplicationQueue({ some: 'invalid data' })
 

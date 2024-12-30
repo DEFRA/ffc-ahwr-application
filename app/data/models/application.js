@@ -1,12 +1,3 @@
-const { createApplicationReference } = require('../../lib/create-reference')
-
-const updateApplicationRecord = async (applicationRecord, _) => {
-  applicationRecord.dataValues.reference = createApplicationReference(applicationRecord.dataValues.reference)
-  applicationRecord.dataValues.updatedBy = 'admin'
-  applicationRecord.dataValues.updatedAt = new Date()
-  await applicationRecord.update(applicationRecord.dataValues)
-}
-
 const application = (sequelize, DataTypes) => {
   const Application = sequelize.define('application', {
     id: {
@@ -31,10 +22,7 @@ const application = (sequelize, DataTypes) => {
     type: DataTypes.STRING
   }, {
     freezeTableName: true,
-    tableName: 'application',
-    hooks: {
-      afterCreate: updateApplicationRecord
-    }
+    tableName: 'application'
   })
   Application.associate = function (models) {
     Application.hasOne(models.status, {
@@ -46,4 +34,4 @@ const application = (sequelize, DataTypes) => {
   return Application
 }
 
-module.exports = { application, updateApplicationRecord }
+module.exports = { application }

@@ -43,31 +43,3 @@ describe('application', () => {
     expect(applicationModel.associate).toBeDefined()
   })
 })
-
-describe('updateApplicationRecord', () => {
-  test('it updates the record as required, and sets the updated at to now', async () => {
-    jest
-      .useFakeTimers()
-      .setSystemTime(new Date('2020-01-01'))
-
-    const mockUpdateFunction = jest.fn()
-    const applicationRecord = {
-      dataValues: {
-        reference: 'TEMP-E31F-HG76',
-        updatedBy: '',
-        updatedAt: new Date(2000, 0, 1)
-      },
-      update: mockUpdateFunction
-    }
-
-    await updateApplicationRecord(applicationRecord)
-
-    expect(mockUpdateFunction).toHaveBeenCalledWith({
-      reference: 'IAHW-E31F-HG76',
-      updatedBy: 'admin',
-      updatedAt: new Date('2020-01-01')
-    })
-
-    jest.useRealTimers()
-  })
-})
