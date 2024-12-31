@@ -101,7 +101,7 @@ describe(('Store application in database'), () => {
     expect(applicationRepository.set).toHaveBeenCalledTimes(1)
     expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
       reference: MOCK_NW_REFERENCE,
-      data : nwData,
+      data: nwData,
       createdBy: 'admin',
       createdAt: expect.any(Date),
       statusId: applicationStatus.agreed

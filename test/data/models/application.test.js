@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize')
-const { application, updateApplicationRecord } = require('../../../app/data/models/application')
+const { application } = require('../../../app/data/models/application')
 
 // Mocking the sequelize instance
 const mockSequelize = {
