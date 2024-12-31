@@ -13,6 +13,7 @@ const { getAmount } = require('../../lib/getAmount')
 const requiresComplianceCheck = require('../../lib/requires-compliance-check')
 const { searchPayloadValidations } = require('./helpers')
 const { livestockTypes } = require('../../constants/claim')
+const { createClaimReference } = require('../../lib/create-reference')
 
 const isReview = (payload) => payload.type === review
 const isFollowUp = (payload) => payload.type === endemics
@@ -127,6 +128,7 @@ const isClaimDataValid = (payload) => {
 
   const claimModel = Joi.object({
     applicationReference: Joi.string().required(),
+    reference: Joi.string().required(),
     type: Joi.string().valid(review, endemics).required(),
     createdBy: Joi.string().required(),
     data: dataModel
@@ -231,13 +233,18 @@ module.exports = [
         }
 
         const isFollowUp = request.payload.type === claimType.endemics
-        const data = request.payload
-        const applicationReference = data?.applicationReference
-        const laboratoryURN = data?.data?.laboratoryURN
+        const { payload } = request
+        const applicationReference = payload?.applicationReference
+        const tempClaimReference = payload?.reference
+        const { type } = payload
+        const { typeOfLivestock } = payload.data
+        const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
+        const laboratoryURN = payload?.data?.laboratoryURN
 
         request.logger.setBindings({
           isFollowUp,
           applicationReference,
+          claimReference,
           laboratoryURN
         })
         const application = await get(applicationReference)
@@ -259,7 +266,7 @@ module.exports = [
         const amount = await getAmount(request.payload)
 
         const { statusId } = await requiresComplianceCheck('claim')
-        const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
+        const claim = await set({ ...payload, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
         const claimConfirmationEmailSent = claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
@@ -282,7 +289,7 @@ module.exports = [
           appInsights.defaultClient.trackEvent({
             name: 'process-claim',
             properties: {
-              data,
+              data: payload,
               reference: claim?.dataValues?.reference,
               status: statusId,
               sbi,

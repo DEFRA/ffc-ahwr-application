@@ -1,14 +1,3 @@
-const { createClaimReference } = require('../../lib/create-reference')
-
-const updateClaimRecord = async (claimRecord, _) => {
-  const { type } = claimRecord
-  const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
-  claimRecord.dataValues.reference = createClaimReference(claimRecord.dataValues.reference, type, typeOfLivestock)
-  claimRecord.dataValues.updatedBy = 'admin'
-  claimRecord.dataValues.updatedAt = new Date()
-  await claimRecord.update(claimRecord.dataValues)
-}
-
 const claim = (sequelize, DataTypes) => {
   const Claim = sequelize.define('claim',
     {
@@ -41,10 +30,7 @@ const claim = (sequelize, DataTypes) => {
     },
     {
       freezeTableName: true,
-      tableName: 'claim',
-      hooks: {
-        afterCreate: updateClaimRecord
-      }
+      tableName: 'claim'
     }
   )
   Claim.associate = function (models) {
@@ -60,4 +46,4 @@ const claim = (sequelize, DataTypes) => {
   return Claim
 }
 
-module.exports = { claim, updateClaimRecord }
+module.exports = { claim }
