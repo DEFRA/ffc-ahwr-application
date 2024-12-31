@@ -180,6 +180,7 @@ describe('Post claim test', () => {
   const server = require('../../../../../app/server')
   const claim = {
     applicationReference: 'AHWR-0AD3-3322',
+    reference: 'TEMP-O9UD-22F6',
     data: {
       typeOfLivestock: 'pigs',
       dateOfVisit: '2024-01-22T00:00:00.000Z',
@@ -369,10 +370,11 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: {
         applicationReference: 'AHWR-0AD3-3322',
+        reference: 'TEMP-3FS2-334F',
         type: 'E',
         createdBy: 'admin',
         data: {
-          vetsName: 'Capgemini',
+          vetsName: 'Dave',
           biosecurity: 'yes',
           dateOfVisit: '2024-05-13T00:00:00.000Z',
           vetRCVSNumber: '7777777',
@@ -734,7 +736,21 @@ describe('Post claim test', () => {
   })
 
   test('sent the correct parameters to send sendFarmerEndemicsClaimConfirmationEmail when claim type is follow-up', async () => {
-    const data = { typeOfLivestock: 'beef', numberAnimalsTested: undefined, biosecurity: 'yes', reviewTestResults: 'positive', dateOfTesting: '2024-01-22T00:00:00.000Z', dateOfVisit: '2024-01-22T00:00:00.000Z', vetsName: 'Afshin', vetRCVSNumber: 'AK-2024', speciesNumbers: 'yes', testResults: 'negative', piHunt: 'yes', numberOfOralFluidSamples: undefined, numberOfSamplesTested: undefined }
+    const data = {
+      typeOfLivestock: 'beef',
+      numberAnimalsTested: undefined,
+      biosecurity: 'yes',
+      reviewTestResults: 'positive',
+      dateOfTesting: '2024-01-22T00:00:00.000Z',
+      dateOfVisit: '2024-01-22T00:00:00.000Z',
+      vetsName: 'Afshin',
+      vetRCVSNumber: 'AK-2024',
+      speciesNumbers: 'yes',
+      testResults: 'negative',
+      piHunt: 'yes',
+      numberOfOralFluidSamples: undefined,
+      numberOfSamplesTested: undefined
+    }
     const modifiedClaim = {
       ...{ ...claim, type: 'E', data: { ...claim.data, ...data } }
     }

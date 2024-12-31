@@ -6,6 +6,7 @@ const sendMessage = require('../send-message')
 const applicationRepository = require('../../repositories/application-repository')
 const validateApplication = require('../schema/process-application-schema')
 const appInsights = require('applicationinsights')
+const { createApplicationReference } = require('../../lib/create-reference')
 
 function timeLimitDates (application) {
   const start = new Date(application.createdAt)
@@ -81,8 +82,9 @@ const processApplication = async (data) => {
     }
 
     // create application = save in database
+    // note here we are expecting to receive an application reference, whereas previously we did not
     const result = await applicationRepository.set({
-      reference: '',
+      reference: createApplicationReference(data.reference),
       data,
       createdBy: 'admin',
       createdAt: new Date(),
