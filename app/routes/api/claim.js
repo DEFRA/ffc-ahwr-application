@@ -266,7 +266,7 @@ module.exports = [
         const amount = await getAmount(request.payload)
 
         const { statusId } = await requiresComplianceCheck('claim')
-        const claim = await set({ ...payload, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
+        const claim = await set({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
         const claimConfirmationEmailSent = claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
