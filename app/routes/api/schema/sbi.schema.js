@@ -3,7 +3,7 @@ import { number } from 'joi'
 const MIN_SBI_NUMBER = 105000000
 const MAX_SBI_NUMBER = 210000000
 
-export const sbiSchema =  number()
+export const sbiSchema = number()
   .optional()
   .integer()
   .min(MIN_SBI_NUMBER)

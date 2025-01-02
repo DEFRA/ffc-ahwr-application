@@ -23,4 +23,3 @@ export const status = (sequelize, DataTypes) => {
   }
   return Status
 }
-

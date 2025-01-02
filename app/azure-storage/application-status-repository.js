@@ -13,4 +13,3 @@ export const getApplicationHistory = async (reference) => {
   if (historyRecords.length === 0) { return null }
   return historyRecords
 }
-

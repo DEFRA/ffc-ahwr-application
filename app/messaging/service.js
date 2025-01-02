@@ -1,11 +1,11 @@
-const { MessageReceiver } = require('ffc-messaging')
-const { closeAllConnections } = require('../messaging/create-message-sender')
-const config = require('../config')
-const processApplicationMessage = require('./process-message')
+import { MessageReceiver } from 'ffc-messaging'
+import { closeAllConnections } from '../messaging/create-message-sender'
+import { config } from '../config'
+import { processApplicationMessage } from './process-message'
 
 let applicationReceiver
 
-const start = async () => {
+export const start = async () => {
   const applicationAction = message => processApplicationMessage(message, applicationReceiver)
   applicationReceiver = new MessageReceiver(config.applicationRequestQueue, applicationAction)
   await applicationReceiver.subscribe()
@@ -13,9 +13,7 @@ const start = async () => {
   console.info('Ready to receive messages')
 }
 
-const stop = async () => {
+export const stop = async () => {
   await applicationReceiver.closeConnection()
   await closeAllConnections()
 }
-
-module.exports = { start, stop }

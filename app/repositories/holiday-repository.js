@@ -20,4 +20,3 @@ export const set = async (date, description) => {
     description
   })
 }
-

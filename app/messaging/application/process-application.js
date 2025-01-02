@@ -1,11 +1,11 @@
-import { states } from './states'
-import { applicationStatus } from '../../constants/application-status'
+import { messagingStates, applicationStatus } from '../../constants'
 import { config } from '../../config'
 import { sendFarmerConfirmationEmail } from '../../lib/send-email'
 import { sendMessage } from '../send-message'
-import applicationRepository from '../../repositories/application-repository'
-import validateApplication from '../schema/process-application-schema'
+import { validateApplication } from '../schema/process-application-schema'
 import appInsights from 'applicationinsights'
+import { createApplicationReference } from '../../lib/create-reference'
+import { getBySbi, setApplication } from '../../repositories/application-repository'
 
 export const isPreviousApplicationRelevant = (existingApplication) => {
   return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
@@ -34,7 +34,7 @@ export const processApplication = async (data) => {
       throw new Error('Application validation error')
     }
 
-    const existingApplication = await applicationRepository.getBySbi(
+    const existingApplication = await getBySbi(
       data.organisation.sbi
     )
 
@@ -48,13 +48,13 @@ export const processApplication = async (data) => {
             })}`
         ),
         {
-          applicationState: states.alreadyExists
+          applicationState: messagingStates.alreadyExists
         }
       )
     }
 
-    const result = await applicationRepository.set({
-      reference: '',
+    const result = await setApplication({
+      reference: createApplicationReference(data.reference),
       data,
       createdBy: 'admin',
       createdAt: new Date(),
@@ -64,7 +64,7 @@ export const processApplication = async (data) => {
     const application = result.dataValues
 
     const response = {
-      applicationState: states.submitted,
+      applicationState: messagingStates.submitted,
       applicationReference: application.reference
     }
 
@@ -96,7 +96,7 @@ export const processApplication = async (data) => {
     appInsights.defaultClient.trackException({ exception: error })
 
     return {
-      applicationState: states.failed,
+      applicationState: messagingStates.failed,
       applicationReference: existingApplicationReference
     }
   }
@@ -120,4 +120,3 @@ export const processApplicationQueue = async (msg) => {
     }
   })
 }
-

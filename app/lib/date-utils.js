@@ -9,4 +9,3 @@ export const startandEndDate = (date) => {
   endDate.setDate(startDate.getDate() + 1)
   return { startDate, endDate }
 }
-

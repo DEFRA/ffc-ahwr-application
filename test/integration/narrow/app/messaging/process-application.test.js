@@ -1,7 +1,6 @@
-const { processApplication } = require('../../../../../app/messaging/application/process-application')
-const boom = require('@hapi/boom')
-
-const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email').default
+import { processApplication } from '../../../../../app/messaging/application/process-application'
+import boom from '@hapi/boom'
+import { sendFarmerConfirmationEmail } from '../../../../../app/lib/send-email'
 jest.mock('../../../../../app/lib/send-email')
 
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))

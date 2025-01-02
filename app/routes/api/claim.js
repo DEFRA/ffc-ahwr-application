@@ -3,14 +3,14 @@ import { v4 as uuid } from 'uuid'
 import appInsights from 'applicationinsights'
 import { sendMessage } from '../../messaging/send-message'
 import { config } from '../../config'
-import { speciesNumbers, biosecurity, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, minimumNumberOfOralFluidSamples, testResults, livestockTypes, claimType } from '../../constants/claim'
-import { set, searchClaims, getByReference, updateByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository'
-import { applicationStatus } from '../../constants/application-status'
-import { get } from '../../repositories/application-repository'
+import { speciesNumbers, biosecurity, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, minimumNumberOfOralFluidSamples, testResults, livestockTypes, claimType, applicationStatus } from '../../constants'
+import { set, searchClaims, getClaimByReference, updateByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository'
+import { getApplication } from '../../repositories/application-repository'
 import { sendFarmerEndemicsClaimConfirmationEmail } from '../../lib/send-email'
 import { getAmount } from '../../lib/getAmount'
 import { requiresComplianceCheck } from '../../lib/requires-compliance-check'
 import { searchPayloadSchema } from './schema/search-payload.schema'
+import { createClaimReference } from '../../lib/create-reference'
 
 const { submitPaymentRequestMsgType, submitRequestQueue, optionalPIHunt: { enabled: optionalPiHuntEnabled }, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } } = config
 
@@ -127,6 +127,7 @@ const isClaimDataValid = (payload) => {
 
   const claimModel = Joi.object({
     applicationReference: Joi.string().required(),
+    reference: Joi.string().required(),
     type: Joi.string().valid(claimType.review, claimType.endemics).required(),
     createdBy: Joi.string().required(),
     data: dataModel
@@ -146,7 +147,7 @@ export const claimHandlers = [
         })
       },
       handler: async (request, h) => {
-        const claim = await getByReference(request.params.ref)
+        const claim = await getClaimByReference(request.params.ref)
         if (claim?.dataValues) {
           return h.response(claim.dataValues).code(200)
         } else {
@@ -231,16 +232,21 @@ export const claimHandlers = [
         }
 
         const isFollowUp = request.payload.type === claimType.endemics
-        const data = request.payload
-        const applicationReference = data?.applicationReference
-        const laboratoryURN = data?.data?.laboratoryURN
+        const { payload } = request
+        const applicationReference = payload?.applicationReference
+        const tempClaimReference = payload?.reference
+        const { type } = payload
+        const { typeOfLivestock } = payload.data
+        const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
+        const laboratoryURN = payload?.data?.laboratoryURN
 
         request.logger.setBindings({
           isFollowUp,
           applicationReference,
+          claimReference,
           laboratoryURN
         })
-        const application = await get(applicationReference)
+        const application = await getApplication(applicationReference)
 
         if (!application?.dataValues) {
           return h.response('Not Found').code(404).takeover()
@@ -259,7 +265,7 @@ export const claimHandlers = [
         const amount = await getAmount(request.payload)
 
         const { statusId } = await requiresComplianceCheck('claim')
-        const claim = await set({ ...data, data: { ...data?.data, amount, claimType: request.payload.type }, statusId, sbi })
+        const claim = await set({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
         const claimConfirmationEmailSent = claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
@@ -282,7 +288,7 @@ export const claimHandlers = [
           appInsights.defaultClient.trackEvent({
             name: 'process-claim',
             properties: {
-              data,
+              data: payload,
               reference: claim?.dataValues?.reference,
               status: statusId,
               sbi,
@@ -342,11 +348,11 @@ export const claimHandlers = [
           status
         })
 
-        const claim = await getByReference(reference)
+        const claim = await getClaimByReference(reference)
         if (!claim.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
-        const application = await get(claim.dataValues.applicationReference)
+        const application = await getApplication(claim.dataValues.applicationReference)
         const sbi = application?.dataValues?.data?.organisation?.sbi
 
         request.logger.setBindings({ sbi })

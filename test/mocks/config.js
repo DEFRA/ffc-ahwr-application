@@ -1,12 +1,8 @@
+import { config } from '../../app/config'
 jest.mock('../../app/config', () => ({
   ...jest.requireActual('../../app/config')
 }))
-import { config } from '../../app/config'
 
-const setOptionalPIHuntEnabled = (optionalPIHuntEnabled) => {
+export const setOptionalPIHuntEnabled = (optionalPIHuntEnabled) => {
   config.optionalPIHunt.enabled = optionalPIHuntEnabled
-}
-
-module.exports = {
-  setOptionalPIHuntEnabled
 }

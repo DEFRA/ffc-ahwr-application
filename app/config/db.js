@@ -46,4 +46,3 @@ export const dbConfig = {
     min: 5
   }
 }
-

@@ -1,13 +1,15 @@
-const server = require('./server')
-const messageService = require('./messaging/service')
+import { server } from './server'
+import { start, stop } from './messaging/service'
+import { setup } from './insights'
 
 const init = async () => {
-  await messageService.start()
+  await start()
   await server.start()
+  setup()
 }
 
 process.on('unhandledRejection', async (err) => {
-  await messageService.stop()
+  await stop()
   server.logger.error(err, 'unhandledRejection')
   process.exit(1)
 })

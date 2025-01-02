@@ -1,11 +1,11 @@
 import { getByEmail } from '../../repositories/application-repository'
 import { sendMessage } from '../send-message'
 import { config } from '../../config'
-import { states } from './states'
-import validateFetchClaim from '../schema/fetch-claim-schema'
+import { messagingStates } from '../../constants'
+import { validateFetchClaim } from '../schema/fetch-claim-schema'
 
 const { fetchClaimResponseMsgType, applicationResponseQueue } = config
-const { failed, notFound } = states
+const { failed, notFound } = messagingStates
 
 export const fetchClaim = async (message) => {
   const { sessionId } = message
@@ -28,4 +28,3 @@ export const fetchClaim = async (message) => {
     return sendMessage({ applicationState: failed }, fetchClaimResponseMsgType, applicationResponseQueue, { sessionId })
   }
 }
-

@@ -8,4 +8,3 @@ export const searchPayloadSchema = {
     type: Joi.string().valid().optional().allow('')
   }).optional()
 }
-

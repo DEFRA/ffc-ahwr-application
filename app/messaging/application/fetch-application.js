@@ -1,11 +1,11 @@
-import { get } from '../../repositories/application-repository'
+import { getApplication } from '../../repositories/application-repository'
 import { sendMessage } from '../send-message'
 import { config } from '../../config'
-import { states } from './states'
-import validateFetchApplication from '../schema/fetch-application-schema'
+import { messagingStates } from '../../constants'
+import { validateFetchApplication } from '../schema/fetch-application-schema'
 
 const { fetchApplicationResponseMsgType, applicationResponseQueue } = config
-const { notFound, alreadySubmitted, notSubmitted, failed } = states
+const { notFound, alreadySubmitted, notSubmitted, failed } = messagingStates
 
 export const fetchApplication = async (message) => {
   const { sessionId } = message
@@ -13,7 +13,7 @@ export const fetchApplication = async (message) => {
     const msgBody = message.body
 
     if (validateFetchApplication(msgBody)) {
-      const application = (await get(msgBody.applicationReference)).dataValues
+      const application = (await getApplication(msgBody.applicationReference)).dataValues
 
       if (!application) {
         return sendMessage({ applicationState: notFound, ...application }, fetchApplicationResponseMsgType, applicationResponseQueue, { sessionId })

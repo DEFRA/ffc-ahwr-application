@@ -1,7 +1,7 @@
 import { sendMessage } from '../messaging/send-message'
 import { config } from '../config'
 import { validateSFDSchema } from '../messaging/schema/submit-sfd-schema'
-import { states } from '../messaging/application/states'
+import { messagingStates } from '../constants'
 
 const { sfdRequestMsgType, sfdMessageQueue } = config
 
@@ -23,6 +23,6 @@ export const sendSFDEmail = async (templateId, email, emailInput) => {
   if (validateSFDSchema(sfdMessage)) {
     return await sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
   } else {
-    return sendMessage({ sfdMessage: states.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
+    return sendMessage({ sfdMessage: messagingStates.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
   }
 }

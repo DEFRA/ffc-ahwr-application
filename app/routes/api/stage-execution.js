@@ -1,10 +1,10 @@
 import Joi from 'joi'
-import { getByReference } from '../../repositories/claim-repository'
-const { get, updateByReference } = require('../../repositories/application-repository')
-const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
-import  { applicationStatus } from '../../constants/application-status'
+import { getClaimByReference } from '../../repositories/claim-repository'
+import { applicationStatus } from '../../constants'
+import { getApplication, updateApplicationByReference } from '../../repositories/application-repository'
+import { getAll, set, getById, update, getByApplicationReference } from '../../repositories/stage-execution-repository'
 
-module.exports = [{
+export const stageExecutionHandlers = [{
   method: 'GET',
   path: '/api/stageexecution',
   options: {
@@ -57,11 +57,11 @@ module.exports = [{
       request.logger.setBindings({ payload: request.payload })
 
       if (request.payload.claimOrApplication === 'claim') {
-        application = await getByReference(request.payload.applicationReference)
+        application = await getClaimByReference(request.payload.applicationReference)
       }
 
       if (request.payload.claimOrApplication === 'application') {
-        application = await get(request.payload.applicationReference)
+        application = await getApplication(request.payload.applicationReference)
       }
 
       if (!application?.dataValues) {
@@ -93,11 +93,11 @@ module.exports = [{
 
       if (statusId) {
         if (request.payload.claimOrApplication === 'claim') {
-          const mainApplication = await get(application.dataValues.applicationReference)
+          const mainApplication = await getApplication(application.dataValues.applicationReference)
           sbi = mainApplication?.dataValues?.data?.organisation?.sbi
-          await claim.updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
+          await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
         } else {
-          await updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
+          await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
         }
       }
 

@@ -29,4 +29,3 @@ export const validateSFDSchema = (event) => {
   }
   return true
 }
-

@@ -5,7 +5,7 @@ import { startandEndDate } from '../lib/date-utils'
 
 const { models, sequelize } = buildData
 
-export async function get (reference) {
+export const getApplication = async (reference) => {
   return models.application.findOne(
     {
       where: { reference: reference.toUpperCase() },
@@ -18,7 +18,7 @@ export async function get (reference) {
     })
 }
 
-export async function getLatestApplicationsBySbi (sbi) {
+export const getLatestApplicationsBySbi = async (sbi) => {
   const result = await models.application
     .findAll(
       {
@@ -29,7 +29,7 @@ export async function getLatestApplicationsBySbi (sbi) {
   return result
 }
 
-export async function getBySbi (sbi) {
+export const getBySbi = async (sbi) => {
   return models.application.findOne({
     where: {
       'data.organisation.sbi': sbi
@@ -38,7 +38,7 @@ export async function getBySbi (sbi) {
   })
 }
 
-export async function getByEmail (email) {
+export const getByEmail = async (email) => {
   return models.application.findOne(
     {
       order: [['createdAt', 'DESC']],
@@ -46,7 +46,7 @@ export async function getByEmail (email) {
     })
 }
 
-function evalSortField (sort) {
+const evalSortField = (sort) => {
   if (sort?.field) {
     switch (sort.field.toLowerCase()) {
       case 'status':
@@ -64,7 +64,7 @@ function evalSortField (sort) {
   return ['createdAt', sort?.direction ?? 'ASC']
 }
 
-export async function searchApplications (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+export const searchApplications = async (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) => {
   let query = {
     include: [
       {
@@ -116,6 +116,7 @@ export async function searchApplications (searchText, searchType, filter, offset
     ]
   }
   total = await models.application.count(query)
+
   if (total > 0) {
     applicationStatus = await models.application.findAll({
       attributes: ['status.status', [sequelize.fn('COUNT', 'application.id'), 'total']],
@@ -137,22 +138,22 @@ export async function searchApplications (searchText, searchType, filter, offset
   }
 }
 
-export async function getAll () {
+export const getAllApplications = async () => {
   const query = {
     order: [['createdAt', 'DESC']]
   }
-  return models.application.findAll(query)
+  return await models.application.findAll(query)
 }
 
-export async function getAllClaimedApplications (claimStatusIds) {
-  return models.application.count({
+export const getAllClaimedApplications = async (claimStatusIds) => {
+  return await models.application.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
     }
   })
 }
 
-export async function set (data) {
+export const setApplication = async (data) => {
   const result = await models.application.create(data)
   eventPublisher.raise({
     message: 'New application has been created',
@@ -163,7 +164,7 @@ export async function set (data) {
   return result
 }
 
-export async function updateByReference (data, publishEvent = true) {
+export const updateApplicationByReference = async (data, publishEvent = true) => {
   try {
     const application = await models.application.findOne({
       where: {
@@ -199,6 +200,6 @@ export async function updateByReference (data, publishEvent = true) {
     return result
   } catch (error) {
     console.error('Error updating application by reference:', error)
-    throw error // re-throw the error after logging or handle it as needed
+    throw error
   }
 }

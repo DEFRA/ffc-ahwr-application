@@ -1,5 +1,5 @@
-const joi = require('joi')
-const appInsights = require('applicationinsights')
+import joi from 'joi'
+import appInsights from 'applicationinsights'
 
 const commonValidations = () => ({
   reference: joi.string().allow(null).required(),
@@ -20,26 +20,7 @@ const organisationValidations = () => ({
   isTest: joi.boolean().optional()
 })
 
-const applicationSchema = joi.object({
-  confirmCheckDetails: joi.string().required(),
-  whichReview: joi.string().required(),
-  eligibleSpecies: joi.string().required(),
-  ...commonValidations(),
-  organisation: joi.object({
-    ...organisationValidations()
-  }),
-  contactHistory: joi.array().items(
-    joi.object({
-      createdBy: joi.string(),
-      createdOn: joi.string(),
-      field: joi.string(),
-      oldValue: joi.string(),
-      newValue: joi.string()
-    }).allow(null).optional()
-  )
-})
-
-const endemicsApplicationSchema = joi.object({
+const aplicationSchema = joi.object({
   confirmCheckDetails: joi.string().required(),
   whichReview: joi.string().optional(),
   eligibleSpecies: joi.string().optional(),
@@ -60,8 +41,8 @@ const endemicsApplicationSchema = joi.object({
   )
 })
 
-const validateApplication = (event) => {
-  const validate = endemicsApplicationSchema.validate(event)
+export const validateApplication = (event) => {
+  const validate = aplicationSchema.validate(event)
 
   if (validate.error) {
     console.error(`Application validation error - ${validate.error}.`)
@@ -71,5 +52,3 @@ const validateApplication = (event) => {
 
   return true
 }
-
-module.exports = validateApplication

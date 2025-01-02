@@ -1,9 +1,9 @@
 import Joi from 'joi'
 import { v4 as uuid } from 'uuid'
-import { get, searchApplications, updateByReference } from '../../repositories/application-repository'
+import { getApplication, searchApplications, updateApplicationByReference } from '../../repositories/application-repository'
 import { config } from '../../config'
 import { sendMessage } from '../../messaging/send-message'
-import { applicationStatus } from '../../constants/application-status'
+import { applicationStatus } from '../../constants'
 import { processApplicationApi } from '../../messaging/application/process-application'
 import { searchPayloadSchema } from './schema/search-payload.schema'
 
@@ -19,7 +19,7 @@ export const applicationHandlers = [{
       })
     },
     handler: async (request, h) => {
-      const application = await get(request.params.ref)
+      const application = await getApplication(request.params.ref)
       if (application?.dataValues) {
         return h.response(application.dataValues).code(200)
       } else {
@@ -70,12 +70,12 @@ export const applicationHandlers = [{
     handler: async (request, h) => {
       const { status } = request.payload
       request.logger.setBindings({ status })
-      const application = (await get(request.params.ref))
+      const application = await getApplication(request.params.ref)
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
       }
 
-      await updateByReference({ reference: request.params.ref, statusId: status, updatedBy: request.payload.user })
+      await updateApplicationByReference({ reference: request.params.ref, statusId: status, updatedBy: request.payload.user })
 
       return h.response().code(200)
     }
@@ -115,7 +115,7 @@ export const applicationHandlers = [{
 
       request.logger.setBindings({ reference })
 
-      const application = await get(reference)
+      const application = await getApplication(reference)
 
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
@@ -138,7 +138,7 @@ export const applicationHandlers = [{
 
         request.logger.setBindings({ statusId })
 
-        await updateByReference({ reference, statusId, updatedBy: request.payload.user })
+        await updateApplicationByReference({ reference, statusId, updatedBy: request.payload.user })
       } catch (err) {
         request.logger.setBindings({ applicationUpdateError: err })
       }

@@ -1,11 +1,11 @@
-const joi = require('joi')
-const util = require('util')
+import joi from 'joi'
+import util from 'util'
 
 const fetchApplicationSchema = joi.object({
   applicationReference: joi.string().required()
 })
 
-const validateFetchApplication = (event) => {
+export const validateFetchApplication = (event) => {
   const validate = fetchApplicationSchema.validate(event)
 
   if (validate.error) {
@@ -15,5 +15,3 @@ const validateFetchApplication = (event) => {
 
   return true
 }
-
-module.exports = validateFetchApplication

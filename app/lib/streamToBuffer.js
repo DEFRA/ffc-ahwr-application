@@ -10,4 +10,3 @@ export const streamToBuffer = async (readableStream) => {
     readableStream.on('error', reject)
   })
 }
-

@@ -1,10 +1,12 @@
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../config')
-const fetchApplication = require('./application/fetch-application').default
-const fetchClaim = require('./application/fetch-claim').default
-const { processApplicationQueue } = require('./application/process-application')
-const submitClaim = require('./application/submit-claim')
+import { config } from '../config'
+import { fetchApplication } from './application/fetch-application'
+import { fetchClaim } from './application/fetch-claim'
+import { processApplicationQueue } from './application/process-application'
+import { submitClaim } from './application/submit-claim'
 
-const processApplicationMessage = async (message, receiver) => {
+const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = config
+
+export const processApplicationMessage = async (message, receiver) => {
   try {
     const { applicationProperties: properties } = message
     switch (properties.type) {
@@ -26,5 +28,3 @@ const processApplicationMessage = async (message, receiver) => {
     console.error('Unable to process Application request:', err)
   }
 }
-
-module.exports = processApplicationMessage

@@ -1,4 +1,4 @@
-const submitClaim = require('../../../../../app/messaging/application/submit-claim')
+const submitClaim = require('../../../../../app/messaging/application/submit-claim').default
 const { submitClaimResponseMsgType, applicationResponseQueue, submitPaymentRequestMsgType, submitRequestQueue } = require('../../../../../app/config')
 const { alreadyClaimed, failed, error, notFound, success } = require('../../../../../app/messaging/application/states')
 const appInsights = require('applicationinsights')

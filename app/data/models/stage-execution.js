@@ -53,4 +53,3 @@ export const stageExecution = (sequelize, DataTypes) => {
 
   return StageExecution
 }
-

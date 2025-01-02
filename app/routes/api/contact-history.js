@@ -1,6 +1,5 @@
 import Joi from 'joi'
-import { updateByReference } from '../../repositories/application-repository'
-import { getLatestApplicationsBySbi } from '../../repositories/application-repository'
+import { updateApplicationByReference, getLatestApplicationsBySbi } from '../../repositories/application-repository'
 import { getAllByApplicationReference, set } from '../../repositories/contact-history-repository'
 import { sbiSchema } from './schema/sbi.schema.js'
 
@@ -87,7 +86,7 @@ export const contactHistoryHandlers = [
           }
 
           if (contactHistory.length > 0) {
-            await updateByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user }, false)
+            await updateApplicationByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user }, false)
             contactHistory.forEach(async (contact) => {
               await set({
                 applicationReference: application.reference,

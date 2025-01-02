@@ -1,8 +1,11 @@
-const { BlobServiceClient } = require('@azure/storage-blob')
-const { DefaultAzureCredential } = require('@azure/identity')
-const { connectionString, useConnectionString, endemicsSettingsContainer, storageAccount } = require('./config').storage
-const { streamToBuffer } = require('./lib/streamToBuffer')
+import { BlobServiceClient } from '@azure/storage-blob'
+import { DefaultAzureCredential } from '@azure/identity'
+import { config } from './config'
+import { streamToBuffer } from './lib/streamToBuffer'
+
 let blobServiceClient
+
+const { connectionString, useConnectionString, endemicsSettingsContainer, storageAccount } = config.storage
 
 if (useConnectionString === true) {
   blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
@@ -11,15 +14,10 @@ if (useConnectionString === true) {
   blobServiceClient = new BlobServiceClient(uri, new DefaultAzureCredential())
 }
 
-const getBlob = async (filename) => {
+export const getBlob = async (filename) => {
   const container = blobServiceClient.getContainerClient(endemicsSettingsContainer)
   const blobClient = container.getBlobClient(filename)
   const downloadResponse = await blobClient.download()
   const downloaded = await streamToBuffer(downloadResponse.readableStreamBody)
   return JSON.parse(downloaded.toString())
-}
-
-module.exports = {
-  getBlob,
-  streamToBuffer
 }

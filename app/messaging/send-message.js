@@ -6,4 +6,3 @@ export const sendMessage = async (body, type, config, options) => {
   const sender = createMessageSender(config)
   await sender.sendMessage(message)
 }
-

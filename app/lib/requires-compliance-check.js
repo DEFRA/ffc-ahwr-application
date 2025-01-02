@@ -1,5 +1,5 @@
 import { config } from '../config'
-import { applicationStatus } from '../constants/application-status'
+import { applicationStatus } from '../constants'
 import { getAllClaimedClaims } from '../repositories/claim-repository'
 import { getAllClaimedApplications } from '../repositories/application-repository'
 
@@ -8,7 +8,7 @@ export const requiresComplianceCheck = async (claimOrApplication) => {
   let complianceCheckRatio
 
   let claimedApplicationsCount
-  
+
   if (claimOrApplication === 'claim') {
     claimedApplicationsCount = await getAllClaimedClaims(claimStatusIds)
     complianceCheckRatio = Number(config.compliance.endemicsComplianceCheckRatio)

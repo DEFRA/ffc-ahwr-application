@@ -6,4 +6,3 @@ export const createMessage = (body, type, options) => {
     ...options
   }
 }
-

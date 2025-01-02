@@ -5,7 +5,7 @@ import { Op } from 'sequelize'
 
 const { models } = buildData
 
-export async function getByReference (reference) {
+export const getClaimByReference = (reference) => {
   return models.claim.findOne({
     where: { reference: reference.toUpperCase() },
     include: [
@@ -17,7 +17,7 @@ export async function getByReference (reference) {
   })
 }
 
-export async function getByApplicationReference (applicationReference, typeOfLivestock) {
+export const getByApplicationReference = async (applicationReference, typeOfLivestock) => {
   let where = { applicationReference: applicationReference.toUpperCase() }
 
   if (typeOfLivestock) {
@@ -38,7 +38,7 @@ export async function getByApplicationReference (applicationReference, typeOfLiv
   return result
 }
 
-export async function set (data) {
+export const set = async (data) => {
   const sbi = data.sbi
   const result = await models.claim.create(data)
   eventPublisher.raiseClaimEvents({
@@ -50,7 +50,7 @@ export async function set (data) {
   return result
 }
 
-export async function updateByReference (data) {
+export const updateByReference = async (data) => {
   try {
     const claim = await models.claim.findOne({
       where: {
@@ -88,8 +88,8 @@ export async function updateByReference (data) {
   }
 }
 
-export async function getAllClaimedClaims (claimStatusIds) {
-  return models.claim.count({
+export const getAllClaimedClaims = async (claimStatusIds) => {
+  return await models.claim.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
     }
@@ -197,4 +197,3 @@ export const searchClaims = async (searchText, searchType, offset = 0, limit = 1
     claims: await models.claim.findAll({ ...query, order: [evalSortField(sort)], limit, offset })
   }
 }
-

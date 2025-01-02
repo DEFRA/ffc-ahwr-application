@@ -1,6 +1,6 @@
 import { getBlob } from '../storage'
 import { config } from '../config'
-import { livestockTypes, claimType, testResults, piHunt, piHuntAllAnimals } from './../constants/claim'
+import { livestockTypes, claimType, testResults } from './../constants'
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
   const optionalPiHuntValue = (piHunt === piHunt.yes && piHuntAllAnimals === piHuntAllAnimals.yes) ? 'yesPiHunt' : 'noPiHunt'

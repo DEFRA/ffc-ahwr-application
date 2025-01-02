@@ -16,4 +16,3 @@ export const set = async (data) => {
   const result = await models.contact_history.create(data)
   return result
 }
-

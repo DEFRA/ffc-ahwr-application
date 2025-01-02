@@ -1,14 +1,11 @@
-const { models, sequelize } = require('../app/data').default
+import { buildData } from '../app/data'
 
-async function truncate () {
+const { models, sequelize } = buildData
+
+export const truncate = async () => {
   await models.application.destroy({ truncate: { cascade: true } })
 }
 
-async function close () {
+export const close = async () => {
   await sequelize.close()
-}
-
-module.exports = {
-  close,
-  truncate
 }

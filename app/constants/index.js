@@ -1,3 +1,16 @@
+export const applicationStatus = {
+  agreed: 1,
+  inCheck: 5,
+  notAgreed: 7,
+  readyToPay: 9,
+  rejected: 10,
+  withdrawn: 2,
+  onHold: 11,
+  paid: 8,
+  recommendToPay: 12,
+  recommendToReject: 13
+}
+
 export const livestockTypes = {
   beef: 'beef',
   dairy: 'dairy',
@@ -61,3 +74,21 @@ export const minimumNumberOfAnimalsTested = {
   }
 }
 
+export const stageExecutionActions = {
+  recommendToPay: 'Recommend to pay',
+  recommendToReject: 'Recommend to reject',
+  authorisePayment: 'Paid',
+  authoriseRejection: 'Rejected'
+}
+
+export const messagingStates = {
+  alreadyClaimed: 'already_claimed',
+  alreadySubmitted: 'already_submitted',
+  alreadyExists: 'already_exists',
+  error: 'error',
+  failed: 'failed',
+  notFound: 'not_found',
+  notSubmitted: 'not_submitted',
+  submitted: 'submitted',
+  success: 'success'
+}

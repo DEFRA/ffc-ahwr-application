@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import applicationInsights from 'applicationinsights'
 
 const sharedConfigSchema = {
   appInsights: Joi.object(),
@@ -44,7 +45,7 @@ const schema = Joi.object({
 })
 
 const sharedConfig = {
-  appInsights: require('applicationinsights'),
+  appInsights: applicationInsights,
   host: process.env.MESSAGE_QUEUE_HOST,
   password: process.env.MESSAGE_QUEUE_PASSWORD,
   username: process.env.MESSAGE_QUEUE_USER,

@@ -1,16 +1,5 @@
-import { createClaimReference } from '../../lib/create-reference'
-
-export const updateClaimRecord = async (claimRecord, _) => {
-  const { type } = claimRecord
-  const typeOfLivestock = claimRecord.dataValues.data.typeOfLivestock
-  claimRecord.dataValues.reference = createClaimReference(claimRecord.dataValues.reference, type, typeOfLivestock)
-  claimRecord.dataValues.updatedBy = 'admin'
-  claimRecord.dataValues.updatedAt = new Date()
-  await claimRecord.update(claimRecord.dataValues)
-}
-
 export const claim = (sequelize, DataTypes) => {
-  const Claim = sequelize.define('claim',
+  const claimModel = sequelize.define('claim',
     {
       id: {
         type: DataTypes.UUID,
@@ -41,21 +30,18 @@ export const claim = (sequelize, DataTypes) => {
     },
     {
       freezeTableName: true,
-      tableName: 'claim',
-      hooks: {
-        afterCreate: updateClaimRecord
-      }
+      tableName: 'claim'
     }
   )
-  Claim.associate = function (models) {
-    Claim.hasOne(models.application, {
+  claimModel.associate = function (models) {
+    claimModel.hasOne(models.application, {
       sourceKey: 'applicationReference',
       foreignKey: 'reference'
     })
-    Claim.hasOne(models.status, {
+    claimModel.hasOne(models.status, {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
   }
-  return Claim
+  return claimModel
 }

@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize')
-const { claim, updateClaimRecord } = require('../../../app/data/models/claim').default
+import { DataTypes } from 'sequelize'
+import { claim } from '../../../app/data/models/claim'
 
 const mockSequelize = {
   define: jest.fn().mockReturnValue({
@@ -39,36 +39,5 @@ describe('claim model', () => {
 
     expect(claimModel.create).toBeDefined()
     expect(claimModel.associate).toBeDefined()
-  })
-})
-
-describe('updateClaimRecord', () => {
-  test('it updates the record as required, and sets the updated at to now', async () => {
-    jest
-      .useFakeTimers()
-      .setSystemTime(new Date('2020-01-01'))
-
-    const mockUpdateFunction = jest.fn()
-    const claimRecord = {
-      dataValues: {
-        data: { typeOfLivestock: 'dairy' },
-        reference: 'TEMP-CLAIM-E31F-HG76',
-        updatedBy: '',
-        updatedAt: new Date(2000, 0, 1)
-      },
-      type: 'R',
-      update: mockUpdateFunction
-    }
-
-    await updateClaimRecord(claimRecord)
-
-    expect(mockUpdateFunction).toHaveBeenCalledWith({
-      ...claimRecord.dataValues,
-      reference: 'REDC-E31F-HG76',
-      updatedBy: 'admin',
-      updatedAt: new Date('2020-01-01')
-    })
-
-    jest.useRealTimers()
   })
 })

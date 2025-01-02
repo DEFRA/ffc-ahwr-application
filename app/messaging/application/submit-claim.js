@@ -1,29 +1,32 @@
-const { alreadyClaimed, failed, error, notFound, success } = require('./states')
-const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
-const { sendFarmerClaimConfirmationEmail } = require('../../lib/send-email').default
-const sendMessage = require('../send-message')
-const { get, updateByReference } = require('../../repositories/application-repository').default
-const validateSubmitClaim = require('../schema/submit-claim-schema')
-const statusIds = require('../../constants/application-status')
-const appInsights = require('applicationinsights')
-const requiresComplianceCheck = require('../../lib/requires-compliance-check')
+import { messagingStates, applicationStatus } from '../../constants'
+import { config } from '../../config'
+import { sendFarmerClaimConfirmationEmail } from '../../lib/send-email'
+import { sendMessage } from '../send-message'
+import { getApplication, updateApplicationByReference } from '../../repositories/application-repository'
+import { validateSubmitClaim } from '../schema/submit-claim-schema'
+import appInsights from 'applicationinsights'
+import { requiresComplianceCheck } from '../../lib/requires-compliance-check'
+
+const { alreadyClaimed, failed, error, notFound, success } = messagingStates
+const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = config
+const { inCheck, readyToPay, rejected, onHold, recommendToPay, recommendToReject } = applicationStatus
 
 function isUpdateSuccessful (res) {
   return res[0] === 1
 }
 
-const submitClaim = async (message) => {
+export const submitClaim = async (message) => {
   try {
     const msgBody = message.body
     if (validateSubmitClaim(msgBody)) {
       const { reference, data } = msgBody
-      const application = await get(reference)
+      const application = await getApplication(reference)
 
       if (!application.dataValues) {
         return sendMessage({ state: notFound }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
       }
 
-      const claimStatusIds = [statusIds.inCheck, statusIds.readyToPay, statusIds.rejected, statusIds.onHold, statusIds.recommendToPay, statusIds.recommendToReject]
+      const claimStatusIds = [inCheck, readyToPay, rejected, onHold, recommendToPay, recommendToReject]
 
       if (application.dataValues.claimed || claimStatusIds.includes(application.dataValues.statusId)) {
         return sendMessage({ state: alreadyClaimed }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
@@ -31,11 +34,11 @@ const submitClaim = async (message) => {
 
       const { claimed, statusId } = await requiresComplianceCheck('application')
 
-      const res = await updateByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
+      const res = await updateApplicationByReference({ reference, claimed, statusId, updatedBy: 'admin', data })
 
       const updateSuccess = isUpdateSuccessful(res)
 
-      if (updateSuccess && statusId === statusIds.readyToPay) {
+      if (updateSuccess && statusId === readyToPay) {
         console.log(`Application with reference ${reference} has been marked as ready to pay.`)
         // sending message to payment queue
         await sendMessage(
@@ -72,5 +75,3 @@ const submitClaim = async (message) => {
     return sendMessage({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId: message.sessionId })
   }
 }
-
-module.exports = submitClaim
