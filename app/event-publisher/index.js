@@ -1,5 +1,5 @@
 import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
-import { config } from '../config'
+import { config } from '../config/index.js'
 
 const raise = async (event) => {
   await new PublishEventBatch(config.eventQueue).sendEvents([

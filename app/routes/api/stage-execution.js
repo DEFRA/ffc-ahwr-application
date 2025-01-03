@@ -1,8 +1,8 @@
 import Joi from 'joi'
-import { getClaimByReference } from '../../repositories/claim-repository'
-import { applicationStatus } from '../../constants'
-import { getApplication, updateApplicationByReference } from '../../repositories/application-repository'
-import { getAll, set, getById, update, getByApplicationReference } from '../../repositories/stage-execution-repository'
+import { getClaimByReference } from '../../repositories/claim-repository.js'
+import { applicationStatus } from '../../constants/index.js'
+import { getApplication, updateApplicationByReference } from '../../repositories/application-repository.js'
+import { getAll, set, getById, update, getByApplicationReference } from '../../repositories/stage-execution-repository.js'
 
 export const stageExecutionHandlers = [{
   method: 'GET',

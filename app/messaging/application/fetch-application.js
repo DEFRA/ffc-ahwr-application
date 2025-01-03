@@ -1,8 +1,8 @@
-import { getApplication } from '../../repositories/application-repository'
-import { sendMessage } from '../send-message'
-import { config } from '../../config'
-import { messagingStates } from '../../constants'
-import { validateFetchApplication } from '../schema/fetch-application-schema'
+import { getApplication } from '../../repositories/application-repository.js'
+import { sendMessage } from '../send-message.js'
+import { config } from '../../config/index.js'
+import { messagingStates } from '../../constants/index.js'
+import { validateFetchApplication } from '../schema/fetch-application-schema.js'
 
 const { fetchApplicationResponseMsgType, applicationResponseQueue } = config
 const { notFound, alreadySubmitted, notSubmitted, failed } = messagingStates

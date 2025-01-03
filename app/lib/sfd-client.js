@@ -1,7 +1,7 @@
-import { sendMessage } from '../messaging/send-message'
-import { config } from '../config'
-import { validateSFDSchema } from '../messaging/schema/submit-sfd-schema'
-import { messagingStates } from '../constants'
+import { sendMessage } from '../messaging/send-message.js'
+import { config } from '../config/index.js'
+import { validateSFDSchema } from '../messaging/schema/submit-sfd-schema.js'
+import { messagingStates } from '../constants/index.js'
 
 const { sfdRequestMsgType, sfdMessageQueue } = config
 

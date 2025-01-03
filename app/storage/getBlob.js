@@ -1,6 +1,6 @@
-import { config } from '../config'
-import { streamToBuffer } from '../lib/streamToBuffer'
-import { getBlobServiceClient } from './getBlobServiceClient'
+import { config } from '../config/index.js'
+import { streamToBuffer } from '../lib/streamToBuffer.js'
+import { getBlobServiceClient } from './getBlobServiceClient.js'
 
 export const getBlob = async (filename) => {
   const {

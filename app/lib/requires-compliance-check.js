@@ -1,7 +1,7 @@
-import { config } from '../config'
-import { applicationStatus } from '../constants'
-import { getAllClaimedClaims } from '../repositories/claim-repository'
-import { getAllClaimedApplications } from '../repositories/application-repository'
+import { config } from '../config/index.js'
+import { applicationStatus } from '../constants/index.js'
+import { getAllClaimedClaims } from '../repositories/claim-repository.js'
+import { getAllClaimedApplications } from '../repositories/application-repository.js'
 
 export const requiresComplianceCheck = async (claimOrApplication) => {
   const claimStatusIds = [applicationStatus.inCheck, applicationStatus.readyToPay, applicationStatus.rejected, applicationStatus.onHold, applicationStatus.recommendToPay, applicationStatus.recommendToReject]

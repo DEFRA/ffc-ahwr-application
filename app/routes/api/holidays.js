@@ -1,4 +1,4 @@
-import { isTodayHoliday } from '../../repositories/holiday-repository'
+import { isTodayHoliday } from '../../repositories/holiday-repository.js'
 
 export const holidayHandlers = [
   {

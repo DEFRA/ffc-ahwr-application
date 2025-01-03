@@ -1,8 +1,8 @@
-import { notifyClient } from './notify-client'
-import { config } from '../config'
-import { sendMessage } from '../messaging/send-message'
+import { notifyClient } from './notify-client.js'
+import { config } from '../config/index.js'
+import { sendMessage } from '../messaging/send-message.js'
 import { defaultClient } from 'applicationinsights'
-import { sendSFDEmail } from './sfd-client'
+import { sendSFDEmail } from './sfd-client.js'
 
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue, notify: { templateIdFarmerClaimComplete } } = config
 

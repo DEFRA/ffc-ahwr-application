@@ -1,6 +1,6 @@
 import { DefaultAzureCredential } from '@azure/identity'
 import { TableClient } from '@azure/data-tables'
-import { config } from '../config'
+import { config } from '../config/index.js'
 
 export const createTableClient = (tableName) => {
   if (config.storage.useConnectionString) {

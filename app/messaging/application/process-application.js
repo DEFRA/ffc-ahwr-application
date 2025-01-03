@@ -1,11 +1,11 @@
-import { messagingStates, applicationStatus } from '../../constants'
-import { config } from '../../config'
-import { sendFarmerConfirmationEmail } from '../../lib/send-email'
-import { sendMessage } from '../send-message'
-import { validateApplication } from '../schema/process-application-schema'
+import { messagingStates, applicationStatus } from '../../constants/index.js'
+import { config } from '../../config/index.js'
+import { sendFarmerConfirmationEmail } from '../../lib/send-email.js'
+import { sendMessage } from '../send-message.js'
+import { validateApplication } from '../schema/process-application-schema.js'
 import appInsights from 'applicationinsights'
-import { createApplicationReference } from '../../lib/create-reference'
-import { getBySbi, setApplication } from '../../repositories/application-repository'
+import { createApplicationReference } from '../../lib/create-reference.js'
+import { getBySbi, setApplication } from '../../repositories/application-repository.js'
 
 export const isPreviousApplicationRelevant = (existingApplication) => {
   return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)

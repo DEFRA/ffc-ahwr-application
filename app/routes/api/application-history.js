@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { getApplicationHistory } from '../../azure-storage/application-status-repository'
+import { getApplicationHistory } from '../../azure-storage/application-status-repository.js'
 
 export const applicationHistoryHandlers = [
   {

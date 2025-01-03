@@ -1,7 +1,7 @@
 import Joi from 'joi'
-import { notifyConfig } from './notify'
-import { messageQueueConfig } from './message-queue'
-import { storageConfig } from './storage'
+import { notifyConfig } from './notify.js'
+import { messageQueueConfig } from './message-queue.js'
+import { storageConfig } from './storage.js'
 
 const buildConfig = () => {
   const msgTypePrefix = 'uk.gov.ffc.ahwr'

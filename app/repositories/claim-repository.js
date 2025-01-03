@@ -1,6 +1,6 @@
-import { buildData } from '../data'
-import eventPublisher from '../event-publisher'
-import { startandEndDate } from '../lib/date-utils'
+import { buildData } from '../data/index.js'
+import eventPublisher from '../event-publisher/index.js'
+import { startandEndDate } from '../lib/date-utils.js'
 import { Op } from 'sequelize'
 
 const { models } = buildData

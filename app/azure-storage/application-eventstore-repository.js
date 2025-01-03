@@ -1,4 +1,4 @@
-import { queryEntitiesByPartitionKey } from './query-entities'
+import { queryEntitiesByPartitionKey } from './query-entities.js'
 import { odata } from '@azure/data-tables'
 
 export const getApplicationEvents = async (sbi) => {

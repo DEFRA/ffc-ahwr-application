@@ -1,4 +1,4 @@
-import { buildData } from '../data'
+import { buildData } from '../data/index.js'
 
 const { models } = buildData
 

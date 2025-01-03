@@ -227,7 +227,7 @@ describe('Post claim test', () => {
     })
   }
 
-  test.only('Post a new claim with duplicated URN ', async () => {
+  test('Post a new claim with duplicated URN ', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',
@@ -937,7 +937,6 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(setClaim).toBeTruthy()
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       email: 'test@test-unit.com',

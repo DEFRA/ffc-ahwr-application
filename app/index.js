@@ -1,6 +1,6 @@
-import { server } from './server'
-import { start, stop } from './messaging/service'
-import { setup } from './insights'
+import { server } from './server.js'
+import { start, stop } from './messaging/service.js'
+import { setup } from './insights.js'
 
 const init = async () => {
   await start()

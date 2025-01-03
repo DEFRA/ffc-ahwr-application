@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { getAll, getById } from '../../repositories/stage-configuration-repository'
+import { getAll, getById } from '../../repositories/stage-configuration-repository.js'
 
 export const stageConfiguationHandlers = [{
   method: 'GET',

@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import Boom from '@hapi/boom'
-import { getLatestApplicationsBySbi } from '../../repositories/application-repository'
+import { getLatestApplicationsBySbi } from '../../repositories/application-repository.js'
 import { sbiSchema } from './schema/sbi.schema.js'
 
 const ERROR_MESSAGE = {

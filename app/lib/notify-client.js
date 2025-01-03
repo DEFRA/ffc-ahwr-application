@@ -1,5 +1,5 @@
 import { NotifyClient } from 'notifications-node-client'
-import { config } from '../config'
+import { config } from '../config/index.js'
 
 const { notify: { apiKey } } = config
 

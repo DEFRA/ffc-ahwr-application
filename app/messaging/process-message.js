@@ -1,8 +1,8 @@
-import { config } from '../config'
-import { fetchApplication } from './application/fetch-application'
-import { fetchClaim } from './application/fetch-claim'
-import { processApplicationQueue } from './application/process-application'
-import { submitClaim } from './application/submit-claim'
+import { config } from '../config/index.js'
+import { fetchApplication } from './application/fetch-application.js'
+import { fetchClaim } from './application/fetch-claim.js'
+import { processApplicationQueue } from './application/process-application.js'
+import { submitClaim } from './application/submit-claim.js'
 
 const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = config
 

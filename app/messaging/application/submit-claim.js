@@ -1,11 +1,11 @@
-import { messagingStates, applicationStatus } from '../../constants'
-import { config } from '../../config'
-import { sendFarmerClaimConfirmationEmail } from '../../lib/send-email'
-import { sendMessage } from '../send-message'
-import { getApplication, updateApplicationByReference } from '../../repositories/application-repository'
-import { validateSubmitClaim } from '../schema/submit-claim-schema'
+import { messagingStates, applicationStatus } from '../../constants/index.js'
+import { config } from '../../config/index.js'
+import { sendFarmerClaimConfirmationEmail } from '../../lib/send-email.js'
+import { sendMessage } from '../send-message.js'
+import { getApplication, updateApplicationByReference } from '../../repositories/application-repository.js'
+import { validateSubmitClaim } from '../schema/submit-claim-schema.js'
 import appInsights from 'applicationinsights'
-import { requiresComplianceCheck } from '../../lib/requires-compliance-check'
+import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 
 const { alreadyClaimed, failed, error, notFound, success } = messagingStates
 const { applicationResponseQueue, submitClaimResponseMsgType, submitPaymentRequestMsgType, submitRequestQueue } = config

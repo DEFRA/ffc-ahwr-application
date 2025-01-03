@@ -1,6 +1,6 @@
 import Joi from 'joi'
-import { updateApplicationByReference, getLatestApplicationsBySbi } from '../../repositories/application-repository'
-import { getAllByApplicationReference, set } from '../../repositories/contact-history-repository'
+import { updateApplicationByReference, getLatestApplicationsBySbi } from '../../repositories/application-repository.js'
+import { getAllByApplicationReference, set } from '../../repositories/contact-history-repository.js'
 import { sbiSchema } from './schema/sbi.schema.js'
 
 export const contactHistoryHandlers = [

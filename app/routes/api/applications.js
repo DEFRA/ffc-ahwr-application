@@ -1,11 +1,11 @@
 import Joi from 'joi'
 import { v4 as uuid } from 'uuid'
-import { getApplication, searchApplications, updateApplicationByReference } from '../../repositories/application-repository'
-import { config } from '../../config'
-import { sendMessage } from '../../messaging/send-message'
-import { applicationStatus } from '../../constants'
-import { processApplicationApi } from '../../messaging/application/process-application'
-import { searchPayloadSchema } from './schema/search-payload.schema'
+import { getApplication, searchApplications, updateApplicationByReference } from '../../repositories/application-repository.js'
+import { config } from '../../config/index.js'
+import { sendMessage } from '../../messaging/send-message.js'
+import { applicationStatus } from '../../constants/index.js'
+import { processApplicationApi } from '../../messaging/application/process-application.js'
+import { searchPayloadSchema } from './schema/search-payload.schema.js'
 
 const { submitPaymentRequestMsgType, submitRequestQueue } = config
 

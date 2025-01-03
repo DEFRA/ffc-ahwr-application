@@ -1,8 +1,8 @@
-import { getByEmail } from '../../repositories/application-repository'
-import { sendMessage } from '../send-message'
-import { config } from '../../config'
-import { messagingStates } from '../../constants'
-import { validateFetchClaim } from '../schema/fetch-claim-schema'
+import { getByEmail } from '../../repositories/application-repository.js'
+import { sendMessage } from '../send-message.js'
+import { config } from '../../config/index.js'
+import { messagingStates } from '../../constants/index.js'
+import { validateFetchClaim } from '../schema/fetch-claim-schema.js'
 
 const { fetchClaimResponseMsgType, applicationResponseQueue } = config
 const { failed, notFound } = messagingStates

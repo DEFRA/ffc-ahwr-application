@@ -1,5 +1,5 @@
 import joi from 'joi'
-import { getApplicationEvents } from '../../azure-storage/application-eventstore-repository'
+import { getApplicationEvents } from '../../azure-storage/application-eventstore-repository.js'
 
 export const applicationEventsHandlers = [
   {

@@ -1,12 +1,12 @@
 import { Sequelize, DataTypes } from 'sequelize'
-import { dbConfig } from '../config/db'
-import { application } from './models/application'
-import { claim } from './models/claim'
-import { contactHistory } from './models/contact-history'
-import { holiday } from './models/holiday'
-import { stageConfiguration } from './models/stage-configuration'
-import { stageExecution } from './models/stage-execution'
-import { status } from './models/status'
+import { dbConfig } from '../config/db.js'
+import { application } from './models/application.js'
+import { claim } from './models/claim.js'
+import { contactHistory } from './models/contact-history.js'
+import { holiday } from './models/holiday.js'
+import { stageConfiguration } from './models/stage-configuration.js'
+import { stageExecution } from './models/stage-execution.js'
+import { status } from './models/status.js'
 
 export const buildData = (() => {
   const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)

@@ -1,4 +1,4 @@
-import { createTableClient } from './create-table-client'
+import { createTableClient } from './create-table-client.js'
 
 export const queryEntitiesByPartitionKey = async (tableName, partitionKey, queryFilter) => {
   const events = []

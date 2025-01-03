@@ -1,7 +1,7 @@
 import { MessageReceiver } from 'ffc-messaging'
-import { closeAllConnections } from '../messaging/create-message-sender'
-import { config } from '../config'
-import { processApplicationMessage } from './process-message'
+import { closeAllConnections } from '../messaging/create-message-sender.js'
+import { config } from '../config/index.js'
+import { processApplicationMessage } from './process-message.js'
 
 let applicationReceiver
 
