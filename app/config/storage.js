@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-const buildConfig = () => {
+export const buildConfig = () => {
   const schema = Joi.object({
     connectionString: Joi.string().required(),
     usersContainer: Joi.string().required(),

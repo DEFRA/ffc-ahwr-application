@@ -1,12 +1,15 @@
-const { when, resetAllWhenMocks } = require('jest-when')
-const appInsights = require('applicationinsights')
-const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email').default
-const applicationRepository = require('../../../../../app/repositories/application-repository').default
-const { processApplication, processApplicationApi, processApplicationQueue } = require('../../../../../app/messaging/application/process-application')
-const applicationStatus = require('../../../../../app/constants/application-status')
-const sendMessage = require('../../../../../app/messaging/send-message')
+import { when, resetAllWhenMocks } from 'jest-when'
+import appInsights from 'applicationinsights'
+import { sendFarmerConfirmationEmail } from '../../../../../app/lib/send-email'
+import { getBySbi, setApplication } from '../../../../../app/repositories/application-repository'
+import { processApplication, processApplicationApi, processApplicationQueue } from '../../../../../app/messaging/application/process-application'
+import { applicationStatus } from '../../../../../app/constants'
+import { sendMessage } from '../../../../../app/messaging/send-message'
+import { config } from '../../../../../app/config'
 
 const consoleErrorSpy = jest.spyOn(console, 'error')
+
+const { tenMonthRule } = config
 
 const MOCK_REFERENCE = 'AHWR-5C1C-DD6Z'
 const MOCK_NW_REFERENCE = 'IAHW-5C1C-DD6Z'
@@ -18,20 +21,8 @@ const mockMonthsAgo = (months) => {
   return mockDate.setMonth(mockDate.getMonth() - months)
 }
 
-jest.mock('../../../../../app/config', () => ({
-  ...jest.requireActual('../../../../../app/config'),
-  endemics: {
-    enabled: false
-  }
-}))
-const { tenMonthRule, endemics } = require('../../../../../app/config')
-
-const toggle10Months = (toggle) => {
-  tenMonthRule.enabled = toggle
-}
-
-const toggleEndemics = (toggle) => {
-  endemics.enabled = toggle
+const toggle10Months = (enabled) => {
+  tenMonthRule.enabled = enabled
 }
 
 jest.mock('../../../../../app/lib/send-email')
@@ -60,8 +51,10 @@ describe(('Store application in database'), () => {
       sbi: '123456789',
       cph: '123/456/789',
       address: '1 Some Street',
-      isTest: true
-    }
+      isTest: true,
+      userType: 'newUser'
+    },
+    type: 'VV'
   }
 
   const nwData = {
@@ -70,22 +63,21 @@ describe(('Store application in database'), () => {
   }
 
   beforeEach(() => {
-    applicationRepository.set.mockResolvedValue({
+    setApplication.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
     })
-    applicationRepository.getBySbi.mockResolvedValue()
+    getBySbi.mockResolvedValue()
   })
 
   afterEach(() => {
     jest.clearAllMocks()
     resetAllWhenMocks()
-    toggleEndemics(false)
   })
 
   test('successfully submits application', async () => {
     await processApplication(data)
-    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setApplication).toHaveBeenCalledTimes(1)
+    expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
       reference: MOCK_REFERENCE,
       data,
       createdBy: 'admin',
@@ -94,12 +86,11 @@ describe(('Store application in database'), () => {
     }))
   })
 
-  test('successfully submits application - with endemics enabled', async () => {
-    toggleEndemics(true)
+  test('successfully submits application', async () => {
     await processApplication(nwData)
 
-    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setApplication).toHaveBeenCalledTimes(1)
+    expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
       reference: MOCK_NW_REFERENCE,
       data: nwData,
       createdBy: 'admin',
@@ -129,7 +120,7 @@ describe(('Store application in database'), () => {
         }
       }
     ])('%s', async (testCase) => {
-      when(applicationRepository.getBySbi)
+      when(getBySbi)
         .calledWith(
           testCase.given.sbi
         )
@@ -143,8 +134,8 @@ describe(('Store application in database'), () => {
 
       await processApplication(data)
 
-      expect(applicationRepository.set).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+      expect(setApplication).toHaveBeenCalledTimes(1)
+      expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
         reference: MOCK_REFERENCE,
         data,
         createdBy: 'admin',
@@ -154,12 +145,10 @@ describe(('Store application in database'), () => {
     })
 
     describe('when endemics toggle is enabled', () => {
-      beforeEach(() => toggleEndemics(true))
-
       test('throws an error when existing endemics application', async () => {
         const mockApplicationDate = mockMonthsAgo(30)
 
-        when(applicationRepository.getBySbi)
+        when(getBySbi)
           .calledWith(
             data.organisation.sbi
           )
@@ -174,20 +163,20 @@ describe(('Store application in database'), () => {
 
         await processApplication(data)
 
-        expect(applicationRepository.set).toHaveBeenCalledTimes(0)
+        expect(setApplication).toHaveBeenCalledTimes(0)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to process application',
           new Error(`Recent application already exists: ${JSON.stringify({
             reference: MOCK_NW_REFERENCE,
-            createdAt: mockApplicationDate
+            createdAt: 'TODO'
           })}`)
         )
       })
 
       test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(11)
-        when(applicationRepository.getBySbi)
+        when(getBySbi)
           .calledWith(
             data.organisation.sbi
           )
@@ -202,7 +191,7 @@ describe(('Store application in database'), () => {
 
         await processApplication(data)
 
-        expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+        expect(setApplication).toHaveBeenCalledTimes(1)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
       })
     })
@@ -210,12 +199,11 @@ describe(('Store application in database'), () => {
     describe('when 10 month rule toggle is enabled', () => {
       beforeEach(() => {
         toggle10Months(true)
-        toggleEndemics(false)
       })
       test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(7)
 
-        when(applicationRepository.getBySbi)
+        when(getBySbi)
           .calledWith(
             data.organisation.sbi
           )
@@ -229,7 +217,7 @@ describe(('Store application in database'), () => {
 
         await processApplication(data)
 
-        expect(applicationRepository.set).toHaveBeenCalledTimes(0)
+        expect(setApplication).toHaveBeenCalledTimes(0)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to process application',
@@ -242,7 +230,7 @@ describe(('Store application in database'), () => {
 
       test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(11)
-        when(applicationRepository.getBySbi)
+        when(getBySbi)
           .calledWith(
             data.organisation.sbi
           )
@@ -256,7 +244,7 @@ describe(('Store application in database'), () => {
 
         await processApplication(data)
 
-        expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+        expect(setApplication).toHaveBeenCalledTimes(1)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
       })
     })
@@ -264,13 +252,12 @@ describe(('Store application in database'), () => {
     describe('when 10 month rule toggle is not enabled', () => {
       beforeEach(() => {
         toggle10Months(false)
-        toggleEndemics(false)
       })
 
       test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(7)
 
-        when(applicationRepository.getBySbi)
+        when(getBySbi)
           .calledWith(
             data.organisation.sbi
           )
@@ -284,7 +271,7 @@ describe(('Store application in database'), () => {
 
         await processApplication(data)
 
-        expect(applicationRepository.set).toHaveBeenCalledTimes(0)
+        expect(setApplication).toHaveBeenCalledTimes(0)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to process application',
@@ -298,7 +285,7 @@ describe(('Store application in database'), () => {
       test('throws an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
         const mockApplicationDate = mockMonthsAgo(11)
 
-        when(applicationRepository.getBySbi)
+        when(getBySbi)
           .calledWith(
             data.organisation.sbi
           )
@@ -312,7 +299,7 @@ describe(('Store application in database'), () => {
 
         await processApplication(data)
 
-        expect(applicationRepository.set).toHaveBeenCalledTimes(0)
+        expect(setApplication).toHaveBeenCalledTimes(0)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to process application',
@@ -326,15 +313,15 @@ describe(('Store application in database'), () => {
   })
 
   test('successfully submits when application rejected', async () => {
-    applicationRepository.set.mockResolvedValue({
+    setApplication.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
     })
 
     data.offerStatus = 'rejected'
     await processApplication(data)
 
-    expect(applicationRepository.set).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.set).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setApplication).toHaveBeenCalledTimes(1)
+    expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
       reference: MOCK_REFERENCE,
       data,
       createdBy: 'admin',
@@ -345,7 +332,7 @@ describe(('Store application in database'), () => {
   })
 
   test('Sends failed state on db error and no email is sent', async () => {
-    applicationRepository.set.mockResolvedValue(new Error('bust'))
+    setApplication.mockResolvedValue(new Error('bust'))
 
     await processApplication(data)
 
@@ -361,7 +348,7 @@ describe(('Store application in database'), () => {
   })
 
   describe('processApplicationApi', () => {
-    const data2 = {
+    const testData = {
       confirmCheckDetails: 'yes',
       whichReview: 'beef',
       eligibleSpecies: 'yes',
@@ -376,19 +363,21 @@ describe(('Store application in database'), () => {
         sbi: '123456789',
         cph: '123/456/789',
         address: '1 Some Street',
-        isTest: true
-      }
+        isTest: true,
+        userType: 'newUser'
+      },
+      type: 'EE'
     }
 
     test('successfully process Application', async () => {
-      const response = await processApplicationApi(data2)
+      const response = await processApplicationApi(testData)
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith(expect.objectContaining({
         name: 'process-application-api',
         properties: {
-          status: data2.offerStatus,
+          status: testData.offerStatus,
           reference: response.applicationReference,
-          sbi: data2.organisation.sbi
+          sbi: testData.organisation.sbi
         }
       }))
 
@@ -412,7 +401,7 @@ describe(('Store application in database'), () => {
   })
 
   describe('processApplicationQueue', () => {
-    const data2 = {
+    const testData = {
       confirmCheckDetails: 'yes',
       whichReview: 'beef',
       eligibleSpecies: 'yes',
@@ -427,21 +416,23 @@ describe(('Store application in database'), () => {
         sbi: '123456789',
         cph: '123/456/789',
         address: '1 Some Street',
-        isTest: true
-      }
+        isTest: true,
+        userType: 'newUser'
+      },
+      type: 'VV'
     }
 
     test('fail to send confirmation email', async () => {
       const consoleErrorSpy = jest.spyOn(console, 'error')
       sendFarmerConfirmationEmail.mockImplementation(() => { throw new Error() })
 
-      await processApplication(data2)
+      await processApplication(testData)
       expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Failed to send farmer confirmation email', expect.anything())
-      expect(applicationRepository.set).toHaveBeenCalledTimes(1)
+      expect(setApplication).toHaveBeenCalledTimes(1)
     })
 
     test('successfully process Application', async () => {
-      await processApplicationQueue(data2)
+      await processApplicationQueue(testData)
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith(expect.objectContaining({
         name: 'process-application-queue'

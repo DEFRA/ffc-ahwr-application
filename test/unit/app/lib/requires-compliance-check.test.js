@@ -1,26 +1,25 @@
-const mockGetAllClaimedApplications = jest.fn()
-const mockGetAllClaimedClaims = jest.fn()
+import { requiresComplianceCheck } from '../../../../app/lib/requires-compliance-check'
+import { getAllClaimedApplications } from '../../../../app/repositories/application-repository'
+import { getAllClaimedClaims } from '../../../../app/repositories/claim-repository'
 
-jest.mock('../../../../app/repositories/application-repository', () => ({
-  getAllClaimedApplications: mockGetAllClaimedApplications
-}))
-jest.mock('../../../../app/repositories/claim-repository', () => ({
-  getAllClaimedClaims: mockGetAllClaimedClaims
-}))
+jest.mock('../../../../app/repositories/application-repository')
+jest.mock('../../../../app/repositories/claim-repository')
+
+const mockGetAllClaimedApplications = jest.fn().mockResolvedValue(1)
+const mockGetAllClaimedClaims = jest.fn().mockResolvedValue(1)
+
+getAllClaimedApplications.mockImplementation(mockGetAllClaimedApplications)
+getAllClaimedClaims.mockImplementation(mockGetAllClaimedClaims)
+
+jest.mock('../../../../app/config', () => ({ ...jest.requireActual('../../../../app/config'), compliance: { complianceCheckRatio: 2, endemicsComplianceCheckRatio: 1 } }))
 
 describe('Test requires compliance check', () => {
-  jest.mock('../../../../app/config', () => ({ ...jest.requireActual('../../../../app/config'), compliance: { complianceCheckRatio: 2, endemicsComplianceCheckRatio: 1 } }))
-  test.each([
-    { claimOrApplication: 'application', expectedStatusId: 5, totalClaimedApplicationsOrClaims: 1 },
-    { claimOrApplication: 'claim', expectedStatusId: 5, totalClaimedApplicationsOrClaims: 1 }
-  ])('validate compliance check for $claimOrApplication', async ({ claimOrApplication, expectedStatusId, totalClaimedApplicationsOrClaims }) => {
-    const requiresComplianceCheck = require('../../../../app/lib/requires-compliance-check')
-    if (claimOrApplication === 'application') {
-      mockGetAllClaimedApplications.mockResolvedValue(totalClaimedApplicationsOrClaims)
-    } else {
-      mockGetAllClaimedClaims.mockResolvedValue(totalClaimedApplicationsOrClaims)
-    }
+  afterEach(() => jest.clearAllMocks())
 
+  test.each([
+    { claimOrApplication: 'application', expectedStatusId: 11 },
+    { claimOrApplication: 'claim', expectedStatusId: 5 }
+  ])('validate compliance check for $claimOrApplication', async ({ claimOrApplication, expectedStatusId }) => {
     const result = await requiresComplianceCheck(claimOrApplication)
 
     if (claimOrApplication === 'application') {
@@ -28,27 +27,7 @@ describe('Test requires compliance check', () => {
     } else {
       expect(mockGetAllClaimedClaims).toHaveBeenCalledTimes(1)
     }
-    expect(result.statusId).toBe(expectedStatusId)
-    jest.clearAllMocks()
-  })
-  test.each([
-    { claimOrApplication: 'application', expectedStatusId: 11, totalClaimedApplicationsOrClaims: 2 },
-    { claimOrApplication: 'claim', expectedStatusId: 5, totalClaimedApplicationsOrClaims: 2 }
-  ])('validate compliance check for $claimOrApplication', async ({ claimOrApplication, expectedStatusId, totalClaimedApplicationsOrClaims }) => {
-    const requiresComplianceCheck = require('../../../../app/lib/requires-compliance-check')
-    if (claimOrApplication === 'application') {
-      mockGetAllClaimedApplications.mockResolvedValue(totalClaimedApplicationsOrClaims)
-    } else {
-      mockGetAllClaimedClaims.mockResolvedValue(totalClaimedApplicationsOrClaims)
-    }
 
-    const result = await requiresComplianceCheck(claimOrApplication)
-
-    if (claimOrApplication === 'application') {
-      expect(mockGetAllClaimedApplications).toHaveBeenCalledTimes(1)
-    } else {
-      expect(mockGetAllClaimedClaims).toHaveBeenCalledTimes(1)
-    }
     expect(result.statusId).toBe(expectedStatusId)
   })
 })

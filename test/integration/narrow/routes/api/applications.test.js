@@ -1,7 +1,9 @@
-const statusIds = require('../../../../../app/constants/application-status')
-const applicationRepository = require('../../../../../app/repositories/application-repository').default
-const sendMessage = require('../../../../../app/messaging/send-message')
-const { processApplicationApi } = require('../../../../../app/messaging/application/process-application')
+import { server } from '../../../../../app/server'
+import { applicationStatus } from '../../../../../app/constants'
+import { searchApplications, getApplication, updateApplicationByReference } from '../../../../../app/repositories/application-repository'
+import { sendMessage } from '../../../../../app/messaging/send-message'
+import { processApplicationApi } from '../../../../../app/messaging/application/process-application'
+
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/application/process-application')
@@ -9,8 +11,6 @@ jest.mock('uuid', () => ({ v4: () => '123456789' }))
 
 const data = { organisation: { sbi: '1231' }, whichReview: 'sheep' }
 describe('Applications test', () => {
-  const server = require('../../../../../app/server')
-
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
@@ -20,36 +20,42 @@ describe('Applications test', () => {
     await server.stop()
   })
   const reference = 'ABC-1234'
-  let url = `/api/application/get/${reference}`
-  applicationRepository.searchApplications.mockResolvedValue({
-    applications: [{ reference, createdBy: 'admin', createdAt: new Date(), data }],
-    total: 1
-  })
-  applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
-  describe(`GET ${url} route`, () => {
+
+  describe('GET /api/application/get route', () => {
+    getApplication.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+
     test('returns 200', async () => {
       const options = {
         method: 'GET',
         url: '/api/application/get/ABC-1234'
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledTimes(1)
     })
     test('returns 404', async () => {
-      applicationRepository.get.mockResolvedValue(null)
+      getApplication.mockResolvedValue(null)
+
       const options = {
         method: 'GET',
         url: '/api/application/get/ABC-1234'
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(404)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledTimes(1)
     })
   })
-  url = '/api/application/search'
-  describe(`POST ${url} route`, () => {
+
+  describe('POST /api/application/search route', () => {
     const method = 'POST'
+
+    searchApplications.mockResolvedValue({
+      applications: [{ reference, createdBy: 'admin', createdAt: new Date(), data }],
+      total: 1
+    })
+
     test.each([
       { search: { text: '444444444', type: 'sbi' } },
       { search: { text: 'AHWR-555A-FD6E', type: 'ref' } },
@@ -65,15 +71,16 @@ describe('Applications test', () => {
     ])('returns success when post %p', async ({ search }) => {
       const options = {
         method,
-        url,
+        url: '/api/application/search',
         payload: { search }
       }
 
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.searchApplications).toHaveBeenCalledTimes(1)
+      expect(searchApplications).toHaveBeenCalledTimes(1)
     })
+
     test.each([
       { search: { text: '333333333' } },
       { search: { text: '444444443' } },
@@ -81,20 +88,20 @@ describe('Applications test', () => {
       { search: { text: '' } },
       { search: { text: undefined } }
     ])('returns success with error message when no data found', async ({ search }) => {
-      const options = {
-        method,
-        url,
-        payload: { search }
-      }
-
-      applicationRepository.searchApplications.mockReturnValue({
+      searchApplications.mockReturnValue({
         applications: [],
         total: 0
       })
+
+      const options = {
+        method,
+        url: '/api/application/search',
+        payload: { search }
+      }
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.searchApplications).toHaveBeenCalledTimes(1)
+      expect(searchApplications).toHaveBeenCalledTimes(1)
       const $ = JSON.parse(res.payload)
       expect($.total).toBe(0)
     })
@@ -105,7 +112,7 @@ describe('Applications test', () => {
     ])('returns 400 with error message for invalid input', async ({ search, limit, offset }) => {
       const options = {
         method,
-        url,
+        url: '/api/application/search',
         payload: { search, limit, offset }
       }
       const res = await server.inject(options)
@@ -113,43 +120,54 @@ describe('Applications test', () => {
       expect(res.statusCode).toBe(400)
     })
   })
-  describe(`PUT ${url} route`, () => {
+
+  describe('PUT /api/application/search route', () => {
     const method = 'PUT'
+
     test('returns 200 when new status is Withdrawn (2)', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      getApplication.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+
       const options = {
         method,
         url: '/api/application/ABC-1234',
-        payload: { status: 2, user: 'test' }
+        payload: { status: applicationStatus.withdrawn, user: 'test' }
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledTimes(1)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
     })
-    test('returns 200 when new status is In Check (2)', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+
+    test('returns 200 when new status is In Check (5)', async () => {
+      getApplication.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+
       const options = {
         method,
         url: '/api/application/ABC-1234',
-        payload: { status: 5, user: 'test' }
+        payload: { status: applicationStatus.inCheck, user: 'test' }
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledTimes(1)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
     })
+
     test('returns 404 when no dataValues sent', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: null })
+      getApplication.mockResolvedValue({ dataValues: null })
+
       const options = {
         method,
         url: '/api/application/ABC-1234',
-        payload: { status: 2, user: 'test' }
+        payload: { status: applicationStatus.paid, user: 'test' }
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(404)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledTimes(1)
     })
+
     test.each([
       { status: 'abc', user: null },
       { status: 'abc', user: 0 },
@@ -158,7 +176,7 @@ describe('Applications test', () => {
     ])('returns 400 with error message for invalid input', async ({ status, user }) => {
       const options = {
         method,
-        url,
+        url: '/api/application/ABC-1234',
         payload: { status, user }
       }
       const res = await server.inject(options)
@@ -167,51 +185,60 @@ describe('Applications test', () => {
     })
   })
 
-  describe(`POST ${url} route`, () => {
+  describe('POST /api/application/claim route', () => {
     const method = 'POST'
 
     test.each([
-      { approved: false, user: 'test', reference, payment: 0, statusId: statusIds.rejected },
-      { approved: true, user: 'test', reference, payment: 1, statusId: statusIds.readyToPay }
+      { approved: false, user: 'test', reference, payment: 0, statusId: applicationStatus.rejected },
+      { approved: true, user: 'test', reference, payment: 1, statusId: applicationStatus.readyToPay }
     ])('returns 200 for valid input', async ({ approved, user, reference, payment, statusId }) => {
-      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+      getApplication.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+
       const options = {
         method,
         url: '/api/application/claim',
         payload: { approved, user, reference }
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, statusId, updatedBy: user })
+      expect(getApplication).toHaveBeenCalledTimes(1)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
+      expect(updateApplicationByReference).toHaveBeenCalledWith({ reference, statusId, updatedBy: user })
       expect(sendMessage).toHaveBeenCalledTimes(payment)
     })
-    test('returns a 200, payment failure & status not updated', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
+
+    test('returns a 200 when sending message fails, payment failure & status not updated', async () => {
+      getApplication.mockResolvedValue({ dataValues: { reference, createdBy: 'admin', createdAt: new Date(), data } })
       sendMessage.mockImplementation(() => { throw new Error() })
+
       const options = {
         method,
         url: '/api/application/claim',
         payload: { approved: true, user: 'test', reference }
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledTimes(1)
       expect(sendMessage).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).not.toBeCalled()
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(0)
     })
-    test('returns 404', async () => {
-      applicationRepository.get.mockResolvedValue({ dataValues: null })
+
+    test('returns 404 when no application is found in the DB', async () => {
+      getApplication.mockResolvedValue({ dataValues: null })
+
       const options = {
         method,
         url: '/api/application/claim',
         payload: { approved: true, user: 'test', reference }
       }
       const res = await server.inject(options)
+
       expect(res.statusCode).toBe(404)
-      expect(applicationRepository.get).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledTimes(1)
     })
+
     test.each([
       { approved: false, user: 'test', reference: false },
       { approved: true, user: 0, reference: true },

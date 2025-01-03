@@ -1,4 +1,4 @@
-import { getBlob } from '../storage'
+import { getBlob } from '../storage/getBlob'
 import { config } from '../config'
 import { livestockTypes, claimType, testResults } from './../constants'
 

@@ -9,9 +9,6 @@ module.exports = {
     'text-summary',
     'lcov'
   ],
-  // moduleNameMapper: {
-  //   axios: require.resolve('axios')
-  // },
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/test-output/',
@@ -33,9 +30,15 @@ module.exports = {
     ]
   ],
   testEnvironment: 'node',
+  transform: {
+    '^.+\\.[j]sx?$': 'babel-jest'
+  },
   testPathIgnorePatterns: [],
   verbose: true,
   setupFilesAfterEnv: [
     '<rootDir>/test/setup.js'
-  ]
+  ],
+  moduleNameMapper: {
+    '^axios$': 'axios/dist/node/axios.cjs'
+  }
 }

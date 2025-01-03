@@ -1,4 +1,4 @@
-import { object, string } from 'joi'
+import joi from 'joi'
 import { getApplicationEvents } from '../../azure-storage/application-eventstore-repository'
 
 export const applicationEventsHandlers = [
@@ -7,8 +7,8 @@ export const applicationEventsHandlers = [
     path: '/api/application/events/{ref}',
     options: {
       validate: {
-        params: object({
-          ref: string().valid()
+        params: joi.object({
+          ref: joi.string().valid()
         })
       },
       handler: async (request, h) => {

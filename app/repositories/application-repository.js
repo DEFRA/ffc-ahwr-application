@@ -46,7 +46,7 @@ export const getByEmail = async (email) => {
     })
 }
 
-const evalSortField = (sort) => {
+export const evalSortField = (sort) => {
   if (sort?.field) {
     switch (sort.field.toLowerCase()) {
       case 'status':

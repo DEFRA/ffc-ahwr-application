@@ -20,9 +20,9 @@ export const sendSFDEmail = async (templateId, email, emailInput) => {
     dateTime: new Date().toISOString()
   }
 
-  if (validateSFDSchema(sfdMessage)) {
-    return await sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
-  } else {
+  if (!validateSFDSchema(sfdMessage)) {
     return sendMessage({ sfdMessage: messagingStates.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
   }
+
+  return await sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
 }

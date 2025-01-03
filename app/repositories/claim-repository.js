@@ -38,7 +38,7 @@ export const getByApplicationReference = async (applicationReference, typeOfLive
   return result
 }
 
-export const set = async (data) => {
+export const setClaim = async (data) => {
   const sbi = data.sbi
   const result = await models.claim.create(data)
   eventPublisher.raiseClaimEvents({
@@ -50,7 +50,7 @@ export const set = async (data) => {
   return result
 }
 
-export const updateByReference = async (data) => {
+export const updateClaimByReference = async (data) => {
   try {
     const claim = await models.claim.findOne({
       where: {

@@ -1,14 +1,27 @@
-const { when, resetAllWhenMocks } = require('jest-when')
-const repository = require('../../../../app/repositories/claim-repository').default
-const data = require('../../../../app/data').default
-const { livestockTypes } = require('../../../../app/constants/claim')
+import { when, resetAllWhenMocks } from 'jest-when'
+import { getAllClaimedClaims, getByApplicationReference, getClaimByReference, isURNNumberUnique, searchClaims, setClaim, updateClaimByReference } from '../../../../app/repositories/claim-repository'
+import { buildData } from '../../../../app/data'
+import { livestockTypes } from '../../../../app/constants'
 
-jest.mock('../../../../app/data')
-
-data.models.claim.create = jest.fn()
-data.models.claim.findAll = jest.fn()
-data.models.claim.findOne = jest.fn()
-data.models.status = jest.fn()
+jest.mock('../../../../app/data', () => {
+  return {
+    buildData: {
+      models: {
+        claim: {
+          findAll: jest.fn(),
+          create: jest.fn(),
+          update: jest.fn(),
+          findOne: jest.fn(),
+          count: jest.fn()
+        },
+        application: {
+          findAll: jest.fn()
+        },
+        status: 'mock-status'
+      }
+    }
+  }
+})
 
 const MOCK_SEND_EVENTS = jest.fn()
 
@@ -68,14 +81,14 @@ describe('Claim repository test', () => {
       }
     }
 
-    when(data.models.claim.create)
+    when(buildData.models.claim.create)
       .calledWith(claimDataRequest)
       .mockResolvedValue(returnedClaimData)
 
-    await repository.set(claimDataRequest)
+    await setClaim(claimDataRequest)
 
-    expect(data.models.claim.create).toHaveBeenCalledTimes(1)
-    expect(data.models.claim.create).toHaveBeenCalledWith(claimDataRequest)
+    expect(buildData.models.claim.create).toHaveBeenCalledTimes(1)
+    expect(buildData.models.claim.create).toHaveBeenCalledWith(claimDataRequest)
   })
   test('Get all claims by application reference', async () => {
     const application = {
@@ -167,12 +180,12 @@ describe('Claim repository test', () => {
       }
     ]
 
-    when(data.models.claim.findAll)
+    when(buildData.models.claim.findAll)
       .calledWith({
         where: { applicationReference: application.reference.toUpperCase() },
         include: [
           {
-            model: data.models.status,
+            model: buildData.models.status,
             attributes: ['status']
           }
         ],
@@ -180,11 +193,11 @@ describe('Claim repository test', () => {
       })
       .mockResolvedValue(claims)
 
-    const result = await repository.getByApplicationReference(
+    const result = await getByApplicationReference(
       application.reference, undefined
     )
 
-    expect(data.models.claim.findAll).toHaveBeenCalledTimes(1)
+    expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(1)
     expect(claims).toEqual(result)
   })
   test('Get all claims by application reference when a query string is passed to the function', async () => {
@@ -219,16 +232,16 @@ describe('Claim repository test', () => {
       }
     }
 
-    data.models.claim.findAll.mockResolvedValueOnce([])
+    buildData.models.claim.findAll.mockResolvedValueOnce([])
 
-    const result = await repository.getByApplicationReference(
+    const result = await getByApplicationReference(
       application.reference, livestockTypes.beef
     )
 
-    expect(data.models.claim.findAll).toHaveBeenCalledWith({
+    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [{
         attributes: ['status'],
-        model: expect.anything()
+        model: 'mock-status'
       }],
       order: [['createdAt', 'DESC']],
       where: {
@@ -268,21 +281,21 @@ describe('Claim repository test', () => {
       }
     }
 
-    when(data.models.claim.findOne)
+    when(buildData.models.claim.findOne)
       .calledWith({
         where: { reference: claim.reference.toUpperCase() },
         include: [
           {
-            model: data.models.status,
+            model: buildData.models.status,
             attributes: ['status']
           }
         ]
       })
       .mockResolvedValue(claim)
 
-    const result = await repository.getByReference(claim.reference)
+    const result = await getClaimByReference(claim.reference)
 
-    expect(data.models.claim.findOne).toHaveBeenCalledTimes(1)
+    expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
     expect(claim).toEqual(result)
   })
   test('Update claim by reference', async () => {
@@ -315,11 +328,11 @@ describe('Claim repository test', () => {
       }
     }
 
-    when(data.models.claim.update).mockResolvedValue(claim)
+    when(buildData.models.claim.update).mockResolvedValue(claim)
 
-    const result = await repository.updateByReference(claim)
+    const result = await updateClaimByReference(claim)
 
-    expect(data.models.claim.update).toHaveBeenCalledTimes(1)
+    expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
     expect(claim).toEqual(result)
   })
   test('Get all claimed claims', async () => {
@@ -351,11 +364,11 @@ describe('Claim repository test', () => {
         status: 'ON HOLD'
       }
     }
-    when(data.models.claim.count).mockResolvedValue(1)
+    when(buildData.models.claim.count).mockResolvedValue(1)
 
-    const result = await repository.getAllClaimedClaims(claim)
+    const result = await getAllClaimedClaims(claim)
 
-    expect(data.models.claim.count).toHaveBeenCalledTimes(1)
+    expect(buildData.models.claim.count).toHaveBeenCalledTimes(1)
     expect(result).toEqual(1)
   })
 
@@ -376,10 +389,10 @@ describe('Claim repository test', () => {
     { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN123' } } }], response: { isURNUnique: false } },
     { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN1234' } } }], response: { isURNUnique: true } }
   ])('check if URN is unique for all previous claims made by same SBI', async ({ urnNumber, applications, claims, response }) => {
-    when(data.models.application.findAll).mockResolvedValue(applications)
-    when(data.models.claim.findAll).mockResolvedValue(claims)
+    when(buildData.models.application.findAll).mockResolvedValue(applications)
+    when(buildData.models.claim.findAll).mockResolvedValue(claims)
 
-    const result = await repository.isURNNumberUnique('sbi', urnNumber)
+    const result = await isURNNumberUnique('sbi', urnNumber)
 
     expect(result).toEqual(response)
   })
@@ -400,12 +413,12 @@ describe('Claim repository test', () => {
     test('should update an application by reference successfully', async () => {
       const updateResult = [1, [{ dataValues: { ...mockData, updatedAt: new Date(), updatedBy: 'admin' } }]] // Simulate one record updated
 
-      data.models.claim.update.mockResolvedValue(updateResult)
+      buildData.models.claim.update.mockResolvedValue(updateResult)
       MOCK_SEND_EVENTS.mockResolvedValue(null)
 
-      const result = await repository.updateByReference(mockData)
+      const result = await updateClaimByReference(mockData)
 
-      expect(data.models.claim.update).toHaveBeenCalledWith(mockData, {
+      expect(buildData.models.claim.update).toHaveBeenCalledWith(mockData, {
         where: { reference: mockData.reference },
         returning: true
       })
@@ -414,9 +427,9 @@ describe('Claim repository test', () => {
     })
 
     test('should handle failure to update an application by reference', async () => {
-      data.models.claim.update.mockRejectedValue(new Error('Update failed'))
+      buildData.models.claim.update.mockRejectedValue(new Error('Update failed'))
 
-      await expect(repository.updateByReference(mockData)).rejects.toThrow('Update failed')
+      await expect(updateClaimByReference(mockData)).rejects.toThrow('Update failed')
       expect(MOCK_SEND_EVENTS).not.toHaveBeenCalled()
     })
   })
@@ -427,7 +440,7 @@ describe('Claim repository test', () => {
       const mockNow = new Date()
       const reference = 'AHWR-7C72-8871'
 
-      when(data.models.claim.update)
+      when(buildData.models.claim.update)
         .calledWith(
           {
             reference,
@@ -476,14 +489,14 @@ describe('Claim repository test', () => {
           ]
         ])
 
-      await repository.updateByReference({
+      await updateClaimByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
       })
 
-      expect(data.models.claim.update).toHaveBeenCalledTimes(1)
-      expect(data.models.claim.update).toHaveBeenCalledWith(
+      expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
+      expect(buildData.models.claim.update).toHaveBeenCalledWith(
         {
           reference,
           statusId: 3,
@@ -584,7 +597,7 @@ describe('Claim repository test', () => {
       process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
       const reference = 'AHWR-7C72-8871'
 
-      when(data.models.claim.update)
+      when(buildData.models.claim.update)
         .calledWith(
           {
             reference,
@@ -602,14 +615,14 @@ describe('Claim repository test', () => {
           []
         ])
 
-      await repository.updateByReference({
+      await updateClaimByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
       })
 
-      expect(data.models.claim.update).toHaveBeenCalledTimes(1)
-      expect(data.models.claim.update).toHaveBeenCalledWith(
+      expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
+      expect(buildData.models.claim.update).toHaveBeenCalledWith(
         {
           reference,
           statusId: 3,
@@ -627,7 +640,7 @@ describe('Claim repository test', () => {
     test('Update status of a claim which is holding same status', async () => {
       const reference = 'AHWR-7C72-8871'
 
-      when(data.models.claim.findOne)
+      when(buildData.models.claim.findOne)
         .calledWith({
           where: {
             reference
@@ -636,13 +649,13 @@ describe('Claim repository test', () => {
         })
         .mockResolvedValue({ dataValues: { statusId: 3 } })
 
-      const result = await repository.updateByReference({
+      const result = await updateClaimByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
       })
 
-      expect(data.models.claim.findOne).toHaveBeenCalledTimes(1)
+      expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
       expect(result).toEqual({ dataValues: { statusId: 3 } })
     })
 
@@ -650,7 +663,7 @@ describe('Claim repository test', () => {
       process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
       const reference = 'AHWR-7C72-8871'
 
-      when(data.models.claim.update)
+      when(buildData.models.claim.update)
         .calledWith(
           {
             reference,
@@ -665,14 +678,14 @@ describe('Claim repository test', () => {
           })
         .mockResolvedValue(new Error('Something failed'))
 
-      await repository.updateByReference({
+      await updateClaimByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
       })
 
-      expect(data.models.claim.update).toHaveBeenCalledTimes(1)
-      expect(data.models.claim.update).toHaveBeenCalledWith(
+      expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
+      expect(buildData.models.claim.update).toHaveBeenCalledWith(
         {
           reference,
           statusId: 3,
@@ -706,12 +719,12 @@ describe('Claim repository test', () => {
       { searchText: 'dfdf', searchType: 'adsdf', sort: undefined }
     ])('Search claim by search text $searchText, search type $searchType ', async ({ searchText, searchType, sort }) => {
       const callTimes = searchType !== 'adsdf' ? 1 : 0
-      when(data.models.claim.count).mockResolvedValue(2)
-      when(data.models.claim.findAll).mockResolvedValue(['claims1', 'claims2'])
-      await repository.searchClaims(searchText, searchType, undefined, undefined, sort)
+      when(buildData.models.claim.count).mockResolvedValue(2)
+      when(buildData.models.claim.findAll).mockResolvedValue(['claims1', 'claims2'])
+      await searchClaims(searchText, searchType, undefined, undefined, sort)
 
-      expect(data.models.claim.count).toHaveBeenCalledTimes(callTimes)
-      expect(data.models.claim.findAll).toHaveBeenCalledTimes(callTimes)
+      expect(buildData.models.claim.count).toHaveBeenCalledTimes(callTimes)
+      expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(callTimes)
     })
   })
 })

@@ -1,7 +1,9 @@
-const { ValidationError } = require('joi')
-const stageConfigurationRepository = require('../../../../../app/repositories/stage-configuration-repository')
+import { ValidationError } from 'joi'
+import { server } from '../../../../../app/server'
+import { getAll, getById } from '../../../../../app/repositories/stage-configuration-repository'
+import { when, resetAllWhenMocks } from 'jest-when'
+
 jest.mock('../../../../../app/repositories/stage-configuration-repository')
-const { when, resetAllWhenMocks } = require('jest-when')
 
 const mockResponse = {
   id: 13,
@@ -14,8 +16,6 @@ const mockResponse = {
 }
 
 describe('Stage configuration test', () => {
-  const server = require('../../../../../app/server')
-
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
@@ -26,7 +26,7 @@ describe('Stage configuration test', () => {
     resetAllWhenMocks()
   })
   const url = '/api/stageconfiguration'
-  stageConfigurationRepository.getAll.mockResolvedValueOnce().mockResolvedValue([mockResponse])
+  getAll.mockResolvedValueOnce().mockResolvedValue([mockResponse])
 
   describe(`GET ${url} route`, () => {
     test('returns 404', async () => {
@@ -36,8 +36,8 @@ describe('Stage configuration test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(404)
-      expect(stageConfigurationRepository.getAll).toHaveBeenCalledTimes(1)
-      expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
+      expect(getAll).toHaveBeenCalledTimes(1)
+      expect(getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual('Not Found')
     })
     test('returns 200', async () => {
@@ -47,15 +47,15 @@ describe('Stage configuration test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(stageConfigurationRepository.getAll).toHaveBeenCalledTimes(1)
-      expect(stageConfigurationRepository.getAll).toHaveBeenCalledWith()
+      expect(getAll).toHaveBeenCalledTimes(1)
+      expect(getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual([mockResponse])
     })
   })
 
   describe(`GET ${url}/2 route`, () => {
     test('returns 404', async () => {
-      when(stageConfigurationRepository.getById)
+      when(getById)
         .calledWith(2)
         .mockResolvedValue()
       const options = {
@@ -64,12 +64,12 @@ describe('Stage configuration test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(404)
-      expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(1)
-      expect(stageConfigurationRepository.getById).toHaveBeenCalledWith(2)
+      expect(getById).toHaveBeenCalledTimes(1)
+      expect(getById).toHaveBeenCalledWith(2)
       expect(res.result).toEqual('Not Found')
     })
     test('returns 200', async () => {
-      when(stageConfigurationRepository.getById)
+      when(getById)
         .calledWith(2)
         .mockResolvedValue(mockResponse)
       const options = {
@@ -78,8 +78,8 @@ describe('Stage configuration test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(1)
-      expect(stageConfigurationRepository.getById).toHaveBeenCalledWith(2)
+      expect(getById).toHaveBeenCalledTimes(1)
+      expect(getById).toHaveBeenCalledWith(2)
       expect(res.result).toEqual(mockResponse)
     })
 
@@ -90,7 +90,7 @@ describe('Stage configuration test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(400)
-      expect(stageConfigurationRepository.getById).toHaveBeenCalledTimes(0)
+      expect(getById).toHaveBeenCalledTimes(0)
       expect(res.result).toEqual({ err: new ValidationError('"id" must be a number') })
     })
   })

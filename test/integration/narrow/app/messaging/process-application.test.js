@@ -22,8 +22,10 @@ describe('Process Message test', () => {
         sbi: '123456789',
         cph: '123/456/789',
         address: '1 Some Street',
-        isTest: true
-      }
+        isTest: true,
+        userType: 'newUser'
+      },
+      type: 'EE'
     },
     applicationProperties: {
       type: 'uk.gov.ffc.ahwr.app.request'

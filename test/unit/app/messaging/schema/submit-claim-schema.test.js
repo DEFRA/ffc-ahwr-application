@@ -1,5 +1,5 @@
-const validateSubmitClaim = require('../../../../../app/messaging/schema/submit-claim-schema')
-const unset = require('lodash.unset')
+import { validateSubmitClaim } from '../../../../../app/messaging/schema/submit-claim-schema'
+import unset from 'lodash.unset'
 
 describe('Submit Claim Schema Tests', () => {
   test('Should Return True When All Fields Are Populated', () => {

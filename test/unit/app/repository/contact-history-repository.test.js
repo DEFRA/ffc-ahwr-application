@@ -1,12 +1,19 @@
-const { when, resetAllWhenMocks } = require('jest-when')
-const repository = require('../../../../app/repositories/contact-history-repository')
-const data = require('../../../../app/data').default
+import { when, resetAllWhenMocks } from 'jest-when'
+import { getAllByApplicationReference, set } from '../../../../app/repositories/contact-history-repository'
+import { buildData } from '../../../../app/data'
 
-jest.mock('../../../../app/data')
-
-data.models.contact_history.create = jest.fn()
-data.models.contact_history.findAll = jest.fn()
-data.models.contact_history.findOne = jest.fn()
+jest.mock('../../../../app/data', () => {
+  return {
+    buildData: {
+      models: {
+        contact_history: {
+          findAll: jest.fn(),
+          create: jest.fn()
+        }
+      }
+    }
+  }
+})
 
 describe('Contact history Repository test', () => {
   const env = process.env
@@ -48,14 +55,14 @@ describe('Contact history Repository test', () => {
       createdBy: 'admin'
     }
 
-    when(data.models.contact_history.create)
+    when(buildData.models.contact_history.create)
       .calledWith(contactHistoryData)
       .mockResolvedValue(returnedContactHistoryData)
 
-    await repository.set(contactHistoryData)
+    await set(contactHistoryData)
 
-    expect(data.models.contact_history.create).toHaveBeenCalledTimes(1)
-    expect(data.models.contact_history.create).toHaveBeenCalledWith(contactHistoryData)
+    expect(buildData.models.contact_history.create).toHaveBeenCalledTimes(1)
+    expect(buildData.models.contact_history.create).toHaveBeenCalledWith(contactHistoryData)
   })
   test('Get all contacts history by application reference', async () => {
     const application = {
@@ -123,14 +130,14 @@ describe('Contact history Repository test', () => {
         updatedBy: null
       }]
 
-    when(data.models.contact_history.findAll)
+    when(buildData.models.contact_history.findAll)
       .calledWith({
         where: { applicationReference: application.reference.toUpperCase() },
         order: [['createdAt', 'DESC']]
       })
       .mockResolvedValue(contactHistory)
 
-    const result = await repository.getAllByApplicationReference(
+    const result = await getAllByApplicationReference(
       application.reference
     )
 
@@ -138,7 +145,7 @@ describe('Contact history Repository test', () => {
       new Date(a.createdAt) > new Date(b.createdAt) ? a : b
     )
 
-    expect(data.models.contact_history.findAll).toHaveBeenCalledTimes(1)
+    expect(buildData.models.contact_history.findAll).toHaveBeenCalledTimes(1)
     expect(contactHistory).toEqual(result)
     expect(result).toStrictEqual(sortedContactHistory)
   })
@@ -209,18 +216,18 @@ describe('Contact history Repository test', () => {
         updatedBy: null
       }]
 
-    when(data.models.contact_history.findAll)
+    when(buildData.models.contact_history.findAll)
       .calledWith({
         where: { applicationReference: application.reference.toUpperCase() },
         order: [['createdAt', 'DESC']]
       })
       .mockResolvedValue(contactHistory)
 
-    const result = await repository.getAllByApplicationReference(
+    const result = await getAllByApplicationReference(
       application.reference
     )
 
-    expect(data.models.contact_history.findAll).toHaveBeenCalledTimes(1)
+    expect(buildData.models.contact_history.findAll).toHaveBeenCalledTimes(1)
     expect(new Date(result[0].createdAt)).toEqual(new Date('2024-04-14T20:00:46.045Z'))
     expect(new Date(result[1].createdAt)).toEqual(new Date('2024-04-12T14:54:55.893Z'))
   })

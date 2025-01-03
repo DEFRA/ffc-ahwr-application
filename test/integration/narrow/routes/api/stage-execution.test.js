@@ -1,11 +1,13 @@
-const { ValidationError } = require('joi')
-const stageExecutionRepository = require('../../../../../app/repositories/stage-execution-repository')
+import { ValidationError } from 'joi'
+import { getAll, getById, set, update } from '../../../../../app/repositories/stage-execution-repository'
+import { getApplication, updateApplicationByReference } from '../../../../../app/repositories/application-repository'
+import { getByApplicationReference, getClaimByReference } from '../../../../../app/repositories/claim-repository'
+import { when, resetAllWhenMocks } from 'jest-when'
+import { server } from '../../../../../app/server'
+
 jest.mock('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
-const { get, updateByReference } = require('../../../../../app/repositories/application-repository').default
-const claim = require('../../../../../app/repositories/claim-repository').default
-const { when, resetAllWhenMocks } = require('jest-when')
 
 const data = {
   applicationReference: 'AHWR-0000-0000',
@@ -30,8 +32,6 @@ const mockResponse = {
 }
 
 describe('Stage execution test', () => {
-  const server = require('../../../../../app/server')
-
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
@@ -42,13 +42,13 @@ describe('Stage execution test', () => {
     resetAllWhenMocks()
   })
   const url = '/api/stageexecution'
-  stageExecutionRepository.getAll.mockResolvedValue(mockResponse)
-  stageExecutionRepository.set.mockResolvedValue(mockResponse)
-  stageExecutionRepository.update.mockResolvedValue(mockResponse)
+  getAll.mockResolvedValue(mockResponse)
+  set.mockResolvedValue(mockResponse)
+  update.mockResolvedValue(mockResponse)
 
   describe(`GET ${url} route`, () => {
     test('returns 404', async () => {
-      when(stageExecutionRepository.getAll)
+      when(getAll)
         .calledWith()
         .mockResolvedValue()
       const options = {
@@ -57,8 +57,8 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(404)
-      expect(stageExecutionRepository.getAll).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.getAll).toHaveBeenCalledWith()
+      expect(getAll).toHaveBeenCalledTimes(1)
+      expect(getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual('Not Found')
     })
     test('returns 200', async () => {
@@ -68,15 +68,15 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(stageExecutionRepository.getAll).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.getAll).toHaveBeenCalledWith()
+      expect(getAll).toHaveBeenCalledTimes(1)
+      expect(getAll).toHaveBeenCalledWith()
       expect(res.result).toEqual(mockResponse)
     })
   })
 
   describe(`GET ${url}/AHWR-0000-0000 route`, () => {
     test('returns 200', async () => {
-      when(stageExecutionRepository.getByApplicationReference)
+      when(getByApplicationReference)
         .calledWith('AHWR-0000-0000')
         .mockResolvedValue(mockResponse)
       const options = {
@@ -85,13 +85,13 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(getByApplicationReference).toHaveBeenCalledTimes(1)
+      expect(getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
       expect(res.result).toEqual(mockResponse)
     })
 
     test('returns 404', async () => {
-      when(stageExecutionRepository.getByApplicationReference)
+      when(getByApplicationReference)
         .calledWith('AHWR-0000-0000')
         .mockResolvedValue()
       const options = {
@@ -100,8 +100,8 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(404)
-      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(getByApplicationReference).toHaveBeenCalledTimes(1)
+      expect(getByApplicationReference).toHaveBeenCalledWith('AHWR-0000-0000')
       expect(res.result).toEqual('Not Found')
     })
   })
@@ -124,10 +124,10 @@ describe('Stage execution test', () => {
         }
       }
 
-      when(claim.getByReference).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
-      when(claim.updateByReference).mockResolvedValue({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
-      when(get).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
-      when(stageExecutionRepository.set).mockResolvedValue({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
+      when(getClaimByReference).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(updateApplicationByReference).mockResolvedValue({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
+      when(getApplication).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(set).mockResolvedValue({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
 
       const options = {
         method: 'POST',
@@ -137,9 +137,9 @@ describe('Stage execution test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, claimOrApplication: 'claim', action: { action }, executedAt: expect.any(Date) }, mockGet)
-      expect(claim.updateByReference).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledWith({ ...data, claimOrApplication: 'claim', action: { action }, executedAt: expect.any(Date) }, mockGet)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
       expect(res.result).toEqual({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
     })
     test('returns 200 when Recommend to pay', async () => {
@@ -153,8 +153,8 @@ describe('Stage execution test', () => {
           }
         }
       }
-      when(get).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
-      when(stageExecutionRepository.set)
+      when(getApplication).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(set)
         .calledWith({ ...data, executedAt: expect.any(Date) }, 123)
         .mockResolvedValue(mockResponse)
 
@@ -166,9 +166,9 @@ describe('Stage execution test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, mockGet)
-      expect(updateByReference).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledWith({ ...data, executedAt: expect.any(Date) }, mockGet)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
       expect(res.result).toEqual(mockResponse)
     })
 
@@ -184,8 +184,8 @@ describe('Stage execution test', () => {
         }
       }
       const data2 = { ...data, action: { action: 'Recommend to reject' } }
-      when(get).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
-      when(stageExecutionRepository.set)
+      when(getApplication).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
+      when(set)
         .calledWith({ ...data2, executedAt: expect.any(Date) }, 123)
         .mockResolvedValue(mockResponse)
 
@@ -196,14 +196,14 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.set).toHaveBeenCalledWith({ ...data2, executedAt: expect.any(Date) }, mockGet)
-      expect(updateByReference).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledWith({ ...data2, executedAt: expect.any(Date) }, mockGet)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
       expect(res.result).toEqual(mockResponse)
     })
 
     test('returns 404', async () => {
-      when(get).calledWith('AHWR-0000-0000').mockResolvedValue({})
+      when(getApplication).calledWith('AHWR-0000-0000').mockResolvedValue({})
 
       const options = {
         method: 'POST',
@@ -212,8 +212,8 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(400)
-      expect(get).toHaveBeenCalledTimes(1)
-      expect(get).toHaveBeenCalledWith('AHWR-0000-0000')
+      expect(getApplication).toHaveBeenCalledTimes(1)
+      expect(getApplication).toHaveBeenCalledWith('AHWR-0000-0000')
       expect(res.result).toEqual('Reference not found')
     })
 
@@ -242,14 +242,14 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(400)
-      expect(stageExecutionRepository.set).toHaveBeenCalledTimes(0)
+      expect(set).toHaveBeenCalledTimes(0)
       expect(res.result).toEqual({ err: testCase.error })
     })
   })
 
   describe(`PUT ${url} route`, () => {
     test('returns 200', async () => {
-      when(stageExecutionRepository.getById)
+      when(getById)
         .calledWith(2)
         .mockResolvedValue(mockResponse)
       const options = {
@@ -258,13 +258,13 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(200)
-      expect(stageExecutionRepository.update).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.update).toHaveBeenCalledWith({ id: 2 })
+      expect(update).toHaveBeenCalledTimes(1)
+      expect(update).toHaveBeenCalledWith({ id: 2 })
       expect(res.result).toEqual(mockResponse)
     })
 
     test('returns 404', async () => {
-      when(stageExecutionRepository.getById)
+      when(getById)
         .calledWith(2)
         .mockResolvedValue()
       const options = {
@@ -273,13 +273,13 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(404)
-      expect(stageExecutionRepository.getById).toHaveBeenCalledTimes(1)
-      expect(stageExecutionRepository.update).toHaveBeenCalledTimes(0)
+      expect(getById).toHaveBeenCalledTimes(1)
+      expect(update).toHaveBeenCalledTimes(0)
       expect(res.result).toEqual('Not Found')
     })
 
     test('returns 400', async () => {
-      when(stageExecutionRepository.getById)
+      when(getById)
         .calledWith(2)
         .mockResolvedValue(mockResponse)
       const options = {
@@ -288,7 +288,7 @@ describe('Stage execution test', () => {
       }
       const res = await server.inject(options)
       expect(res.statusCode).toBe(400)
-      expect(stageExecutionRepository.update).toHaveBeenCalledTimes(0)
+      expect(update).toHaveBeenCalledTimes(0)
       expect(res.result).toEqual({ err: new ValidationError('"id" must be greater than 0') })
     })
   })

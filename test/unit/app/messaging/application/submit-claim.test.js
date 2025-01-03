@@ -1,18 +1,19 @@
-const submitClaim = require('../../../../../app/messaging/application/submit-claim').default
-const { submitClaimResponseMsgType, applicationResponseQueue, submitPaymentRequestMsgType, submitRequestQueue } = require('../../../../../app/config')
-const { alreadyClaimed, failed, error, notFound, success } = require('../../../../../app/messaging/application/states')
-const appInsights = require('applicationinsights')
+import { submitClaim } from '../../../../../app/messaging/application/submit-claim'
+import { config } from '../../../../../app/config'
+import { messagingStates } from '../../../../../app/constants'
+import appInsights from 'applicationinsights'
+import { getApplication, updateApplicationByReference } from '../../../../../app/repositories/application-repository'
+import { requiresComplianceCheck } from '../../../../../app/lib/requires-compliance-check'
+import { sendMessage } from '../../../../../app/messaging/send-message'
+import { sendFarmerClaimConfirmationEmail } from '../../../../../app/lib/send-email'
+
+const { alreadyClaimed, failed, error, notFound, success } = messagingStates
+const { submitClaimResponseMsgType, applicationResponseQueue, submitPaymentRequestMsgType, submitRequestQueue } = config
 
 jest.mock('../../../../../app/repositories/application-repository')
-const applicationRepository = require('../../../../../app/repositories/application-repository').default
-
 jest.mock('../../../../../app/lib/requires-compliance-check')
-const requiresComplianceCheck = require('../../../../../app/lib/requires-compliance-check')
-
 jest.mock('../../../../../app/messaging/send-message')
-const sendMessage = require('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/send-email')
-const { sendFarmerClaimConfirmationEmail } = require('../../../../../app/lib/send-email').default
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 describe(('Submit claim tests'), () => {
@@ -43,21 +44,20 @@ describe(('Submit claim tests'), () => {
     const orgEmail = 'an@email.com'
     const sbi = '444444444'
     const whichReview = 'beef'
-    const reference = 'AHWR-1234-5678'
     const applicationMock = { dataValues: { reference, data: { whichReview, organisation: { email, sbi, orgEmail } } } }
-    applicationRepository.get.mockResolvedValueOnce(applicationMock)
+    getApplication.mockResolvedValueOnce(applicationMock)
     requiresComplianceCheck.mockResolvedValueOnce({
       statusId,
       claimed
     })
 
-    applicationRepository.updateByReference.mockResolvedValueOnce(updateRes)
+    updateApplicationByReference.mockResolvedValueOnce(updateRes)
 
     await submitClaim(message)
 
     expect(requiresComplianceCheck).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.get).toHaveBeenCalledWith(reference)
-    expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
+    expect(getApplication).toHaveBeenCalledWith(reference)
+    expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
     !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
 
     if (state === success) {
@@ -69,16 +69,16 @@ describe(('Submit claim tests'), () => {
       !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(2)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledWith(email, reference, orgEmail, sbi)
       !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichReview }, submitPaymentRequestMsgType, submitRequestQueue, { sessionId })
-      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
+      expect(updateApplicationByReference).toHaveBeenCalledWith({ reference, claimed: true, statusId, updatedBy: 'admin' })
     } else if (state === success && statusId === 5) {
       // if in check only reply message should be sent
       !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
       expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
+      expect(updateApplicationByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     } else {
       !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
       !isRestApi && expect(sendFarmerClaimConfirmationEmail).toHaveBeenCalledTimes(0)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
+      expect(updateApplicationByReference).toHaveBeenCalledWith({ reference, claimed: false, statusId, updatedBy: 'admin' })
     }
   })
 
@@ -105,23 +105,23 @@ describe(('Submit claim tests'), () => {
     { desc: 'application already Recommended to reject returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 13 }, state: alreadyClaimed },
     { desc: 'application already ready to pay returns alreadyClaimed state', applicationMock: { claimed: false, statusId: 9 }, state: alreadyClaimed }
   ])('$desc', async ({ applicationMock, state }) => {
-    applicationRepository.get.mockResolvedValueOnce({ dataValues: applicationMock })
+    getApplication.mockResolvedValueOnce({ dataValues: applicationMock })
 
     await submitClaim(message)
 
-    expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.get).toHaveBeenCalledWith(reference)
+    expect(getApplication).toHaveBeenCalledTimes(1)
+    expect(getApplication).toHaveBeenCalledWith(reference)
     !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
     !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })
 
   test('error occurring return error state', async () => {
-    applicationRepository.get.mockRejectedValue(new Error('bust'))
+    getApplication.mockRejectedValue(new Error('bust'))
 
     await submitClaim(message)
 
-    expect(applicationRepository.get).toHaveBeenCalledTimes(1)
-    expect(applicationRepository.get).toHaveBeenCalledWith(reference)
+    expect(getApplication).toHaveBeenCalledTimes(1)
+    expect(getApplication).toHaveBeenCalledWith(reference)
     !isRestApi && expect(sendMessage).toHaveBeenCalledTimes(1)
     !isRestApi && expect(sendMessage).toHaveBeenCalledWith({ state: error }, submitClaimResponseMsgType, applicationResponseQueue, { sessionId })
   })

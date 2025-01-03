@@ -4,7 +4,7 @@ import appInsights from 'applicationinsights'
 import { sendMessage } from '../../messaging/send-message'
 import { config } from '../../config'
 import { speciesNumbers, biosecurity, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, minimumNumberOfOralFluidSamples, testResults, livestockTypes, claimType, applicationStatus } from '../../constants'
-import { set, searchClaims, getClaimByReference, updateByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository'
+import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository'
 import { getApplication } from '../../repositories/application-repository'
 import { sendFarmerEndemicsClaimConfirmationEmail } from '../../lib/send-email'
 import { getAmount } from '../../lib/getAmount'
@@ -265,7 +265,7 @@ export const claimHandlers = [
         const amount = await getAmount(request.payload)
 
         const { statusId } = await requiresComplianceCheck('claim')
-        const claim = await set({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
+        const claim = await setClaim({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
         const claimConfirmationEmailSent = claim && (await sendFarmerEndemicsClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
@@ -381,7 +381,7 @@ export const claimHandlers = [
           )
         }
 
-        await updateByReference({ reference, statusId: status, updatedBy: request.payload.user, sbi })
+        await updateClaimByReference({ reference, statusId: status, updatedBy: request.payload.user, sbi })
 
         return h.response().code(200)
       }

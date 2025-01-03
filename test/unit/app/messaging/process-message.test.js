@@ -1,17 +1,18 @@
-// const dbHelper = require('../../../db-helper')
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = require('../../../../app/config')
-const fetchApplication = require('../../../../app/messaging/application/fetch-application').default
-const fetchClaim = require('../../../../app/messaging/application/fetch-claim').default
-const processApplicationMessage = require('../../../../app/messaging/process-message')
-const submitClaim = require('../../../../app/messaging/application/submit-claim').default
-const { processApplicationQueue } = require('../../../../app/messaging/application/process-application')
+import { config } from '../../../../app/config'
+import { fetchApplication } from '../../../../app/messaging/application/fetch-application'
+import { fetchClaim } from '../../../../app/messaging/application/fetch-claim'
+import { processApplicationMessage } from '../../../../app/messaging/process-message'
+import { submitClaim } from '../../../../app/messaging/application/submit-claim'
+import { processApplicationQueue } from '../../../../app/messaging/application/process-application'
+
 jest.mock('../../../../app/messaging/application/process-application')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
-
 jest.mock('../../../../app/messaging/application/fetch-application')
 jest.mock('../../../../app/messaging/application/fetch-claim')
 jest.mock('../../../../app/messaging/application/process-application')
 jest.mock('../../../../app/messaging/application/submit-claim')
+
+const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = config
 
 describe('Process Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'

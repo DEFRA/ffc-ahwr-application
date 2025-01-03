@@ -1,5 +1,6 @@
-const contactHistoryRepository = require('../../../../../app/repositories/contact-history-repository')
-const applicationRepository = require('../../../../../app/repositories/application-repository').default
+import { getAllByApplicationReference, set } from '../../../../../app/repositories/contact-history-repository'
+import { getLatestApplicationsBySbi, updateApplicationByReference } from '../../../../../app/repositories/application-repository'
+import { server } from '../../../../../app/server'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
@@ -15,7 +16,7 @@ describe('Update contact history test', () => {
   afterEach(async () => {
     await server.stop()
   })
-  const server = require('../../../../../app/server')
+
   describe('GET contact history route', () => {
     const reference = 'ABC-1234'
     const url = `/api/application/contact-history/${reference}`
@@ -40,7 +41,7 @@ describe('Update contact history test', () => {
           }
         }
       ]
-      contactHistoryRepository.getAllByApplicationReference.mockResolvedValueOnce(data)
+      getAllByApplicationReference.mockResolvedValueOnce(data)
 
       const { result } = await server.inject(options)
 
@@ -53,7 +54,7 @@ describe('Update contact history test', () => {
         url
       }
       const data = []
-      contactHistoryRepository.getAllByApplicationReference.mockResolvedValueOnce(data)
+      getAllByApplicationReference.mockResolvedValueOnce(data)
 
       const { result } = await server.inject(options)
 
@@ -76,7 +77,7 @@ describe('Update contact history test', () => {
         }
       }
 
-      applicationRepository.getLatestApplicationsBySbi.mockResolvedValue([
+      getLatestApplicationsBySbi.mockResolvedValue([
         {
           id: '90496416-0c95-46e5-a79b-5d29ef8ebc39',
           reference: 'AHWR-9049-6416',
@@ -108,8 +109,8 @@ describe('Update contact history test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(1)
-      expect(contactHistoryRepository.set).toHaveBeenCalledTimes(4)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledTimes(4)
     })
 
     test('accepts null orgEmail', async () => {
@@ -140,14 +141,14 @@ describe('Update contact history test', () => {
         }
       }
 
-      applicationRepository.getLatestApplicationsBySbi.mockResolvedValue([])
+      getLatestApplicationsBySbi.mockResolvedValue([])
 
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(0)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(0)
       expect(res.payload).toBe('No applications found to update')
-      expect(contactHistoryRepository.set).toHaveBeenCalledTimes(0)
+      expect(set).toHaveBeenCalledTimes(0)
     })
 
     test('does not update when email, orgEmail & address are unchanged', async () => {
@@ -164,7 +165,7 @@ describe('Update contact history test', () => {
         }
       }
 
-      applicationRepository.getLatestApplicationsBySbi.mockResolvedValue([
+      getLatestApplicationsBySbi.mockResolvedValue([
         {
           id: '90496416-0c95-46e5-a79b-5d29ef8ebc39',
           reference: 'AHWR-9049-6416',
@@ -196,8 +197,8 @@ describe('Update contact history test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(0)
-      expect(contactHistoryRepository.set).toHaveBeenCalledTimes(0)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(0)
+      expect(set).toHaveBeenCalledTimes(0)
     })
 
     test('returns 400 when sbi is missing', async () => {
@@ -212,7 +213,7 @@ describe('Update contact history test', () => {
         }
       }
 
-      applicationRepository.getLatestApplicationsBySbi.mockResolvedValue([
+      getLatestApplicationsBySbi.mockResolvedValue([
         {
           id: '90496416-0c95-46e5-a79b-5d29ef8ebc39',
           reference: 'AHWR-9049-6416',
@@ -244,8 +245,8 @@ describe('Update contact history test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(400)
-      expect(applicationRepository.updateByReference).toHaveBeenCalledTimes(0)
-      expect(contactHistoryRepository.set).toHaveBeenCalledTimes(0)
+      expect(updateApplicationByReference).toHaveBeenCalledTimes(0)
+      expect(set).toHaveBeenCalledTimes(0)
     })
   })
 })
