@@ -1,4 +1,4 @@
-module.exports = [
+export const users = [
   {
     farmerName: '__FARMER_1__',
     name: '__NAME_1__',

@@ -1,16 +1,14 @@
-const { Sequelize, DataTypes } = require('sequelize')
-const config = require('../config/db')
-const { application } = require('./models/application')
-const { claim } = require('./models/claim')
-const { contactHistory } = require('./models/contact-history')
-const { holiday } = require('./models/holiday')
-const { stageConfiguration } = require('./models/stage-configuration')
-const { stageExecution } = require('./models/stage-execution')
-const { status } = require('./models/status')
+import { Sequelize, DataTypes } from 'sequelize'
+import { dbConfig } from '../config/db.js'
+import { application } from './models/application.js'
+import { claim } from './models/claim.js'
+import { contactHistory } from './models/contact-history.js'
+import { holiday } from './models/holiday.js'
+import { stageConfiguration } from './models/stage-configuration.js'
+import { stageExecution } from './models/stage-execution.js'
+import { status } from './models/status.js'
 
-const dbConfig = config[process.env.NODE_ENV]
-
-module.exports = (() => {
+export const buildData = (() => {
   const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
 
   application(sequelize, DataTypes)

@@ -1,4 +1,4 @@
-const holiday = (sequelize, DataTypes) => {
+export const holiday = (sequelize, DataTypes) => {
   const Holiday = sequelize.define('holiday', {
     date: {
       type: DataTypes.DATE,
@@ -15,5 +15,3 @@ const holiday = (sequelize, DataTypes) => {
   })
   return Holiday
 }
-
-module.exports = { holiday }

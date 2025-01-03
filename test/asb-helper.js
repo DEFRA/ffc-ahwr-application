@@ -1,9 +1,9 @@
-const { ServiceBusClient } = require('@azure/service-bus')
-const config = require('../app/config')
+import { ServiceBusClient } from '@azure/service-bus'
+import { config } from '../app/config'
 
 // When calling this within a test script, ensure there is a generous timeout
 // for the connections to complete within, `30000` should be enough.
-async function clearSubscription (subscriptionName) {
+export const clearSubscription = async (subscriptionName) => {
   // There are three queues with potentially three different hosts and
   // credentials, however, atm there is only the single instance. KIS.
   let sbClient
@@ -34,11 +34,6 @@ async function clearSubscription (subscriptionName) {
   }
 }
 
-async function clearAllSubscriptions () {
+export const clearAllSubscriptions = async () => {
   await clearSubscription('applicationRequestQueue')
-}
-
-module.exports = {
-  clearAllSubscriptions,
-  clearSubscription
 }

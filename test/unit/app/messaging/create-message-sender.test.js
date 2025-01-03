@@ -1,4 +1,4 @@
-const { createMessageSender, cachedSenders, closeAllConnections } = require('../../../../app/messaging/create-message-sender')
+import { createMessageSender, cachedSenders, closeAllConnections } from '../../../../app/messaging/create-message-sender'
 
 const MOCK_CLOSE_CONNECTION = jest.fn()
 

@@ -1,11 +1,11 @@
-const joi = require('joi')
-const util = require('util')
+import joi from 'joi'
+import util from 'util'
 
 const fetchClaimSchema = joi.object({
   email: joi.string().required()
 })
 
-const validateFetchClaim = (event) => {
+export const validateFetchClaim = (event) => {
   const validate = fetchClaimSchema.validate(event)
 
   if (validate.error) {
@@ -15,5 +15,3 @@ const validateFetchClaim = (event) => {
 
   return true
 }
-
-module.exports = validateFetchClaim

@@ -1,4 +1,4 @@
-const stageConfiguration = (sequelize, DataTypes) => {
+export const stageConfiguration = (sequelize, DataTypes) => {
   const StageConfiguration = sequelize.define('stage_configuration', {
     id: {
       type: DataTypes.SMALLINT,
@@ -30,5 +30,3 @@ const stageConfiguration = (sequelize, DataTypes) => {
   })
   return StageConfiguration
 }
-
-module.exports = { stageConfiguration }

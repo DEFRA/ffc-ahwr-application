@@ -1,3 +1,5 @@
+import { buildConfig } from '../../../../app/config/storage'
+
 describe('Config Validation', () => {
   const originalProcessEnv = process.env
 
@@ -16,7 +18,7 @@ describe('Config Validation', () => {
 
     // Validate config
     expect(() => {
-      jest.requireActual('../../../../app/config/storage.js')
+      buildConfig()
     }).toThrow('The blob storage config is invalid.')
   })
 
@@ -28,8 +30,9 @@ describe('Config Validation', () => {
     process.env.AZURE_STORAGE_DOCUMENT_CONTAINER = 'document-container'
     process.env.AZURE_STORAGE_USE_CONNECTION_STRING = 'true'
     process.env.AZURE_STORAGE_CREATE_CONTAINERS = 'false'
+    process.env.AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER = 'endemics-settings'
 
-    const storageConfig = jest.requireActual('../../../../app/config/storage.js')
+    const storageConfig = buildConfig()
 
     expect(storageConfig).toEqual({
       connectionString: 'connection-string',

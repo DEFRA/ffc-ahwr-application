@@ -1,13 +1,15 @@
-const Joi = require('joi')
-const { v4: uuid } = require('uuid')
-const { get, searchApplications, updateByReference } = require('../../repositories/application-repository')
-const { submitPaymentRequestMsgType, submitRequestQueue } = require('../../config')
-const sendMessage = require('../../messaging/send-message')
-const statusIds = require('../../constants/application-status')
-const { processApplicationApi } = require('../../messaging/application/process-application')
-const { searchPayloadValidations } = require('./helpers')
+import Joi from 'joi'
+import { v4 as uuid } from 'uuid'
+import { getApplication, searchApplications, updateApplicationByReference } from '../../repositories/application-repository.js'
+import { config } from '../../config/index.js'
+import { sendMessage } from '../../messaging/send-message.js'
+import { applicationStatus } from '../../constants/index.js'
+import { processApplicationApi } from '../../messaging/application/process-application.js'
+import { searchPayloadSchema } from './schema/search-payload.schema.js'
 
-module.exports = [{
+const { submitPaymentRequestMsgType, submitRequestQueue } = config
+
+export const applicationHandlers = [{
   method: 'GET',
   path: '/api/application/get/{ref}',
   options: {
@@ -17,7 +19,7 @@ module.exports = [{
       })
     },
     handler: async (request, h) => {
-      const application = await get(request.params.ref)
+      const application = await getApplication(request.params.ref)
       if (application?.dataValues) {
         return h.response(application.dataValues).code(200)
       } else {
@@ -31,7 +33,7 @@ module.exports = [{
   options: {
     validate: {
       payload: Joi.object({
-        ...searchPayloadValidations(),
+        ...searchPayloadSchema,
         sort: Joi.object({
           field: Joi.string().valid().optional().default('CREATEDAT'),
           direction: Joi.string().valid().optional().allow('ASC')
@@ -68,12 +70,12 @@ module.exports = [{
     handler: async (request, h) => {
       const { status } = request.payload
       request.logger.setBindings({ status })
-      const application = (await get(request.params.ref))
+      const application = await getApplication(request.params.ref)
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
       }
 
-      await updateByReference({ reference: request.params.ref, statusId: status, updatedBy: request.payload.user })
+      await updateApplicationByReference({ reference: request.params.ref, statusId: status, updatedBy: request.payload.user })
 
       return h.response().code(200)
     }
@@ -113,17 +115,17 @@ module.exports = [{
 
       request.logger.setBindings({ reference })
 
-      const application = await get(reference)
+      const application = await getApplication(reference)
 
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
       }
 
       try {
-        let statusId = statusIds.rejected
+        let statusId = applicationStatus.rejected
 
         if (request.payload.approved) {
-          statusId = statusIds.readyToPay
+          statusId = applicationStatus.readyToPay
 
           await sendMessage(
             {
@@ -136,7 +138,7 @@ module.exports = [{
 
         request.logger.setBindings({ statusId })
 
-        await updateByReference({ reference, statusId, updatedBy: request.payload.user })
+        await updateApplicationByReference({ reference, statusId, updatedBy: request.payload.user })
       } catch (err) {
         request.logger.setBindings({ applicationUpdateError: err })
       }

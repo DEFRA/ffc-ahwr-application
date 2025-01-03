@@ -1,4 +1,4 @@
-const status = (sequelize, DataTypes) => {
+export const status = (sequelize, DataTypes) => {
   const Status = sequelize.define('status', {
     statusId: {
       type: DataTypes.SMALLINT,
@@ -23,5 +23,3 @@ const status = (sequelize, DataTypes) => {
   }
   return Status
 }
-
-module.exports = { status }

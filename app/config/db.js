@@ -1,4 +1,4 @@
-const { DefaultAzureCredential } = require('@azure/identity')
+import { DefaultAzureCredential } from '@azure/identity'
 
 function isProd () {
   return process.env.NODE_ENV === 'production'
@@ -23,7 +23,7 @@ const retry = {
   timeout: 60000
 }
 
-const dbConfig = {
+export const dbConfig = {
   database: process.env.POSTGRES_DB,
   define: {
     createdAt: 'createdAt',
@@ -45,10 +45,4 @@ const dbConfig = {
     max: 20,
     min: 5
   }
-}
-
-module.exports = {
-  development: dbConfig,
-  production: dbConfig,
-  test: dbConfig
 }

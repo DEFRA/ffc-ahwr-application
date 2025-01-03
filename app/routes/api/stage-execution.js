@@ -1,10 +1,10 @@
-const Joi = require('joi')
-const claim = require('../../repositories/claim-repository')
-const { get, updateByReference } = require('../../repositories/application-repository')
-const { getAll, set, getById, update, getByApplicationReference } = require('../../repositories/stage-execution-repository')
-const statusIds = require('../../constants/application-status')
+import Joi from 'joi'
+import { getClaimByReference } from '../../repositories/claim-repository.js'
+import { applicationStatus } from '../../constants/index.js'
+import { getApplication, updateApplicationByReference } from '../../repositories/application-repository.js'
+import { getAll, set, getById, update, getByApplicationReference } from '../../repositories/stage-execution-repository.js'
 
-module.exports = [{
+export const stageExecutionHandlers = [{
   method: 'GET',
   path: '/api/stageexecution',
   options: {
@@ -57,21 +57,18 @@ module.exports = [{
       request.logger.setBindings({ payload: request.payload })
 
       if (request.payload.claimOrApplication === 'claim') {
-        application = await claim.getByReference(request.payload.applicationReference)
+        application = await getClaimByReference(request.payload.applicationReference)
       }
 
       if (request.payload.claimOrApplication === 'application') {
-        application = await get(request.payload.applicationReference)
+        application = await getApplication(request.payload.applicationReference)
       }
 
       if (!application?.dataValues) {
         return h.response('Reference not found').code(400).takeover()
       }
 
-      const response = await set(
-        request.payload,
-        application
-      )
+      const response = await set(request.payload)
 
       request.logger.setBindings({ response })
 
@@ -80,27 +77,27 @@ module.exports = [{
 
       switch (request.payload.action.action) {
         case 'Recommend to pay':
-          statusId = statusIds.recommendToPay
+          statusId = applicationStatus.recommendToPay
           break
         case 'Recommend to reject':
-          statusId = statusIds.recommendToReject
+          statusId = applicationStatus.recommendToReject
           break
         // To refactor this after MVP release
         case 'Ready to pay':
-          statusId = statusIds.readyToPay
+          statusId = applicationStatus.readyToPay
           break
         case 'Rejected':
-          statusId = statusIds.rejected
+          statusId = applicationStatus.rejected
           break
       }
 
       if (statusId) {
         if (request.payload.claimOrApplication === 'claim') {
-          const mainApplication = await get(application.dataValues.applicationReference)
+          const mainApplication = await getApplication(application.dataValues.applicationReference)
           sbi = mainApplication?.dataValues?.data?.organisation?.sbi
-          await claim.updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
+          await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
         } else {
-          await updateByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
+          await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
         }
       }
 

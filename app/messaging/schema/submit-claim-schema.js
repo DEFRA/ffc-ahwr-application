@@ -1,5 +1,5 @@
-const joi = require('joi')
-const util = require('util')
+import joi from 'joi'
+import util from 'util'
 
 const submitClaimSchema = joi.object({
   reference: joi.string().required(),
@@ -33,7 +33,7 @@ const submitClaimSchema = joi.object({
   })
 })
 
-const validateSubmitClaim = (event) => {
+export const validateSubmitClaim = (event) => {
   const validate = submitClaimSchema.validate(event)
 
   if (validate.error) {
@@ -42,5 +42,3 @@ const validateSubmitClaim = (event) => {
   }
   return true
 }
-
-module.exports = validateSubmitClaim

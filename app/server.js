@@ -1,27 +1,31 @@
-require('./insights').setup()
-const Hapi = require('@hapi/hapi')
-const logger = require('./logger')
+import Hapi from '@hapi/hapi'
+import { logger } from './logger.js'
+import { healthHandlers } from './routes/health.js'
+import { applicationHandlers } from './routes/api/applications.js'
+import { latestApplicationsHandlers } from './routes/api/latest-applications.js'
+import { applicationHistoryHandlers } from './routes/api/application-history.js'
+import { stageConfiguationHandlers } from './routes/api/stage-configuration.js'
+import { stageExecutionHandlers } from './routes/api/stage-execution.js'
+import { applicationEventsHandlers } from './routes/api/application-events.js'
+import { claimHandlers } from './routes/api/claim.js'
+import { holidayHandlers } from './routes/api/holidays.js'
+import { contactHistoryHandlers } from './routes/api/contact-history.js'
 
-const server = Hapi.server({
+export const server = Hapi.server({
   port: process.env.PORT
 })
 
-const routes = [].concat(
-  require('./routes/healthy'),
-  require('./routes/healthz'),
-  require('./routes/api/applications'),
-  require('./routes/api/latest-applications'),
-  require('./routes/api/application-history'),
-  require('./routes/api/stage-configuration'),
-  require('./routes/api/stage-execution'),
-  require('./routes/api/application-events'),
-  require('./routes/api/claim'),
-  require('./routes/api/holidays'),
-  require('./routes/api/contact-history')
-)
-
-server.route(routes)
+server.route([
+  ...healthHandlers,
+  ...applicationHandlers,
+  ...latestApplicationsHandlers,
+  ...applicationHistoryHandlers,
+  ...stageConfiguationHandlers,
+  ...stageExecutionHandlers,
+  ...applicationEventsHandlers,
+  ...claimHandlers,
+  ...holidayHandlers,
+  ...contactHistoryHandlers
+])
 
 server.register(logger)
-
-module.exports = server

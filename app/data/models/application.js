@@ -1,5 +1,5 @@
-const application = (sequelize, DataTypes) => {
-  const Application = sequelize.define('application', {
+export const application = (sequelize, DataTypes) => {
+  const applicationModel = sequelize.define('application', {
     id: {
       type: DataTypes.UUID,
       primaryKey: true,
@@ -24,14 +24,12 @@ const application = (sequelize, DataTypes) => {
     freezeTableName: true,
     tableName: 'application'
   })
-  Application.associate = function (models) {
-    Application.hasOne(models.status, {
+  applicationModel.associate = function (models) {
+    applicationModel.hasOne(models.status, {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
   }
 
-  return Application
+  return applicationModel
 }
-
-module.exports = { application }

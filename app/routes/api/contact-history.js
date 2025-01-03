@@ -1,11 +1,9 @@
-const Joi = require('joi')
-const { updateByReference } = require('../../repositories/application-repository')
-const { getLatestApplicationsBySbi } = require('../../repositories/application-repository')
-const contactHistoryRepository = require('../../repositories/contact-history-repository')
+import Joi from 'joi'
+import { updateApplicationByReference, getLatestApplicationsBySbi } from '../../repositories/application-repository.js'
+import { getAllByApplicationReference, set } from '../../repositories/contact-history-repository.js'
+import { sbiSchema } from './schema/sbi.schema.js'
 
-const SBI_SCHEMA = require('./schema/sbi.schema.js')
-
-module.exports = [
+export const contactHistoryHandlers = [
   {
     method: 'GET',
     path: '/api/application/contact-history/{ref}',
@@ -16,7 +14,7 @@ module.exports = [
         })
       },
       handler: async (request, h) => {
-        const history = await contactHistoryRepository.getAllByApplicationReference(request.params.ref)
+        const history = await getAllByApplicationReference(request.params.ref)
 
         return h.response(history).code(200)
       }
@@ -33,7 +31,7 @@ module.exports = [
           orgEmail: Joi.string().allow(null),
           email: Joi.string().required().lowercase().email({ tlds: false }),
           address: Joi.string(),
-          sbi: SBI_SCHEMA
+          sbi: sbiSchema
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err, sbi: request.payload.sbi })
@@ -88,9 +86,9 @@ module.exports = [
           }
 
           if (contactHistory.length > 0) {
-            await updateByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user }, false)
+            await updateApplicationByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user }, false)
             contactHistory.forEach(async (contact) => {
-              await contactHistoryRepository.set({
+              await set({
                 applicationReference: application.reference,
                 sbi: request.payload.sbi,
                 data: contact,

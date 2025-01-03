@@ -1,4 +1,4 @@
-const { startandEndDate } = require('../../../../app/lib/date-utils.js')
+import { startandEndDate } from '../../../../app/lib/date-utils.js'
 
 describe('date utils', () => {
   describe('startandEndDate', () => {

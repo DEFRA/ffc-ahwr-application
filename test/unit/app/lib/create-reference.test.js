@@ -1,4 +1,4 @@
-const { createApplicationReference, createClaimReference } = require('../../../../app/lib/create-reference')
+import { createApplicationReference, createClaimReference } from '../../../../app/lib/create-reference'
 
 describe('createApplicationReference', () => {
   test('should take an existing TEMP reference and swap the prefix for IAHW', () => {

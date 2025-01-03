@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize')
-const { application } = require('../../../app/data/models/application')
+import { DataTypes } from 'sequelize'
+import { application } from '../../../app/data/models/application'
 
 // Mocking the sequelize instance
 const mockSequelize = {

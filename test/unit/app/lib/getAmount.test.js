@@ -1,14 +1,16 @@
-const { getAmount } = require('../../../../app/lib/getAmount')
-const { setOptionalPIHuntEnabled } = require('../../../mocks/config')
-const { livestockTypes: { beef, dairy, pigs, sheep }, claimType: { review, endemics }, testResults } = require('../../../../app/constants/claim')
-const { getBlob } = require('../../../../app/storage')
-const pricesConfig = require('../../../data/claim-prices-config.json')
-jest.mock('../../../../app/storage')
+import { getAmount } from '../../../../app/lib/getAmount'
+import { setOptionalPIHuntEnabled } from '../../../mocks/config'
+import { livestockTypes, claimType, testResults } from '../../../../app/constants'
+import { claimPricesConfig as mockClaimPricesConfig } from '../../../data/claim-prices-config'
+
+jest.mock('../../../../app/storage/getBlob', () => ({
+  getBlob: () => mockClaimPricesConfig
+}))
+
+const { beef, dairy, pigs, sheep } = livestockTypes
+const { review, endemics } = claimType
 
 describe('getAmount when optionalPiHunt flag TRUE', () => {
-  beforeAll(async () => {
-    getBlob.mockReturnValue(pricesConfig)
-  })
   beforeEach(async () => {
     setOptionalPIHuntEnabled(true)
   })
@@ -180,9 +182,6 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
 })
 
 describe('getAmount when optionalPiHunt flag false', () => {
-  beforeAll(async () => {
-    getBlob.mockReturnValue(pricesConfig)
-  })
   beforeEach(async () => {
     setOptionalPIHuntEnabled(false)
   })
