@@ -26,9 +26,6 @@ const buildConfig = () => {
       complianceCheckRatio: Joi.number().default(5),
       endemicsComplianceCheckRatio: Joi.number().default(1)
     },
-    tenMonthRule: {
-      enabled: Joi.bool().default(false)
-    },
     optionalPIHunt: {
       enabled: Joi.bool()
     },
@@ -56,9 +53,6 @@ const buildConfig = () => {
       complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
       endemicsComplianceCheckRatio:
         process.env.ENDEMICS_CLAIM_COMPLIANCE_CHECK_RATIO
-    },
-    tenMonthRule: {
-      enabled: process.env.TEN_MONTH_RULE_ENABLED
     },
     optionalPIHunt: {
       enabled: process.env.OPTIONAL_PIHUNT_ENABLED === 'true'

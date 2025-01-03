@@ -1,18 +1,16 @@
 import { getAmount } from '../../../../app/lib/getAmount'
 import { setOptionalPIHuntEnabled } from '../../../mocks/config'
 import { livestockTypes, claimType, testResults } from '../../../../app/constants'
-import { getBlob } from '../../../../app/storage/getBlob'
 import { claimPricesConfig as mockClaimPricesConfig } from '../../../data/claim-prices-config'
 
-jest.mock('../../../../app/storage/getBlob')
+jest.mock('../../../../app/storage/getBlob', () => ({
+  getBlob: () => mockClaimPricesConfig
+}))
 
 const { beef, dairy, pigs, sheep } = livestockTypes
 const { review, endemics } = claimType
 
 describe('getAmount when optionalPiHunt flag TRUE', () => {
-  beforeAll(async () => {
-    getBlob.mockResolvedValue(mockClaimPricesConfig)
-  })
   beforeEach(async () => {
     setOptionalPIHuntEnabled(true)
   })
@@ -184,9 +182,6 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
 })
 
 describe('getAmount when optionalPiHunt flag false', () => {
-  beforeAll(async () => {
-    getBlob.mockResolvedValue(mockClaimPricesConfig)
-  })
   beforeEach(async () => {
     setOptionalPIHuntEnabled(false)
   })

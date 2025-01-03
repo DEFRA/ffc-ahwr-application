@@ -5,11 +5,8 @@ import { getBySbi, setApplication } from '../../../../../app/repositories/applic
 import { processApplication, processApplicationApi, processApplicationQueue } from '../../../../../app/messaging/application/process-application'
 import { applicationStatus } from '../../../../../app/constants'
 import { sendMessage } from '../../../../../app/messaging/send-message'
-import { config } from '../../../../../app/config'
 
 const consoleErrorSpy = jest.spyOn(console, 'error')
-
-const { tenMonthRule } = config
 
 const MOCK_REFERENCE = 'AHWR-5C1C-DD6Z'
 const MOCK_NW_REFERENCE = 'IAHW-5C1C-DD6Z'
@@ -19,10 +16,6 @@ const MOCK_NOW = new Date()
 const mockMonthsAgo = (months) => {
   const mockDate = new Date()
   return mockDate.setMonth(mockDate.getMonth() - months)
-}
-
-const toggle10Months = (enabled) => {
-  tenMonthRule.enabled = enabled
 }
 
 jest.mock('../../../../../app/lib/send-email')
@@ -193,121 +186,6 @@ describe(('Store application in database'), () => {
 
         expect(setApplication).toHaveBeenCalledTimes(1)
         expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-      })
-    })
-
-    describe('when 10 month rule toggle is enabled', () => {
-      beforeEach(() => {
-        toggle10Months(true)
-      })
-      test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
-        const mockApplicationDate = mockMonthsAgo(7)
-
-        when(getBySbi)
-          .calledWith(
-            data.organisation.sbi
-          )
-          .mockResolvedValue({
-            dataValues: {
-              reference: MOCK_REFERENCE
-            },
-            statusId: applicationStatus.readyToPay,
-            createdAt: mockApplicationDate
-          })
-
-        await processApplication(data)
-
-        expect(setApplication).toHaveBeenCalledTimes(0)
-        expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          'Failed to process application',
-          new Error(`Recent application already exists: ${JSON.stringify({
-            reference: MOCK_REFERENCE,
-            createdAt: mockApplicationDate
-          })}`)
-        )
-      })
-
-      test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
-        const mockApplicationDate = mockMonthsAgo(11)
-        when(getBySbi)
-          .calledWith(
-            data.organisation.sbi
-          )
-          .mockResolvedValue({
-            dataValues: {
-              reference: MOCK_REFERENCE
-            },
-            createdAt: mockApplicationDate,
-            statusId: applicationStatus.readyToPay
-          })
-
-        await processApplication(data)
-
-        expect(setApplication).toHaveBeenCalledTimes(1)
-        expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
-      })
-    })
-
-    describe('when 10 month rule toggle is not enabled', () => {
-      beforeEach(() => {
-        toggle10Months(false)
-      })
-
-      test('throws an error with statusId 9 (ready to pay) and date less than 10 months ago', async () => {
-        const mockApplicationDate = mockMonthsAgo(7)
-
-        when(getBySbi)
-          .calledWith(
-            data.organisation.sbi
-          )
-          .mockResolvedValue({
-            dataValues: {
-              reference: MOCK_REFERENCE
-            },
-            createdAt: mockApplicationDate,
-            statusId: applicationStatus.readyToPay
-          })
-
-        await processApplication(data)
-
-        expect(setApplication).toHaveBeenCalledTimes(0)
-        expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          'Failed to process application',
-          new Error(`Recent application already exists: ${JSON.stringify({
-            reference: MOCK_REFERENCE,
-            createdAt: mockApplicationDate
-          })}`)
-        )
-      })
-
-      test('throws an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
-        const mockApplicationDate = mockMonthsAgo(11)
-
-        when(getBySbi)
-          .calledWith(
-            data.organisation.sbi
-          )
-          .mockResolvedValue({
-            dataValues: {
-              reference: MOCK_REFERENCE
-            },
-            createdAt: mockApplicationDate,
-            statusId: applicationStatus.readyToPay
-          })
-
-        await processApplication(data)
-
-        expect(setApplication).toHaveBeenCalledTimes(0)
-        expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          'Failed to process application',
-          new Error(`Recent application already exists: ${JSON.stringify({
-            reference: MOCK_REFERENCE,
-            createdAt: mockApplicationDate
-          })}`)
-        )
       })
     })
   })

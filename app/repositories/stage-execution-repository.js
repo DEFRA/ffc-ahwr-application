@@ -3,18 +3,18 @@ import { buildData } from '../data'
 const { models } = buildData
 
 export async function getAll () {
-  return models.stage_execution.findAll()
+  return await models.stage_execution.findAll()
 }
 
 export async function getById (id) {
-  return models.stage_execution.findOne(
+  return await models.stage_execution.findOne(
     {
       where: { id }
     })
 }
 
 export async function getByApplicationReference (applicationReference) {
-  return models.stage_execution.findAll(
+  return await models.stage_execution.findAll(
     {
       where: { applicationReference }
     })

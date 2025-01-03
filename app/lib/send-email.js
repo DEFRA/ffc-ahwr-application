@@ -4,7 +4,7 @@ import { sendMessage } from '../messaging/send-message'
 import { defaultClient } from 'applicationinsights'
 import { sendSFDEmail } from './sfd-client'
 
-const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue, notify: templateIdFarmerClaimComplete } = config
+const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue, notify: { templateIdFarmerClaimComplete } } = config
 
 const send = async (templateId, email, personalisation) => {
   if (config.sfdMessage.enabled) {

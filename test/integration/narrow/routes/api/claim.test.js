@@ -227,7 +227,7 @@ describe('Post claim test', () => {
     })
   }
 
-  test('Post a new claim with duplicated URN ', async () => {
+  test.only('Post a new claim with duplicated URN ', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',

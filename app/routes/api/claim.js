@@ -27,7 +27,7 @@ const isPiHuntRecommendedYes = (payload) => payload.data.piHuntRecommended === p
 const getTestResultsValidation = (payload) => (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
 const pigsTestResults = (payload) => isPigs(payload) && Joi.string().valid(testResults.positive, testResults.negative).required()
 const sheepTestResults = (payload) => (isSheep(payload) && isFollowUp(payload)) && Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.string() }))) })).required()
-const beefDairyTestResults = (payload) => (isBeef || isDairy) && Joi.string().valid(testResults.positive, testResults.negative).required()
+const beefDairyTestResults = (payload) => (isBeef(payload) || isDairy(payload)) && Joi.string().valid(testResults.positive, testResults.negative).required()
 
 const getNumberAnimalsTestedValidation = (payload) => {
   const threshold = minimumNumberOfAnimalsTested[payload.data.typeOfLivestock][payload.type]

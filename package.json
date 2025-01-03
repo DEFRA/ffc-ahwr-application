@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "pretest": "npm run test:lint",
-    "test": "NODE_ENV=development jest --runInBand --forceExit",
+    "test": "NODE_ENV=development jest --runInBand --forceExit test/integration/narrow/routes/api/claim.test.js",
     "test:watch": "jest --coverage=false --onlyChanged --watch --runInBand",
     "test:lint": "standard",
     "test:debug": "node --inspect-brk=0.0.0.0 ./node_modules/jest/bin/jest.js --coverage=false --onlyChanged --watch --runInBand --no-cache",

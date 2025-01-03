@@ -154,13 +154,13 @@ describe('Applications test', () => {
       expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
     })
 
-    test('returns 404 when no dataValues sent', async () => {
+    test('returns 404 if application doesnt exist', async () => {
       getApplication.mockResolvedValue({ dataValues: null })
 
       const options = {
         method,
         url: '/api/application/ABC-1234',
-        payload: { status: applicationStatus.paid, user: 'test' }
+        payload: { status: applicationStatus.inCheck, user: 'test' }
       }
       const res = await server.inject(options)
 

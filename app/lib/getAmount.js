@@ -1,9 +1,9 @@
 import { getBlob } from '../storage/getBlob'
 import { config } from '../config'
-import { livestockTypes, claimType, testResults } from './../constants'
+import { livestockTypes, claimType, testResults, piHunt as piHuntMap, piHuntAllAnimals as piHuntAllAnimalsMap } from './../constants'
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
-  const optionalPiHuntValue = (piHunt === piHunt.yes && piHuntAllAnimals === piHuntAllAnimals.yes) ? 'yesPiHunt' : 'noPiHunt'
+  const optionalPiHuntValue = (piHunt === piHuntMap.yes && piHuntAllAnimals === piHuntAllAnimalsMap.yes) ? 'yesPiHunt' : 'noPiHunt'
 
   if (reviewTestResults === testResults.positive) {
     return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
@@ -37,7 +37,7 @@ export const getAmount = async (payload) => {
   const { typeOfLivestock } = data
 
   if ([livestockTypes.beef, livestockTypes.dairy].includes(typeOfLivestock) && data.reviewTestResults && type === claimType.endemics) {
-    return getBeefDairyAmount(data, pricesConfig, claimType)
+    return getBeefDairyAmount(data, pricesConfig, typeOfClaim)
   }
 
   return pricesConfig[typeOfClaim][typeOfLivestock].value

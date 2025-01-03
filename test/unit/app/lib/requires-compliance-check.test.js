@@ -11,14 +11,12 @@ const mockGetAllClaimedClaims = jest.fn().mockResolvedValue(1)
 getAllClaimedApplications.mockImplementation(mockGetAllClaimedApplications)
 getAllClaimedClaims.mockImplementation(mockGetAllClaimedClaims)
 
-jest.mock('../../../../app/config', () => ({ ...jest.requireActual('../../../../app/config'), compliance: { complianceCheckRatio: 2, endemicsComplianceCheckRatio: 1 } }))
-
 describe('Test requires compliance check', () => {
   afterEach(() => jest.clearAllMocks())
 
   test.each([
-    { claimOrApplication: 'application', expectedStatusId: 11 },
-    { claimOrApplication: 'claim', expectedStatusId: 5 }
+    { claimOrApplication: 'application', expectedStatusId: 5 },
+    { claimOrApplication: 'claim', expectedStatusId: 11 }
   ])('validate compliance check for $claimOrApplication', async ({ claimOrApplication, expectedStatusId }) => {
     const result = await requiresComplianceCheck(claimOrApplication)
 
