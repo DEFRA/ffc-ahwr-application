@@ -44,7 +44,7 @@ export const processApplication = async (data) => {
         new Error(
             `Recent application already exists: ${JSON.stringify({
               reference: existingApplication.dataValues.reference,
-              createdAt: 'TODO' // createdAt doesnt exist on the application object
+              createdAt: existingApplication.dataValues.createdAt
             })}`
         ),
         {

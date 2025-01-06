@@ -971,9 +971,9 @@ describe('Post claim test', () => {
     expect(res.statusCode).toBe(200)
     expect(searchClaims).toHaveBeenCalledTimes(1)
   })
-  test.each([
-    { search: { xyz: 'xyz' } }
-  ])('returns 400 when post %p', async ({ search }) => {
+
+  test('returns 400 when posting a bad search request', async () => {
+    const search = { xyz: 'xyz' }
     const options = {
       method: 'POST',
       url: '/api/claim/search',
@@ -985,8 +985,9 @@ describe('Post claim test', () => {
     expect(res.statusCode).toBe(400)
     expect(searchClaims).toHaveBeenCalledTimes(0)
   })
-  test.each([
-    {
+
+  test('Post required payment data to get the amount', async () => {
+    const data = {
       type: 'E',
       reviewTestResults: 'positive',
       typeOfLivestock: 'beef',
@@ -994,7 +995,7 @@ describe('Post claim test', () => {
       piHuntAllAnimals: 'yes',
       amount: 837
     }
-  ])('Post required payment data to get the amount', async ({ type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
+    const { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount } = data
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
@@ -1007,15 +1008,12 @@ describe('Post claim test', () => {
     expect(res.statusCode).toBe(200)
     expect(Number(res.payload)).toBe(amount)
   })
-  test.each([
-    {
-      type: 'E'
-    }
-  ])('Post wrong payment data to must return bad request', async ({ type }) => {
+
+  test('Post wrong payment data to elicit a 400 response', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
-      payload: { type }
+      payload: { type: 'E' }
     }
 
     getAmount.mockReturnValue(100)

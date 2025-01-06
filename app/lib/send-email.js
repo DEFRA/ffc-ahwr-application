@@ -1,7 +1,7 @@
 import { notifyClient } from './notify-client.js'
 import { config } from '../config/index.js'
 import { sendMessage } from '../messaging/send-message.js'
-import { defaultClient } from 'applicationinsights'
+import applicationInsights from 'applicationinsights'
 import { sendSFDEmail } from './sfd-client.js'
 
 const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue, notify: { templateIdFarmerClaimComplete } } = config
@@ -28,7 +28,7 @@ const sendEmail = async (email, personalisation, reference, templateId, carbonEm
     if (carbonEmail) {
       await sendCarbonCopy(templateId, { personalisation, reference })
     }
-    defaultClient.trackEvent({
+    applicationInsights.defaultClient.trackEvent({
       name: 'email',
       properties: {
         status: success,
@@ -38,7 +38,7 @@ const sendEmail = async (email, personalisation, reference, templateId, carbonEm
       }
     })
   } catch (e) {
-    defaultClient.trackException({ exception: e })
+    applicationInsights.defaultClient.trackException({ exception: e })
     success = false
   }
   return success
@@ -58,9 +58,9 @@ export const sendFarmerConfirmationEmail = async (emailParams) => {
   const { reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData: { orgName, orgEmail, crn } } = emailParams
   const message = { reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }
   if (config.sfdMessage.enabled) {
-    return await sendMessage({ ...message, crn }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+    return sendMessage({ ...message, crn }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   }
-  return await sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  return sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
 export const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail, sbi) => {

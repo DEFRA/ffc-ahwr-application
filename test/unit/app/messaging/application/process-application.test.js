@@ -147,7 +147,8 @@ describe(('Store application in database'), () => {
           )
           .mockResolvedValue({
             dataValues: {
-              reference: MOCK_NW_REFERENCE
+              reference: MOCK_NW_REFERENCE,
+              createdAt: mockApplicationDate
             },
             statusId: applicationStatus.readyToPay,
             createdAt: mockApplicationDate,
@@ -162,7 +163,7 @@ describe(('Store application in database'), () => {
           'Failed to process application',
           new Error(`Recent application already exists: ${JSON.stringify({
             reference: MOCK_NW_REFERENCE,
-            createdAt: 'TODO'
+            createdAt: mockApplicationDate
           })}`)
         )
       })

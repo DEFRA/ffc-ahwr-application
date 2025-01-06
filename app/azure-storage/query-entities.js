@@ -13,7 +13,6 @@ export const queryEntitiesByPartitionKey = async (tableName, partitionKey, query
       }
     )
 
-    console.log(eventResults)
     for await (const event of eventResults) {
       events.push(event)
     }

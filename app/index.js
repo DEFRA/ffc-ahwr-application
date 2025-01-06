@@ -1,15 +1,15 @@
 import { server } from './server.js'
-import { start, stop } from './messaging/service.js'
+import { startMessagingService, stopMessagingService } from './messaging/service.js'
 import { setup } from './insights.js'
 
 const init = async () => {
-  await start()
+  await startMessagingService()
   await server.start()
   setup()
 }
 
 process.on('unhandledRejection', async (err) => {
-  await stop()
+  await stopMessagingService()
   server.logger.error(err, 'unhandledRejection')
   process.exit(1)
 })

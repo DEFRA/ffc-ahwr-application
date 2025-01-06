@@ -15,7 +15,7 @@ export const isTodayHoliday = async () => {
 }
 
 export const set = async (date, description) => {
-  return await models.holiday.upsert({
+  return models.holiday.upsert({
     date,
     description
   })

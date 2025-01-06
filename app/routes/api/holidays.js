@@ -5,7 +5,13 @@ export const holidayHandlers = [
     method: 'GET',
     path: '/api/holidays/isTodayHoliday',
     handler: async (request, h) => {
-      return await isTodayHoliday() ? h.response().code(200) : h.response().code(404)
+      const isHoliday = await isTodayHoliday()
+
+      if (isHoliday) {
+        return h.response().code(200)
+      }
+
+      return h.response().code(404)
     }
   }
 ]

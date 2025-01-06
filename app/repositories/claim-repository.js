@@ -41,7 +41,7 @@ export const getByApplicationReference = async (applicationReference, typeOfLive
 export const setClaim = async (data) => {
   const sbi = data.sbi
   const result = await models.claim.create(data)
-  raiseClaimEvents({
+  await raiseClaimEvents({
     message: 'New claim has been created',
     claim: result.dataValues,
     raisedBy: result.dataValues.createdBy,
@@ -74,7 +74,7 @@ export const updateClaimByReference = async (data) => {
 
     for (let i = 0; i < updatedRows; i++) {
       const updatedRecord = updatedRecords[i]
-      raiseClaimEvents({
+      await raiseClaimEvents({
         message: 'Claim has been updated',
         claim: updatedRecord.dataValues,
         raisedBy: updatedRecord.dataValues.updatedBy,
@@ -89,7 +89,7 @@ export const updateClaimByReference = async (data) => {
 }
 
 export const getAllClaimedClaims = async (claimStatusIds) => {
-  return await models.claim.count({
+  return models.claim.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
     }

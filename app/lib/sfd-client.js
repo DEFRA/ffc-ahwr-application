@@ -24,5 +24,5 @@ export const sendSFDEmail = async (templateId, email, emailInput) => {
     return sendMessage({ sfdMessage: messagingStates.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
   }
 
-  return await sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
+  return sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
 }

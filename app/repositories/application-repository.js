@@ -142,11 +142,11 @@ export const getAllApplications = async () => {
   const query = {
     order: [['createdAt', 'DESC']]
   }
-  return await models.application.findAll(query)
+  return models.application.findAll(query)
 }
 
 export const getAllClaimedApplications = async (claimStatusIds) => {
-  return await models.application.count({
+  return models.application.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
     }
@@ -155,7 +155,7 @@ export const getAllClaimedApplications = async (claimStatusIds) => {
 
 export const setApplication = async (data) => {
   const result = await models.application.create(data)
-  raise({
+  await raise({
     message: 'New application has been created',
     application: result.dataValues,
     raisedBy: result.dataValues.createdBy,
@@ -188,7 +188,7 @@ export const updateApplicationByReference = async (data, publishEvent = true) =>
     if (publishEvent) {
       for (let i = 0; i < updatedRows; i++) {
         const updatedRecord = updatedRecords[i]
-        raise({
+        await raise({
           message: 'Application has been updated',
           application: updatedRecord.dataValues,
           raisedBy: updatedRecord.dataValues.updatedBy,

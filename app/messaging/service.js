@@ -5,7 +5,7 @@ import { processApplicationMessage } from './process-message.js'
 
 let applicationReceiver
 
-export const start = async () => {
+export const startMessagingService = async () => {
   const applicationAction = message => processApplicationMessage(message, applicationReceiver)
   applicationReceiver = new MessageReceiver(config.applicationRequestQueue, applicationAction)
   await applicationReceiver.subscribe()
@@ -13,7 +13,7 @@ export const start = async () => {
   console.info('Ready to receive messages')
 }
 
-export const stop = async () => {
+export const stopMessagingService = async () => {
   await applicationReceiver.closeConnection()
   await closeAllConnections()
 }
