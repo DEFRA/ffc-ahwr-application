@@ -1,7 +1,7 @@
 import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
 import { config } from '../config/index.js'
 
-const raise = async (event) => {
+export const raise = async (event) => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
       name: 'application-status-event',
@@ -48,7 +48,7 @@ const raise = async (event) => {
   ])
 }
 
-const raiseClaimEvents = async (event, sbi = 'none') => {
+export const raiseClaimEvents = async (event, sbi = 'none') => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
       name: 'application-status-event',
@@ -93,9 +93,4 @@ const raiseClaimEvents = async (event, sbi = 'none') => {
       }
     }
   ])
-}
-
-export default {
-  raise,
-  raiseClaimEvents
 }

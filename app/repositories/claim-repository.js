@@ -1,5 +1,5 @@
 import { buildData } from '../data/index.js'
-import eventPublisher from '../event-publisher/index.js'
+import { raiseClaimEvents } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
 import { Op } from 'sequelize'
 
@@ -41,7 +41,7 @@ export const getByApplicationReference = async (applicationReference, typeOfLive
 export const setClaim = async (data) => {
   const sbi = data.sbi
   const result = await models.claim.create(data)
-  eventPublisher.raiseClaimEvents({
+  raiseClaimEvents({
     message: 'New claim has been created',
     claim: result.dataValues,
     raisedBy: result.dataValues.createdBy,
@@ -74,7 +74,7 @@ export const updateClaimByReference = async (data) => {
 
     for (let i = 0; i < updatedRows; i++) {
       const updatedRecord = updatedRecords[i]
-      eventPublisher.raiseClaimEvents({
+      raiseClaimEvents({
         message: 'Claim has been updated',
         claim: updatedRecord.dataValues,
         raisedBy: updatedRecord.dataValues.updatedBy,
@@ -84,7 +84,7 @@ export const updateClaimByReference = async (data) => {
     return result
   } catch (error) {
     console.error('Error updating claim by reference:', error)
-    throw error // re-throw the error after logging or handle it as needed
+    throw error
   }
 }
 

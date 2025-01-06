@@ -1,5 +1,5 @@
 import { buildData } from '../data/index.js'
-import eventPublisher from '../event-publisher/index.js'
+import { raise } from '../event-publisher/index.js'
 import { Op } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 
@@ -155,7 +155,7 @@ export const getAllClaimedApplications = async (claimStatusIds) => {
 
 export const setApplication = async (data) => {
   const result = await models.application.create(data)
-  eventPublisher.raise({
+  raise({
     message: 'New application has been created',
     application: result.dataValues,
     raisedBy: result.dataValues.createdBy,
@@ -188,7 +188,7 @@ export const updateApplicationByReference = async (data, publishEvent = true) =>
     if (publishEvent) {
       for (let i = 0; i < updatedRows; i++) {
         const updatedRecord = updatedRecords[i]
-        eventPublisher.raise({
+        raise({
           message: 'Application has been updated',
           application: updatedRecord.dataValues,
           raisedBy: updatedRecord.dataValues.updatedBy,
