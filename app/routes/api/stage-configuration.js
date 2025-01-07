@@ -1,7 +1,7 @@
-const Joi = require('joi')
-const { getAll, getById } = require('../../repositories/stage-configuration-repository')
+import Joi from 'joi'
+import { getAll, getById } from '../../repositories/stage-configuration-repository.js'
 
-module.exports = [{
+export const stageConfiguationHandlers = [{
   method: 'GET',
   path: '/api/stageconfiguration',
   options: {

@@ -1,7 +1,6 @@
-const { processApplication } = require('../../../../../app/messaging/application/process-application')
-const boom = require('@hapi/boom')
-
-const { sendFarmerConfirmationEmail } = require('../../../../../app/lib/send-email')
+import { processApplication } from '../../../../../app/messaging/application/process-application'
+import boom from '@hapi/boom'
+import { sendFarmerConfirmationEmail } from '../../../../../app/lib/send-email'
 jest.mock('../../../../../app/lib/send-email')
 
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
@@ -23,8 +22,10 @@ describe('Process Message test', () => {
         sbi: '123456789',
         cph: '123/456/789',
         address: '1 Some Street',
-        isTest: true
-      }
+        isTest: true,
+        userType: 'newUser'
+      },
+      type: 'EE'
     },
     applicationProperties: {
       type: 'uk.gov.ffc.ahwr.app.request'

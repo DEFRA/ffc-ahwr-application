@@ -1,9 +1,11 @@
-const sendMessage = require('../messaging/send-message')
-const { sfdRequestMsgType, sfdMessageQueue } = require('../config')
-const validateSFDSchema = require('../messaging/schema/submit-sfd-schema')
-const states = require('../messaging/application/states')
+import { sendMessage } from '../messaging/send-message.js'
+import { config } from '../config/index.js'
+import { validateSFDSchema } from '../messaging/schema/submit-sfd-schema.js'
+import { messagingStates } from '../constants/index.js'
 
-const sendSFDEmail = async (templateId, email, emailInput) => {
+const { sfdRequestMsgType, sfdMessageQueue } = config
+
+export const sendSFDEmail = async (templateId, email, emailInput) => {
   const { personalisation: { applicationReference, reference } } = emailInput
   const { crn, sbi, ...filteredPersonalisation } = emailInput.personalisation
 
@@ -18,11 +20,9 @@ const sendSFDEmail = async (templateId, email, emailInput) => {
     dateTime: new Date().toISOString()
   }
 
-  if (validateSFDSchema(sfdMessage)) {
-    return await sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
-  } else {
-    return sendMessage({ sfdMessage: states.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
+  if (!validateSFDSchema(sfdMessage)) {
+    return sendMessage({ sfdMessage: messagingStates.failed }, sfdRequestMsgType, sfdMessageQueue, { templateId })
   }
-}
 
-module.exports = sendSFDEmail
+  return sendMessage(sfdMessage, sfdRequestMsgType, sfdMessageQueue)
+}

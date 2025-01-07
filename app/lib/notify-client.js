@@ -1,4 +1,6 @@
-const { NotifyClient } = require('notifications-node-client')
-const { notify: { apiKey } } = require('../config')
+import { NotifyClient } from 'notifications-node-client'
+import { config } from '../config/index.js'
 
-module.exports = new NotifyClient(apiKey)
+const { notify: { apiKey } } = config
+
+export const notifyClient = new NotifyClient(apiKey)

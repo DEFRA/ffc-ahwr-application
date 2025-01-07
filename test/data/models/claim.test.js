@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize')
-const { claim } = require('../../../app/data/models/claim')
+import { DataTypes } from 'sequelize'
+import { claim } from '../../../app/data/models/claim'
 
 const mockSequelize = {
   define: jest.fn().mockReturnValue({

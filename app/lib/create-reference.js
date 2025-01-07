@@ -26,14 +26,12 @@ const getPrefix = (typeOfClaim, typeOfLivestock) => {
   return `${firstTwoCharacters}${lastTwoCharacters}`
 }
 
-const createClaimReference = (id, typeOfClaim, typeOfLivestock) => {
+export const createClaimReference = (id, typeOfClaim, typeOfLivestock) => {
   const prefix = getPrefix(typeOfClaim, typeOfLivestock)
 
   return id.replace('TEMP-CLAIM', prefix)
 }
 
-const createApplicationReference = (id) => {
+export const createApplicationReference = (id) => {
   return id.replace('TEMP', 'IAHW')
 }
-
-module.exports = { createClaimReference, createApplicationReference }

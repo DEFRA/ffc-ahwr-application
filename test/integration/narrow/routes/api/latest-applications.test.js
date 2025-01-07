@@ -1,9 +1,8 @@
-const { resetAllWhenMocks } = require('jest-when')
+import { resetAllWhenMocks } from 'jest-when'
+import { getLatestApplicationsBySbi } from '../../../../../app/repositories/application-repository'
+import { server } from '../../../../../app/server'
 
 jest.mock('../../../../../app/repositories/application-repository')
-const applicationRepositoryMock = require('../../../../../app/repositories/application-repository')
-
-const server = require('../../../../../app/server')
 
 describe('/api/applications/latest', () => {
   const API_URL = '/api/applications/latest'
@@ -77,7 +76,7 @@ describe('/api/applications/latest', () => {
 
     const response = await server.inject(options)
     expect(response.statusCode).toBe(200)
-    expect(applicationRepositoryMock.getLatestApplicationsBySbi).toBeCalledTimes(1)
+    expect(getLatestApplicationsBySbi).toBeCalledTimes(1)
   })
 
   test.each([
@@ -93,14 +92,14 @@ describe('/api/applications/latest', () => {
       url: `${API_URL}${testCase.given.queryString}`
     }
 
-    applicationRepositoryMock.getLatestApplicationsBySbi.mockImplementation(() => {
+    getLatestApplicationsBySbi.mockImplementation(() => {
       throw new Error('some error')
     })
 
     try {
       await server.inject(options)
     } catch (e) {
-      expect(applicationRepositoryMock.getLatestApplicationsBySbi).toBeCalledTimes(1)
+      expect(getLatestApplicationsBySbi).toHaveBeenCalledTimes(1)
       expect(e.message).toBe('some error')
     }
   })

@@ -1,5 +1,3 @@
-require('dotenv').config()
+import { config } from 'dotenv'
 
-jest.mock('../app/config/storage', () => ({
-  storageAccount: 'mockStorageAccount'
-}))
+config()

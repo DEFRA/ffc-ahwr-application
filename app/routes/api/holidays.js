@@ -1,11 +1,17 @@
-const { IsTodayHoliday } = require('../../repositories/holiday-repository')
+import { isTodayHoliday } from '../../repositories/holiday-repository.js'
 
-module.exports = [
+export const holidayHandlers = [
   {
     method: 'GET',
     path: '/api/holidays/isTodayHoliday',
     handler: async (request, h) => {
-      return await IsTodayHoliday() ? h.response().code(200) : h.response().code(404)
+      const isHoliday = await isTodayHoliday()
+
+      if (isHoliday) {
+        return h.response().code(200)
+      }
+
+      return h.response().code(404)
     }
   }
 ]

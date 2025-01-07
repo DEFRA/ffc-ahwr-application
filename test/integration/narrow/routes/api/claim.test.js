@@ -1,11 +1,13 @@
-const claimRepository = require('../../../../../app/repositories/claim-repository')
-const applicationRepository = require('../../../../../app/repositories/application-repository')
-const sendMessage = require('../../../../../app/messaging/send-message')
-const sendEmail = require('../../../../../app/lib/send-email')
-const pricesConfig = require('../../../../data/claim-prices-config.json')
-const { getBlob } = require('../../../../../app/storage')
-const { getAmount } = require('../../../../../app/lib/getAmount')
-const appInsights = require('applicationinsights')
+import { server } from '../../../../../app/server'
+import { getClaimByReference, getByApplicationReference, isURNNumberUnique, setClaim, updateClaimByReference, searchClaims } from '../../../../../app/repositories/claim-repository'
+import { getApplication } from '../../../../../app/repositories/application-repository'
+import { sendMessage } from '../../../../../app/messaging/send-message'
+import { sendFarmerEndemicsClaimConfirmationEmail } from '../../../../../app/lib/send-email'
+import { claimPricesConfig } from '../../../../data/claim-prices-config'
+import { getBlob } from '../../../../../app/storage/getBlob'
+import { getAmount } from '../../../../../app/lib/getAmount'
+import appInsights from 'applicationinsights'
+
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
@@ -13,7 +15,7 @@ jest.mock('../../../../../app/repositories/claim-repository')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/send-email')
 jest.mock('../../../../../app/lib/getAmount')
-jest.mock('../../../../../app/storage')
+jest.mock('../../../../../app/storage/getBlob')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -21,8 +23,6 @@ const sheepTestResultsMockData = [
 ]
 
 describe('Get claims test', () => {
-  const server = require('../../../../../app/server')
-
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
@@ -38,14 +38,14 @@ describe('Get claims test', () => {
       url: '/api/claim/get-by-reference/AHWR-5602-BAC6'
     }
 
-    claimRepository.getByReference.mockResolvedValue({
+    getClaimByReference.mockResolvedValue({
       dataValues: { reference: 'AHWR-5602-BAC6' }
     })
 
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(200)
-    expect(claimRepository.getByReference).toHaveBeenCalledTimes(1)
+    expect(getClaimByReference).toHaveBeenCalledTimes(1)
   })
   test('When claim does not exist, return 404', async () => {
     const options = {
@@ -53,12 +53,12 @@ describe('Get claims test', () => {
       url: '/api/claim/get-by-reference/AHWR-5602-BAC6'
     }
 
-    claimRepository.getByReference.mockResolvedValue({})
+    getClaimByReference.mockResolvedValue({})
 
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(404)
-    expect(claimRepository.getByReference).toHaveBeenCalledTimes(1)
+    expect(getClaimByReference).toHaveBeenCalledTimes(1)
     expect(res.payload).toBe('Not Found')
   })
 
@@ -127,7 +127,7 @@ describe('Get claims test', () => {
       }
     ]
 
-    claimRepository.getByApplicationReference.mockResolvedValue(data)
+    getByApplicationReference.mockResolvedValue(data)
 
     const { result } = await server.inject(options)
 
@@ -142,7 +142,7 @@ describe('Get claims test', () => {
 
     const data = []
 
-    claimRepository.getByApplicationReference.mockResolvedValue(data)
+    getByApplicationReference.mockResolvedValue(data)
 
     const { result } = await server.inject(options)
 
@@ -157,7 +157,7 @@ describe('Get claims test', () => {
 
     const data = []
 
-    claimRepository.getByApplicationReference.mockResolvedValue(data)
+    getByApplicationReference.mockResolvedValue(data)
 
     const { result } = await server.inject(options)
 
@@ -177,7 +177,6 @@ describe('Get claims test', () => {
 })
 
 describe('Post claim test', () => {
-  const server = require('../../../../../app/server')
   const claim = {
     applicationReference: 'AHWR-0AD3-3322',
     reference: 'TEMP-O9UD-22F6',
@@ -207,7 +206,7 @@ describe('Post claim test', () => {
         connectionString: 'connectionString'
       }
     }))
-    getBlob.mockReturnValue(JSON.stringify(pricesConfig))
+    getBlob.mockReturnValue(claimPricesConfig)
     getAmount.mockReturnValue(100)
   })
 
@@ -236,8 +235,8 @@ describe('Post claim test', () => {
         ...claim
       }
     }
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: false })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: false })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -277,8 +276,8 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: { ...claim, ...{ type }, ...{ data: { ...claim.data, typeOfLivestock, numberOfOralFluidSamples, testResults, numberAnimalsTested } } }
     }
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -311,12 +310,12 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(setClaim).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
   })
 
   test.each([
@@ -332,8 +331,8 @@ describe('Post claim test', () => {
         payload: { ...claim, type, ...{ data: { ...claim.data, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, numberOfOralFluidSamples: undefined, reviewTestResults, piHunt, ...(typeOfLivestock === 'sheep' && { laboratoryURN: undefined }) } } }
       }
 
-      claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-      applicationRepository.get.mockResolvedValue({
+      isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+      getApplication.mockResolvedValue({
         dataValues: {
           createdAt: '2024-02-14T09:59:46.756Z',
           id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -355,13 +354,11 @@ describe('Post claim test', () => {
         orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
       }
 
-      await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+      await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
       await server.inject(options)
 
-      expect(claimRepository.set).toHaveBeenCalledTimes(1)
-      // Not sure what is going on here. Of course it has been called as we did it 5 lines above?
-      expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
+      expect(setClaim).toHaveBeenCalledTimes(1)
     }
   )
   test('Post claim with Type: endemics and Type of Livestock: beef that review test result is negative and return 200', async () => {
@@ -385,8 +382,8 @@ describe('Post claim test', () => {
       }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -408,13 +405,13 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
+    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
 
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setClaim).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       email: 'test@test-unit.com',
       amount: '£[amount]',
@@ -422,6 +419,7 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }), 'template-id-farmer-endemics-followup-complete')
   })
+
   test('Post claim with wrong application reference return 400', async () => {
     const options = {
       method: 'POST',
@@ -432,7 +430,7 @@ describe('Post claim test', () => {
       }
     }
 
-    applicationRepository.get.mockResolvedValue({})
+    getApplication.mockResolvedValue({})
 
     const res = await server.inject(options)
 
@@ -453,6 +451,7 @@ describe('Post claim test', () => {
 
     expect(res.statusCode).toBe(400)
   })
+
   test('called with the correct arguments ', async () => {
     const options = {
       method: 'POST',
@@ -460,8 +459,8 @@ describe('Post claim test', () => {
       payload: { ...claim }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -494,23 +493,24 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(setClaim).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(Object.keys(mockEmailData)).toEqual(expect.arrayContaining(['reference', 'email', 'amount', 'farmerName', 'orgData']))
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining(mockEmailData))
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining(mockEmailData))
   })
+
   test('return empty when no values ', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim',
       payload: { ...claim }
     }
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    const application = applicationRepository.get.mockReturnValue({})
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    const application = getApplication.mockReturnValue({})
 
     const mockEmailData = {
       reference: 'AHWR-0F5D-4A26',
@@ -523,11 +523,11 @@ describe('Post claim test', () => {
       }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
     await server.inject(options)
 
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(mockEmailData.email).toBeUndefined()
     expect(mockEmailData.farmerName).toBeUndefined()
     expect(mockEmailData.orgData).toEqual(expect.objectContaining({}))
@@ -543,16 +543,16 @@ describe('Post claim test', () => {
       }
     }
 
-    applicationRepository.get.mockResolvedValue({})
+    getApplication.mockResolvedValue({})
 
-    const claimResponse = claimRepository.set({})
+    const claimResponse = setClaim({})
 
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(404)
     expect(claimResponse).toBeFalsy()
 
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
   })
 
   test('send email with values no data  ', async () => {
@@ -564,8 +564,8 @@ describe('Post claim test', () => {
       }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -591,12 +591,12 @@ describe('Post claim test', () => {
       }
     })
 
-    const sendEmailResult = await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(null)
+    const sendEmailResult = await sendFarmerEndemicsClaimConfirmationEmail(null)
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(null)
+    expect(setClaim).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(null)
     expect(sendEmailResult).toBeFalsy()
   })
   test('send email with values available ', async () => {
@@ -608,8 +608,8 @@ describe('Post claim test', () => {
       }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -643,13 +643,13 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
+    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
 
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setClaim).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       email: 'test@test-unit.com',
       amount: '£[amount]',
@@ -666,8 +666,8 @@ describe('Post claim test', () => {
       }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -698,7 +698,7 @@ describe('Post claim test', () => {
         createdBy: 'admin'
       }
     })
-    claimRepository.set.mockResolvedValueOnce({
+    setClaim.mockResolvedValueOnce({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -717,13 +717,13 @@ describe('Post claim test', () => {
         }
       }
     })
-    sendEmail.sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
+    sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
 
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setClaim).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       applicationReference: 'AHWR-0AD3-3322',
       email: 'test@test-unit.com',
@@ -760,8 +760,8 @@ describe('Post claim test', () => {
       payload: { ...modifiedClaim }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -792,7 +792,7 @@ describe('Post claim test', () => {
         createdBy: 'admin'
       }
     })
-    claimRepository.set.mockResolvedValueOnce({
+    setClaim.mockResolvedValueOnce({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -811,13 +811,13 @@ describe('Post claim test', () => {
         }
       }
     })
-    sendEmail.sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
+    sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
 
     await server.inject(options)
 
-    expect(claimRepository.set).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setClaim).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       applicationReference: 'AHWR-0AD3-3322',
       email: 'test@test-unit.com',
@@ -828,6 +828,7 @@ describe('Post claim test', () => {
 
     expectAppInsightsEventRaised(modifiedClaim, 'AHWR-0F5D-4A26', 11, 'not-found')
   })
+
   test('no Email sent, and no appInsights even raised when claim is false', async () => {
     const options = {
       method: 'POST',
@@ -836,8 +837,8 @@ describe('Post claim test', () => {
         ...claim
       }
     }
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -862,10 +863,10 @@ describe('Post claim test', () => {
         createdBy: 'admin'
       }
     })
-    claimRepository.set = jest.fn().mockRejectedValueOnce(false)
+    setClaim.mockRejectedValueOnce(false)
     await server.inject(options)
 
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledTimes(0)
   })
   test('Check if laboratoryURN is unique ', async () => {
@@ -878,7 +879,7 @@ describe('Post claim test', () => {
       }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
 
     const response = await server.inject(options)
 
@@ -894,8 +895,8 @@ describe('Post claim test', () => {
       }
     }
 
-    claimRepository.isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    applicationRepository.get.mockResolvedValue({
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValue({
       dataValues: {
         createdAt: '2024-02-14T09:59:46.756Z',
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
@@ -921,7 +922,7 @@ describe('Post claim test', () => {
       }
     })
 
-    claimRepository.set = jest.fn().mockReturnValue(true)
+    setClaim.mockResolvedValueOnce(true)
 
     const mockEmailData = {
       reference: 'AHWR-0F5D-4A26',
@@ -931,13 +932,12 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendEmail.sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
     await server.inject(options)
 
-    expect(claimRepository.set).toBeTruthy()
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendEmail.sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(setClaim).toBeTruthy()
+    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       email: 'test@test-unit.com',
       amount: '£[amount]',
@@ -964,16 +964,16 @@ describe('Post claim test', () => {
       payload: { search }
     }
 
-    claimRepository.searchClaims.mockResolvedValueOnce({ claims: ['claim one', 'claim 2'], total: 2, claimStatus: ['claim status one', 'claim status two'] })
+    searchClaims.mockResolvedValueOnce({ claims: ['claim one', 'claim 2'], total: 2, claimStatus: ['claim status one', 'claim status two'] })
 
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(200)
-    expect(claimRepository.searchClaims).toHaveBeenCalledTimes(1)
+    expect(searchClaims).toHaveBeenCalledTimes(1)
   })
-  test.each([
-    { search: { xyz: 'xyz' } }
-  ])('returns 400 when post %p', async ({ search }) => {
+
+  test('returns 400 when posting a bad search request', async () => {
+    const search = { xyz: 'xyz' }
     const options = {
       method: 'POST',
       url: '/api/claim/search',
@@ -983,10 +983,11 @@ describe('Post claim test', () => {
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(400)
-    expect(claimRepository.searchClaims).toHaveBeenCalledTimes(0)
+    expect(searchClaims).toHaveBeenCalledTimes(0)
   })
-  test.each([
-    {
+
+  test('Post required payment data to get the amount', async () => {
+    const data = {
       type: 'E',
       reviewTestResults: 'positive',
       typeOfLivestock: 'beef',
@@ -994,7 +995,7 @@ describe('Post claim test', () => {
       piHuntAllAnimals: 'yes',
       amount: 837
     }
-  ])('Post required payment data to get the amount', async ({ type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
+    const { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount } = data
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
@@ -1007,18 +1008,15 @@ describe('Post claim test', () => {
     expect(res.statusCode).toBe(200)
     expect(Number(res.payload)).toBe(amount)
   })
-  test.each([
-    {
-      type: 'E'
-    }
-  ])('Post wrong payment data to must return bad request', async ({ type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount }) => {
+
+  test('Post wrong payment data to elicit a 400 response', async () => {
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
-      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals }
+      payload: { type: 'E' }
     }
 
-    getAmount.mockReturnValue(amount)
+    getAmount.mockReturnValue(100)
 
     const res = await server.inject(options)
     expect(res.statusCode).toBe(400)
@@ -1026,8 +1024,6 @@ describe('Post claim test', () => {
 })
 
 describe('PUT claim test', () => {
-  const server = require('../../../../../app/server')
-
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
@@ -1052,15 +1048,15 @@ describe('PUT claim test', () => {
       }
     }
 
-    claimRepository.getByReference.mockResolvedValue({
+    getClaimByReference.mockResolvedValue({
       dataValues: { reference: 'AHWR-0F5D-4A26', data: { typeOfLivestock: 'sheep' } }
     })
 
-    claimRepository.updateByReference.mockResolvedValue({
+    updateClaimByReference.mockResolvedValue({
       dataValues: { reference: 'AHWR-0F5D-4A26', statusId }
     })
 
-    applicationRepository.get.mockResolvedValue({
+    getApplication.mockResolvedValue({
       dataValues: {
         data: {
           organisation: {
@@ -1086,7 +1082,7 @@ describe('PUT claim test', () => {
       }
     }
 
-    claimRepository.getByReference.mockResolvedValue({})
+    getClaimByReference.mockResolvedValue({})
 
     const res = await server.inject(options)
 
@@ -1101,7 +1097,7 @@ describe('PUT claim test', () => {
         user: 'admin'
       }
     }
-    claimRepository.getByReference.mockResolvedValue({})
+    getClaimByReference.mockResolvedValue({})
 
     const res = await server.inject(options)
 

@@ -1,8 +1,8 @@
-const { MessageSender } = require('ffc-messaging')
+import { MessageSender } from 'ffc-messaging'
 
-const cachedSenders = {}
+export const cachedSenders = {}
 
-const createMessageSender = (config) => {
+export const createMessageSender = (config) => {
   if (cachedSenders[config.address]) {
     return cachedSenders[config.address]
   }
@@ -13,7 +13,7 @@ const createMessageSender = (config) => {
   return sender
 }
 
-const closeAllConnections = async () => {
+export const closeAllConnections = async () => {
   const senderKeys = Object.keys(cachedSenders)
 
   for (const key of senderKeys) {
@@ -21,10 +21,4 @@ const closeAllConnections = async () => {
     await sender.closeConnection()
     delete cachedSenders[key]
   }
-}
-
-module.exports = {
-  createMessageSender,
-  closeAllConnections,
-  cachedSenders
 }

@@ -1,11 +1,23 @@
-const { when, resetAllWhenMocks } = require('jest-when')
-const repository = require('../../../../app/repositories/holiday-repository')
-const data = require('../../../../app/data')
+import { when, resetAllWhenMocks } from 'jest-when'
+import {
+  isTodayHoliday,
+  set
+} from '../../../../app/repositories/holiday-repository'
+import { buildData } from '../../../../app/data'
 
-jest.mock('../../../../app/data')
+jest.mock('../../../../app/data', () => {
+  return {
+    buildData: {
+      models: {
+        holiday: {
+          upsert: jest.fn(),
+          findOne: jest.fn()
+        }
 
-data.models.holiday.findOne = jest.fn()
-data.models.holiday.upsert = jest.fn()
+      }
+    }
+  }
+})
 
 describe('holiday repository test', () => {
   const env = process.env
@@ -21,30 +33,30 @@ describe('holiday repository test', () => {
 
   test('should create or update holiday', async () => {
     const aDate = new Date().toISOString().split('T')[0]
-    await repository.set(aDate, 'a holiday')
+    await set(aDate, 'a holiday')
 
     const entry = {
       date: aDate,
       description: 'a holiday'
     }
 
-    expect(data.models.holiday.upsert).toHaveBeenCalledTimes(1)
-    expect(data.models.holiday.upsert).toHaveBeenCalledWith(entry)
+    expect(buildData.models.holiday.upsert).toHaveBeenCalledTimes(1)
+    expect(buildData.models.holiday.upsert).toHaveBeenCalledWith(entry)
   })
 
   test('Should return false', async () => {
-    when(data.models.holiday.findOne)
+    when(buildData.models.holiday.findOne)
       .calledWith({ where: { date: new Date().toISOString().split('T')[0] } })
       .mockResolvedValue(null)
 
-    expect(await repository.IsTodayHoliday()).toBeFalsy()
+    expect(await isTodayHoliday()).toBeFalsy()
   })
 
   test('Should return true', async () => {
-    when(data.models.holiday.findOne)
+    when(buildData.models.holiday.findOne)
       .calledWith({ where: { date: new Date().toISOString().split('T')[0] } })
       .mockResolvedValue({ valid: 'date' })
 
-    expect(await repository.IsTodayHoliday()).toBeTruthy()
+    expect(await isTodayHoliday()).toBeTruthy()
   })
 })

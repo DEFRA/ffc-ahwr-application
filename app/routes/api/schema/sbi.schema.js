@@ -1,10 +1,9 @@
-const Joi = require('joi')
+import joi from 'joi'
 
 const MIN_SBI_NUMBER = 105000000
 const MAX_SBI_NUMBER = 210000000
 
-module.exports = Joi
-  .number()
+export const sbiSchema = joi.number()
   .optional()
   .integer()
   .min(MIN_SBI_NUMBER)

@@ -1,6 +1,6 @@
-const appInsights = require('applicationinsights')
+import appInsights from 'applicationinsights'
 
-function setup () {
+export const setup = () => {
   if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     appInsights.setup().start()
     console.log('App Insights Running')
@@ -11,5 +11,3 @@ function setup () {
     console.log('App Insights Not Running!')
   }
 }
-
-module.exports = { setup }

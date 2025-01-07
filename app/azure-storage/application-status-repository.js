@@ -1,7 +1,7 @@
-const queryEntitiesByPartitionKey = require('./query-entities')
-const { odata } = require('@azure/data-tables')
+import { queryEntitiesByPartitionKey } from './query-entities.js'
+import { odata } from '@azure/data-tables'
 
-const getApplicationHistory = async (reference) => {
+export const getApplicationHistory = async (reference) => {
   const historyRecords = await queryEntitiesByPartitionKey(
     'ffcahwrapplicationstatus',
     reference,
@@ -13,5 +13,3 @@ const getApplicationHistory = async (reference) => {
   if (historyRecords.length === 0) { return null }
   return historyRecords
 }
-
-module.exports = { getApplicationHistory }

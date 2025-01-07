@@ -1,4 +1,4 @@
-const contactHistory = (sequelize, DataTypes) => {
+export const contactHistory = (sequelize, DataTypes) => {
   const ContactHistory = sequelize.define('contact_history',
     {
       id: {
@@ -54,5 +54,3 @@ const contactHistory = (sequelize, DataTypes) => {
   }
   return ContactHistory
 }
-
-module.exports = { contactHistory }

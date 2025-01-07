@@ -14,8 +14,10 @@ services:
       - ./app:/home/node/app
       - ./test:/home/node/test
       - ./test-output:/home/node/test-output
-      - ./jest.config.js:/home/node/jest.config.js
+      - ./jest.config.cjs:/home/node/jest.config.cjs
       - ./package.json:/home/node/package.json
+      - ./babel.config.cjs:/home/node/babel.config.cjs
+      - ./jsconfig.json:/home/node/jsconfig.json
 
   ffc-ahwr-application-postgres:
     volumes:

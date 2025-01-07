@@ -1,13 +1,13 @@
-const notifyClient = require('./notify-client')
-const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue } = require('../config')
-const { carbonCopyEmailAddress, templateIdFarmerClaimComplete } = require('../config').notify
-const sendMessage = require('../messaging/send-message')
-const appInsights = require('applicationinsights')
-const sendSFDEmail = require('./sfd-client')
-const { sfdMessage } = require('../config')
+import { notifyClient } from './notify-client.js'
+import { config } from '../config/index.js'
+import { sendMessage } from '../messaging/send-message.js'
+import applicationInsights from 'applicationinsights'
+import { sendSFDEmail } from './sfd-client.js'
+
+const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue, notify: { templateIdFarmerClaimComplete } } = config
 
 const send = async (templateId, email, personalisation) => {
-  if (sfdMessage.enabled) {
+  if (config.sfdMessage.enabled) {
     return sendSFDEmail(
       templateId,
       email,
@@ -28,7 +28,7 @@ const sendEmail = async (email, personalisation, reference, templateId, carbonEm
     if (carbonEmail) {
       await sendCarbonCopy(templateId, { personalisation, reference })
     }
-    appInsights.defaultClient.trackEvent({
+    applicationInsights.defaultClient.trackEvent({
       name: 'email',
       properties: {
         status: success,
@@ -38,38 +38,38 @@ const sendEmail = async (email, personalisation, reference, templateId, carbonEm
       }
     })
   } catch (e) {
-    appInsights.defaultClient.trackException({ exception: e })
+    applicationInsights.defaultClient.trackException({ exception: e })
     success = false
   }
   return success
 }
 
 const sendCarbonCopy = async (templateId, personalisation) => {
-  if (carbonCopyEmailAddress) {
+  if (config.notify.carbonCopyEmailAddress) {
     await send(
       templateId,
-      carbonCopyEmailAddress,
+      config.notify.carbonCopyEmailAddress,
       personalisation
     )
   }
 }
 
-const sendFarmerConfirmationEmail = async (emailParams) => {
+export const sendFarmerConfirmationEmail = async (emailParams) => {
   const { reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData: { orgName, orgEmail, crn } } = emailParams
   const message = { reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }
-  if (sfdMessage.enabled) {
-    return await sendMessage({ ...message, crn }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  if (config.sfdMessage.enabled) {
+    return sendMessage({ ...message, crn }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
   }
-  return await sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
+  return sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
 }
 
-const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail, sbi) => {
+export const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail, sbi) => {
   const personalisation = { applicationReference: reference, sbi }
   if (orgEmail && orgEmail !== email) { sendEmail(orgEmail, personalisation, reference, templateIdFarmerClaimComplete) }
   return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
 }
 
-const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {
+export const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {
   const { orgData, reference, applicationReference } = data || {}
   let email = data?.email
   let isSuccessful = true
@@ -95,10 +95,4 @@ const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {
     isSuccessful = await sendEmail(email, personalisation, reference, templateId)
   }
   return isSuccessful
-}
-
-module.exports = {
-  sendFarmerConfirmationEmail,
-  sendFarmerClaimConfirmationEmail,
-  sendFarmerEndemicsClaimConfirmationEmail
 }

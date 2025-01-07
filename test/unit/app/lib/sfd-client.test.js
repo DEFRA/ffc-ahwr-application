@@ -1,7 +1,7 @@
-const sfdMessageSend = require('../../../../app/messaging/send-message')
-jest.mock('../../../../app/messaging/send-message')
+import { sendSFDEmail } from '../../../../app/lib/sfd-client'
+import { sendMessage } from '../../../../app/messaging/send-message'
 
-const sendSFDEmail = require('../../../../app/lib/sfd-client')
+jest.mock('../../../../app/messaging/send-message')
 
 describe('sendSFDEmail', () => {
   beforeEach(() => {
@@ -18,8 +18,8 @@ describe('sendSFDEmail', () => {
       }
     })
 
-    expect(sfdMessageSend).toHaveBeenCalledTimes(1)
-    expect(sfdMessageSend).toHaveBeenCalledWith({
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({
       agreementReference: 'agreementRef',
       claimReference: 'someRef',
       crn: '1110000000',
@@ -35,7 +35,7 @@ describe('sendSFDEmail', () => {
     'uk.gov.ffc.ahwr.sfd.request', expect.anything())
   })
 
-  test('send SFD request fail', async () => {
+  test('send SFD request fails due to schema validation failing', async () => {
     await sendSFDEmail('99ef9794-67eb-4f18-bb38-541f30f955f8', 'hi@bye.com', {
       personalisation: {
         applicationReference: 'agreementRef',
@@ -45,8 +45,8 @@ describe('sendSFDEmail', () => {
       }
     })
 
-    expect(sfdMessageSend).toHaveBeenCalledTimes(1)
-    expect(sfdMessageSend).toHaveBeenCalledWith({
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith({
       sfdMessage: 'failed'
     },
     'uk.gov.ffc.ahwr.sfd.request', expect.anything(), { templateId: '99ef9794-67eb-4f18-bb38-541f30f955f8' })

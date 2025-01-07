@@ -1,5 +1,5 @@
-const claim = (sequelize, DataTypes) => {
-  const Claim = sequelize.define('claim',
+export const claim = (sequelize, DataTypes) => {
+  const claimModel = sequelize.define('claim',
     {
       id: {
         type: DataTypes.UUID,
@@ -33,17 +33,15 @@ const claim = (sequelize, DataTypes) => {
       tableName: 'claim'
     }
   )
-  Claim.associate = function (models) {
-    Claim.hasOne(models.application, {
+  claimModel.associate = function (models) {
+    claimModel.hasOne(models.application, {
       sourceKey: 'applicationReference',
       foreignKey: 'reference'
     })
-    Claim.hasOne(models.status, {
+    claimModel.hasOne(models.status, {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
   }
-  return Claim
+  return claimModel
 }
-
-module.exports = { claim }

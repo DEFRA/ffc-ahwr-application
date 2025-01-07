@@ -1,25 +1,14 @@
-const { models } = require('../data')
-/**
- * Get stage configuration
- * @returns stage configuration object
- */
-async function getAll () {
+import { buildData } from '../data/index.js'
+
+const { models } = buildData
+
+export const getAll = async () => {
   return models.stage_configuration.findAll()
 }
 
-/**
- * Get stage configuration by id
- * @param {number} id
- * @returns stage configuration object
- */
-async function getById (id) {
+export const getById = async (id) => {
   return models.stage_configuration.findOne(
     {
       where: { id }
     })
-}
-
-module.exports = {
-  getAll,
-  getById
 }

@@ -1,45 +1,17 @@
-const states = require('./states')
-const applicationStatus = require('../../constants/application-status')
-const { applicationResponseMsgType, applicationResponseQueue, tenMonthRule, endemics } = require('../../config')
-const { sendFarmerConfirmationEmail } = require('../../lib/send-email')
-const sendMessage = require('../send-message')
-const applicationRepository = require('../../repositories/application-repository')
-const validateApplication = require('../schema/process-application-schema')
-const appInsights = require('applicationinsights')
-const { createApplicationReference } = require('../../lib/create-reference')
+import { messagingStates, applicationStatus } from '../../constants/index.js'
+import { config } from '../../config/index.js'
+import { sendFarmerConfirmationEmail } from '../../lib/send-email.js'
+import { sendMessage } from '../send-message.js'
+import { validateApplication } from '../schema/process-application-schema.js'
+import appInsights from 'applicationinsights'
+import { createApplicationReference } from '../../lib/create-reference.js'
+import { getBySbi, setApplication } from '../../repositories/application-repository.js'
 
-function timeLimitDates (application) {
-  const start = new Date(application.createdAt)
-  const end = new Date(start)
-  // refactor to set time limit to a constant - config??
-  end.setMonth(end.getMonth() + 10)
-  end.setHours(23, 59, 59, 999) // set to midnight of agreement end day
-  return { startDate: start, endDate: end }
+export const isPreviousApplicationRelevant = (existingApplication) => {
+  return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
 }
 
-function isPastTimeLimit (dates) {
-  const { endDate } = dates
-  return Date.now() > endDate
-}
-
-function isPreviousApplicationRelevant (existingApplication) {
-  if (endemics.enabled) {
-    return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
-  } else if (tenMonthRule.enabled) {
-    return existingApplication &&
-      ((existingApplication.statusId !== applicationStatus.withdrawn &&
-        existingApplication.statusId !== applicationStatus.notAgreed &&
-        // check if it passes 10 month rule here and chuck error if it doesn't
-        isPastTimeLimit(timeLimitDates(existingApplication)) === false) ||
-        existingApplication.statusId === applicationStatus.agreed)
-  } else {
-    return existingApplication &&
-      existingApplication.statusId !== applicationStatus.withdrawn &&
-      existingApplication.statusId !== applicationStatus.notAgreed
-  }
-}
-
-const processApplicationApi = async (body) => {
+export const processApplicationApi = async (body) => {
   const response = await processApplication(body)
 
   appInsights.defaultClient.trackEvent({
@@ -54,7 +26,7 @@ const processApplicationApi = async (body) => {
   return response
 }
 
-const processApplication = async (data) => {
+export const processApplication = async (data) => {
   let existingApplicationReference = null
 
   try {
@@ -62,7 +34,7 @@ const processApplication = async (data) => {
       throw new Error('Application validation error')
     }
 
-    const existingApplication = await applicationRepository.getBySbi(
+    const existingApplication = await getBySbi(
       data.organisation.sbi
     )
 
@@ -72,18 +44,16 @@ const processApplication = async (data) => {
         new Error(
             `Recent application already exists: ${JSON.stringify({
               reference: existingApplication.dataValues.reference,
-              createdAt: existingApplication.createdAt
+              createdAt: existingApplication.dataValues.createdAt
             })}`
         ),
         {
-          applicationState: states.alreadyExists
+          applicationState: messagingStates.alreadyExists
         }
       )
     }
 
-    // create application = save in database
-    // note here we are expecting to receive an application reference, whereas previously we did not
-    const result = await applicationRepository.set({
+    const result = await setApplication({
       reference: createApplicationReference(data.reference),
       data,
       createdBy: 'admin',
@@ -94,7 +64,7 @@ const processApplication = async (data) => {
     const application = result.dataValues
 
     const response = {
-      applicationState: states.submitted,
+      applicationState: messagingStates.submitted,
       applicationReference: application.reference
     }
 
@@ -126,19 +96,19 @@ const processApplication = async (data) => {
     appInsights.defaultClient.trackException({ exception: error })
 
     return {
-      applicationState: states.failed,
+      applicationState: messagingStates.failed,
       applicationReference: existingApplicationReference
     }
   }
 }
 
-const processApplicationQueue = async (msg) => {
+export const processApplicationQueue = async (msg) => {
   const { sessionId } = msg
   const applicationData = msg.body
 
   const response = await processApplication(applicationData)
 
-  await sendMessage(response, applicationResponseMsgType, applicationResponseQueue, { sessionId })
+  await sendMessage(response, config.applicationResponseMsgType, config.applicationResponseQueue, { sessionId })
 
   appInsights.defaultClient.trackEvent({
     name: 'process-application-queue',
@@ -149,10 +119,4 @@ const processApplicationQueue = async (msg) => {
       sessionId
     }
   })
-}
-
-module.exports = {
-  processApplication,
-  processApplicationApi,
-  processApplicationQueue
 }

@@ -1,5 +1,5 @@
-const joi = require('joi')
-const util = require('util')
+import joi from 'joi'
+import util from 'util'
 
 const nineDigitId = joi.string().pattern(/^\d{9}$/)
 const tenDigitId = joi.string().pattern(/^\d{10}$/)
@@ -20,7 +20,7 @@ const submitSFDSchema = joi.object({
   dateTime: joi.date().required()
 })
 
-const validateSFDSchema = (event) => {
+export const validateSFDSchema = (event) => {
   const validate = submitSFDSchema.validate(event)
 
   if (validate.error) {
@@ -29,5 +29,3 @@ const validateSFDSchema = (event) => {
   }
   return true
 }
-
-module.exports = validateSFDSchema

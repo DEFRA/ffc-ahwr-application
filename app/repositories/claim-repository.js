@@ -1,14 +1,11 @@
-const { models } = require('../data')
-const eventPublisher = require('../event-publisher')
-const { startandEndDate } = require('../lib/date-utils')
-const { Op } = require('sequelize')
+import { buildData } from '../data/index.js'
+import { raiseClaimEvents } from '../event-publisher/index.js'
+import { startandEndDate } from '../lib/date-utils.js'
+import { Op } from 'sequelize'
 
-/**
- * Get claim by reference number
- * @param {string} reference
- * @returns claim object with status.
- */
-async function getByReference (reference) {
+const { models } = buildData
+
+export const getClaimByReference = (reference) => {
   return models.claim.findOne({
     where: { reference: reference.toUpperCase() },
     include: [
@@ -20,13 +17,7 @@ async function getByReference (reference) {
   })
 }
 
-/**
- * Get claims by applicationReference number
- * @param {string} applicationReference
- * @param {string} typeOfLivestock
- * @returns an array of claims object with their statuses.
- */
-async function getByApplicationReference (applicationReference, typeOfLivestock) {
+export const getByApplicationReference = async (applicationReference, typeOfLivestock) => {
   let where = { applicationReference: applicationReference.toUpperCase() }
 
   if (typeOfLivestock) {
@@ -47,15 +38,10 @@ async function getByApplicationReference (applicationReference, typeOfLivestock)
   return result
 }
 
-/**
- *
- * @param {*} data
- * @returns
- */
-async function set (data) {
+export const setClaim = async (data) => {
   const sbi = data.sbi
   const result = await models.claim.create(data)
-  eventPublisher.raiseClaimEvents({
+  await raiseClaimEvents({
     message: 'New claim has been created',
     claim: result.dataValues,
     raisedBy: result.dataValues.createdBy,
@@ -64,12 +50,7 @@ async function set (data) {
   return result
 }
 
-/**
- *
- * @param {*} data
- * @returns
- */
-async function updateByReference (data) {
+export const updateClaimByReference = async (data) => {
   try {
     const claim = await models.claim.findOne({
       where: {
@@ -93,7 +74,7 @@ async function updateByReference (data) {
 
     for (let i = 0; i < updatedRows; i++) {
       const updatedRecord = updatedRecords[i]
-      eventPublisher.raiseClaimEvents({
+      await raiseClaimEvents({
         message: 'Claim has been updated',
         claim: updatedRecord.dataValues,
         raisedBy: updatedRecord.dataValues.updatedBy,
@@ -103,29 +84,19 @@ async function updateByReference (data) {
     return result
   } catch (error) {
     console.error('Error updating claim by reference:', error)
-    throw error // re-throw the error after logging or handle it as needed
+    throw error
   }
 }
 
-/**
- * Get all claims that have been claimed
- * @param {*} claimStatusIds an array of status IDs which indicate that an claim has been claimed
- * @returns a list of claims
- */
-async function getAllClaimedClaims (claimStatusIds) {
+export const getAllClaimedClaims = async (claimStatusIds) => {
   return models.claim.count({
     where: {
       statusId: claimStatusIds // shorthand for IN operator
     }
   })
 }
-/**
- * Get a boolean value indicating if the URN number is unique
- * @param {number} sbi
- * @param {string} laboratoryURN
- * @returns {Promise<{ isURNUnique: boolean }>} isURNUnique
- */
-async function isURNNumberUnique (sbi, laboratoryURN) {
+
+export const isURNNumberUnique = async (sbi, laboratoryURN) => {
   const applications = await models.application.findAll({ where: { 'data.organisation.sbi': sbi } })
 
   if (applications.find((application) => application.dataValues?.data?.urnResult?.toLowerCase() === laboratoryURN.toLowerCase())) return { isURNUnique: false }
@@ -137,7 +108,7 @@ async function isURNNumberUnique (sbi, laboratoryURN) {
   return { isURNUnique: true }
 }
 
-function evalSortField (sort) {
+const evalSortField = (sort) => {
   if (sort !== null && sort !== undefined && sort.field !== undefined) {
     switch (sort.field.toLowerCase()) {
       case 'status':
@@ -156,18 +127,8 @@ function evalSortField (sort) {
   }
   return ['createdAt', sort.direction ?? 'ASC']
 }
-/**
- * Search claims by Search Type and Search Text.
- * Currently Support type, type of visit, claim date,Status, SBI number, claim Reference Number and species
- *
- * @param {string} searchText contains status, type of visit, claim date,Status, SBI number, claim Reference Number and species
- * @param {string} searchType contains any of keyword ['status','ref','sbi', 'type', 'species', 'date']
- * @param {number} offset index of row where page should start from
- * @param {number} limit page limit
- * @param {object} sort contains field and direction for sort order
- * @returns all claims with page
- */
-async function searchClaims (searchText, searchType, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) {
+
+export const searchClaims = async (searchText, searchType, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) => {
   const query = {
     include: [
       {
@@ -235,14 +196,4 @@ async function searchClaims (searchText, searchType, offset = 0, limit = 10, sor
     total: await models.claim.count(query),
     claims: await models.claim.findAll({ ...query, order: [evalSortField(sort)], limit, offset })
   }
-}
-
-module.exports = {
-  set,
-  searchClaims,
-  getByReference,
-  isURNNumberUnique,
-  updateByReference,
-  getAllClaimedClaims,
-  getByApplicationReference
 }
