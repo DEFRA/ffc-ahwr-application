@@ -23,6 +23,7 @@ export const stageExecutionHandlers = [{
   options: {
     handler: async (request, h) => {
       const stageExecutions = await getByApplicationReference(request.params.applicationReference)
+      console.log(`${stageExecutions ? stageExecutions.length : '0'}stage executions for ${request.params.applicationReference}`, stageExecutions)
       if (stageExecutions) {
         return h.response(stageExecutions).code(200)
       } else {
