@@ -53,19 +53,18 @@ export const stageExecutionHandlers = [{
       }
     },
     handler: async (request, h) => {
-      let application
-      let sbi
+      let applicationOrClaim
       request.logger.setBindings({ payload: request.payload })
 
       if (request.payload.claimOrApplication === 'claim') {
-        application = await getClaimByReference(request.payload.applicationReference)
+        applicationOrClaim = await getClaimByReference(request.payload.applicationReference)
       }
 
       if (request.payload.claimOrApplication === 'application') {
-        application = await getApplication(request.payload.applicationReference)
+        applicationOrClaim = await getApplication(request.payload.applicationReference)
       }
 
-      if (!application?.dataValues) {
+      if (!applicationOrClaim?.dataValues) {
         return h.response('Reference not found').code(400).takeover()
       }
 
@@ -94,11 +93,10 @@ export const stageExecutionHandlers = [{
 
       if (statusId) {
         if (request.payload.claimOrApplication === 'claim') {
-          const mainApplication = await getApplication(application.dataValues.applicationReference)
-          sbi = mainApplication?.dataValues?.data?.organisation?.sbi
           // note that even though it using request.payload.applicationReference
           // it can actually be the claim reference which is passed in the request
-          await updateClaimByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
+          // see AHWR-454 for further details
+          await updateClaimByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
         } else {
           await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
         }
