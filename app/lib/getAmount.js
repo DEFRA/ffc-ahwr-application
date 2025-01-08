@@ -35,7 +35,7 @@ export const getAmount = async (payload) => {
   const typeOfClaim = type === claimType.review ? 'review' : 'followUp'
 
   const pricesConfig = await getBlob('claim-prices-config.json')
-  
+
   const { typeOfLivestock } = data
 
   if ([livestockTypes.beef, livestockTypes.dairy].includes(typeOfLivestock) && data.reviewTestResults && type === claimType.endemics) {
