@@ -156,9 +156,6 @@ describe('Stage execution test', () => {
         }
       }
       when(getApplication).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
-      // when(set)
-      //   .calledWith({ ...data, executedAt: expect.any(Date) }, 123)
-      //   .mockResolvedValue(mockResponse)
 
       const options = {
         method: 'POST',
