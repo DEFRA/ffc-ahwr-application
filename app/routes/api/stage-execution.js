@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { getClaimByReference } from '../../repositories/claim-repository.js'
+import { getClaimByReference, updateClaimByReference } from '../../repositories/claim-repository.js'
 import { applicationStatus } from '../../constants/index.js'
 import { getApplication, updateApplicationByReference } from '../../repositories/application-repository.js'
 import { getAll, set, getById, update, getByApplicationReference } from '../../repositories/stage-execution-repository.js'
@@ -23,7 +23,7 @@ export const stageExecutionHandlers = [{
   options: {
     handler: async (request, h) => {
       const stageExecutions = await getByApplicationReference(request.params.applicationReference)
-      console.log(`${stageExecutions ? stageExecutions.length : '0'}stage executions for ${request.params.applicationReference}`, stageExecutions)
+
       if (stageExecutions) {
         return h.response(stageExecutions).code(200)
       } else {
@@ -96,7 +96,9 @@ export const stageExecutionHandlers = [{
         if (request.payload.claimOrApplication === 'claim') {
           const mainApplication = await getApplication(application.dataValues.applicationReference)
           sbi = mainApplication?.dataValues?.data?.organisation?.sbi
-          await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
+          // note that even though it using request.payload.applicationReference
+          // it can actually be the claim reference which is passed in the request
+          await updateClaimByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi })
         } else {
           await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
         }

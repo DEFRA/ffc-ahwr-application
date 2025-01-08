@@ -1,6 +1,6 @@
 import { ValidationError } from 'joi'
 import { getAll, getById, set, update, getByApplicationReference } from '../../../../../app/repositories/stage-execution-repository'
-import { getClaimByReference } from '../../../../../app/repositories/claim-repository'
+import { getClaimByReference, updateClaimByReference } from '../../../../../app/repositories/claim-repository'
 import { getApplication, updateApplicationByReference } from '../../../../../app/repositories/application-repository'
 import { when, resetAllWhenMocks } from 'jest-when'
 import { server } from '../../../../../app/server'
@@ -140,10 +140,10 @@ describe('Stage execution test', () => {
       expect(res.statusCode).toBe(200)
       expect(set).toHaveBeenCalledTimes(1)
       expect(set).toHaveBeenCalledWith({ ...data, claimOrApplication: 'claim', action: { action }, executedAt: expect.any(Date) })
-      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
+      expect(updateClaimByReference).toHaveBeenCalledTimes(1)
       expect(res.result).toEqual({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
     })
-    test('returns 200 when Recommend to pay', async () => {
+    test('returns 200 when an application is Recommended to pay', async () => {
       const mockGet = {
         dataValues: {
           id: 1,
