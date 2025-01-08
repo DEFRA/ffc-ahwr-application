@@ -1,9 +1,10 @@
 import { ValidationError } from 'joi'
 import { getAll, getById, set, update, getByApplicationReference } from '../../../../../app/repositories/stage-execution-repository'
-import { getClaimByReference } from '../../../../../app/repositories/claim-repository'
+import { getClaimByReference, updateClaimByReference } from '../../../../../app/repositories/claim-repository'
 import { getApplication, updateApplicationByReference } from '../../../../../app/repositories/application-repository'
 import { when, resetAllWhenMocks } from 'jest-when'
 import { server } from '../../../../../app/server'
+import { applicationStatus } from '../../../../../app/constants'
 
 jest.mock('../../../../../app/repositories/stage-execution-repository')
 jest.mock('../../../../../app/repositories/application-repository')
@@ -109,11 +110,11 @@ describe('Stage execution test', () => {
 
   describe(`POST ${url} route`, () => {
     test.each([
-      { action: 'Ready to pay' },
-      { action: 'Rejected' },
-      { action: 'Recommend to pay' },
-      { action: 'Recommend to reject' }
-    ])('returns 200 when Recommend to pay', async ({ action }) => {
+      { action: 'Ready to pay', expectedStatusId: applicationStatus.readyToPay },
+      { action: 'Rejected', expectedStatusId: applicationStatus.rejected },
+      { action: 'Recommend to pay', expectedStatusId: applicationStatus.recommendToPay },
+      { action: 'Recommend to reject', expectedStatusId: applicationStatus.recommendToReject }
+    ])('returns 200 when Recommend to pay', async ({ action, expectedStatusId }) => {
       const mockGet = {
         dataValues: {
           id: 1,
@@ -140,10 +141,10 @@ describe('Stage execution test', () => {
       expect(res.statusCode).toBe(200)
       expect(set).toHaveBeenCalledTimes(1)
       expect(set).toHaveBeenCalledWith({ ...data, claimOrApplication: 'claim', action: { action }, executedAt: expect.any(Date) })
-      expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
+      expect(updateClaimByReference).toHaveBeenCalledWith({ reference: data.applicationReference, statusId: expectedStatusId, updatedBy: data.executedBy })
       expect(res.result).toEqual({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
     })
-    test('returns 200 when Recommend to pay', async () => {
+    test('returns 200 when an application is Recommended to pay', async () => {
       const mockGet = {
         dataValues: {
           id: 1,
@@ -155,9 +156,6 @@ describe('Stage execution test', () => {
         }
       }
       when(getApplication).calledWith('AHWR-0000-0000').mockResolvedValue(mockGet)
-      when(set)
-        .calledWith({ ...data, executedAt: expect.any(Date) }, 123)
-        .mockResolvedValue(mockResponse)
 
       const options = {
         method: 'POST',
