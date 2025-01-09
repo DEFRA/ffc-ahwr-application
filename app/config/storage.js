@@ -5,7 +5,7 @@ export const buildConfig = () => {
     connectionString: Joi.string().required(),
     usersContainer: Joi.string().required(),
     usersFile: Joi.string().required(),
-    endemicsSettingsContainer: Joi.string().default('endemics-settings'),
+    endemicsSettingsContainer: Joi.string().required(),
     endemicsPricesFile: Joi.string().required(),
     storageAccount: Joi.string().required(),
     useConnectionString: Joi.bool().required()
@@ -15,7 +15,7 @@ export const buildConfig = () => {
     connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
     usersContainer: 'users',
     usersFile: 'users.json',
-    endemicsSettingsContainer: process.env.AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER,
+    endemicsSettingsContainer: process.env.AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER ?? 'endemics-settings',
     endemicsPricesFile: 'endemics-prices-config.json',
     storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME,
     useConnectionString: process.env.AZURE_STORAGE_USE_CONNECTION_STRING === 'true'
