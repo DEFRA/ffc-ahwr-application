@@ -716,12 +716,19 @@ describe('Claim repository test', () => {
       { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: undefined } },
       { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: 'DECS' } },
       { searchText: '113494460', searchType: 'sbi', sort: undefined },
+      { searchText: 'AHWR-TEST-TEST', searchType: 'appRef' },
+      { searchType: 'adsdf' },
       { searchText: 'dfdf', searchType: 'adsdf', sort: undefined }
     ])('Search claim by search text $searchText, search type $searchType ', async ({ searchText, searchType, sort }) => {
       const callTimes = searchType !== 'adsdf' ? 1 : 0
       when(buildData.models.claim.count).mockResolvedValue(2)
       when(buildData.models.claim.findAll).mockResolvedValue(['claims1', 'claims2'])
-      await searchClaims(searchText, searchType, undefined, undefined, sort)
+      const search = {
+        text: searchText,
+        type: searchType
+      }
+      const filter = searchType === 'status' ? {} : undefined
+      await searchClaims(search, filter, undefined, undefined, sort)
 
       expect(buildData.models.claim.count).toHaveBeenCalledTimes(callTimes)
       expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(callTimes)

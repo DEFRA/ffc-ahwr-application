@@ -7,6 +7,8 @@ services:
   ffc-ahwr-application:
     build:
       target: development
+    environment:
+      NODE_ENV: test
     image: ffc-ahwr-application-development
     container_name: ffc-ahwr-application-test
     command: npm run test

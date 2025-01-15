@@ -195,7 +195,14 @@ export const claimHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { total, claims } = await searchClaims(request.payload.search.text ?? '', request.payload.search.type, request.payload.offset, request.payload.limit, request.payload.sort)
+        const { search, filter, offset, limit, sort } = request.payload
+        const { total, claims } = await searchClaims(
+          search,
+          filter,
+          offset,
+          limit,
+          sort
+        )
         return h.response({ total, claims }).code(200)
       }
     }
