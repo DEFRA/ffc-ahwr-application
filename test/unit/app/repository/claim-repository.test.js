@@ -2,6 +2,7 @@ import { when, resetAllWhenMocks } from 'jest-when'
 import { getAllClaimedClaims, getByApplicationReference, getClaimByReference, isURNNumberUnique, searchClaims, setClaim, updateClaimByReference } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
+import { Op } from 'sequelize'
 
 jest.mock('../../../../app/data', () => {
   return {
@@ -716,15 +717,68 @@ describe('Claim repository test', () => {
       { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: undefined } },
       { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: 'DECS' } },
       { searchText: '113494460', searchType: 'sbi', sort: undefined },
+      { searchText: 'AHWR-TEST-TEST', searchType: 'appRef' },
+      { searchType: 'adsdf' },
       { searchText: 'dfdf', searchType: 'adsdf', sort: undefined }
     ])('Search claim by search text $searchText, search type $searchType ', async ({ searchText, searchType, sort }) => {
       const callTimes = searchType !== 'adsdf' ? 1 : 0
       when(buildData.models.claim.count).mockResolvedValue(2)
       when(buildData.models.claim.findAll).mockResolvedValue(['claims1', 'claims2'])
-      await searchClaims(searchText, searchType, undefined, undefined, sort)
+      const search = {
+        text: searchText,
+        type: searchType
+      }
+      const filter = searchType === 'status' ? {} : undefined
+      await searchClaims(search, filter, undefined, undefined, sort)
 
       expect(buildData.models.claim.count).toHaveBeenCalledTimes(callTimes)
       expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(callTimes)
     })
+  })
+
+  test('adds filter to query', async () => {
+    const search = {
+      text: 'ON HOLD',
+      type: 'status'
+    }
+    const filter = {
+      field: 'updatedAt',
+      op: 'lte',
+      value: '2025-01-16'
+    }
+    const offset = 20
+    const limit = 50
+    await searchClaims(search, filter, offset, limit)
+
+    const expected = {
+      include: [{
+        attributes: ['data'],
+        model: {
+          findAll: expect.any(Function)
+        }
+      }, {
+        attributes: ['status'],
+        model: 'mock-status',
+        where: {
+          status: {
+            [Op.iLike]: '%ON HOLD%'
+          }
+        }
+      }],
+      offset,
+      limit,
+      order: [
+        ['createdAt', 'DESC']
+      ],
+      where: {
+        updatedAt: {
+          [Op.lte]: '2025-01-16'
+        }
+      }
+    }
+
+    expect(buildData.models.claim.findAll.mock.calls).toEqual([
+      [expected]
+    ])
   })
 })

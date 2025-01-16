@@ -1,6 +1,6 @@
 module.exports = {
   env: {
-    development: {
+    test: {
       plugins: ['@babel/plugin-transform-modules-commonjs']
     }
   }

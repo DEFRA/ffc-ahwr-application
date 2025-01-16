@@ -128,7 +128,7 @@ const evalSortField = (sort) => {
   return ['createdAt', sort.direction ?? 'ASC']
 }
 
-export const searchClaims = async (searchText, searchType, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) => {
+export const searchClaims = async (search, filter, offset, limit, sort = { field: 'createdAt', direction: 'DESC' }) => {
   const query = {
     include: [
       {
@@ -141,21 +141,21 @@ export const searchClaims = async (searchText, searchType, offset = 0, limit = 1
     ]
   }
 
-  if (!['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(searchType)) return { total: 0, claims: [] }
+  if (!['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(search.type)) return { total: 0, claims: [] }
 
-  if (searchText) {
-    switch (searchType) {
+  if (search.text) {
+    switch (search.type) {
       case 'ref':
-        query.where = { reference: searchText }
+        query.where = { reference: search.text }
         break
       case 'appRef':
-        query.where = { applicationReference: searchText }
+        query.where = { applicationReference: search.text }
         break
       case 'type':
-        query.where = { type: searchText }
+        query.where = { type: search.text }
         break
       case 'species':
-        query.where = { 'data.typeOfLivestock': searchText }
+        query.where = { 'data.typeOfLivestock': search.text }
         break
       case 'status':
         query.include = [
@@ -166,7 +166,7 @@ export const searchClaims = async (searchText, searchType, offset = 0, limit = 1
           {
             model: models.status,
             attributes: ['status'],
-            where: { status: { [Op.iLike]: `%${searchText}%` } }
+            where: { status: { [Op.iLike]: `%${search.text}%` } }
           }]
         break
       case 'sbi':
@@ -178,17 +178,26 @@ export const searchClaims = async (searchText, searchType, offset = 0, limit = 1
           {
             model: models.application,
             attributes: ['data'],
-            where: { 'data.organisation.sbi': searchText }
+            where: { 'data.organisation.sbi': search.text }
           }]
         break
       case 'date':
         query.where = {
           createdAt: {
-            [Op.gte]: startandEndDate(searchText).startDate,
-            [Op.lt]: startandEndDate(searchText).endDate
+            [Op.gte]: startandEndDate(search.text).startDate,
+            [Op.lt]: startandEndDate(search.text).endDate
           }
         }
         break
+    }
+  }
+
+  if (filter) {
+    query.where = {
+      ...query.where,
+      [filter.field]: {
+        [Op[filter.op]]: filter.value
+      }
     }
   }
 
