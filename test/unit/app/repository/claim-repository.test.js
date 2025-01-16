@@ -2,6 +2,7 @@ import { when, resetAllWhenMocks } from 'jest-when'
 import { getAllClaimedClaims, getByApplicationReference, getClaimByReference, isURNNumberUnique, searchClaims, setClaim, updateClaimByReference } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
+import { Op } from 'sequelize'
 
 jest.mock('../../../../app/data', () => {
   return {
@@ -733,5 +734,51 @@ describe('Claim repository test', () => {
       expect(buildData.models.claim.count).toHaveBeenCalledTimes(callTimes)
       expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(callTimes)
     })
+  })
+
+  test('adds filter to query', async () => {
+    const search = {
+      text: 'ON HOLD',
+      type: 'status'
+    }
+    const filter = {
+      field: 'updatedAt',
+      op: 'lte',
+      value: '2025-01-16'
+    }
+    const offset = 20
+    const limit = 50
+    await searchClaims(search, filter, offset, limit)
+
+    const expected = {
+      include: [{
+        attributes: ['data'],
+        model: {
+          findAll: expect.any(Function)
+        }
+      }, {
+        attributes: ['status'],
+        model: 'mock-status',
+        where: {
+          status: {
+            [Op.iLike]: '%ON HOLD%'
+          }
+        }
+      }],
+      offset,
+      limit,
+      order: [
+        ['createdAt', 'DESC']
+      ],
+      where: {
+        updatedAt: {
+          [Op.lte]: '2025-01-16'
+        }
+      }
+    }
+
+    expect(buildData.models.claim.findAll.mock.calls).toEqual([
+      [expected]
+    ])
   })
 })
