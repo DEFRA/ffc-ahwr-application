@@ -45,37 +45,22 @@ describe('sendEmail', () => {
   })
 
   describe('sendFarmerEndemicsClaimConfirmationEmail', () => {
-    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email via SFD', async () => {
-      const data = {
-        reference: 'RESH-DFEF-6037',
-        applicationReference: 'AHWR-B977-4D0D',
-        amount: '£[amount]',
-        orgData: {
-          orgEmail: 'test@unit-test.org',
-          crn: '1234567890',
-          sbi: '123456789'
-        }
-      }
-      const templateId = 'templateIdFarmerEndemicsClaimComplete'
-      const expectedPersonalisation = {
-        reference: data.reference,
-        applicationReference: data.applicationReference,
-        amount: data.amount || '£[amount]',
-        crn: data.orgData.crn,
-        sbi: data.orgData.sbi
-      }
 
-      const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
-      expect(result).toBe(true)
-      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    const baseInputData = {
+      email: 'test@unit-test.com',
+      reference: 'RESH-DFEF-6037',
+      applicationReference: 'AHWR-B977-4D0D',
+      amount: '£[amount]',
+      orgData: {}
+    }
+
+    beforeEach(() => {
+      config.notify.carbonCopyEmailAddress = null
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and organization via SFD', async () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and organization via SFD when both set', async () => {
       const data = {
-        email: 'test@unit-test.com',
-        reference: 'RESH-DFEF-6037',
-        applicationReference: 'AHWR-B977-4D0D',
-        amount: '£[amount]',
+        ...baseInputData,
         orgData: {
           orgEmail: 'test@unit-test.org',
           crn: '1234567890',
@@ -94,18 +79,37 @@ describe('sendEmail', () => {
       const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
-      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer email when orgEmail is not provided via SFD', async () => {
-      const data = {
-        email: 'test@unit-test.com',
-        reference: 'RESH-DFEF-6037',
-        applicationReference: 'AHWR-B977-4D0D',
-        amount: '£[amount]',
-        orgData: {}
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and CC address if one specified via SFD', async () => {
+      config.notify.carbonCopyEmailAddress = 'test@test.com'
+
+      const data = baseInputData
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        applicationReference: data.applicationReference,
+        amount: data.amount || '£[amount]',
+        crn: data.orgData.crn,
+        sbi: data.orgData.sbi
       }
+
+      const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+
+      expect(result).toBe(true)
+      expect(sendSFDEmail).toHaveBeenCalledTimes(2)
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, 'test@test.com', { personalisation: expectedPersonalisation })
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to just farmer email when orgEmail is not provided via SFD', async () => {
+      const data = baseInputData
+
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
       const expectedPersonalisation = {
         reference: data.reference,
@@ -116,27 +120,35 @@ describe('sendEmail', () => {
       const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
+      expect(sendSFDEmail).toHaveBeenCalledTimes(1)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail returns true for sending emails via SFD', async () => {
-      const data = {
-        email: 'test@unit-test.com',
-        reference: 'RESH-DFEF-6037',
-        applicationReference: 'AHWR-B977-4D0D',
-        amount: '£[amount]',
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email to just farmer email when orgEmail is same address via SFD', async () => {
+      const data =  { ...baseInputData,
         orgData: {
-          orgEmail: 'test@unit-test.org',
-          crn: '1234567890',
-          sbi: '123456789'
+          orgEmail: 'test@unit-test.com',
+            crn: '1234567890',
+            sbi: '123456789'
         }
       }
+
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
+      const expectedPersonalisation = {
+        reference: data.reference,
+        crn: '1234567890',
+        sbi: '123456789',
+        applicationReference: data.applicationReference,
+        amount: data.amount || '£[amount]'
+      }
 
       const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
 
-      expect(result).toBeTruthy()
+      expect(result).toBe(true)
+      expect(sendSFDEmail).toHaveBeenCalledTimes(1)
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
     })
+
 
     test('use default templateId when not provided via SFD', async () => {
       const data = {
