@@ -2,7 +2,6 @@ import { config } from '../../../../app/config'
 import { fetchApplication } from '../../../../app/messaging/application/fetch-application'
 import { fetchClaim } from '../../../../app/messaging/application/fetch-claim'
 import { processApplicationMessage } from '../../../../app/messaging/process-message'
-import { submitClaim } from '../../../../app/messaging/application/submit-claim'
 import { processApplicationQueue } from '../../../../app/messaging/application/process-application'
 
 jest.mock('../../../../app/messaging/application/process-application')
@@ -10,9 +9,8 @@ jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.
 jest.mock('../../../../app/messaging/application/fetch-application')
 jest.mock('../../../../app/messaging/application/fetch-claim')
 jest.mock('../../../../app/messaging/application/process-application')
-jest.mock('../../../../app/messaging/application/submit-claim')
 
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = config
+const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType } = config
 
 describe('Process Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
@@ -81,20 +79,6 @@ describe('Process Message test', () => {
     }
     await processApplicationMessage(message, receiver)
     expect(fetchClaim).toHaveBeenCalledTimes(1)
-    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
-  })
-
-  test(`${submitClaimRequestMsgType} message calls submitClaim`, async () => {
-    const message = {
-      body: {
-        reference: '12342DD'
-      },
-      applicationProperties: {
-        type: submitClaimRequestMsgType
-      }
-    }
-    await processApplicationMessage(message, receiver)
-    expect(submitClaim).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 })

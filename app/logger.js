@@ -1,6 +1,12 @@
 import pino from 'hapi-pino'
 
-const transport = { target: 'pino-pretty' }
+const transport = {
+  target: 'pino-pretty',
+  options: {
+    singleLine: true,
+    colorize: true
+  }
+}
 const testLevel = { level: 'silent' }
 
 const req = (req) => ({
@@ -35,6 +41,7 @@ export const logger = {
     formatters: {
       level: (level) => ({ level })
     },
+    ignorePaths: ['healthy', 'healthz'],
     serializers: {
       req,
       res,

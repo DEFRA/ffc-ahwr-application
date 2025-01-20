@@ -13,7 +13,7 @@ export const getMessageQueueConfig = () => {
   }
 
   const schema = Joi.object({
-    applicationdDocCreationRequestQueue: {
+    applicationDocCreationRequestQueue: {
       address: Joi.string(),
       type: Joi.string(),
       ...sharedConfigSchema
@@ -54,7 +54,7 @@ export const getMessageQueueConfig = () => {
   }
 
   const config = {
-    applicationdDocCreationRequestQueue: {
+    applicationDocCreationRequestQueue: {
       address: process.env.APPLICATIONDOCCREATIONREQUEST_QUEUE_ADDRESS,
       type: 'queue',
       ...sharedConfig

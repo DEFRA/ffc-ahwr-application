@@ -2,9 +2,8 @@ import { config } from '../config/index.js'
 import { fetchApplication } from './application/fetch-application.js'
 import { fetchClaim } from './application/fetch-claim.js'
 import { processApplicationQueue } from './application/process-application.js'
-import { submitClaim } from './application/submit-claim.js'
 
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType, submitClaimRequestMsgType } = config
+const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType } = config
 
 export const processApplicationMessage = async (message, receiver) => {
   try {
@@ -18,9 +17,6 @@ export const processApplicationMessage = async (message, receiver) => {
         break
       case fetchClaimRequestMsgType:
         await fetchClaim(message)
-        break
-      case submitClaimRequestMsgType:
-        await submitClaim(message)
         break
     }
     await receiver.completeMessage(message)

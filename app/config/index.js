@@ -19,8 +19,6 @@ const buildConfig = () => {
     fetchApplicationResponseMsgType: Joi.string(),
     fetchClaimRequestMsgType: Joi.string(),
     fetchClaimResponseMsgType: Joi.string(),
-    submitClaimRequestMsgType: Joi.string(),
-    submitClaimResponseMsgType: Joi.string(),
     submitPaymentRequestMsgType: Joi.string(),
     compliance: {
       complianceCheckRatio: Joi.number().default(5),
@@ -46,8 +44,6 @@ const buildConfig = () => {
     fetchApplicationResponseMsgType: `${msgTypePrefix}.fetch.app.response`,
     fetchClaimRequestMsgType: `${msgTypePrefix}.fetch.claim.request`,
     fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
-    submitClaimRequestMsgType: `${msgTypePrefix}.submit.claim.request`,
-    submitClaimResponseMsgType: `${msgTypePrefix}.submit.claim.response`,
     submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
     compliance: {
       complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,

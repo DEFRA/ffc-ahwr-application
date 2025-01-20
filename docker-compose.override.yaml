@@ -10,7 +10,8 @@ services:
     image: ffc-ahwr-application-development
     container_name: ffc-ahwr-application-development
     environment:
-      NODE_TLS_REJECT_UNAUTHORIZED: 0      
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+      USE_PRETTY_PRINT: ${USE_PRETTY_PRINT-true}
     ports:
       - "3001:3000"
       - "9230:9229"

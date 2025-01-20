@@ -23,6 +23,7 @@ show_help() {
     Options:
       -w, --watch   watch tests
       -d, --debug   debug tests
+      -f, --fix     fix lint errors before tests
       -h, --help    display this help text
     "
 }
@@ -35,6 +36,10 @@ while :; do
 
     -d|--debug)
       debug="true"
+      ;;
+
+    -f|--fix)
+      fix_lint="true" # Fix linting issues rather than just fail and stop tests running
       ;;
 
     -h|--help)   # Call a "show_help" function to display a synopsis, then exit.
@@ -60,6 +65,10 @@ compose() {
 
 (
   cd "${projectRoot}"
+
+  if [ "${fix_lint}" = "true" ]; then
+    npm run lint:fix
+  fi
 
   # Guarantee clean environment
   compose down -v
