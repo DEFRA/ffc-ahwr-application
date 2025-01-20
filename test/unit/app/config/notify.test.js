@@ -17,7 +17,7 @@ describe('Notify Config Test', () => {
   })
 
   test('Invalid env var throws error', () => {
-    process.env.NOTIFY_API_KEY = null
-    expect(() => getNotifyConfig()).toThrow('Notify config is invalid. "apiKey" must be a string')
+    process.env.CARBON_COPY_EMAIL_ADDRESS = 1
+    expect(() => getNotifyConfig()).toThrow('Notify config is invalid. "carbonCopyEmailAddress" must be a string')
   })
 })

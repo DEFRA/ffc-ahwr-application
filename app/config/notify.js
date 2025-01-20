@@ -1,26 +1,16 @@
-import Joi from 'joi'
+import joi from 'joi'
 
 export const getNotifyConfig = () => {
-  const uuidRegex = '[0-9a-f]{8}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{4}\\b-[0-9a-f]{12}'
-  const notifyApiKeyRegex = new RegExp(`.*-${uuidRegex}-${uuidRegex}`)
-
-  const schema = Joi.object({
-    apiKey: Joi.string().pattern(notifyApiKeyRegex),
-    carbonCopyEmailAddress: Joi.string().email().allow(null, ''),
-    templateIdFarmerApplicationComplete: Joi.string().uuid(),
-    templateIdFarmerClaimComplete: Joi.string().uuid(),
-    templateIdFarmerEndemicsClaimComplete: Joi.string().uuid(),
-    templateIdFarmerEndemicsReviewComplete: Joi.string().uuid().default('183565fc-5684-40c1-a11d-85f55aff4d45'),
-    templateIdFarmerEndemicsFollowupComplete: Joi.string().uuid().default('99dab1c1-ebdb-47dc-a208-daebca873924')
+  const schema = joi.object({
+    carbonCopyEmailAddress: joi.string().email().allow(null, ''),
+    templateIdFarmerEndemicsReviewComplete: joi.string().uuid().required(),
+    templateIdFarmerEndemicsFollowupComplete: joi.string().uuid().required()
   })
 
   const config = {
-    apiKey: process.env.NOTIFY_API_KEY,
     carbonCopyEmailAddress: process.env.CARBON_COPY_EMAIL_ADDRESS,
-    templateIdFarmerApplicationComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE,
-    templateIdFarmerClaimComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE,
-    templateIdFarmerEndemicsReviewComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE,
-    templateIdFarmerEndemicsFollowupComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE
+    templateIdFarmerEndemicsReviewComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE ?? 'd8017132-1909-4bee-b604-b07e8081dc82',
+    templateIdFarmerEndemicsFollowupComplete: process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE ?? 'bf194e44-0dab-4c0e-ba9d-55bce357d3fc'
   }
 
   const { error } = schema.validate(config, { abortEarly: false })

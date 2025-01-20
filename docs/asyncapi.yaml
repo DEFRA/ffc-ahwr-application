@@ -8,10 +8,6 @@ channels:
     subscribe:
       message:
         $ref: '#/components/messages/ApplicationResponse'
-  ffc-ahwr-submit-request:
-    subscribe:
-      message:
-        $ref: '#/components/messages/SubmitRequest'
 components:
   messages:
     ApplicationRequest:
@@ -114,97 +110,6 @@ components:
                   type: boolean
                   description: Test mode status
                   required: false
-      SubmitClaim:
-        payload:
-          type: object
-          properties:
-            reference:
-              type: string
-              description: Claim reference number
-              required: true
-            data:
-              type: object
-              properties:
-                confirmCheckDetails:
-                  type: string
-                  description: Confirm the details are correct
-                  required: true
-                whichReview:
-                  type: string
-                  description: Specify the review type
-                  required: true
-                eligibleSpecies:
-                  type: string
-                  description: Specify the eligible species
-                  required: true
-                reference:
-                  type: string
-                  description: Reference number
-                  required: true
-                  nullable: true
-                declaration:
-                  type: boolean
-                  description: Declaration status
-                  required: true
-                offerStatus:
-                  type: string
-                  description: Offer status
-                  required: true
-                visitDate:
-                  type: string
-                  description: Visit date
-                  required: true
-                vetName:
-                  type: string
-                  description: Veterinarian's name
-                  required: true
-                urnResult:
-                  type: string
-                  description: URN result
-                  required: true
-                vetRcvs:
-                  type: string
-                  description: Veterinarian's RCVS number
-                  required: true
-                detailsCorrect:
-                  type: string
-                  description: Details correctness confirmation
-                  required: true
-                organisation:
-                  type: object
-                  properties:
-                    farmerName:
-                      type: string
-                      description: Farmer's name
-                      required: true
-                    name:
-                      type: string
-                      description: Organisation name
-                      required: true
-                    sbi:
-                      type: string
-                      description: SBI number
-                      required: true
-                    crn:
-                      type: string
-                      description: CRN number
-                      required: false
-                    cph:
-                      type: string
-                      description: CPH number
-                      required: false
-                    address:
-                      type: string
-                      description: Organisation address
-                      required: true
-                    email:
-                      type: string
-                      description: Organisation email
-                      required: true
-                    isTest:
-                      type: boolean
-                      description: Test mode status
-                      required: false
     ApplicationResponse:
       FetchApplication:
         payload:
@@ -407,30 +312,5 @@ components:
             applicationReference:
               type: string
               description: The reference number of the application
-              required: true
-      SubmitClaim:
-        payload:
-          type: object
-          properties:
-            state:
-              type: string
-              description: State of the claim
-              required: true
-    SubmitRequest:
-      SubmitClaim:
-        payload:
-          type: object
-          properties:
-            reference:
-              type: string
-              description: Claim reference number
-              required: true
-            whichReview:
-              type: string
-              description: Specify the review type
-              required: true
-            sbi:
-              type: string
-              description: SBI number
               required: true
                     
