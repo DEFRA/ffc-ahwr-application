@@ -45,7 +45,6 @@ describe('sendEmail', () => {
   })
 
   describe('sendFarmerEndemicsClaimConfirmationEmail', () => {
-
     const baseInputData = {
       email: 'test@unit-test.com',
       reference: 'RESH-DFEF-6037',
@@ -82,7 +81,6 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
-
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and CC address if one specified via SFD', async () => {
@@ -104,7 +102,6 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, 'test@test.com', { personalisation: expectedPersonalisation })
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
-
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to just farmer email when orgEmail is not provided via SFD', async () => {
@@ -125,11 +122,12 @@ describe('sendEmail', () => {
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to just farmer email when orgEmail is same address via SFD', async () => {
-      const data =  { ...baseInputData,
+      const data = {
+        ...baseInputData,
         orgData: {
           orgEmail: 'test@unit-test.com',
-            crn: '1234567890',
-            sbi: '123456789'
+          crn: '1234567890',
+          sbi: '123456789'
         }
       }
 
@@ -148,7 +146,6 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledTimes(1)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
     })
-
 
     test('use default templateId when not provided via SFD', async () => {
       const data = {
