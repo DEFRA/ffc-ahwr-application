@@ -12,7 +12,10 @@ describe('Notify Config Test', () => {
     process.env = OLD_ENV
   })
 
-  test('Should pass validation for all fields populated', async () => {
+  test('Should pass validation for all fields populated, including defaults', async () => {
+    delete process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE
+    delete process.env.NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE
+
     expect(getNotifyConfig()).toBeDefined()
   })
 
