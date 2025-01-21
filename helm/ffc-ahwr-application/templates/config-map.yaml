@@ -15,8 +15,6 @@ data:
   POSTGRES_HOST: {{ quote .Values.postgresService.postgresExternalName }}
   POSTGRES_PORT: {{ quote .Values.postgresService.postgresPort }}
   POSTGRES_SCHEMA_NAME: {{ quote .Values.postgresService.postgresSchema }}
-  NOTIFY_TEMPLATE_ID_FARMER_APPLICATION_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerApplicationComplete }}
-  NOTIFY_TEMPLATE_ID_FARMER_CLAIM_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerClaimComplete }}
   NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerEndemicsReviewComplete }}
   NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerEndemicsFollowupComplete }}
   SERVICE_URI: {{ quote .Values.container.serviceUri }}
@@ -27,5 +25,4 @@ data:
   OPTIONAL_PIHUNT_ENABLED: {{ quote .Values.container.optionalPIHuntEnabled }}
   AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER: {{ quote .Values.container.azureStorageEndemicsSettingsContainerName }}
   SFD_MESSAGE_QUEUE_ADDRESS: {{ quote .Values.container.sfdMessageQueueAddress }}
-  SFD_MESSAGE_ENABLED: {{ quote .Values.container.sfdMessageEnabled }}
 {{- end -}}

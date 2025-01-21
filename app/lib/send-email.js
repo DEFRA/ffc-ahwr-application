@@ -1,33 +1,15 @@
-import { notifyClient } from './notify-client.js'
 import { config } from '../config/index.js'
 import { sendMessage } from '../messaging/send-message.js'
 import applicationInsights from 'applicationinsights'
 import { sendSFDEmail } from './sfd-client.js'
 
-const { applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue, notify: { templateIdFarmerClaimComplete } } = config
+const { applicationEmailDocRequestMsgType, applicationDocCreationRequestQueue } = config
 
-const send = async (templateId, email, personalisation) => {
-  if (config.sfdMessage.enabled) {
-    return sendSFDEmail(
-      templateId,
-      email,
-      personalisation
-    )
-  }
-  return notifyClient.sendEmail(
-    templateId,
-    email,
-    personalisation
-  )
-}
-
-const sendEmail = async (email, personalisation, reference, templateId, carbonEmail = false) => {
+const sendEmail = async (email, personalisation, reference, templateId) => {
   let success = true
   try {
-    await send(templateId, email, { personalisation, reference })
-    if (carbonEmail) {
-      await sendCarbonCopy(templateId, { personalisation, reference })
-    }
+    await sendSFDEmail(templateId, email, { personalisation, reference })
+
     applicationInsights.defaultClient.trackEvent({
       name: 'email',
       properties: {
@@ -46,7 +28,7 @@ const sendEmail = async (email, personalisation, reference, templateId, carbonEm
 
 const sendCarbonCopy = async (templateId, personalisation) => {
   if (config.notify.carbonCopyEmailAddress) {
-    await send(
+    await sendSFDEmail(
       templateId,
       config.notify.carbonCopyEmailAddress,
       personalisation
@@ -54,19 +36,13 @@ const sendCarbonCopy = async (templateId, personalisation) => {
   }
 }
 
+// As it's not obvious - this function send a message out to document generator for the application
+// It is NOT sending the email here.
 export const sendFarmerConfirmationEmail = async (emailParams) => {
   const { reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData: { orgName, orgEmail, crn } } = emailParams
-  const message = { reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }
-  if (config.sfdMessage.enabled) {
-    return sendMessage({ ...message, crn }, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
-  }
-  return sendMessage(message, applicationEmailDocRequestMsgType, applicationdDocCreationRequestQueue)
-}
+  const message = { crn, reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }
 
-export const sendFarmerClaimConfirmationEmail = async (email, reference, orgEmail, sbi) => {
-  const personalisation = { applicationReference: reference, sbi }
-  if (orgEmail && orgEmail !== email) { sendEmail(orgEmail, personalisation, reference, templateIdFarmerClaimComplete) }
-  return sendEmail(email, personalisation, reference, templateIdFarmerClaimComplete, true)
+  return sendMessage(message, applicationEmailDocRequestMsgType, applicationDocCreationRequestQueue)
 }
 
 export const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {

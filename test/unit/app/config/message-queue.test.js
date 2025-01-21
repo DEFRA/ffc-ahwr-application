@@ -20,7 +20,7 @@ describe('Message queue Config Test', () => {
     process.env.MESSAGE_QUEUE_HOST = null
 
     expect(() => getMessageQueueConfig()).toThrow(
-      'The message queue config is invalid. "applicationdDocCreationRequestQueue.host" must be a string. "applicationRequestQueue.host" must be a string. "applicationResponseQueue.host" must be a string. "submitRequestQueue.host" must be a string. "eventQueue.host" must be a string. "sfdMessageQueue.host" must be a string'
+      'The message queue config is invalid. "applicationDocCreationRequestQueue.host" must be a string. "applicationRequestQueue.host" must be a string. "applicationResponseQueue.host" must be a string. "submitRequestQueue.host" must be a string. "eventQueue.host" must be a string. "sfdMessageQueue.host" must be a string'
     )
   })
 })
