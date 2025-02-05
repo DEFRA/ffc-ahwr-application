@@ -2,7 +2,7 @@ import { fakerEN_GB as faker } from '@faker-js/faker'
 import { reference } from './lib/reference.mjs'
 import { post } from './lib/post.mjs'
 
-const { company, internet, location, person, string } = faker
+const { company, internet, location, number, person, string } = faker
 
 const createApplication = () => {
   const firstName = person.firstName()
@@ -20,7 +20,7 @@ const createApplication = () => {
       name: orgName,
       crn: string.numeric({ length: 10 }),
       frn: string.numeric({ length: 10 }),
-      sbi: string.numeric({ length: 9 }),
+      sbi: number.int({ min: 105000000, max: 210000000 }).toString(),
       address: `${location.city()}, ${location.zipCode()}, United Kingdom`,
       email: internet.email({
         firstName: firstName.toLowerCase(),
