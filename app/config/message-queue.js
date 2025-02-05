@@ -8,6 +8,7 @@ export const getMessageQueueConfig = () => {
     password: Joi.string(),
     username: Joi.string(),
     useCredentialChain: Joi.bool().default(false),
+    managedIdentityClientId: Joi.string().optional(),
     retries: 50,
     retryWaitInMs: 100
   }
@@ -50,7 +51,8 @@ export const getMessageQueueConfig = () => {
     host: process.env.MESSAGE_QUEUE_HOST,
     password: process.env.MESSAGE_QUEUE_PASSWORD,
     username: process.env.MESSAGE_QUEUE_USER,
-    useCredentialChain: process.env.NODE_ENV === 'production'
+    useCredentialChain: process.env.NODE_ENV === 'production',
+    managedIdentityClientId: process.env.AZURE_CLIENT_ID
   }
 
   const config = {

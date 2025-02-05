@@ -15,7 +15,7 @@ export const createTableClient = (tableName) => {
     return new TableClient(
       `https://${config.storage.storageAccount}.table.core.windows.net`,
       tableName,
-      new DefaultAzureCredential()
+      new DefaultAzureCredential({ managedIdentityClientId: process.env.AZURE_CLIENT_ID })
     )
   }
 }

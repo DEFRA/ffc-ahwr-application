@@ -1,7 +1,25 @@
 resources:
+  identity: ahwr-application
+  postgreSql:
+    name: ffc-ahwr-application
+    extensions:
+      - name: uuid-ossp
   queues:
-    - name: applicationRequest
-      enableSessions: true
-    - name: applicationResponse
-      enableSessions: true
-    - name: documentRequest
+    - name: ffc-ahwr-application-request
+      role: receiver
+      session: false
+    - name: ffc-ahwr-application-response
+      role: sender
+      session: true
+    - name: ffc-ahwr-payment-request
+      role: sender
+      session: false
+    - name: ffc-ahwr-event
+      role: sender
+      session: false
+    - name: ffc-ahwr-document-request
+      role: sender
+      session: false
+    - name: ffc-ahwr-sfd-message
+      role: sender
+      session: false

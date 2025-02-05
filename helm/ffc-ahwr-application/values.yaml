@@ -6,7 +6,7 @@ workstream: ffc-ahwr
 
 labels: {}
 
-aadPodIdentity: true
+workloadIdentity: true
 
 appInsights:
   connectionString:
@@ -60,7 +60,7 @@ container:
 
 postgresService:
   postgresDb: ffc_ahwr_application
-  postgresExternalName: namespace.postgres.database.azure.com
+  postgresqlHost: namespace.postgres.database.azure.com
   postgresPort: 5432
   postgresSchema: public
   postgresUser: postgres
