@@ -31,7 +31,7 @@ describe('Application history test', () => {
 
     const options = {
       method: 'GET',
-      url: '/api/application/history/ABC-1234'
+      url: '/api/application/history/AHWR-7C72-8871'
     }
     const res = await server.inject(options)
 
