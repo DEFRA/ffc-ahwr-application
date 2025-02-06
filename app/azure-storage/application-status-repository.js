@@ -10,6 +10,5 @@ export const getApplicationHistory = async (reference) => {
     odata`PartitionKey eq ${reference}`
   )
 
-  if (historyRecords.length === 0) { return null }
   return historyRecords
 }
