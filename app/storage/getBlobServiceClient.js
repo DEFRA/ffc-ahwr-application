@@ -7,5 +7,5 @@ export const getBlobServiceClient = (useConnectionString, connectionString, stor
   }
 
   const uri = `https://${storageAccount}.blob.core.windows.net`
-  return new BlobServiceClient(uri, new DefaultAzureCredential())
+  return new BlobServiceClient(uri, new DefaultAzureCredential({ managedIdentityClientId: process.env.AZURE_CLIENT_ID }))
 }
