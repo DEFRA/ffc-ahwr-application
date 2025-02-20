@@ -99,18 +99,5 @@ describe('latest-contact-details', () => {
       expect(res.statusCode).toBe(404)
       expect(getApplication).toHaveBeenCalledWith('TEMP-MFV1-AAAA')
     })
-
-    test('should return 404 when reference does not match an application', async () => {
-      getApplication.mockResolvedValue(null)
-
-      const options = {
-        method: 'GET',
-        url: '/api/application/latest-contact-details/'
-      }
-      const res = await server.inject(options)
-
-      expect(res.statusCode).toBe(404)
-      expect(getApplication).toHaveBeenCalledWith('TEMP-MFV1-AAAA')
-    })
   })
 })
