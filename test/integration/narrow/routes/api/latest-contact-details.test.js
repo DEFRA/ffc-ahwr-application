@@ -4,12 +4,15 @@ import { getApplication } from '../../../../../app/repositories/application-repo
 jest.mock('../../../../../app/repositories/application-repository')
 
 describe('latest-contact-details', () => {
-  beforeEach(async () => {
-    jest.clearAllMocks()
+  beforeAll(async () => {
     await server.start()
   })
 
-  afterEach(async () => {
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  afterAll(async () => {
     await server.stop()
   })
 
