@@ -17,12 +17,12 @@ export const latestContactDetailsHandlers = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        const organisation = application.dataValues.data.organisation
+        const { name, orgEmail, farmerName, email } = application.dataValues.data.organisation
         const response = {
-          name: organisation.name,
-          orgEmail: organisation.orgEmail,
-          farmerName: organisation.farmerName,
-          email: organisation.email
+          name,
+          orgEmail,
+          farmerName,
+          email
         }
 
         return h.response(response).code(200)
