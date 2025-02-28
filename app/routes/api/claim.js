@@ -338,8 +338,9 @@ export const claimHandlers = [
       validate: {
         payload: Joi.object({
           reference: Joi.string().valid().required(),
-          status: Joi.number().valid(5, 9, 10).required(),
-          user: Joi.string().required()
+          status: Joi.number().required(),
+          user: Joi.string().required(),
+          note: Joi.string().allow('')
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
@@ -348,7 +349,7 @@ export const claimHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { reference, status } = request.payload
+        const { reference, status, note } = request.payload
 
         request.logger.setBindings({
           reference,
@@ -388,7 +389,16 @@ export const claimHandlers = [
           )
         }
 
-        await updateClaimByReference({ reference, statusId: status, updatedBy: request.payload.user, sbi })
+        await updateClaimByReference(
+          {
+            reference,
+            statusId: status,
+            updatedBy: request.payload.user,
+            sbi
+          },
+          note,
+          request.logger
+        )
 
         return h.response().code(200)
       }
