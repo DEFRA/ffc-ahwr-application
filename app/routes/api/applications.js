@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import joi from 'joi'
 import { v4 as uuid } from 'uuid'
 import { getApplication, searchApplications, updateApplicationByReference } from '../../repositories/application-repository.js'
 import { config } from '../../config/index.js'
@@ -10,12 +10,12 @@ import { searchPayloadSchema } from './schema/search-payload.schema.js'
 const { submitPaymentRequestMsgType, submitRequestQueue } = config
 
 export const applicationHandlers = [{
-  method: 'GET',
+  method: 'get',
   path: '/api/application/get/{ref}',
   options: {
     validate: {
-      params: Joi.object({
-        ref: Joi.string().valid()
+      params: joi.object({
+        ref: joi.string().valid()
       })
     },
     handler: async (request, h) => {
@@ -28,17 +28,17 @@ export const applicationHandlers = [{
     }
   }
 }, {
-  method: 'POST',
+  method: 'post',
   path: '/api/application/search',
   options: {
     validate: {
-      payload: Joi.object({
+      payload: joi.object({
         ...searchPayloadSchema,
-        sort: Joi.object({
-          field: Joi.string().valid().optional().default('CREATEDAT'),
-          direction: Joi.string().valid().optional().allow('ASC')
+        sort: joi.object({
+          field: joi.string().valid().optional().default('CREATEDAT'),
+          direction: joi.string().valid().optional().allow('ASC')
         }).optional(),
-        filter: Joi.array().optional()
+        filter: joi.array().optional()
       }),
       failAction: async (request, h, err) => {
         request.logger.error({ err })
@@ -51,16 +51,17 @@ export const applicationHandlers = [{
     }
   }
 }, {
-  method: 'PUT',
+  method: 'put',
   path: '/api/application/{ref}',
   options: {
     validate: {
-      params: Joi.object({
-        ref: Joi.string().valid()
+      params: joi.object({
+        ref: joi.string().valid()
       }),
-      payload: Joi.object({
-        status: Joi.number().valid(2, 5),
-        user: Joi.string()
+      payload: joi.object({
+        status: joi.number().valid(...Object.values(applicationStatus)),
+        user: joi.string(),
+        note: joi.string()
       }),
       failAction: async (request, h, err) => {
         request.logger.setBindings({ err })
@@ -68,21 +69,22 @@ export const applicationHandlers = [{
       }
     },
     handler: async (request, h) => {
-      const { status } = request.payload
+      const { status, user, note } = request.payload
+      const { ref } = request.params
       request.logger.setBindings({ status })
-      const application = await getApplication(request.params.ref)
+      const application = await getApplication(ref)
       if (!application.dataValues) {
         return h.response('Not Found').code(404).takeover()
       }
 
-      await updateApplicationByReference({ reference: request.params.ref, statusId: status, updatedBy: request.payload.user })
+      await updateApplicationByReference({ reference: ref, statusId: status, updatedBy: user, note })
 
       return h.response().code(200)
     }
   }
 },
 {
-  method: 'POST',
+  method: 'post',
   path: '/api/application/processor',
   handler: async (request, h) => {
     try {
@@ -96,14 +98,15 @@ export const applicationHandlers = [{
   }
 },
 {
-  method: 'POST',
+  method: 'post',
   path: '/api/application/claim',
   options: {
     validate: {
-      payload: Joi.object({
-        approved: Joi.boolean().required(),
-        reference: Joi.string().valid(),
-        user: Joi.string().required()
+      payload: joi.object({
+        approved: joi.boolean().required(),
+        reference: joi.string().valid(),
+        user: joi.string().required(),
+        note: joi.string()
       }),
       failAction: async (request, h, err) => {
         request.logger.setBindings({ err })
@@ -111,7 +114,7 @@ export const applicationHandlers = [{
       }
     },
     handler: async (request, h) => {
-      const { reference } = request.payload
+      const { note, reference } = request.payload
 
       request.logger.setBindings({ reference })
 
@@ -138,7 +141,7 @@ export const applicationHandlers = [{
 
         request.logger.setBindings({ statusId })
 
-        await updateApplicationByReference({ reference, statusId, updatedBy: request.payload.user })
+        await updateApplicationByReference({ reference, statusId, updatedBy: request.payload.user, note })
       } catch (err) {
         request.logger.setBindings({ applicationUpdateError: err })
       }
