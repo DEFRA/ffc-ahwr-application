@@ -95,10 +95,10 @@ export const stageExecutionHandlers = [{
         if (request.payload.claimOrApplication === 'claim') {
           const mainApplication = await getApplication(applicationOrClaim.dataValues.applicationReference)
           const sbi = mainApplication?.dataValues?.data?.organisation?.sbi
+          const note = null
           // note that even though it using request.payload.applicationReference
           // it can actually be the claim reference which is passed in the request
           // see AHWR-454 for further details
-          const note = null
           await updateClaimByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy, sbi }, note, request.logger)
         } else {
           await updateApplicationByReference({ reference: request.payload.applicationReference, statusId, updatedBy: request.payload.executedBy })
