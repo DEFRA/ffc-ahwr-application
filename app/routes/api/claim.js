@@ -340,7 +340,7 @@ export const claimHandlers = [
           reference: Joi.string().valid().required(),
           status: Joi.number().required(),
           user: Joi.string().required(),
-          note: Joi.string().allow('')
+          note: Joi.string()
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
