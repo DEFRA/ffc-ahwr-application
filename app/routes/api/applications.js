@@ -104,7 +104,7 @@ export const applicationHandlers = [{
     validate: {
       payload: joi.object({
         approved: joi.boolean().required(),
-        reference: joi.string().valid(),
+        reference: joi.string().required(),
         user: joi.string().required(),
         note: joi.string()
       }),
