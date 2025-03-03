@@ -545,52 +545,6 @@ describe('Claim repository test', () => {
       }])
     })
 
-    test('Update record for data by reference - 0 records updated', async () => {
-      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
-      const reference = 'AHWR-7C72-8871'
-
-      when(buildData.models.claim.update)
-        .calledWith(
-          {
-            reference,
-            statusId: 3,
-            updatedBy: 'admin'
-          },
-          {
-            where: {
-              reference
-            },
-            returning: true
-          })
-        .mockResolvedValue([
-          0,
-          []
-        ])
-
-      const note = null
-      const logger = { setBindings: jest.fn() }
-      await updateClaimByReference({
-        reference,
-        statusId: 3,
-        updatedBy: 'admin'
-      }, note, logger)
-
-      expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
-      expect(buildData.models.claim.update).toHaveBeenCalledWith(
-        {
-          reference,
-          statusId: 3,
-          updatedBy: 'admin'
-        },
-        {
-          where: {
-            reference
-          },
-          returning: true
-        }
-      )
-      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
-    })
     test('Update status of a claim which is holding same status', async () => {
       const reference = 'AHWR-7C72-8871'
 

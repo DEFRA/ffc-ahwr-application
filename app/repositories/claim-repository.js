@@ -69,15 +69,13 @@ export const updateClaimByReference = async (data, note, logger) => {
 
     const updatedRecord = result[1][0]
 
-    if (updatedRecord) {
-      await raiseClaimEvents({
-        message: 'Claim has been updated',
-        claim: updatedRecord.dataValues,
-        note,
-        raisedBy: updatedRecord.dataValues.updatedBy,
-        raisedOn: updatedRecord.dataValues.updatedAt
-      }, data.sbi)
-    }
+    await raiseClaimEvents({
+      message: 'Claim has been updated',
+      claim: updatedRecord.dataValues,
+      note,
+      raisedBy: updatedRecord.dataValues.updatedBy,
+      raisedOn: updatedRecord.dataValues.updatedAt
+    }, data.sbi)
   } catch (err) {
     logger.setBindings({ err })
     throw err
