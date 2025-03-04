@@ -35,11 +35,9 @@ const mockResponse = {
 describe('Stage execution test', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
-    await server.start()
   })
 
   afterEach(async () => {
-    await server.stop()
     resetAllWhenMocks()
   })
   const url = '/api/stageexecution'
@@ -141,7 +139,12 @@ describe('Stage execution test', () => {
       expect(res.statusCode).toBe(200)
       expect(set).toHaveBeenCalledTimes(1)
       expect(set).toHaveBeenCalledWith({ ...data, claimOrApplication: 'claim', action: { action }, executedAt: expect.any(Date) })
-      expect(updateClaimByReference).toHaveBeenCalledWith({ reference: data.applicationReference, statusId: expectedStatusId, updatedBy: data.executedBy })
+      expect(updateClaimByReference)
+        .toHaveBeenCalledWith(
+          { reference: data.applicationReference, statusId: expectedStatusId, updatedBy: data.executedBy },
+          null,
+          expect.any(Object)
+        )
       expect(res.result).toEqual({ ...mockResponse, claimOrApplication: 'claim', action: { action } })
     })
     test('returns 200 when an application is Recommended to pay', async () => {

@@ -17,7 +17,8 @@ export const raise = async (event) => {
           data: {
             reference: event.application.reference,
             statusId: event.application.statusId,
-            subStatus: event.application.subStatus
+            subStatus: event.application.subStatus,
+            note: event.note
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
@@ -64,7 +65,8 @@ export const raiseClaimEvents = async (event, sbi = 'none') => {
           data: {
             reference: event.claim.reference,
             applicationReference: event.claim.applicationReference,
-            statusId: event.claim.statusId
+            statusId: event.claim.statusId,
+            note: event.note
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
