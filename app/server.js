@@ -3,6 +3,7 @@ import { logger } from './logger.js'
 import { healthHandlers } from './routes/health.js'
 import { applicationHandlers } from './routes/api/applications.js'
 import { latestApplicationsHandlers } from './routes/api/latest-applications.js'
+import { latestContactDetailsHandlers } from './routes/api/latest-contact-details.js'
 import { applicationHistoryHandlers } from './routes/api/application-history.js'
 import { stageConfiguationHandlers } from './routes/api/stage-configuration.js'
 import { stageExecutionHandlers } from './routes/api/stage-execution.js'
@@ -25,7 +26,8 @@ server.route([
   ...applicationEventsHandlers,
   ...claimHandlers,
   ...holidayHandlers,
-  ...contactHistoryHandlers
+  ...contactHistoryHandlers,
+  ...latestContactDetailsHandlers
 ])
 
 server.register(logger)
