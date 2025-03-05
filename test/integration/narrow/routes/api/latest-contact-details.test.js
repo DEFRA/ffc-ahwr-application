@@ -89,7 +89,7 @@ describe('latest-contact-details', () => {
     })
 
     test('should return 404 when reference does not match an application', async () => {
-      getApplication.mockResolvedValue(null)
+      getApplication.mockResolvedValueOnce(null)
 
       const options = {
         method: 'GET',

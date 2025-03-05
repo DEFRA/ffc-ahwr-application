@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import joi from 'joi'
 import { getApplication } from '../../repositories/application-repository.js'
 
 export const latestContactDetailsHandlers = [
@@ -7,25 +7,26 @@ export const latestContactDetailsHandlers = [
     path: '/api/application/latest-contact-details/{ref}',
     options: {
       validate: {
-        params: Joi.object({
-          ref: Joi.string().valid()
+        params: joi.object({
+          ref: joi.string().required()
         })
       },
       handler: async (request, h) => {
         const application = await getApplication(request.params.ref)
+
         if (!application) {
           return h.response('Not Found').code(404).takeover()
         }
 
         const { name, orgEmail, farmerName, email } = application.dataValues.data.organisation
-        const response = {
+        const contactDetails = {
           name,
           orgEmail,
           farmerName,
           email
         }
 
-        return h.response(response).code(200)
+        return h.response(contactDetails).code(200)
       }
     }
   }
