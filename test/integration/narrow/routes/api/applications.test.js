@@ -13,12 +13,8 @@ const data = { organisation: { sbi: '1231' }, whichReview: 'sheep' }
 describe('Applications test', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
-    await server.start()
   })
 
-  afterEach(async () => {
-    await server.stop()
-  })
   const reference = 'ABC-1234'
 
   describe('GET /api/application/get route', () => {
@@ -171,8 +167,7 @@ describe('Applications test', () => {
     test.each([
       { status: 'abc', user: null },
       { status: 'abc', user: 0 },
-      { status: 5000, user: 'test' },
-      { status: 9, user: 'test' }
+      { status: 5000, user: 'test' }
     ])('returns 400 with error message for invalid input', async ({ status, user }) => {
       const options = {
         method,

@@ -50,16 +50,15 @@ export const setClaim = async (data) => {
   return result
 }
 
-export const updateClaimByReference = async (data) => {
+export const updateClaimByReference = async (data, note, logger) => {
   try {
     const claim = await models.claim.findOne({
       where: {
         reference: data.reference
-      },
-      returning: true
+      }
     })
 
-    if (claim?.dataValues?.statusId === data?.statusId) return claim
+    if (claim?.dataValues?.statusId === data.statusId) return claim
 
     const result = await models.claim.update(data, {
       where: {
@@ -68,23 +67,18 @@ export const updateClaimByReference = async (data) => {
       returning: true
     })
 
-    const updatedRows = result[0] // Number of affected rows
-    const updatedRecords = result[1] // Assuming this is the array of updated records
-    const sbi = data.sbi
+    const updatedRecord = result[1][0]
 
-    for (let i = 0; i < updatedRows; i++) {
-      const updatedRecord = updatedRecords[i]
-      await raiseClaimEvents({
-        message: 'Claim has been updated',
-        claim: updatedRecord.dataValues,
-        raisedBy: updatedRecord.dataValues.updatedBy,
-        raisedOn: updatedRecord.dataValues.updatedAt
-      }, sbi)
-    }
-    return result
-  } catch (error) {
-    console.error('Error updating claim by reference:', error)
-    throw error
+    await raiseClaimEvents({
+      message: 'Claim has been updated',
+      claim: updatedRecord.dataValues,
+      note,
+      raisedBy: updatedRecord.dataValues.updatedBy,
+      raisedOn: updatedRecord.dataValues.updatedAt
+    }, data.sbi)
+  } catch (err) {
+    logger.setBindings({ err })
+    throw err
   }
 }
 

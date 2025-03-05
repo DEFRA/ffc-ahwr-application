@@ -13,6 +13,7 @@ export const applicationHistoryHandlers = [
       },
       handler: async (request, h) => {
         const historyRecords = await getApplicationHistory(request.params.ref)
+        historyRecords.sort((a, b) => new Date(a.ChangedOn) - new Date(b.ChangedOn))
         return h.response({ historyRecords }).code(200)
       }
     }

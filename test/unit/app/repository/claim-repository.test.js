@@ -321,7 +321,7 @@ describe('Claim repository test', () => {
       statusId: 11,
       type: 'R',
       createdAt: '2024-02-01T07:24:29.224Z',
-      updatedAt: '2024-02-01T08:02:30.356Z',
+      updatedAt: new Date(),
       createdBy: 'admin',
       updatedBy: null,
       status: {
@@ -329,12 +329,13 @@ describe('Claim repository test', () => {
       }
     }
 
-    when(buildData.models.claim.update).mockResolvedValue(claim)
+    when(buildData.models.claim.update).mockResolvedValue([0, [{ dataValues: claim }]])
 
-    const result = await updateClaimByReference(claim)
+    const note = 'note'
+    const logger = { setBindings: jest.fn() }
+    await updateClaimByReference(claim, note, logger)
 
     expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
-    expect(claim).toEqual(result)
   })
   test('Get all claimed claims', async () => {
     const claim = {
@@ -412,35 +413,39 @@ describe('Claim repository test', () => {
     }
 
     test('should update an application by reference successfully', async () => {
-      const updateResult = [1, [{ dataValues: { ...mockData, updatedAt: new Date(), updatedBy: 'admin' } }]] // Simulate one record updated
+      const updateResult = [
+        1,
+        [{ dataValues: { ...mockData, updatedAt: new Date(), updatedBy: 'admin' } }]
+      ]
 
       buildData.models.claim.update.mockResolvedValue(updateResult)
       MOCK_SEND_EVENTS.mockResolvedValue(null)
 
-      const result = await updateClaimByReference(mockData)
+      const note = null
+      const logger = { setBindings: jest.fn() }
+      await updateClaimByReference(mockData, note, logger)
 
       expect(buildData.models.claim.update).toHaveBeenCalledWith(mockData, {
         where: { reference: mockData.reference },
         returning: true
       })
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
-      expect(result).toEqual(updateResult)
     })
 
     test('should handle failure to update an application by reference', async () => {
-      buildData.models.claim.update.mockRejectedValue(new Error('Update failed'))
-
-      await expect(updateClaimByReference(mockData)).rejects.toThrow('Update failed')
+      buildData.models.claim.update.mockRejectedValueOnce('Update failed')
+      const logger = { setBindings: jest.fn() }
+      const note = null
+      await expect(updateClaimByReference(mockData, note, logger)).rejects.toBe('Update failed')
       expect(MOCK_SEND_EVENTS).not.toHaveBeenCalled()
     })
   })
 
   describe('updateByReference', () => {
-    test('Update record for data by reference - 2 records updated', async () => {
+    test('Update record for data by reference - record updated', async () => {
       process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
       const mockNow = new Date()
       const reference = 'AHWR-7C72-8871'
-
       when(buildData.models.claim.update)
         .calledWith(
           {
@@ -455,27 +460,12 @@ describe('Claim repository test', () => {
             returning: true
           })
         .mockResolvedValue([
-          2,
+          1,
           [
             {
               dataValues: {
                 id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-                reference: 'AHWR-7C72-8871',
-                statusId: 3,
-                data: {
-                  organisation: {
-                    sbi: 'none',
-                    email: 'business@email.com'
-                  }
-                },
-                updatedBy: 'admin',
-                updatedAt: mockNow
-              }
-            },
-            {
-              dataValues: {
-                id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-                reference: 'AHWR-7C72-8872',
+                reference,
                 statusId: 3,
                 data: {
                   organisation: {
@@ -490,11 +480,13 @@ describe('Claim repository test', () => {
           ]
         ])
 
+      const note = 'admin override'
+      const logger = { setBindings: jest.fn() }
       await updateClaimByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
-      })
+      }, note, logger)
 
       expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
       expect(buildData.models.claim.update).toHaveBeenCalledWith(
@@ -510,7 +502,7 @@ describe('Claim repository test', () => {
           returning: true
         }
       )
-      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(2)
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
       expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(1, [{
         name: 'application-status-event',
         properties: {
@@ -523,8 +515,9 @@ describe('Claim repository test', () => {
             type: 'status-updated',
             message: 'Claim has been updated',
             data: {
-              reference: 'AHWR-7C72-8871',
-              statusId: 3
+              reference,
+              statusId: 3,
+              note
             },
             raisedBy: 'admin',
             raisedOn: mockNow.toISOString()
@@ -542,7 +535,7 @@ describe('Claim repository test', () => {
             type: 'application:status-updated:3',
             message: 'Claim has been updated',
             data: {
-              reference: 'AHWR-7C72-8871',
+              reference,
               statusId: 3
             },
             raisedBy: 'admin',
@@ -550,94 +543,8 @@ describe('Claim repository test', () => {
           }
         }
       }])
-      expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(2, [
-        {
-          name: 'application-status-event',
-          properties: {
-            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-            sbi: 'none',
-            cph: 'n/a',
-            checkpoint: 'cloud_role',
-            status: 'success',
-            action: {
-              type: 'status-updated',
-              message: 'Claim has been updated',
-              data: {
-                reference: 'AHWR-7C72-8872',
-                statusId: 3
-              },
-              raisedBy: 'admin',
-              raisedOn: mockNow.toISOString()
-            }
-          }
-        },
-        {
-          name: 'send-session-event',
-          properties: {
-            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-            sbi: 'none',
-            cph: 'n/a',
-            checkpoint: 'cloud_role',
-            status: 'success',
-            action: {
-              type: 'application:status-updated:3',
-              message: 'Claim has been updated',
-              data: {
-                reference: 'AHWR-7C72-8872',
-                statusId: 3
-              },
-              raisedBy: 'admin',
-              raisedOn: mockNow.toISOString()
-            }
-          }
-        }
-      ])
     })
 
-    test('Update record for data by reference - 0 records updated', async () => {
-      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
-      const reference = 'AHWR-7C72-8871'
-
-      when(buildData.models.claim.update)
-        .calledWith(
-          {
-            reference,
-            statusId: 3,
-            updatedBy: 'admin'
-          },
-          {
-            where: {
-              reference
-            },
-            returning: true
-          })
-        .mockResolvedValue([
-          0,
-          []
-        ])
-
-      await updateClaimByReference({
-        reference,
-        statusId: 3,
-        updatedBy: 'admin'
-      })
-
-      expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
-      expect(buildData.models.claim.update).toHaveBeenCalledWith(
-        {
-          reference,
-          statusId: 3,
-          updatedBy: 'admin'
-        },
-        {
-          where: {
-            reference
-          },
-          returning: true
-        }
-      )
-      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
-    })
     test('Update status of a claim which is holding same status', async () => {
       const reference = 'AHWR-7C72-8871'
 
@@ -648,16 +555,20 @@ describe('Claim repository test', () => {
           },
           returning: true
         })
-        .mockResolvedValue({ dataValues: { statusId: 3 } })
+        .mockResolvedValue([
+          1,
+          [{ dataValues: { statusId: 3, updatedAt: new Date() } }]
+        ])
 
-      const result = await updateClaimByReference({
+      const note = null
+      const logger = { setBindings: jest.fn() }
+      await updateClaimByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
-      })
+      }, note, logger)
 
       expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
-      expect(result).toEqual({ dataValues: { statusId: 3 } })
     })
 
     test('Update record for data by reference - throw exception', async () => {
@@ -677,29 +588,15 @@ describe('Claim repository test', () => {
             },
             returning: true
           })
-        .mockResolvedValue(new Error('Something failed'))
+        .mockRejectedValue('Something failed')
 
-      await updateClaimByReference({
+      const note = null
+      const logger = { setBindings: jest.fn() }
+      await expect(updateClaimByReference({
         reference,
         statusId: 3,
         updatedBy: 'admin'
-      })
-
-      expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
-      expect(buildData.models.claim.update).toHaveBeenCalledWith(
-        {
-          reference,
-          statusId: 3,
-          updatedBy: 'admin'
-        },
-        {
-          where: {
-            reference
-          },
-          returning: true
-        }
-      )
-      expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(0)
+      }, note, logger)).rejects.toBe('Something failed')
     })
   })
   describe('Search Claim', () => {
