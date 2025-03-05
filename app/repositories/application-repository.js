@@ -164,7 +164,9 @@ export const setApplication = async (data) => {
   return result
 }
 
-export const updateApplicationByReference = async (data, publishEvent = true) => {
+export const updateApplicationByReference = async (dataWithNote, publishEvent = true) => {
+  const { note, ...data } = dataWithNote
+
   try {
     const application = await models.application.findOne({
       where: {
@@ -192,7 +194,8 @@ export const updateApplicationByReference = async (data, publishEvent = true) =>
           message: 'Application has been updated',
           application: updatedRecord.dataValues,
           raisedBy: updatedRecord.dataValues.updatedBy,
-          raisedOn: updatedRecord.dataValues.updatedAt
+          raisedOn: updatedRecord.dataValues.updatedAt,
+          note
         })
       }
     }
