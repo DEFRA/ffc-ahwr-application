@@ -19,14 +19,13 @@ export const getApplication = async (reference) => {
 }
 
 export const getLatestApplicationsBySbi = async (sbi) => {
-  const result = await models.application
+  return models.application
     .findAll(
       {
         where: { 'data.organisation.sbi': sbi },
         order: [['createdAt', 'DESC']],
         raw: true
       })
-  return result
 }
 
 export const getBySbi = async (sbi) => {
