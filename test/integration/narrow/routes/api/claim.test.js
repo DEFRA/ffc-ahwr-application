@@ -1042,25 +1042,33 @@ describe('PUT claim test', () => {
       method: 'PUT',
       url: '/api/claim/update-by-reference',
       payload: {
-        reference: 'AHWR-0F5D-4A26',
+        reference: 'REBC-J9AR-KILQ',
         status: statusId,
         user: 'admin'
       }
     }
 
     getClaimByReference.mockResolvedValue({
-      dataValues: { reference: 'AHWR-0F5D-4A26', data: { typeOfLivestock: 'sheep' } }
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'sheep',
+          claimType: 'R',
+          reviewTestResults: 'positive'
+        }
+      }
     })
-
     updateClaimByReference.mockResolvedValue({
-      dataValues: { reference: 'AHWR-0F5D-4A26', statusId }
+      dataValues: { reference: 'REBC-J9AR-KILQ', statusId }
     })
-
     getApplication.mockResolvedValue({
       dataValues: {
         data: {
           organisation: {
-            sbi: 'sbi'
+            sbi: '106705779',
+            crn: '1100014934',
+            frn: '1102569649'
           }
         }
       }
@@ -1069,8 +1077,32 @@ describe('PUT claim test', () => {
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(200)
-    expect(sendMessage).toHaveBeenCalledTimes(statusId === 9 ? 1 : 0)
+    if (statusId === 9) {
+      expect(sendMessage).toHaveBeenCalledWith(
+        {
+          reference: 'REBC-J9AR-KILQ',
+          sbi: '106705779',
+          whichReview: 'sheep',
+          isEndemics: true,
+          claimType: 'R',
+          reviewTestResults: 'positive',
+          frn: '1102569649'
+        },
+        'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+    }
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        crn: '1100014934',
+        sbi: '106705779',
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: statusId,
+        dateTime: expect.any(Date)
+      },
+      'uk.gov.ffc.ahwr.update.claim.status.request', expect.any(Object), { sessionId: expect.any(String) }
+    )
   })
+
   test('Update claim should failed when claim is not exist', async () => {
     const options = {
       method: 'PUT',
