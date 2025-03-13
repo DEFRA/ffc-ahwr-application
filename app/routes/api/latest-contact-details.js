@@ -13,6 +13,7 @@ export const latestContactDetailsHandlers = [
       },
       handler: async (request, h) => {
         const application = await getApplication(request.params.ref)
+
         if (!application) {
           return h.response('Not Found').code(404).takeover()
         }

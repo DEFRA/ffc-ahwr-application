@@ -1099,7 +1099,7 @@ describe('PUT claim test', () => {
         claimStatus: statusId,
         dateTime: expect.any(Date)
       },
-      'uk.gov.ffc.ahwr.update.claim.status.request', expect.any(Object), { sessionId: expect.any(String) }
+      'uk.gov.ffc.ahwr.message.generator', expect.any(Object), { sessionId: expect.any(String) }
     )
   })
 
