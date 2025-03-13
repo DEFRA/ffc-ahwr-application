@@ -1,6 +1,10 @@
 import { getBlob } from '../storage/getBlob.js'
 import { config } from '../config/index.js'
-import { livestockTypes, claimType, testResults, piHunt as piHuntMap, piHuntAllAnimals as piHuntAllAnimalsMap } from './../constants/index.js'
+import { livestockTypes, claimType, testResults, piHunt as piHuntMap, piHuntAllAnimals as piHuntAllAnimalsMap, PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from './../constants/index.js'
+
+const isPIHuntEnabledAndVisitDateAfterGoLive = (visitDate) => {
+  return config.optionalPIHunt.enabled && new Date(visitDate) >= PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE
+}
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
   const optionalPiHuntValue = (piHunt === piHuntMap.yes && piHuntAllAnimals === piHuntAllAnimalsMap.yes) ? 'yesPiHunt' : 'noPiHunt'
@@ -21,9 +25,9 @@ const getNonPiHuntValue = (reviewTestResults, pricesConfig, claimType, typeOfLiv
 }
 
 const getBeefDairyAmount = (data, pricesConfig, claimType) => {
-  const { typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals } = data
+  const { dateOfVisit, typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals } = data
 
-  if (config.optionalPIHunt.enabled) {
+  if (isPIHuntEnabledAndVisitDateAfterGoLive(dateOfVisit)) {
     return getPiHuntValue(reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock)
   }
 

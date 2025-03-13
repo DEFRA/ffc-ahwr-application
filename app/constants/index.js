@@ -1,3 +1,5 @@
+export const PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE = new Date('2025-01-21T00:00:00')
+
 export const applicationStatus = {
   agreed: 1,
   inCheck: 5,
