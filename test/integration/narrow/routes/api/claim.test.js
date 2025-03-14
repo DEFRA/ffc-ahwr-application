@@ -7,6 +7,7 @@ import { claimPricesConfig } from '../../../../data/claim-prices-config'
 import { getBlob } from '../../../../../app/storage/getBlob'
 import { getAmount } from '../../../../../app/lib/getAmount'
 import appInsights from 'applicationinsights'
+import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../../../../app/lib/context-helper'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
@@ -16,6 +17,7 @@ jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/send-email')
 jest.mock('../../../../../app/lib/getAmount')
 jest.mock('../../../../../app/storage/getBlob')
+jest.mock('../../../../../app/lib/context-helper')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -1027,6 +1029,7 @@ describe('PUT claim test', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
     await server.start()
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
   })
 
   afterEach(async () => {

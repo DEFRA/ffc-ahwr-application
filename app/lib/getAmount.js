@@ -1,10 +1,6 @@
 import { getBlob } from '../storage/getBlob.js'
-import { config } from '../config/index.js'
-import { livestockTypes, claimType, testResults, piHunt as piHuntMap, piHuntAllAnimals as piHuntAllAnimalsMap, PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from './../constants/index.js'
-
-const isPIHuntEnabledAndVisitDateAfterGoLive = (visitDate) => {
-  return config.optionalPIHunt.enabled && new Date(visitDate) >= PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE
-}
+import { livestockTypes, claimType, testResults, piHunt as piHuntMap, piHuntAllAnimals as piHuntAllAnimalsMap } from './../constants/index.js'
+import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../lib/context-helper.js'
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
   const optionalPiHuntValue = (piHunt === piHuntMap.yes && piHuntAllAnimals === piHuntAllAnimalsMap.yes) ? 'yesPiHunt' : 'noPiHunt'

@@ -2,6 +2,9 @@ import { getAmount } from '../../../../app/lib/getAmount'
 import { setOptionalPIHuntEnabled } from '../../../mocks/config'
 import { livestockTypes, claimType, testResults } from '../../../../app/constants'
 import { claimPricesConfig as mockClaimPricesConfig } from '../../../data/claim-prices-config'
+import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../../../app/lib/context-helper.js'
+
+jest.mock('../../../../app/lib/context-helper.js')
 
 jest.mock('../../../../app/storage/getBlob', () => ({
   getBlob: () => mockClaimPricesConfig
@@ -13,6 +16,7 @@ const { review, endemics } = claimType
 describe('getAmount when optionalPiHunt flag TRUE', () => {
   beforeEach(async () => {
     setOptionalPIHuntEnabled(true)
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
   })
   afterAll(() => {
     jest.resetAllMocks()
@@ -181,9 +185,10 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
   })
 })
 
-describe('getAmount when optionalPiHunt flag false', () => {
+describe('getAmount when optionalPiHunt flag FALSE', () => {
   beforeEach(async () => {
     setOptionalPIHuntEnabled(false)
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return false })
   })
   afterAll(() => {
     jest.resetAllMocks()
