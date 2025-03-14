@@ -304,6 +304,20 @@ export const claimHandlers = [
           })
         }
 
+        await sendMessage(
+          {
+            crn: application?.dataValues?.data?.organisation?.crn,
+            sbi,
+            agreementReference: applicationReference,
+            claimReference,
+            claimStatus: statusId,
+            dateTime: new Date()
+          },
+          messageGeneratorMsgType,
+          messageGeneratorQueue,
+          { sessionId: uuid() }
+        )
+
         return h.response(claim).code(200)
       }
     }

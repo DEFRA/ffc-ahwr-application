@@ -295,7 +295,11 @@ describe('Post claim test', () => {
           vetRCVSNumber: 'AK-2024',
           speciesNumbers: 'yes',
           typeOfLivestock: 'pigs',
-          numberAnimalsTested: 30
+          numberAnimalsTested: 30,
+          organisation: {
+            crn: '1100014934',
+            sbi: '106705779'
+          }
         },
         statusId: 1,
         type: 'R',
@@ -316,6 +320,17 @@ describe('Post claim test', () => {
 
     expect(setClaim).toHaveBeenCalledTimes(1)
     expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        crn: '1100014934',
+        sbi: '106705779',
+        agreementReference: 'AHWR-0AD3-3322',
+        claimReference: 'TEMP-O9UD-22F6',
+        claimStatus: 11,
+        dateTime: expect.any(Date)
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
   })
 
   test.each([
