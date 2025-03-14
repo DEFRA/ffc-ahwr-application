@@ -368,6 +368,31 @@ export const claimHandlers = [
 
         request.logger.setBindings({ sbi })
 
+        await updateClaimByReference(
+          {
+            reference,
+            statusId: status,
+            updatedBy: request.payload.user,
+            sbi
+          },
+          note,
+          request.logger
+        )
+
+        await sendMessage(
+          {
+            crn,
+            sbi,
+            agreementReference: applicationReference,
+            claimReference: reference,
+            claimStatus: status,
+            dateTime: new Date()
+          },
+          messageGeneratorMsgType,
+          messageGeneratorQueue,
+          { sessionId: uuid() }
+        )
+
         if (status === applicationStatus.readyToPay) {
           let optionalPiHuntValue
 
@@ -391,27 +416,6 @@ export const claimHandlers = [
             { sessionId: uuid() }
           )
         }
-
-        await updateClaimByReference(
-          {
-            reference,
-            statusId: status,
-            updatedBy: request.payload.user,
-            sbi
-          },
-          note,
-          request.logger
-        )
-
-        const messageGeneratorMsg = {
-          crn,
-          sbi,
-          agreementReference: applicationReference,
-          claimReference: reference,
-          claimStatus: status,
-          dateTime: new Date()
-        }
-        await sendMessage(messageGeneratorMsg, messageGeneratorMsgType, messageGeneratorQueue, { sessionId: uuid() })
 
         return h.response().code(200)
       }

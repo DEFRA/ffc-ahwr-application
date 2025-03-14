@@ -58,7 +58,7 @@ const buildConfig = () => {
     sfdMessage: {
       enabled: process.env.SFD_MESSAGE_ENABLED === 'true'
     },
-    messageGeneratorMsgType: `${msgTypePrefix}.message.generator`
+    messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`
   }
 
   const { error } = schema.validate(config, { abortEarly: false })

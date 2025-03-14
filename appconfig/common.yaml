@@ -4,3 +4,4 @@ container.paymentRequestQueueAddress: queue:ffc-ahwr-payment-request
 container.eventQueueAddress: queue:ffc-ahwr-event
 container.applicationDocCreationRequestQueueAddress: queue:ffc-ahwr-document-request
 container.sfdMessageQueueAddress: queue:ffc-ahwr-sfd-message
+container.messageGeneratorQueueAddress: queue:ffc-ahwr-message-generator
