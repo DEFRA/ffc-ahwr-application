@@ -8,7 +8,7 @@ describe('context-helper', () => {
   })
 
   test('isPIHuntEnabledAndVisitDateAfterGoLive throws error when no visit date provided', () => {
-    expect(() => { isPIHuntEnabledAndVisitDateAfterGoLive(undefined) }).toThrow('dateOfVisit must be provided')
+    expect(() => { isPIHuntEnabledAndVisitDateAfterGoLive(undefined) }).toThrow('dateOfVisit must be parsable as a date, value provided: undefined')
   })
   test('isPIHuntEnabledAndVisitDateAfterGoLive throws error when visit date provided is not parsable as a date', () => {
     expect(() => { isPIHuntEnabledAndVisitDateAfterGoLive('abc123') }).toThrow('dateOfVisit must be parsable as a date, value provided: abc123')
