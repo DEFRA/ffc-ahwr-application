@@ -23,3 +23,6 @@ resources:
     - name: ffc-ahwr-sfd-message
       role: sender
       session: false
+    - name: ffc-ahwr-message-generator
+      role: sender
+      session: false

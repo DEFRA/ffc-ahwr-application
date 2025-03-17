@@ -30,7 +30,8 @@ const buildConfig = () => {
     sfdRequestMsgType: Joi.string(),
     sfdMessage: {
       enabled: Joi.bool()
-    }
+    },
+    messageGeneratorMsgType: Joi.string()
   })
 
   const config = {
@@ -56,7 +57,8 @@ const buildConfig = () => {
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
     sfdMessage: {
       enabled: process.env.SFD_MESSAGE_ENABLED === 'true'
-    }
+    },
+    messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`
   }
 
   const { error } = schema.validate(config, { abortEarly: false })
