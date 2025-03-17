@@ -21,7 +21,7 @@ const getNonPiHuntValue = (reviewTestResults, pricesConfig, claimType, typeOfLiv
 }
 
 const getBeefDairyAmount = (data, pricesConfig, claimType) => {
-  const { dateOfVisit, typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals } = data
+  const { typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals, dateOfVisit } = data
 
   if (isPIHuntEnabledAndVisitDateAfterGoLive(dateOfVisit)) {
     return getPiHuntValue(reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock)

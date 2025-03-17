@@ -319,7 +319,8 @@ export const claimHandlers = [
           reviewTestResults: Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional(),
           type: Joi.string().valid(claimType.review, claimType.endemics).required(),
           piHunt: Joi.string().valid(piHunt.yes, piHunt.no).optional(),
-          piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional()
+          piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional(),
+          dateOfVisit: Joi.date().required()
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })

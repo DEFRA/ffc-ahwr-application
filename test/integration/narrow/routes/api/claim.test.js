@@ -995,13 +995,14 @@ describe('Post claim test', () => {
       typeOfLivestock: 'beef',
       piHunt: 'yes',
       piHuntAllAnimals: 'yes',
-      amount: 837
+      amount: 837,
+      dateOfVisit: '2025-01-21T07:24:29.224Z'
     }
-    const { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount } = data
+    const { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount, dateOfVisit } = data
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
-      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals }
+      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, dateOfVisit }
     }
 
     getAmount.mockReturnValue(amount)
