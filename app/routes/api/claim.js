@@ -13,7 +13,7 @@ import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import { createClaimReference } from '../../lib/create-reference.js'
 import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../lib/context-helper.js'
 
-const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete } } = config
+const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
 const isReview = (payload) => payload.type === claimType.review
 const isFollowUp = (payload) => payload.type === claimType.endemics
@@ -305,6 +305,20 @@ export const claimHandlers = [
           })
         }
 
+        await sendMessage(
+          {
+            crn: application?.dataValues?.data?.organisation?.crn,
+            sbi,
+            agreementReference: applicationReference,
+            claimReference,
+            claimStatus: statusId,
+            dateTime: new Date()
+          },
+          messageGeneratorMsgType,
+          messageGeneratorQueue,
+          { sessionId: uuid() }
+        )
+
         return h.response(claim).code(200)
       }
     }
@@ -362,34 +376,13 @@ export const claimHandlers = [
         if (!claim.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
-        const application = await getApplication(claim.dataValues.applicationReference)
-        const sbi = application?.dataValues?.data?.organisation?.sbi
+        const { typeOfLivestock, claimType, reviewTestResults } = claim.dataValues.data || {}
+        const applicationReference = claim.dataValues.applicationReference
+
+        const application = await getApplication(applicationReference)
+        const { sbi, frn, crn } = application?.dataValues?.data?.organisation || {}
 
         request.logger.setBindings({ sbi })
-
-        let optionalPiHuntValue
-
-        if (isPIHuntEnabledAndVisitDateAfterGoLive(claim.dataValues.data.dateOfVisit)) {
-          optionalPiHuntValue = claim.dataValues.data.piHunt === piHunt.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
-        }
-
-        if (status === applicationStatus.readyToPay) {
-          await sendMessage(
-            {
-              reference,
-              sbi: application.dataValues.data.organisation.sbi,
-              whichReview: claim.dataValues.data.typeOfLivestock,
-              isEndemics: true,
-              claimType: claim.dataValues.data?.claimType,
-              reviewTestResults: claim.dataValues.data.reviewTestResults,
-              frn: application.dataValues.data.organisation.frn,
-              optionalPiHuntValue
-            },
-            submitPaymentRequestMsgType,
-            submitRequestQueue,
-            { sessionId: uuid() }
-          )
-        }
 
         await updateClaimByReference(
           {
@@ -401,6 +394,44 @@ export const claimHandlers = [
           note,
           request.logger
         )
+
+        await sendMessage(
+          {
+            crn,
+            sbi,
+            agreementReference: applicationReference,
+            claimReference: reference,
+            claimStatus: status,
+            dateTime: new Date()
+          },
+          messageGeneratorMsgType,
+          messageGeneratorQueue,
+          { sessionId: uuid() }
+        )
+
+        if (status === applicationStatus.readyToPay) {
+          let optionalPiHuntValue
+
+          if (isPIHuntEnabledAndVisitDateAfterGoLive(claim.dataValues.data.dateOfVisit)) {
+            optionalPiHuntValue = claim.dataValues.data.piHunt === piHunt.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
+          }
+
+          await sendMessage(
+            {
+              reference,
+              sbi,
+              whichReview: typeOfLivestock,
+              isEndemics: true,
+              claimType,
+              reviewTestResults,
+              frn,
+              optionalPiHuntValue
+            },
+            submitPaymentRequestMsgType,
+            submitRequestQueue,
+            { sessionId: uuid() }
+          )
+        }
 
         return h.response().code(200)
       }

@@ -44,6 +44,11 @@ export const getMessageQueueConfig = () => {
       address: Joi.string(),
       type: Joi.string(),
       ...sharedConfigSchema
+    },
+    messageGeneratorQueue: {
+      address: Joi.string(),
+      type: Joi.string(),
+      ...sharedConfigSchema
     }
   })
 
@@ -85,6 +90,11 @@ export const getMessageQueueConfig = () => {
     },
     sfdMessageQueue: {
       address: process.env.SFD_MESSAGE_QUEUE_ADDRESS,
+      type: 'queue',
+      ...sharedConfig
+    },
+    messageGeneratorQueue: {
+      address: process.env.MESSAGE_GENERATOR_QUEUE_ADDRESS,
       type: 'queue',
       ...sharedConfig
     }
