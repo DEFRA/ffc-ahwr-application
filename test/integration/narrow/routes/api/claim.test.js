@@ -7,6 +7,7 @@ import { claimPricesConfig } from '../../../../data/claim-prices-config'
 import { getBlob } from '../../../../../app/storage/getBlob'
 import { getAmount } from '../../../../../app/lib/getAmount'
 import appInsights from 'applicationinsights'
+import { config } from '../../../../../app/config'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
@@ -1039,12 +1040,16 @@ describe('Post claim test', () => {
 })
 
 describe('PUT claim test', () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
     jest.clearAllMocks()
     await server.start()
   })
 
-  afterEach(async () => {
+  beforeEach(() => {
+    config.optionalPIHunt.enabled = false
+  })
+
+  afterAll(async () => {
     await server.stop()
   })
 
@@ -1118,6 +1123,60 @@ describe('PUT claim test', () => {
     )
   })
 
+  test('should update claim when application does not exist', async () => {
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 9,
+        user: 'admin',
+        note: 'updating status'
+      }
+    }
+
+    getClaimByReference.mockResolvedValue({
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'sheep',
+          claimType: 'R',
+          reviewTestResults: 'positive'
+        }
+      }
+    })
+    getApplication.mockResolvedValue({})
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(updateClaimByReference).toHaveBeenCalledWith({
+      reference: 'REBC-J9AR-KILQ',
+      sbi: undefined,
+      statusId: 9,
+      updatedBy: 'admin'
+    }, 'updating status', expect.any(Object))
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        reference: 'REBC-J9AR-KILQ',
+        whichReview: 'sheep',
+        isEndemics: true,
+        claimType: 'R',
+        reviewTestResults: 'positive'
+      },
+      'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: 9,
+        dateTime: expect.any(Date)
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+  })
+
   test('Update claim should failed when claim is not exist', async () => {
     const options = {
       method: 'PUT',
@@ -1135,6 +1194,216 @@ describe('PUT claim test', () => {
 
     expect(res.statusCode).toBe(404)
   })
+
+  test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is yes', async () => {
+    config.optionalPIHunt.enabled = true
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 9,
+        user: 'admin',
+        note: 'updating status'
+      }
+    }
+    getClaimByReference.mockResolvedValue({
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'sheep',
+          claimType: 'R',
+          reviewTestResults: 'positive',
+          piHunt: 'yes',
+          piHuntAllAnimals: 'yes'
+        }
+      }
+    })
+    getApplication.mockResolvedValue({
+      dataValues: {
+        data: {
+          organisation: {
+            sbi: '106705779',
+            crn: '1100014934',
+            frn: '1102569649'
+          }
+        }
+      }
+    })
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(updateClaimByReference).toHaveBeenCalledWith({
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      statusId: 9,
+      updatedBy: 'admin'
+    }, 'updating status', expect.any(Object))
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: 9,
+        dateTime: expect.any(Date),
+        sbi: '106705779',
+        crn: '1100014934'
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        reference: 'REBC-J9AR-KILQ',
+        whichReview: 'sheep',
+        isEndemics: true,
+        claimType: 'R',
+        reviewTestResults: 'positive',
+        optionalPiHuntValue: 'yesPiHunt',
+        frn: '1102569649',
+        sbi: '106705779'
+      },
+      'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+  })
+
+  test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is no', async () => {
+    config.optionalPIHunt.enabled = true
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 9,
+        user: 'admin',
+        note: 'updating status'
+      }
+    }
+    getClaimByReference.mockResolvedValue({
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'sheep',
+          claimType: 'R',
+          reviewTestResults: 'positive',
+          piHunt: 'no',
+          piHuntAllAnimals: 'no'
+        }
+      }
+    })
+    getApplication.mockResolvedValue({
+      dataValues: {
+        data: {
+          organisation: {
+            sbi: '106705779',
+            crn: '1100014934',
+            frn: '1102569649'
+          }
+        }
+      }
+    })
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(updateClaimByReference).toHaveBeenCalledWith({
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      statusId: 9,
+      updatedBy: 'admin'
+    }, 'updating status', expect.any(Object))
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: 9,
+        dateTime: expect.any(Date),
+        sbi: '106705779',
+        crn: '1100014934'
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        reference: 'REBC-J9AR-KILQ',
+        whichReview: 'sheep',
+        isEndemics: true,
+        claimType: 'R',
+        reviewTestResults: 'positive',
+        optionalPiHuntValue: 'noPiHunt',
+        frn: '1102569649',
+        sbi: '106705779'
+      },
+      'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+  })
+
+  test('should update claim and submit payment request when optionalPiHunt is not enabled', async () => {
+    config.optionalPIHunt.enabled = false
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 9,
+        user: 'admin',
+        note: 'updating status'
+      }
+    }
+    getClaimByReference.mockResolvedValue({
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'sheep',
+          claimType: 'R',
+          reviewTestResults: 'positive',
+          piHunt: 'yes',
+          piHuntAllAnimals: 'yes'
+        }
+      }
+    })
+    getApplication.mockResolvedValue({
+      dataValues: {
+        data: {
+          organisation: {
+            sbi: '106705779',
+            crn: '1100014934',
+            frn: '1102569649'
+          }
+        }
+      }
+    })
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(updateClaimByReference).toHaveBeenCalledWith({
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      statusId: 9,
+      updatedBy: 'admin'
+    }, 'updating status', expect.any(Object))
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: 9,
+        dateTime: expect.any(Date),
+        sbi: '106705779',
+        crn: '1100014934'
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        reference: 'REBC-J9AR-KILQ',
+        whichReview: 'sheep',
+        isEndemics: true,
+        claimType: 'R',
+        reviewTestResults: 'positive',
+        frn: '1102569649',
+        sbi: '106705779'
+      },
+      'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+  })
+
   test('Update claim should failed when reference is not provieded', async () => {
     const options = {
       method: 'PUT',

@@ -410,7 +410,7 @@ export const claimHandlers = [
         if (status === applicationStatus.readyToPay) {
           let optionalPiHuntValue
 
-          if (optionalPiHuntEnabled) {
+          if (config.optionalPIHunt.enabled) {
             optionalPiHuntValue = claim.dataValues.data.piHunt === piHunt.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
           }
 
