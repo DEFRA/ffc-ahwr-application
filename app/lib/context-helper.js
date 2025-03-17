@@ -4,9 +4,15 @@ import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from '../constants/index.js'
 export const isPIHuntEnabled = () => {
   return config.optionalPIHunt.enabled
 }
-export const isPIHuntEnabledAndVisitDateAfterGoLive = (dateOfVisitString) => {
-  if (!dateOfVisitString) {
-    throw new Error('dateOfVisitString must be provided')
+export const isPIHuntEnabledAndVisitDateAfterGoLive = (dateOfVisit) => {
+  if (!dateOfVisit) {
+    throw new Error('dateOfVisit must be provided')
   }
-  return isPIHuntEnabled() && new Date(dateOfVisitString) >= PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE
+
+  const dateOfVisitParsed = (dateOfVisit instanceof Date) ? dateOfVisit : new Date(dateOfVisit)
+  if (Number.isNaN(dateOfVisitParsed.getTime())) {
+    throw new Error(`dateOfVisit must be parsable as a date, value provided: ${dateOfVisit}`)
+  }
+
+  return isPIHuntEnabled() && dateOfVisitParsed >= PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE
 }
