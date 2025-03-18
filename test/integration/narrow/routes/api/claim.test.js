@@ -7,7 +7,7 @@ import { claimPricesConfig } from '../../../../data/claim-prices-config'
 import { getBlob } from '../../../../../app/storage/getBlob'
 import { getAmount } from '../../../../../app/lib/getAmount'
 import appInsights from 'applicationinsights'
-import { config } from '../../../../../app/config'
+import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../../../../app/lib/context-helper'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
@@ -17,6 +17,7 @@ jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/send-email')
 jest.mock('../../../../../app/lib/getAmount')
 jest.mock('../../../../../app/storage/getBlob')
+jest.mock('../../../../../app/lib/context-helper')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -1009,13 +1010,14 @@ describe('Post claim test', () => {
       typeOfLivestock: 'beef',
       piHunt: 'yes',
       piHuntAllAnimals: 'yes',
-      amount: 837
+      amount: 837,
+      dateOfVisit: '2025-01-21T07:24:29.224Z'
     }
-    const { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount } = data
+    const { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, amount, dateOfVisit } = data
     const options = {
       method: 'POST',
       url: '/api/claim/get-amount',
-      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals }
+      payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, dateOfVisit }
     }
 
     getAmount.mockReturnValue(amount)
@@ -1046,7 +1048,7 @@ describe('PUT claim test', () => {
   })
 
   beforeEach(() => {
-    config.optionalPIHunt.enabled = false
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return false })
   })
 
   afterAll(async () => {
@@ -1196,7 +1198,7 @@ describe('PUT claim test', () => {
   })
 
   test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is yes', async () => {
-    config.optionalPIHunt.enabled = true
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
     const options = {
       method: 'PUT',
       url: '/api/claim/update-by-reference',
@@ -1266,7 +1268,7 @@ describe('PUT claim test', () => {
   })
 
   test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is no', async () => {
-    config.optionalPIHunt.enabled = true
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
     const options = {
       method: 'PUT',
       url: '/api/claim/update-by-reference',
@@ -1336,7 +1338,6 @@ describe('PUT claim test', () => {
   })
 
   test('should update claim and submit payment request when optionalPiHunt is not enabled', async () => {
-    config.optionalPIHunt.enabled = false
     const options = {
       method: 'PUT',
       url: '/api/claim/update-by-reference',

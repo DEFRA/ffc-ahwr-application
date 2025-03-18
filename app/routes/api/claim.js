@@ -11,8 +11,9 @@ import { getAmount } from '../../lib/getAmount.js'
 import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import { createClaimReference } from '../../lib/create-reference.js'
+import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../lib/context-helper.js'
 
-const { submitPaymentRequestMsgType, submitRequestQueue, optionalPIHunt: { enabled: optionalPiHuntEnabled }, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
+const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
 const isReview = (payload) => payload.type === claimType.review
 const isFollowUp = (payload) => payload.type === claimType.endemics
@@ -102,8 +103,8 @@ const isClaimDataValid = (payload) => {
   const pigReviewValidations = { ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults }
   const sheepReviewValidations = { ...numberAnimalsTested }
 
-  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt), ...biosecurity }
-  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!optionalPiHuntEnabled && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!optionalPiHuntEnabled && piHunt), ...(optionalPiHuntEnabled && optionalPiHunt), ...biosecurity }
+  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
+  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
 
@@ -332,7 +333,8 @@ export const claimHandlers = [
           reviewTestResults: Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional(),
           type: Joi.string().valid(claimType.review, claimType.endemics).required(),
           piHunt: Joi.string().valid(piHunt.yes, piHunt.no).optional(),
-          piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional()
+          piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional(),
+          dateOfVisit: Joi.date().required()
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
@@ -410,7 +412,7 @@ export const claimHandlers = [
         if (status === applicationStatus.readyToPay) {
           let optionalPiHuntValue
 
-          if (config.optionalPIHunt.enabled) {
+          if (isPIHuntEnabledAndVisitDateAfterGoLive(claim.dataValues.data.dateOfVisit)) {
             optionalPiHuntValue = claim.dataValues.data.piHunt === piHunt.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
           }
 
