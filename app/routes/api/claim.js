@@ -296,7 +296,13 @@ export const claimHandlers = [
           appInsights.defaultClient.trackEvent({
             name: 'process-claim',
             properties: {
-              data: payload,
+              data: {
+                applicationReference,
+                typeOfLivestock,
+                dateOfVisit: payload.dateOfVisit,
+                claimType,
+                piHunt: claim.dataValues.data.piHunt
+              },
               reference: claim?.dataValues?.reference,
               status: statusId,
               sbi,
