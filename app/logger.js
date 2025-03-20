@@ -47,6 +47,7 @@ export const logger = {
       res,
       err
     },
-    ...(process.env.USE_PRETTY_PRINT === 'true' && { transport })
+    ...(process.env.USE_PRETTY_PRINT === 'true' && { transport }),
+    redact: ['payload.vetsName']
   }
 }
