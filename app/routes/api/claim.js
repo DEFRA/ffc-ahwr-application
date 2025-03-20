@@ -244,7 +244,7 @@ export const claimHandlers = [
         const applicationReference = payload?.applicationReference
         const tempClaimReference = payload?.reference
         const { type } = payload
-        const { typeOfLivestock } = payload.data
+        const { typeOfLivestock, dateOfVisit } = payload.data
         const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
         const laboratoryURN = payload?.data?.laboratoryURN
 
@@ -296,7 +296,13 @@ export const claimHandlers = [
           appInsights.defaultClient.trackEvent({
             name: 'process-claim',
             properties: {
-              data: payload,
+              data: {
+                applicationReference,
+                typeOfLivestock,
+                dateOfVisit,
+                claimType: type,
+                piHunt: payload.data.piHunt
+              },
               reference: claim?.dataValues?.reference,
               status: statusId,
               sbi,

@@ -749,7 +749,12 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }), '183565fc-5684-40c1-a11d-85f55aff4d45')
 
-    expectAppInsightsEventRaised(claim, 'AHWR-0F5D-4A26', 11, 'not-found')
+    expectAppInsightsEventRaised({
+      applicationReference: 'AHWR-0AD3-3322',
+      typeOfLivestock: 'pigs',
+      dateOfVisit: '2024-01-22T00:00:00.000Z',
+      claimType: 'R'
+    }, 'AHWR-0F5D-4A26', 11, 'not-found')
   })
 
   test('sent the correct parameters to send sendFarmerEndemicsClaimConfirmationEmail when claim type is follow-up', async () => {
@@ -843,7 +848,13 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }), '99dab1c1-ebdb-47dc-a208-daebca873924')
 
-    expectAppInsightsEventRaised(modifiedClaim, 'AHWR-0F5D-4A26', 11, 'not-found')
+    expectAppInsightsEventRaised({
+      applicationReference: 'AHWR-0AD3-3322',
+      typeOfLivestock: 'beef',
+      dateOfVisit: '2024-01-22T00:00:00.000Z',
+      claimType: 'E',
+      piHunt: 'yes'
+    }, 'AHWR-0F5D-4A26', 11, 'not-found')
   })
 
   test('no Email sent, and no appInsights even raised when claim is false', async () => {
