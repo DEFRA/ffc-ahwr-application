@@ -31,6 +31,6 @@ export const patchClaimData = async (reference, key, value, note) => {
     claim: updatedRecord.dataValues,
     note,
     raisedBy: updatedRecord.dataValues.updatedBy,
-    raisedOn: updatedRecord.dataValues.updatedOn
+    raisedOn: updatedRecord.dataValues.updatedAt
   })
 }

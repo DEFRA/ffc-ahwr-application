@@ -19,7 +19,7 @@ test('patch /claims/{ref}/data update data property', async () => {
 
   const claim = {
     updatedBy: 'me',
-    updatedOn: '2025-03-20T12:12:28.590Z'
+    updatedAt: '2025-03-20T12:12:28.590Z'
   }
 
   jest.spyOn(buildData.models.claim, 'update')
@@ -42,7 +42,7 @@ test('patch /claims/{ref}/data update data property', async () => {
       message: 'Claim has been updated',
       note,
       raisedBy: claim.updatedBy,
-      raisedOn: claim.updatedOn
+      raisedOn: claim.updatedAt
     }]
   ])
 })
