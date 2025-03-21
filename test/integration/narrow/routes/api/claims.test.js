@@ -88,7 +88,7 @@ test('patch /claims/{ref}/data missing claim', async () => {
   expect(raiseClaimEvents.mock.calls).toEqual([])
 })
 
-test('patch /claims/{ref}/data invalid payload', async () => {
+test('patch /claims/{ref}/data invalid payload: missing note', async () => {
   const res = await server.inject({
     method: 'patch',
     url: '/api/claims/FUSH-BAAH-1234/data',
@@ -100,4 +100,19 @@ test('patch /claims/{ref}/data invalid payload', async () => {
   expect(res.statusCode).toBe(400)
   const { err } = JSON.parse(res.payload)
   expect(err.details[0].message).toBe('"note" is required')
+})
+
+test('patch /claims/{ref}/data invalid payload: missing data property', async () => {
+  const res = await server.inject({
+    method: 'patch',
+    url: '/api/claims/FUSH-BAAH-1234/data',
+    payload: {
+      note: 'no data properties'
+    }
+  })
+
+  expect(res.statusCode).toBe(400)
+  const { err } = JSON.parse(res.payload)
+  expect(err.details[0].message)
+    .toBe('"value" must contain at least one of [vetsName, dateOfVisit, vetRCVSNumber]')
 })
