@@ -81,6 +81,7 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+      expect().toHaveBeenCalledWith()
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and CC address if one specified via SFD', async () => {
