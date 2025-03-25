@@ -17,7 +17,7 @@ const sendEmail = async (email, personalisation, reference, templateId, addressT
     await sendSFDEmail(templateId, email, { personalisation, reference })
 
     applicationInsights.defaultClient.trackEvent({
-      name: 'email',
+      name: 'claim-email-requested',
       properties: {
         status: success,
         reference,
@@ -41,7 +41,7 @@ const sendCarbonCopy = async (templateId, personalisation, reference) => {
     )
 
     applicationInsights.defaultClient.trackEvent({
-      name: 'email',
+      name: 'claim-email-requested',
       properties: {
         status: true,
         reference,

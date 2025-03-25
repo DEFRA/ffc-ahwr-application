@@ -83,7 +83,7 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
       expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
-        name: 'email',
+        name: 'claim-email-requested',
         properties: {
           addressType: 'email',
           reference: 'RESH-DFEF-6037',
@@ -92,7 +92,7 @@ describe('sendEmail', () => {
         }
       })
       expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
-        name: 'email',
+        name: 'claim-email-requested',
         properties: {
           addressType: 'orgEmail',
           reference: 'RESH-DFEF-6037',
@@ -122,7 +122,7 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, 'test@test.com', { personalisation: expectedPersonalisation })
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
       expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
-        name: 'email',
+        name: 'claim-email-requested',
         properties: {
           addressType: 'CC',
           reference: 'RESH-DFEF-6037',
@@ -131,7 +131,7 @@ describe('sendEmail', () => {
         }
       })
       expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
-        name: 'email',
+        name: 'claim-email-requested',
         properties: {
           addressType: 'email',
           reference: 'RESH-DFEF-6037',
