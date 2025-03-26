@@ -2,6 +2,7 @@ import { sendFarmerConfirmationEmail, sendFarmerEndemicsClaimConfirmationEmail }
 import { config } from '../../../../app/config'
 import { sendSFDEmail } from '../../../../app/lib/sfd-client'
 import { sendMessage } from '../../../../app/messaging/send-message'
+import applicationInsights from 'applicationinsights'
 
 jest.mock('../../../../app/lib/sfd-client')
 jest.mock('../../../../app/messaging/send-message')
@@ -81,6 +82,24 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+      expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+        name: 'claim-email-requested',
+        properties: {
+          addressType: 'email',
+          reference: 'RESH-DFEF-6037',
+          status: true,
+          templateId: 'templateIdFarmerEndemicsClaimComplete'
+        }
+      })
+      expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+        name: 'claim-email-requested',
+        properties: {
+          addressType: 'orgEmail',
+          reference: 'RESH-DFEF-6037',
+          status: true,
+          templateId: 'templateIdFarmerEndemicsClaimComplete'
+        }
+      })
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to farmer and CC address if one specified via SFD', async () => {
@@ -102,6 +121,24 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, 'test@test.com', { personalisation: expectedPersonalisation })
       expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+      expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+        name: 'claim-email-requested',
+        properties: {
+          addressType: 'CC',
+          reference: 'RESH-DFEF-6037',
+          status: true,
+          templateId: 'templateIdFarmerEndemicsClaimComplete'
+        }
+      })
+      expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+        name: 'claim-email-requested',
+        properties: {
+          addressType: 'email',
+          reference: 'RESH-DFEF-6037',
+          status: true,
+          templateId: 'templateIdFarmerEndemicsClaimComplete'
+        }
+      })
     })
 
     test('sendFarmerEndemicsClaimConfirmationEmail sends email to just farmer email when orgEmail is not provided via SFD', async () => {
