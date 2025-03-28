@@ -1,7 +1,8 @@
 import { buildData } from '../data/index.js'
 import { raiseClaimEvents } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
-import { Op } from 'sequelize'
+import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+import { Op, Sequelize } from 'sequelize'
 
 const { models } = buildData
 
@@ -200,3 +201,56 @@ export const searchClaims = async (search, filter, offset, limit, sort = { field
     claims: await models.claim.findAll({ ...query, order: [evalSortField(sort)], limit, offset })
   }
 }
+
+export const findClaim = async (reference) => {
+  const claim = await buildData.models.claim.findOne({ where: { reference } })
+  return claim === null ? claim : claim.dataValues
+}
+
+export const updateClaimData = async (reference, updatedProperty, newValue, oldValue, note, user) => {
+  const data = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.col('data'),
+    Sequelize.literal(`'{${updatedProperty}}'`),
+    Sequelize.literal(`'${JSON.stringify(newValue)}'`)
+  )
+
+  // eslint-disable-next-line no-unused-vars
+  const [_, updates] = await buildData.models.claim.update(
+    { data },
+    {
+      where: { reference },
+      returning: true
+    }
+  )
+
+  const [updatedRecord] = updates
+  const { applicationReference, updatedAt } = updatedRecord.dataValues
+
+  const eventData = {
+    applicationReference,
+    reference,
+    updatedProperty,
+    newValue,
+    oldValue,
+    note
+  }
+  const type = `claim-${updatedProperty}`
+  await claimDataUpdateEvent(eventData, type, user, updatedAt)
+
+  await buildData.models.claim_update_history.create({
+    applicationReference,
+    reference,
+    note,
+    updatedProperty,
+    newValue,
+    oldValue,
+    eventType: type,
+    createdBy: user
+  })
+}
+
+export const findAllClaimUpdateHistory = (reference) =>
+  buildData.models.claim_update_history.findAll({
+    where: { reference }
+  })
