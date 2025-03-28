@@ -7,12 +7,14 @@ import { holiday } from './models/holiday.js'
 import { stageConfiguration } from './models/stage-configuration.js'
 import { stageExecution } from './models/stage-execution.js'
 import { status } from './models/status.js'
+import { claimUpdateHistory } from './models/claim-update-history.js'
 
 export const buildData = (() => {
   const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
 
   application(sequelize, DataTypes)
   claim(sequelize, DataTypes)
+  claimUpdateHistory(sequelize, DataTypes)
   contactHistory(sequelize, DataTypes)
   holiday(sequelize, DataTypes)
   stageConfiguration(sequelize, DataTypes)
@@ -21,6 +23,7 @@ export const buildData = (() => {
 
   sequelize.models.application.associate(sequelize.models)
   sequelize.models.claim.associate(sequelize.models)
+  sequelize.models.claim_update_history.associate(sequelize.models)
   sequelize.models.contact_history.associate(sequelize.models)
   sequelize.models.stage_execution.associate(sequelize.models)
   sequelize.models.status.associate(sequelize.models)
