@@ -329,6 +329,8 @@ describe('Post claim test', () => {
         agreementReference: 'AHWR-0AD3-3322',
         claimReference: 'TEMP-O9UD-22F6',
         claimStatus: 11,
+        claimType: 'R',
+        typeOfLivestock,
         dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
