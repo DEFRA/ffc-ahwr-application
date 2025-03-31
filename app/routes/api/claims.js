@@ -12,7 +12,7 @@ export const claimsHandlers = [
         }),
         payload: joi.object({
           vetsName: joi.string(),
-          dateOfVisit: joi.date(),
+          dateOfVisit: joi.string(),
           vetRCVSNumber: joi.string().pattern(/^\d{6}[\dX]$/i),
           note: joi.string().required(),
           user: joi.string().required()
