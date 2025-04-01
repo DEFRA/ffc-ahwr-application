@@ -318,6 +318,8 @@ export const claimHandlers = [
             agreementReference: applicationReference,
             claimReference,
             claimStatus: statusId,
+            claimType: type,
+            typeOfLivestock,
             dateTime: new Date()
           },
           messageGeneratorMsgType,
@@ -408,6 +410,8 @@ export const claimHandlers = [
             agreementReference: applicationReference,
             claimReference: reference,
             claimStatus: status,
+            claimType,
+            typeOfLivestock,
             dateTime: new Date()
           },
           messageGeneratorMsgType,

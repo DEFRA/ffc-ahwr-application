@@ -329,6 +329,8 @@ describe('Post claim test', () => {
         agreementReference: 'AHWR-0AD3-3322',
         claimReference: 'TEMP-O9UD-22F6',
         claimStatus: 11,
+        claimType: 'R',
+        typeOfLivestock,
         dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
@@ -1130,6 +1132,8 @@ describe('PUT claim test', () => {
         agreementReference: 'AHWR-KJLI-2678',
         claimReference: 'REBC-J9AR-KILQ',
         claimStatus: statusId,
+        claimType: 'R',
+        typeOfLivestock: 'sheep',
         dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
@@ -1184,6 +1188,8 @@ describe('PUT claim test', () => {
         agreementReference: 'AHWR-KJLI-2678',
         claimReference: 'REBC-J9AR-KILQ',
         claimStatus: 9,
+        claimType: 'R',
+        typeOfLivestock: 'sheep',
         dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
@@ -1258,6 +1264,8 @@ describe('PUT claim test', () => {
         agreementReference: 'AHWR-KJLI-2678',
         claimReference: 'REBC-J9AR-KILQ',
         claimStatus: 9,
+        typeOfLivestock: 'sheep',
+        claimType: 'R',
         dateTime: expect.any(Date),
         sbi: '106705779',
         crn: '1100014934'
@@ -1328,6 +1336,8 @@ describe('PUT claim test', () => {
         agreementReference: 'AHWR-KJLI-2678',
         claimReference: 'REBC-J9AR-KILQ',
         claimStatus: 9,
+        typeOfLivestock: 'sheep',
+        claimType: 'R',
         dateTime: expect.any(Date),
         sbi: '106705779',
         crn: '1100014934'
@@ -1397,6 +1407,8 @@ describe('PUT claim test', () => {
         agreementReference: 'AHWR-KJLI-2678',
         claimReference: 'REBC-J9AR-KILQ',
         claimStatus: 9,
+        typeOfLivestock: 'sheep',
+        claimType: 'R',
         dateTime: expect.any(Date),
         sbi: '106705779',
         crn: '1100014934'
