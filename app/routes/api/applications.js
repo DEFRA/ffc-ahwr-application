@@ -188,7 +188,7 @@ export const applicationHandlers = [{
         return h.response().code(204)
       }
 
-      const oldValue = application.data[updatedProperty]
+      const oldValue = application.data[updatedProperty] ?? ''
 
       await updateApplicationData(reference, updatedProperty, newValue, oldValue, note, user)
 
