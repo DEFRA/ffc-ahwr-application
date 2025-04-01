@@ -1,5 +1,14 @@
 import { when, resetAllWhenMocks } from 'jest-when'
-import { getAllClaimedClaims, getByApplicationReference, getClaimByReference, isURNNumberUnique, searchClaims, setClaim, updateClaimByReference } from '../../../../app/repositories/claim-repository'
+import {
+  findAllClaimUpdateHistory,
+  getAllClaimedClaims,
+  getByApplicationReference,
+  getClaimByReference,
+  isURNNumberUnique,
+  searchClaims,
+  setClaim,
+  updateClaimByReference
+} from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
 import { Op } from 'sequelize'
@@ -16,6 +25,9 @@ jest.mock('../../../../app/data', () => {
           count: jest.fn()
         },
         application: {
+          findAll: jest.fn()
+        },
+        claim_update_history: {
           findAll: jest.fn()
         },
         status: 'mock-status'
@@ -677,5 +689,17 @@ describe('Claim repository test', () => {
     expect(buildData.models.claim.findAll.mock.calls).toEqual([
       [expected]
     ])
+  })
+
+  test('findAllClaimUpdateHistory calls through to findAll', async () => {
+    const aClaimHistory = [{ reference: 'some-claim', applicationReference: 'some-app', updatedProperty: 'vetsName', newValue: 'Ken', oldValue: 'Tim' }]
+    when(buildData.models.claim_update_history.findAll).mockResolvedValue(aClaimHistory)
+
+    const result = await findAllClaimUpdateHistory('some-claim')
+
+    expect(buildData.models.claim_update_history.findAll).toHaveBeenCalledWith({
+      where: { reference: 'some-claim' }
+    })
+    expect(result).toEqual(aClaimHistory)
   })
 })

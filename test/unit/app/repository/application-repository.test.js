@@ -1,6 +1,6 @@
 import { when, resetAllWhenMocks } from 'jest-when'
 import {
-  evalSortField,
+  evalSortField, findApplication,
   getAllApplications,
   getAllClaimedApplications,
   getApplication,
@@ -9,14 +9,16 @@ import {
   getLatestApplicationsBySbi,
   searchApplications,
   setApplication,
-  updateApplicationByReference
+  updateApplicationByReference, updateApplicationData
 } from '../../../../app/repositories/application-repository'
 import { buildData } from '../../../../app/data'
-import { Op } from 'sequelize'
+import { Op, Sequelize } from 'sequelize'
+import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
 
 const { models } = buildData
 
 jest.mock('../../../../app/data')
+jest.mock('../../../../app/event-publisher/claim-data-update-event')
 
 models.application.create = jest.fn()
 models.application.update = jest.fn()
@@ -1155,7 +1157,124 @@ describe('Application Repository test', () => {
       order: [['createdAt', 'DESC']]
     })
   })
+
+  test('findApplication finds application', async () => {
+    const ref = 'AHWR-OLD1-REF1'
+
+    when(models.application.findOne)
+      .calledWith({
+        where: {
+          reference: ref
+        }
+      })
+      .mockResolvedValue({
+        dataValues: {
+          value: 'something'
+        }
+      })
+
+    const result = await findApplication(ref)
+
+    expect(result).toEqual({
+      value: 'something'
+    })
+
+    expect(models.application.findOne).toHaveBeenCalledTimes(1)
+    expect(models.application.findOne).toHaveBeenCalledWith({
+      where: {
+        reference: ref
+      }
+    })
+  })
+
+  test('findApplication finds nothing', async () => {
+    const ref = 'AHWR-OLD1-REF1'
+
+    when(models.application.findOne)
+      .calledWith({
+        where: {
+          reference: ref
+        }
+      })
+      .mockResolvedValue(null)
+
+    const result = await findApplication(ref)
+
+    expect(result).toBeNull()
+
+    expect(models.application.findOne).toHaveBeenCalledTimes(1)
+    expect(models.application.findOne).toHaveBeenCalledWith({
+      where: {
+        reference: ref
+      }
+    })
+  })
+
+  describe('updateApplicationData', () => {
+    const mockData = {
+      reference: 'REF-UPDATE',
+      statusId: 2,
+      updatedBy: 'admin',
+      data: {
+        organisation: {
+          sbi: '123456789',
+          email: 'business@email.com'
+        }
+      }
+    }
+
+    test('should update application data successfully', async () => {
+      const updateResult = [
+        1,
+        [
+          {
+            dataValues: {
+              ...mockData,
+              updatedAt: new Date(),
+              updatedBy: 'admin'
+            }
+          }
+        ]
+      ] // Simulate one record updated
+
+      models.application.update.mockResolvedValueOnce(updateResult)
+      MOCK_SEND_EVENTS.mockResolvedValue(null)
+
+      await updateApplicationData('REF-UPDATE', 'vetName', 'Geoff', 'Bill', 'note here', 'Admin')
+
+      expect(models.application.update).toHaveBeenCalledWith({
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{vetName}\''),
+          Sequelize.literal('\'"Geoff"\'')
+        )
+      }, {
+        where: { reference: 'REF-UPDATE' },
+        returning: true
+      })
+      expect(models.claim_update_history.create).toHaveBeenCalledWith({
+        applicationReference: 'REF-UPDATE',
+        reference: 'REF-UPDATE',
+        createdBy: 'Admin',
+        eventType: 'application-vetName',
+        updatedProperty: 'vetName',
+        oldValue: 'Bill',
+        newValue: 'Geoff',
+        note: 'note here'
+      })
+      expect(claimDataUpdateEvent).toHaveBeenCalledWith({
+        applicationReference: 'REF-UPDATE',
+        reference: 'REF-UPDATE',
+        updatedProperty: 'vetName',
+        oldValue: 'Bill',
+        newValue: 'Geoff',
+        note: 'note here'
+      }, 'application-vetName', 'Admin', expect.any(Date))
+    })
+  })
 })
+
 describe('evalSortField function', () => {
   test('returns default sort when sort is null', () => {
     const result = evalSortField(null)

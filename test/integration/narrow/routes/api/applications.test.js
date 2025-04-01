@@ -1,6 +1,11 @@
 import { server } from '../../../../../app/server'
 import { applicationStatus } from '../../../../../app/constants'
-import { searchApplications, getApplication, updateApplicationByReference } from '../../../../../app/repositories/application-repository'
+import {
+  searchApplications,
+  getApplication,
+  updateApplicationByReference,
+  findApplication, updateApplicationData
+} from '../../../../../app/repositories/application-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
 import { processApplicationApi } from '../../../../../app/messaging/application/process-application'
 
@@ -280,18 +285,136 @@ describe('Applications test', () => {
       jest.clearAllMocks()
     })
 
-    test('succesfully submiting an application', async () => {
+    test('successfully submitting an application', async () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
       expect(processApplicationApi).toHaveBeenCalledTimes(1)
     })
 
-    test('submiting an application fail', async () => {
+    test('submitting an application fail', async () => {
       processApplicationApi.mockImplementation(async () => { throw new Error() })
       const res = await server.inject(options)
       expect(res.statusCode).toBe(400)
       expect(processApplicationApi).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('PATCH /api/applications/{reference}/data', () => {
+    function getOptionsForUpdatedValue (updatedValue) {
+      return {
+        method: 'PATCH',
+        url: '/api/applications/AHWR-OLDS-KOOL/data',
+        payload: {
+          ...updatedValue,
+          note: 'updated note',
+          user: 'Admin'
+        }
+      }
+    }
+
+    afterAll(() => {
+      jest.clearAllMocks()
+    })
+
+    test('when application not found, return 404', async () => {
+      findApplication.mockResolvedValueOnce(null)
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'updated person' }))
+
+      expect(res.statusCode).toBe(404)
+      expect(updateApplicationData).toHaveBeenCalledTimes(0)
+    })
+
+    test('successfully update vetName in application', async () => {
+      const existingData = {
+        vetName: 'old person',
+        visitDate: '2021-01-01',
+        vetRcvs: '123456'
+      }
+      findApplication.mockResolvedValueOnce({ reference: 'AHWR-OLDS-KOOL', createdBy: 'admin', createdAt: new Date(), data: existingData })
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'updated person' }))
+
+      expect(res.statusCode).toBe(204)
+      expect(updateApplicationData).toHaveBeenCalledTimes(1)
+      expect(updateApplicationData).toHaveBeenCalledWith('AHWR-OLDS-KOOL', 'vetName', 'updated person', 'old person', 'updated note', 'Admin')
+    })
+
+    test('successfully add vetName in application', async () => {
+      const existingData = {
+        visitDate: '2021-01-01',
+        vetRcvs: '123456'
+      }
+      findApplication.mockResolvedValueOnce({ reference: 'AHWR-OLDS-KOOL', createdBy: 'admin', createdAt: new Date(), data: existingData })
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'updated person' }))
+
+      expect(res.statusCode).toBe(204)
+      expect(updateApplicationData).toHaveBeenCalledTimes(1)
+      expect(updateApplicationData).toHaveBeenCalledWith('AHWR-OLDS-KOOL', 'vetName', 'updated person', '', 'updated note', 'Admin')
+    })
+
+    test('successfully update visitDate in application', async () => {
+      const existingData = {
+        vetName: 'old person',
+        visitDate: '2021-01-01',
+        vetRcvs: '123456'
+      }
+      findApplication.mockResolvedValueOnce({ reference: 'AHWR-OLDS-KOOL', createdBy: 'admin', createdAt: new Date(), data: existingData })
+      const res = await server.inject(getOptionsForUpdatedValue({ visitDate: '2025-06-21' }))
+
+      expect(res.statusCode).toBe(204)
+      expect(updateApplicationData).toHaveBeenCalledTimes(1)
+      expect(updateApplicationData).toHaveBeenCalledWith('AHWR-OLDS-KOOL', 'visitDate', '2025-06-21', '2021-01-01', 'updated note', 'Admin')
+    })
+
+    test('successfully add visitDate in application', async () => {
+      const existingData = {
+        vetName: 'old person',
+        vetRcvs: '123456'
+      }
+      findApplication.mockResolvedValueOnce({ reference: 'AHWR-OLDS-KOOL', createdBy: 'admin', createdAt: new Date(), data: existingData })
+      const res = await server.inject(getOptionsForUpdatedValue({ visitDate: '2025-06-21' }))
+
+      expect(res.statusCode).toBe(204)
+      expect(updateApplicationData).toHaveBeenCalledTimes(1)
+      expect(updateApplicationData).toHaveBeenCalledWith('AHWR-OLDS-KOOL', 'visitDate', '2025-06-21', '', 'updated note', 'Admin')
+    })
+
+    test('successfully update vetRcvs in application', async () => {
+      const existingData = {
+        vetName: 'old person',
+        visitDate: '2021-01-01',
+        vetRcvs: '1234567'
+      }
+      findApplication.mockResolvedValueOnce({ reference: 'AHWR-OLDS-KOOL', createdBy: 'admin', createdAt: new Date(), data: existingData })
+      const res = await server.inject(getOptionsForUpdatedValue({ vetRcvs: '7654321' }))
+
+      expect(res.statusCode).toBe(204)
+      expect(updateApplicationData).toHaveBeenCalledTimes(1)
+      expect(updateApplicationData).toHaveBeenCalledWith('AHWR-OLDS-KOOL', 'vetRcvs', '7654321', '1234567', 'updated note', 'Admin')
+    })
+
+    test('successfully add vetRcvs in application', async () => {
+      const existingData = {
+        vetName: 'old person',
+        visitDate: '2021-01-01'
+      }
+      findApplication.mockResolvedValueOnce({ reference: 'AHWR-OLDS-KOOL', createdBy: 'admin', createdAt: new Date(), data: existingData })
+      const res = await server.inject(getOptionsForUpdatedValue({ vetRcvs: '7654321' }))
+
+      expect(res.statusCode).toBe(204)
+      expect(updateApplicationData).toHaveBeenCalledTimes(1)
+      expect(updateApplicationData).toHaveBeenCalledWith('AHWR-OLDS-KOOL', 'vetRcvs', '7654321', '', 'updated note', 'Admin')
+    })
+
+    test('when value is not changed return 204 without updating application data', async () => {
+      const existingData = {
+        vetName: 'old person'
+      }
+      findApplication.mockResolvedValueOnce({ reference: 'AHWR-OLDS-KOOL', createdBy: 'admin', createdAt: new Date(), data: existingData })
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'old person' }))
+
+      expect(res.statusCode).toBe(204)
+      expect(updateApplicationData).toHaveBeenCalledTimes(0)
     })
   })
 })
