@@ -1,5 +1,5 @@
 import joi from 'joi'
-import { getClaim, patchClaimData } from '../../repositories/claim.js'
+import { findClaim, updateClaimData } from '../../repositories/claim-repository.js'
 
 export const claimsHandlers = [
   {
@@ -12,9 +12,10 @@ export const claimsHandlers = [
         }),
         payload: joi.object({
           vetsName: joi.string(),
-          dateOfVisit: joi.date(),
+          dateOfVisit: joi.string(),
           vetRCVSNumber: joi.string().pattern(/^\d{6}[\dX]$/i),
-          note: joi.string().required()
+          note: joi.string().required(),
+          user: joi.string().required()
         }).or('vetsName', 'dateOfVisit', 'vetRCVSNumber')
           .required(),
         failAction: async (request, h, err) => {
@@ -25,24 +26,27 @@ export const claimsHandlers = [
     },
     handler: async (request, h) => {
       const { reference } = request.params
-      const { note, ...dataPayload } = request.payload
+      const { note, user, ...dataPayload } = request.payload
 
       request.logger.setBindings({ reference, dataPayload })
 
-      const claim = await getClaim(reference)
+      const claim = await findClaim(reference)
       if (claim === null) {
         return h.response('Not Found').code(404).takeover()
       }
 
-      const [key, value] = Object.entries(dataPayload)
+      const [updatedProperty, newValue] = Object.entries(dataPayload)
         .filter(([key, value]) => value !== claim.data[key])
         .flat()
 
-      if (key === undefined && value === undefined) {
+      if (updatedProperty === undefined && newValue === undefined) {
         return h.response().code(204)
       }
 
-      await patchClaimData(reference, key, value, note)
+      const oldValue = claim.data[updatedProperty]
+
+      await updateClaimData(reference, updatedProperty, newValue, oldValue, note, user)
+
       return h.response().code(204)
     }
   }

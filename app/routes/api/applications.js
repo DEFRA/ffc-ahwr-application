@@ -1,6 +1,6 @@
 import joi from 'joi'
 import { v4 as uuid } from 'uuid'
-import { getApplication, searchApplications, updateApplicationByReference } from '../../repositories/application-repository.js'
+import { getApplication, searchApplications, updateApplicationByReference, findApplication, updateApplicationData } from '../../repositories/application-repository.js'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
 import { applicationStatus } from '../../constants/index.js'
@@ -146,6 +146,53 @@ export const applicationHandlers = [{
         request.logger.setBindings({ applicationUpdateError: err })
       }
       return h.response().code(200)
+    }
+  }
+}, {
+  method: 'patch',
+  path: '/api/applications/{reference}/data',
+  options: {
+    validate: {
+      params: joi.object({
+        reference: joi.string()
+      }),
+      payload: joi.object({
+        vetName: joi.string(),
+        visitDate: joi.string(),
+        vetRcvs: joi.string().pattern(/^\d{6}[\dX]$/i),
+        note: joi.string().required(),
+        user: joi.string().required()
+      }).or('vetName', 'visitDate', 'vetRcvs')
+        .required(),
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      const { reference } = request.params
+      const { note, user, ...dataPayload } = request.payload
+
+      request.logger.setBindings({ reference, dataPayload })
+
+      const application = await findApplication(reference)
+      if (application === null) {
+        return h.response('Not Found').code(404).takeover()
+      }
+
+      const [updatedProperty, newValue] = Object.entries(dataPayload)
+        .filter(([key, value]) => value !== application.data[key])
+        .flat()
+
+      if (updatedProperty === undefined && newValue === undefined) {
+        return h.response().code(204)
+      }
+
+      const oldValue = application.data[updatedProperty] ?? ''
+
+      await updateApplicationData(reference, updatedProperty, newValue, oldValue, note, user)
+
+      return h.response().code(204)
     }
   }
 }]

@@ -1,7 +1,8 @@
 import { buildData } from '../data/index.js'
 import { raise } from '../event-publisher/index.js'
-import { Op } from 'sequelize'
+import { Op, Sequelize } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
+import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 
 const { models, sequelize } = buildData
 
@@ -204,4 +205,53 @@ export const updateApplicationByReference = async (dataWithNote, publishEvent = 
     console.error('Error updating application by reference:', error)
     throw error
   }
+}
+
+export const findApplication = async (reference) => {
+  const application = await models.application.findOne({ where: { reference } })
+
+  return application === null ? application : application.dataValues
+}
+
+export const updateApplicationData = async (reference, updatedProperty, newValue, oldValue, note, user) => {
+  const data = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.col('data'),
+    Sequelize.literal(`'{${updatedProperty}}'`),
+    Sequelize.literal(`'${JSON.stringify(newValue)}'`)
+  )
+
+  // eslint-disable-next-line no-unused-vars
+  const [_, updates] = await models.application.update(
+    { data },
+    {
+      where: { reference },
+      returning: true
+    }
+  )
+
+  const [updatedRecord] = updates
+  const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
+
+  const eventData = {
+    applicationReference: reference,
+    reference,
+    updatedProperty,
+    newValue,
+    oldValue,
+    note
+  }
+  const type = `application-${updatedProperty}`
+  await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
+
+  await buildData.models.claim_update_history.create({
+    applicationReference: reference,
+    reference,
+    note,
+    updatedProperty,
+    newValue,
+    oldValue,
+    eventType: type,
+    createdBy: user
+  })
 }

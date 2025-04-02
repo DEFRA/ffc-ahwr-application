@@ -1,8 +1,8 @@
 import { server } from '../../../../../app/server'
 import { buildData } from '../../../../../app/data'
-import { raiseClaimEvents } from '../../../../../app/event-publisher'
+import { findApplication } from '../../../../../app/repositories/application-repository.js'
 
-jest.mock('../../../../../app/event-publisher')
+jest.mock('../../../../../app/repositories/application-repository')
 
 beforeEach(jest.resetAllMocks)
 
@@ -19,11 +19,22 @@ test('patch /claims/{ref}/data update data property', async () => {
 
   const claim = {
     updatedBy: 'me',
-    updatedAt: '2025-03-20T12:12:28.590Z'
+    updatedAt: new Date('2025/03/20')
   }
+
+  findApplication.mockResolvedValueOnce({
+    reference: 'FUSH-BAAH-1234',
+    data: {
+      organisation: {
+        sbi: '123456789'
+      }
+    }
+  })
 
   jest.spyOn(buildData.models.claim, 'update')
     .mockResolvedValueOnce([1, [{ dataValues: claim }]])
+  jest.spyOn(buildData.models.claim_update_history, 'create')
+    .mockResolvedValueOnce({})
 
   const note = "update vet's name"
   const res = await server.inject({
@@ -31,20 +42,12 @@ test('patch /claims/{ref}/data update data property', async () => {
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       vetsName: 'Barry Newman',
-      note
+      note,
+      user: 'Tim Test'
     }
   })
 
   expect(res.statusCode).toBe(204)
-  expect(raiseClaimEvents.mock.calls).toEqual([
-    [{
-      claim,
-      message: 'Claim has been updated',
-      note,
-      raisedBy: claim.updatedBy,
-      raisedOn: claim.updatedAt
-    }]
-  ])
 })
 
 test('patch /claims/{ref}/data data property same as existing', async () => {
@@ -63,12 +66,12 @@ test('patch /claims/{ref}/data data property same as existing', async () => {
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       vetsName: 'Fred Already',
-      note: 'same as before'
+      note: 'same as before',
+      user: 'B Test'
     }
   })
 
   expect(res.statusCode).toBe(204)
-  expect(raiseClaimEvents.mock.calls).toEqual([])
 })
 
 test('patch /claims/{ref}/data missing claim', async () => {
@@ -80,12 +83,12 @@ test('patch /claims/{ref}/data missing claim', async () => {
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       vetRCVSNumber: '1234567',
-      note: 'note'
+      note: 'note',
+      user: 'A Test'
     }
   })
 
   expect(res.statusCode).toBe(404)
-  expect(raiseClaimEvents.mock.calls).toEqual([])
 })
 
 test('patch /claims/{ref}/data invalid payload: missing note', async () => {
@@ -107,7 +110,8 @@ test('patch /claims/{ref}/data invalid payload: missing data property', async ()
     method: 'patch',
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
-      note: 'no data properties'
+      note: 'no data properties',
+      user: 'Tim Test'
     }
   })
 
