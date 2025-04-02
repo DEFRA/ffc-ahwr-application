@@ -2,7 +2,7 @@ import { queryEntitiesByPartitionKey } from './query-entities.js'
 import { odata } from '@azure/data-tables'
 
 export const getApplicationHistory = async (reference) => {
-  return await queryEntitiesByPartitionKey(
+  return queryEntitiesByPartitionKey(
     'ffcahwrapplicationstatus',
     reference,
     // The partition key in the application status table is the application reference
