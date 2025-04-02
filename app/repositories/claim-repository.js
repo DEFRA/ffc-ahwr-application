@@ -3,6 +3,7 @@ import { raiseClaimEvents } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 import { Op, Sequelize } from 'sequelize'
+import { findApplication } from './application-repository.js'
 
 const { models } = buildData
 
@@ -227,6 +228,8 @@ export const updateClaimData = async (reference, updatedProperty, newValue, oldV
   const [updatedRecord] = updates
   const { applicationReference, updatedAt } = updatedRecord.dataValues
 
+  const application = await findApplication(applicationReference)
+
   const eventData = {
     applicationReference,
     reference,
@@ -236,7 +239,7 @@ export const updateClaimData = async (reference, updatedProperty, newValue, oldV
     note
   }
   const type = `claim-${updatedProperty}`
-  await claimDataUpdateEvent(eventData, type, user, updatedAt)
+  await claimDataUpdateEvent(eventData, type, user, updatedAt, application.data.organisation.sbi)
 
   await buildData.models.claim_update_history.create({
     applicationReference,

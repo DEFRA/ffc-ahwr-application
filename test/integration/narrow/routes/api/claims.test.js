@@ -1,5 +1,8 @@
 import { server } from '../../../../../app/server'
 import { buildData } from '../../../../../app/data'
+import { findApplication } from '../../../../../app/repositories/application-repository.js'
+
+jest.mock('../../../../../app/repositories/application-repository')
 
 beforeEach(jest.resetAllMocks)
 
@@ -18,6 +21,15 @@ test('patch /claims/{ref}/data update data property', async () => {
     updatedBy: 'me',
     updatedAt: new Date('2025/03/20')
   }
+
+  findApplication.mockResolvedValueOnce({
+    reference: 'FUSH-BAAH-1234',
+    data: {
+      organisation: {
+        sbi: '123456789'
+      }
+    }
+  })
 
   jest.spyOn(buildData.models.claim, 'update')
     .mockResolvedValueOnce([1, [{ dataValues: claim }]])

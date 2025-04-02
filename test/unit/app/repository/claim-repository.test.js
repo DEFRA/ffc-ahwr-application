@@ -36,6 +36,8 @@ jest.mock('../../../../app/data', () => {
   }
 })
 
+jest.mock('../../../../app/repositories/application-repository', () => {})
+
 const MOCK_SEND_EVENTS = jest.fn()
 
 jest.mock('ffc-ahwr-event-publisher', () => {

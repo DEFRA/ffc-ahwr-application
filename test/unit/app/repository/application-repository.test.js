@@ -1270,7 +1270,7 @@ describe('Application Repository test', () => {
         oldValue: 'Bill',
         newValue: 'Geoff',
         note: 'note here'
-      }, 'application-vetName', 'Admin', expect.any(Date))
+      }, 'application-vetName', 'Admin', expect.any(Date), '123456789')
     })
   })
 })

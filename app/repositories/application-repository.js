@@ -231,7 +231,7 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
   )
 
   const [updatedRecord] = updates
-  const { updatedAt } = updatedRecord.dataValues
+  const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
 
   const eventData = {
     applicationReference: reference,
@@ -242,7 +242,7 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
     note
   }
   const type = `application-${updatedProperty}`
-  await claimDataUpdateEvent(eventData, type, user, updatedAt)
+  await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
 
   await buildData.models.claim_update_history.create({
     applicationReference: reference,
