@@ -223,7 +223,7 @@ describe(('Store application in database'), () => {
     delete data.organisation.email
     await processApplication(data)
     expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
-    expect(consoleSpy).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "organisation.email" is required.')
+    expect(consoleSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "organisation.email" is required.'))
   })
 
   describe('processApplicationApi', () => {
@@ -270,7 +270,7 @@ describe(('Store application in database'), () => {
       const consoleErrorSpy = jest.spyOn(console, 'error')
       const response = await processApplicationApi({ some: 'invalid data' })
 
-      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "confirmCheckDetails" is required.')
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "confirmCheckDetails" is required.'))
       expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, 'Failed to process application', expect.anything())
       expect(response).toEqual(expect.objectContaining({
         applicationReference: null,

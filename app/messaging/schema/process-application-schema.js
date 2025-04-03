@@ -20,7 +20,7 @@ const organisationValidations = () => ({
   isTest: joi.boolean().optional()
 })
 
-const aplicationSchema = joi.object({
+const applicationSchema = joi.object({
   confirmCheckDetails: joi.string().required(),
   whichReview: joi.string().optional(),
   eligibleSpecies: joi.string().optional(),
@@ -42,11 +42,11 @@ const aplicationSchema = joi.object({
 })
 
 export const validateApplication = (event) => {
-  const validate = aplicationSchema.validate(event)
+  const { error } = applicationSchema.validate(event)
 
-  if (validate.error) {
-    console.error(`Application validation error - ${validate.error}.`)
-    appInsights.defaultClient.trackException({ exception: validate.error })
+  if (error) {
+    console.error(`Application validation error - ${error}. ${JSON.stringify(event)}`) // to be removed
+    appInsights.defaultClient.trackException({ exception: error })
     return false
   }
 

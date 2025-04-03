@@ -149,7 +149,7 @@ export const applicationHandlers = [{
     }
   }
 }, {
-  method: 'patch',
+  method: 'put',
   path: '/api/applications/{reference}/data',
   options: {
     validate: {

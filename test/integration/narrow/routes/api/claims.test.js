@@ -6,7 +6,7 @@ jest.mock('../../../../../app/repositories/application-repository')
 
 beforeEach(jest.resetAllMocks)
 
-test('patch /claims/{ref}/data update data property', async () => {
+test('put /claims/{ref}/data update data property', async () => {
   jest.spyOn(buildData.models.claim, 'findOne')
     .mockResolvedValueOnce({
       dataValues: {
@@ -38,7 +38,7 @@ test('patch /claims/{ref}/data update data property', async () => {
 
   const note = "update vet's name"
   const res = await server.inject({
-    method: 'patch',
+    method: 'put',
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       vetsName: 'Barry Newman',
@@ -50,7 +50,7 @@ test('patch /claims/{ref}/data update data property', async () => {
   expect(res.statusCode).toBe(204)
 })
 
-test('patch /claims/{ref}/data data property same as existing', async () => {
+test('put /claims/{ref}/data data property same as existing', async () => {
   jest.spyOn(buildData.models.claim, 'findOne')
     .mockResolvedValueOnce({
       dataValues: {
@@ -62,7 +62,7 @@ test('patch /claims/{ref}/data data property same as existing', async () => {
     })
 
   const res = await server.inject({
-    method: 'patch',
+    method: 'put',
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       vetsName: 'Fred Already',
@@ -74,12 +74,12 @@ test('patch /claims/{ref}/data data property same as existing', async () => {
   expect(res.statusCode).toBe(204)
 })
 
-test('patch /claims/{ref}/data missing claim', async () => {
+test('put /claims/{ref}/data missing claim', async () => {
   jest.spyOn(buildData.models.claim, 'findOne')
     .mockResolvedValueOnce(null)
 
   const res = await server.inject({
-    method: 'patch',
+    method: 'put',
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       vetRCVSNumber: '1234567',
@@ -91,9 +91,9 @@ test('patch /claims/{ref}/data missing claim', async () => {
   expect(res.statusCode).toBe(404)
 })
 
-test('patch /claims/{ref}/data invalid payload: missing note', async () => {
+test('put /claims/{ref}/data invalid payload: missing note', async () => {
   const res = await server.inject({
-    method: 'patch',
+    method: 'put',
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       dateOfVisit: '2025-03-20'
@@ -105,9 +105,9 @@ test('patch /claims/{ref}/data invalid payload: missing note', async () => {
   expect(err.details[0].message).toBe('"note" is required')
 })
 
-test('patch /claims/{ref}/data invalid payload: missing data property', async () => {
+test('put /claims/{ref}/data invalid payload: missing data property', async () => {
   const res = await server.inject({
-    method: 'patch',
+    method: 'put',
     url: '/api/claims/FUSH-BAAH-1234/data',
     payload: {
       note: 'no data properties',
