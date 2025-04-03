@@ -300,10 +300,10 @@ describe('Applications test', () => {
     })
   })
 
-  describe('PATCH /api/applications/{reference}/data', () => {
+  describe('put /api/applications/{reference}/data', () => {
     function getOptionsForUpdatedValue (updatedValue) {
       return {
-        method: 'PATCH',
+        method: 'put',
         url: '/api/applications/AHWR-OLDS-KOOL/data',
         payload: {
           ...updatedValue,

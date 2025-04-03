@@ -3,7 +3,7 @@ import { findClaim, updateClaimData } from '../../repositories/claim-repository.
 
 export const claimsHandlers = [
   {
-    method: 'patch',
+    method: 'put',
     path: '/api/claims/{reference}/data',
     options: {
       validate: {

@@ -1,4 +1,7 @@
 import { validateApplication } from '../../../../app/messaging/schema/process-application-schema'
+import appInsights from 'applicationinsights'
+
+jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 
 describe('process-application-schema', () => {
   beforeEach(() => {
@@ -50,5 +53,29 @@ describe('process-application-schema', () => {
     }
 
     expect(validateApplication(application)).toBeTruthy()
+  })
+
+  test('an invalid application returns false and calls track exception', () => {
+    const application = {
+      confirmCheckDetails: undefined,
+      whichReview: 'beef',
+      eligibleSpecies: 'yes',
+      reference: null,
+      declaration: true,
+      offerStatus: 'accepted',
+      organisation: {
+        farmerName: 'A Farmer',
+        name: 'organiation name',
+        email: 'hollygriffithsx@shtiffirgyllohm.com.test',
+        sbi: '123456789',
+        cph: '123/456/789',
+        address: '1 Some Street',
+        userType: 'newUser'
+      },
+      type: 'EE'
+    }
+
+    expect(validateApplication(application)).toBeFalsy()
+    expect(appInsights.defaultClient.trackException).toHaveBeenCalledTimes(1)
   })
 })
