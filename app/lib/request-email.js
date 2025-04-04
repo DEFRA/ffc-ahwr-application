@@ -11,7 +11,7 @@ const AddressType = {
   CC: 'CC'
 }
 
-const sendEmail = async (email, personalisation, reference, templateId, addressType) => {
+const requestEmail = async (email, personalisation, reference, templateId, addressType) => {
   let success = true
   try {
     await sendSFDEmail(templateId, email, { personalisation, reference })
@@ -52,39 +52,38 @@ const sendCarbonCopy = async (templateId, personalisation, reference) => {
   }
 }
 
-// As it's not obvious - this function send a message out to document generator for the application
-// It is NOT sending the email here.
-export const sendFarmerConfirmationEmail = async (emailParams) => {
+export const requestApplicationDocumentGenerateAndEmail = async (emailParams) => {
   const { reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData: { orgName, orgEmail, crn } } = emailParams
   const message = { crn, reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgName, ...(orgEmail && { orgEmail }) }
 
   return sendMessage(message, applicationEmailDocRequestMsgType, applicationDocCreationRequestQueue)
 }
 
-export const sendFarmerEndemicsClaimConfirmationEmail = async (data, templateId) => {
-  const { orgData, reference, applicationReference } = data || {}
-  let email = data?.email
+export const requestClaimConfirmationEmail = async (data, templateId) => {
+  const { orgData, reference, applicationReference, species } = data
+  let email = data.email
   let isSuccessful = true
 
   const personalisation = {
     reference,
     applicationReference,
-    amount: data?.amount,
-    crn: orgData?.crn,
-    sbi: orgData?.sbi
+    species,
+    amount: data.amount,
+    crn: orgData.crn,
+    sbi: orgData.sbi
   }
 
-  if (!email && !orgData?.orgEmail) {
+  if (!email && !orgData.orgEmail) {
     return false
   }
   await sendCarbonCopy(templateId, { personalisation }, reference)
 
-  isSuccessful = email && await sendEmail(email, personalisation, reference, templateId, AddressType.EMAIL)
+  isSuccessful = email && await requestEmail(email, personalisation, reference, templateId, AddressType.EMAIL)
 
-  if (orgData?.orgEmail && orgData?.orgEmail !== email) {
+  if (orgData.orgEmail && orgData.orgEmail !== email) {
     email = orgData?.orgEmail
 
-    isSuccessful = await sendEmail(email, personalisation, reference, templateId, AddressType.ORG_EMAIL)
+    isSuccessful = await requestEmail(email, personalisation, reference, templateId, AddressType.ORG_EMAIL)
   }
   return isSuccessful
 }

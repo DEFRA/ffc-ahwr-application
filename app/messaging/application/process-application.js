@@ -1,6 +1,6 @@
 import { messagingStates, applicationStatus } from '../../constants/index.js'
 import { config } from '../../config/index.js'
-import { sendFarmerConfirmationEmail } from '../../lib/send-email.js'
+import { requestApplicationDocumentGenerateAndEmail } from '../../lib/request-email.js'
 import { sendMessage } from '../send-message.js'
 import { validateApplication } from '../schema/process-application-schema.js'
 import appInsights from 'applicationinsights'
@@ -70,7 +70,7 @@ export const processApplication = async (data) => {
 
     if (data.offerStatus === 'accepted') {
       try {
-        await sendFarmerConfirmationEmail({
+        await requestApplicationDocumentGenerateAndEmail({
           reference: application.reference,
           sbi: data.organisation.sbi,
           whichSpecies: data.whichReview,
@@ -86,7 +86,7 @@ export const processApplication = async (data) => {
         }
         )
       } catch (error) {
-        console.error('Failed to send farmer confirmation email', error)
+        console.error('Failed to request application document generation and email', error)
       }
     }
 

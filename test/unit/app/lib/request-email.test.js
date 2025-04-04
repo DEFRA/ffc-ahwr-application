@@ -1,4 +1,4 @@
-import { sendFarmerConfirmationEmail, sendFarmerEndemicsClaimConfirmationEmail } from '../../../../app/lib/send-email'
+import { requestApplicationDocumentGenerateAndEmail, requestClaimConfirmationEmail } from '../../../../app/lib/request-email.js'
 import { config } from '../../../../app/config'
 import { sendSFDEmail } from '../../../../app/lib/sfd-client'
 import { sendMessage } from '../../../../app/messaging/send-message'
@@ -29,7 +29,7 @@ describe('sendEmail', () => {
     const orgData = { orgName, orgEmail }
     sendMessage.mockResolvedValueOnce(true)
 
-    await sendFarmerConfirmationEmail({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData })
+    await requestApplicationDocumentGenerateAndEmail({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData })
 
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgData.orgName, orgEmail }, applicationEmailDocRequestMsgType, applicationDocCreationRequestQueue)
@@ -39,7 +39,7 @@ describe('sendEmail', () => {
     const orgData = { orgName, orgEmail }
     sendMessage.mockResolvedValueOnce(true)
 
-    await sendFarmerConfirmationEmail({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData })
+    await requestApplicationDocumentGenerateAndEmail({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, orgData })
 
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith({ reference, sbi, whichSpecies, startDate, userType, email, farmerName, name: orgData.orgName, orgEmail }, applicationEmailDocRequestMsgType, applicationDocCreationRequestQueue)
@@ -51,7 +51,8 @@ describe('sendEmail', () => {
       reference: 'RESH-DFEF-6037',
       applicationReference: 'AHWR-B977-4D0D',
       amount: '£[amount]',
-      orgData: {}
+      orgData: {},
+      species: 'Beef cattle'
     }
 
     beforeEach(() => {
@@ -73,10 +74,11 @@ describe('sendEmail', () => {
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
         crn: data.orgData.crn,
-        sbi: data.orgData.sbi
+        sbi: data.orgData.sbi,
+        species: data.species
       }
 
-      const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+      const result = await requestClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
@@ -112,10 +114,11 @@ describe('sendEmail', () => {
         applicationReference: data.applicationReference,
         amount: data.amount || '£[amount]',
         crn: data.orgData.crn,
-        sbi: data.orgData.sbi
+        sbi: data.orgData.sbi,
+        species: data.species
       }
 
-      const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+      const result = await requestClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
       expect(sendSFDEmail).toHaveBeenCalledTimes(2)
@@ -148,10 +151,11 @@ describe('sendEmail', () => {
       const expectedPersonalisation = {
         reference: data.reference,
         applicationReference: data.applicationReference,
-        amount: data.amount || '£[amount]'
+        amount: data.amount || '£[amount]',
+        species: data.species
       }
 
-      const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+      const result = await requestClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
       expect(sendSFDEmail).toHaveBeenCalledTimes(1)
@@ -174,10 +178,11 @@ describe('sendEmail', () => {
         crn: '1234567890',
         sbi: '123456789',
         applicationReference: data.applicationReference,
-        amount: data.amount || '£[amount]'
+        amount: data.amount || '£[amount]',
+        species: data.species
       }
 
-      const result = await sendFarmerEndemicsClaimConfirmationEmail(data, templateId)
+      const result = await requestClaimConfirmationEmail(data, templateId)
 
       expect(result).toBe(true)
       expect(sendSFDEmail).toHaveBeenCalledTimes(1)
@@ -205,16 +210,10 @@ describe('sendEmail', () => {
         sbi: data.orgData.sbi
       }
 
-      const result = await sendFarmerEndemicsClaimConfirmationEmail(data)
+      const result = await requestClaimConfirmationEmail(data)
 
       expect(result).toBe(true)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
-    })
-
-    test('if data is empty - no email sent via SFD', async () => {
-      await sendFarmerEndemicsClaimConfirmationEmail({})
-
-      expect(sendSFDEmail).toHaveBeenCalledTimes(0)
     })
   })
 })

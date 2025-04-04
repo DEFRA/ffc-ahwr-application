@@ -1,7 +1,7 @@
 import { processApplication } from '../../../../../app/messaging/application/process-application'
 import boom from '@hapi/boom'
-import { sendFarmerConfirmationEmail } from '../../../../../app/lib/send-email'
-jest.mock('../../../../../app/lib/send-email')
+import { requestApplicationDocumentGenerateAndEmail } from '../../../../../app/lib/request-email.js'
+jest.mock('../../../../../app/lib/request-email.js')
 
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 boom.internal = jest.fn()
@@ -41,7 +41,7 @@ describe('Process Message test', () => {
     const consoleSpy = jest.spyOn(console, 'error')
     delete message.body.organisation.email
     await processApplication(message)
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
     expect(consoleSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "confirmCheckDetails" is required.'))
   })
 })

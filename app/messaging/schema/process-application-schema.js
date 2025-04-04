@@ -45,7 +45,7 @@ export const validateApplication = (event) => {
   const { error } = applicationSchema.validate(event)
 
   if (error) {
-    console.error(`Application validation error - ${error}. ${JSON.stringify(event)}`) // to be removed
+    console.error(`Application validation error - ${error}.`)
     appInsights.defaultClient.trackException({ exception: error })
     return false
   }

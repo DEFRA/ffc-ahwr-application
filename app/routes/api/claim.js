@@ -3,10 +3,23 @@ import { v4 as uuid } from 'uuid'
 import appInsights from 'applicationinsights'
 import { sendMessage } from '../../messaging/send-message.js'
 import { config } from '../../config/index.js'
-import { speciesNumbers, biosecurity, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, minimumNumberOfOralFluidSamples, testResults as testResultsConstant, livestockTypes, claimType, applicationStatus } from '../../constants/index.js'
+import {
+  speciesNumbers,
+  biosecurity,
+  minimumNumberOfAnimalsTested,
+  piHunt,
+  piHuntRecommended,
+  piHuntAllAnimals,
+  minimumNumberOfOralFluidSamples,
+  testResults as testResultsConstant,
+  livestockTypes,
+  claimType,
+  applicationStatus,
+  livestockToReadableSpecies
+} from '../../constants/index.js'
 import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository.js'
 import { getApplication } from '../../repositories/application-repository.js'
-import { sendFarmerEndemicsClaimConfirmationEmail } from '../../lib/send-email.js'
+import { requestClaimConfirmationEmail } from '../../lib/request-email.js'
 import { getAmount } from '../../lib/getAmount.js'
 import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
@@ -274,12 +287,13 @@ export const claimHandlers = [
 
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await setClaim({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
-        const claimConfirmationEmailSent = claim && (await sendFarmerEndemicsClaimConfirmationEmail({
+        const claimConfirmationEmailSent = claim && (await requestClaimConfirmationEmail({
           reference: claim?.dataValues?.reference,
           applicationReference: claim?.dataValues?.applicationReference,
           amount,
           email: application?.dataValues?.data?.organisation?.email,
           farmerName: application?.dataValues?.data?.organisation?.farmerName,
+          species: livestockToReadableSpecies[typeOfLivestock],
           orgData: {
             orgName: application?.dataValues?.data?.organisation?.name,
             orgEmail: application?.dataValues?.data?.organisation?.orgEmail,

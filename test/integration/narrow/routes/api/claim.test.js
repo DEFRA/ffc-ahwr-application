@@ -2,19 +2,20 @@ import { server } from '../../../../../app/server'
 import { getClaimByReference, getByApplicationReference, isURNNumberUnique, setClaim, updateClaimByReference, searchClaims } from '../../../../../app/repositories/claim-repository'
 import { getApplication } from '../../../../../app/repositories/application-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
-import { sendFarmerEndemicsClaimConfirmationEmail } from '../../../../../app/lib/send-email'
+import { requestClaimConfirmationEmail } from '../../../../../app/lib/request-email.js'
 import { claimPricesConfig } from '../../../../data/claim-prices-config'
 import { getBlob } from '../../../../../app/storage/getBlob'
 import { getAmount } from '../../../../../app/lib/getAmount'
 import appInsights from 'applicationinsights'
 import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../../../../app/lib/context-helper'
+import { config } from '../../../../../app/config/index.js'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
 jest.mock('../../../../../app/messaging/send-message')
-jest.mock('../../../../../app/lib/send-email')
+jest.mock('../../../../../app/lib/request-email.js')
 jest.mock('../../../../../app/lib/getAmount')
 jest.mock('../../../../../app/storage/getBlob')
 jest.mock('../../../../../app/lib/context-helper')
@@ -308,20 +309,18 @@ describe('Post claim test', () => {
         createdBy: 'admin'
       }
     })
-    const mockEmailData = {
-      reference: 'AHWR-0F5D-4A26',
-      email: 'test@test-unit.com',
-      amount: '£[amount]',
-      farmerName: 'farmerName',
-      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
-    }
 
-    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    setClaim.mockResolvedValueOnce({
+      dataValues: {
+        reference: claim.reference,
+        applicationReference: claim.applicationReference
+      }
+    })
 
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith(
       {
         crn: '1100014934',
@@ -365,15 +364,6 @@ describe('Post claim test', () => {
           createdBy: 'admin'
         }
       })
-      const mockEmailData = {
-        reference: 'AHWR-0F5D-4A26',
-        email: 'test@test-unit.com',
-        amount: '£[amount]',
-        farmerName: 'farmerName',
-        orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
-      }
-
-      await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
 
       await server.inject(options)
 
@@ -381,12 +371,14 @@ describe('Post claim test', () => {
     }
   )
   test('Post claim with Type: endemics and Type of Livestock: beef that review test result is negative and return 200', async () => {
+    const claimRef = 'TEMP-3FS2-334F'
+    const applicationRef = 'IAHW-0AD3-3322'
     const options = {
       method: 'POST',
       url: '/api/claim',
       payload: {
-        applicationReference: 'AHWR-0AD3-3322',
-        reference: 'TEMP-3FS2-334F',
+        applicationReference: applicationRef,
+        reference: claimRef,
         type: 'E',
         createdBy: 'admin',
         data: {
@@ -408,35 +400,43 @@ describe('Post claim test', () => {
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
         updatedAt: '2024-02-14T10:43:03.544Z',
         updatedBy: 'admin',
-        reference: 'AHWR-0F5D-4A26',
-        applicationReference: 'AHWR-0AD3-3322',
-        data: {},
+        reference: applicationRef,
+        applicationReference: applicationRef,
+        data: {
+          organisation: {
+            email: 'test@test-unit.com',
+            farmerName: 'farmerName',
+            name: 'orgName',
+            orgEmail: 'test@test-unit.org',
+            crn: '1100014934',
+            sbi: '106705779'
+          }
+        },
         statusId: 1,
         type: 'E',
         createdBy: 'admin'
       }
     })
-    const mockEmailData = {
-      reference: 'AHWR-0F5D-4A26',
-      email: 'test@test-unit.com',
-      amount: '£[amount]',
-      farmerName: 'farmerName',
-      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
-    }
 
-    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
+    setClaim.mockResolvedValueOnce({
+      dataValues: {
+        reference: claimRef,
+        applicationReference: applicationRef
+      }
+    })
 
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalled()
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
-      reference: 'AHWR-0F5D-4A26',
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      applicationReference: applicationRef,
+      reference: claimRef,
+      species: 'Beef cattle',
       email: 'test@test-unit.com',
-      amount: '£[amount]',
+      amount: 100,
       farmerName: 'farmerName',
-      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
-    }), 'template-id-farmer-endemics-followup-complete')
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', crn: '1100014934', sbi: '106705779' }
+    }), config.notify.templateIdFarmerEndemicsFollowupComplete)
   })
 
   test('Post claim with wrong application reference return 400', async () => {
@@ -471,57 +471,6 @@ describe('Post claim test', () => {
     expect(res.statusCode).toBe(400)
   })
 
-  test('called with the correct arguments ', async () => {
-    const options = {
-      method: 'POST',
-      url: '/api/claim',
-      payload: { ...claim }
-    }
-
-    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-    getApplication.mockResolvedValue({
-      dataValues: {
-        createdAt: '2024-02-14T09:59:46.756Z',
-        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
-        updatedAt: '2024-02-14T10:43:03.544Z',
-        updatedBy: 'admin',
-        reference: 'AHWR-0F5D-4A26',
-        applicationReference: 'AHWR-0AD3-3322',
-        data: {
-          vetsName: 'Afshin',
-          dateOfVisit: '2024-01-22T00:00:00.000Z',
-          testResults: 'positive',
-          typeOfReview: 'review one',
-          dateOfTesting: '2024-01-22T00:00:00.000Z',
-          laboratoryURN: 'AK-2024',
-          vetRCVSNumber: 'AK-2024',
-          speciesNumbers: 'yes',
-          typeOfLivestock: 'pigs',
-          numberAnimalsTested: 30
-        },
-        statusId: 1,
-        type: 'R',
-        createdBy: 'admin'
-      }
-    })
-    const mockEmailData = {
-      reference: 'AHWR-0F5D-4A26',
-      email: 'test@test-unit.com',
-      amount: '£[amount]',
-      farmerName: 'farmerName',
-      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
-    }
-
-    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
-
-    await server.inject(options)
-
-    expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(Object.keys(mockEmailData)).toEqual(expect.arrayContaining(['reference', 'email', 'amount', 'farmerName', 'orgData']))
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining(mockEmailData))
-  })
-
   test('return empty when no values ', async () => {
     const options = {
       method: 'POST',
@@ -542,11 +491,11 @@ describe('Post claim test', () => {
       }
     }
 
-    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await requestClaimConfirmationEmail(mockEmailData)
 
     await server.inject(options)
 
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(mockEmailData.email).toBeUndefined()
     expect(mockEmailData.farmerName).toBeUndefined()
     expect(mockEmailData.orgData).toEqual(expect.objectContaining({}))
@@ -571,7 +520,7 @@ describe('Post claim test', () => {
     expect(res.statusCode).toBe(404)
     expect(claimResponse).toBeFalsy()
 
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(0)
   })
 
   test('send email with values no data  ', async () => {
@@ -610,12 +559,12 @@ describe('Post claim test', () => {
       }
     })
 
-    const sendEmailResult = await sendFarmerEndemicsClaimConfirmationEmail(null)
+    const sendEmailResult = await requestClaimConfirmationEmail(null)
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(null)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(null)
     expect(sendEmailResult).toBeFalsy()
   })
   test('send email with values available ', async () => {
@@ -662,13 +611,13 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
+    await requestClaimConfirmationEmail(mockEmailData, 'template-id-farmer-endemics-followup-complete')
 
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       email: 'test@test-unit.com',
       amount: '£[amount]',
@@ -736,13 +685,13 @@ describe('Post claim test', () => {
         }
       }
     })
-    sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
+    requestClaimConfirmationEmail.mockResolvedValue(true)
 
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       applicationReference: 'AHWR-0AD3-3322',
       email: 'test@test-unit.com',
@@ -835,13 +784,13 @@ describe('Post claim test', () => {
         }
       }
     })
-    sendFarmerEndemicsClaimConfirmationEmail.mockResolvedValue(true)
+    requestClaimConfirmationEmail.mockResolvedValue(true)
 
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       applicationReference: 'AHWR-0AD3-3322',
       email: 'test@test-unit.com',
@@ -896,7 +845,7 @@ describe('Post claim test', () => {
     setClaim.mockRejectedValueOnce(false)
     await server.inject(options)
 
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(0)
     expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledTimes(0)
   })
   test('Check if laboratoryURN is unique ', async () => {
@@ -962,12 +911,12 @@ describe('Post claim test', () => {
       orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org' }
     }
 
-    await sendFarmerEndemicsClaimConfirmationEmail(mockEmailData)
+    await requestClaimConfirmationEmail(mockEmailData)
 
     await server.inject(options)
 
     expect(setClaim).toBeTruthy()
-    expect(sendFarmerEndemicsClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
       email: 'test@test-unit.com',
       amount: '£[amount]',
