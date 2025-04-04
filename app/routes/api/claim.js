@@ -273,7 +273,7 @@ export const claimHandlers = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        const sbi = application?.dataValues?.data?.organisation?.sbi || 'not-found'
+        const sbi = application.dataValues.data?.organisation?.sbi || 'not-found'
 
         request.logger.setBindings({ sbi })
 
@@ -287,22 +287,22 @@ export const claimHandlers = [
 
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await setClaim({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
-        const claimConfirmationEmailSent = claim && (await requestClaimConfirmationEmail({
-          reference: claim?.dataValues?.reference,
-          applicationReference: claim?.dataValues?.applicationReference,
+        const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
+          reference: claim.dataValues.reference,
+          applicationReference: claim.dataValues.applicationReference,
           amount,
-          email: application?.dataValues?.data?.organisation?.email,
-          farmerName: application?.dataValues?.data?.organisation?.farmerName,
+          email: application.dataValues.data?.organisation?.email,
+          farmerName: application.dataValues.data?.organisation?.farmerName,
           species: livestockToReadableSpecies[typeOfLivestock],
           orgData: {
-            orgName: application?.dataValues?.data?.organisation?.name,
-            orgEmail: application?.dataValues?.data?.organisation?.orgEmail,
-            crn: application?.dataValues?.data?.organisation?.crn,
-            sbi: application?.dataValues?.data?.organisation?.sbi
+            orgName: application.dataValues.data?.organisation?.name,
+            orgEmail: application.dataValues.data?.organisation?.orgEmail,
+            crn: application.dataValues.data?.organisation?.crn,
+            sbi: application.dataValues.data?.organisation?.sbi
           }
         },
         isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
-        ))
+        )
 
         request.logger.setBindings({ claimConfirmationEmailSent })
 
