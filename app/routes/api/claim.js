@@ -3,10 +3,23 @@ import { v4 as uuid } from 'uuid'
 import appInsights from 'applicationinsights'
 import { sendMessage } from '../../messaging/send-message.js'
 import { config } from '../../config/index.js'
-import { speciesNumbers, biosecurity, minimumNumberOfAnimalsTested, piHunt, piHuntRecommended, piHuntAllAnimals, minimumNumberOfOralFluidSamples, testResults as testResultsConstant, livestockTypes, claimType, applicationStatus } from '../../constants/index.js'
+import {
+  speciesNumbers,
+  biosecurity,
+  minimumNumberOfAnimalsTested,
+  piHunt,
+  piHuntRecommended,
+  piHuntAllAnimals,
+  minimumNumberOfOralFluidSamples,
+  testResults as testResultsConstant,
+  livestockTypes,
+  claimType,
+  applicationStatus,
+  livestockToReadableSpecies
+} from '../../constants/index.js'
 import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository.js'
 import { getApplication } from '../../repositories/application-repository.js'
-import { sendFarmerEndemicsClaimConfirmationEmail } from '../../lib/send-email.js'
+import { requestClaimConfirmationEmail } from '../../lib/request-email.js'
 import { getAmount } from '../../lib/getAmount.js'
 import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
@@ -260,7 +273,7 @@ export const claimHandlers = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        const sbi = application?.dataValues?.data?.organisation?.sbi || 'not-found'
+        const sbi = application.dataValues.data?.organisation?.sbi || 'not-found'
 
         request.logger.setBindings({ sbi })
 
@@ -274,21 +287,22 @@ export const claimHandlers = [
 
         const { statusId } = await requiresComplianceCheck('claim')
         const claim = await setClaim({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
-        const claimConfirmationEmailSent = claim && (await sendFarmerEndemicsClaimConfirmationEmail({
-          reference: claim?.dataValues?.reference,
-          applicationReference: claim?.dataValues?.applicationReference,
+        const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
+          reference: claim.dataValues.reference,
+          applicationReference: claim.dataValues.applicationReference,
           amount,
-          email: application?.dataValues?.data?.organisation?.email,
-          farmerName: application?.dataValues?.data?.organisation?.farmerName,
+          email: application.dataValues.data?.organisation?.email,
+          farmerName: application.dataValues.data?.organisation?.farmerName,
+          species: livestockToReadableSpecies[typeOfLivestock],
           orgData: {
-            orgName: application?.dataValues?.data?.organisation?.name,
-            orgEmail: application?.dataValues?.data?.organisation?.orgEmail,
-            crn: application?.dataValues?.data?.organisation?.crn,
-            sbi: application?.dataValues?.data?.organisation?.sbi
+            orgName: application.dataValues.data?.organisation?.name,
+            orgEmail: application.dataValues.data?.organisation?.orgEmail,
+            crn: application.dataValues.data?.organisation?.crn,
+            sbi: application.dataValues.data?.organisation?.sbi
           }
         },
         isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
-        ))
+        )
 
         request.logger.setBindings({ claimConfirmationEmailSent })
 

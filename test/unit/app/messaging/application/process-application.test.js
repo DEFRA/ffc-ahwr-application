@@ -1,6 +1,6 @@
 import { when, resetAllWhenMocks } from 'jest-when'
 import appInsights from 'applicationinsights'
-import { sendFarmerConfirmationEmail } from '../../../../../app/lib/send-email'
+import { requestApplicationDocumentGenerateAndEmail } from '../../../../../app/lib/request-email.js'
 import { getBySbi, setApplication } from '../../../../../app/repositories/application-repository'
 import { processApplication, processApplicationApi, processApplicationQueue } from '../../../../../app/messaging/application/process-application'
 import { applicationStatus } from '../../../../../app/constants'
@@ -18,7 +18,7 @@ const mockMonthsAgo = (months) => {
   return mockDate.setMonth(mockDate.getMonth() - months)
 }
 
-jest.mock('../../../../../app/lib/send-email')
+jest.mock('../../../../../app/lib/request-email.js')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/messaging/send-message')
@@ -158,7 +158,7 @@ describe(('Store application in database'), () => {
         await processApplication(data)
 
         expect(setApplication).toHaveBeenCalledTimes(0)
-        expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
+        expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to process application',
           new Error(`Recent application already exists: ${JSON.stringify({
@@ -186,7 +186,7 @@ describe(('Store application in database'), () => {
         await processApplication(data)
 
         expect(setApplication).toHaveBeenCalledTimes(1)
-        expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(1)
+        expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(1)
       })
     })
   })
@@ -215,14 +215,14 @@ describe(('Store application in database'), () => {
 
     await processApplication(data)
 
-    expect(sendFarmerConfirmationEmail).not.toHaveBeenCalled()
+    expect(requestApplicationDocumentGenerateAndEmail).not.toHaveBeenCalled()
   })
 
   test('Application submission message validation failed', async () => {
     const consoleSpy = jest.spyOn(console, 'error')
     delete data.organisation.email
     await processApplication(data)
-    expect(sendFarmerConfirmationEmail).toHaveBeenCalledTimes(0)
+    expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
     expect(consoleSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "organisation.email" is required.'))
   })
 
@@ -303,10 +303,10 @@ describe(('Store application in database'), () => {
 
     test('fail to send confirmation email', async () => {
       const consoleErrorSpy = jest.spyOn(console, 'error')
-      sendFarmerConfirmationEmail.mockImplementation(() => { throw new Error() })
+      requestApplicationDocumentGenerateAndEmail.mockImplementation(() => { throw new Error() })
 
       await processApplication(testData)
-      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Failed to send farmer confirmation email', expect.anything())
+      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Failed to request application document generation and email', expect.anything())
       expect(setApplication).toHaveBeenCalledTimes(1)
     })
 
