@@ -334,6 +334,8 @@ export const claimHandlers = [
             claimStatus: statusId,
             claimType: type,
             typeOfLivestock,
+            testResults: payload.data.testResults,
+            piHuntRecommended: payload.data.piHuntRecommended,
             dateTime: new Date()
           },
           messageGeneratorMsgType,
@@ -426,6 +428,8 @@ export const claimHandlers = [
             claimStatus: status,
             claimType,
             typeOfLivestock,
+            testResults: claim.dataValues.data.testResults,
+            piHuntRecommended: claim.dataValues.data.piHuntRecommended,
             dateTime: new Date()
           },
           messageGeneratorMsgType,
