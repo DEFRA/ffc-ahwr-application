@@ -867,6 +867,78 @@ describe('PUT claim test', () => {
     expect(res.statusCode).toBe(404)
   })
 
+  test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is yes', async () => {
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 9,
+        user: 'admin',
+        note: 'updating status'
+      }
+    }
+    getClaimByReference.mockResolvedValue({
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'sheep',
+          claimType: 'R',
+          reviewTestResults: 'positive',
+          piHunt: 'yes',
+          piHuntAllAnimals: 'yes'
+        }
+      }
+    })
+    getApplication.mockResolvedValue({
+      dataValues: {
+        data: {
+          organisation: {
+            sbi: '106705779',
+            crn: '1100014934',
+            frn: '1102569649'
+          }
+        }
+      }
+    })
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(updateClaimByReference).toHaveBeenCalledWith({
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      statusId: 9,
+      updatedBy: 'admin'
+    }, 'updating status', expect.any(Object))
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: 9,
+        typeOfLivestock: 'sheep',
+        claimType: 'R',
+        dateTime: expect.any(Date),
+        sbi: '106705779',
+        crn: '1100014934'
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        reference: 'REBC-J9AR-KILQ',
+        whichReview: 'sheep',
+        isEndemics: true,
+        claimType: 'R',
+        reviewTestResults: 'positive',
+        optionalPiHuntValue: 'yesPiHunt',
+        frn: '1102569649',
+        sbi: '106705779'
+      },
+      'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+  })
+
   test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is yes and piHuntRecommended is yes', async () => {
     isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
     const options = {
