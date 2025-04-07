@@ -219,7 +219,7 @@ describe('Post claim test', () => {
     await server.stop()
   })
 
-  function expectAppInsightsEventRaised(data, reference, statusId, sbi) {
+  function expectAppInsightsEventRaised (data, reference, statusId, sbi) {
     expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
       name: 'process-claim',
       properties: {
@@ -449,9 +449,10 @@ describe('Post claim test', () => {
     }), config.notify.templateIdFarmerEndemicsFollowupComplete)
     expect(sendMessage).toHaveBeenCalledWith(
       {
-        sbi: 'not-found',
-        agreementReference: 'AHWR-0AD3-3322',
-        claimReference: 'TEMP-3FS2-334F',
+        sbi: '106705779',
+        crn: '1100014934',
+        agreementReference: applicationRef,
+        claimReference: claimRef,
         claimStatus: 11,
         claimType: 'E',
         typeOfLivestock: 'beef',
