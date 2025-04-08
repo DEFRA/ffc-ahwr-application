@@ -332,7 +332,6 @@ describe('Post claim test', () => {
         claimStatus: 11,
         claimType: 'R',
         typeOfLivestock,
-        testResults: 'positive',
         dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
@@ -456,7 +455,7 @@ describe('Post claim test', () => {
         claimStatus: 11,
         claimType: 'E',
         typeOfLivestock: 'beef',
-        testResults: 'negative',
+        reviewTestResults: 'negative',
         dateTime: expect.any(Date),
         piHuntRecommended: 'yes'
       },
@@ -788,6 +787,7 @@ describe('PUT claim test', () => {
         claimStatus: statusId,
         claimType: 'R',
         typeOfLivestock: 'sheep',
+        reviewTestResults: 'positive',
         dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
@@ -844,6 +844,7 @@ describe('PUT claim test', () => {
         claimStatus: 9,
         claimType: 'R',
         typeOfLivestock: 'sheep',
+        reviewTestResults: 'positive',
         dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
@@ -922,7 +923,8 @@ describe('PUT claim test', () => {
         claimType: 'R',
         dateTime: expect.any(Date),
         sbi: '106705779',
-        crn: '1100014934'
+        crn: '1100014934',
+        reviewTestResults: 'positive'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -998,7 +1000,7 @@ describe('PUT claim test', () => {
         sbi: '106705779',
         crn: '1100014934',
         piHuntRecommended: 'yes',
-        testResults: 'negative'
+        reviewTestResults: 'negative'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -1070,7 +1072,8 @@ describe('PUT claim test', () => {
         claimType: 'R',
         dateTime: expect.any(Date),
         sbi: '106705779',
-        crn: '1100014934'
+        crn: '1100014934',
+        reviewTestResults: 'positive'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -1141,7 +1144,8 @@ describe('PUT claim test', () => {
         claimType: 'R',
         dateTime: expect.any(Date),
         sbi: '106705779',
-        crn: '1100014934'
+        crn: '1100014934',
+        reviewTestResults: 'positive'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )

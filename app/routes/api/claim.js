@@ -257,7 +257,7 @@ export const claimHandlers = [
         const applicationReference = payload?.applicationReference
         const tempClaimReference = payload?.reference
         const { type } = payload
-        const { typeOfLivestock, dateOfVisit } = payload.data
+        const { typeOfLivestock, dateOfVisit, reviewTestResults } = payload.data
         const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
         const laboratoryURN = payload?.data?.laboratoryURN
 
@@ -334,7 +334,7 @@ export const claimHandlers = [
             claimStatus: statusId,
             claimType: type,
             typeOfLivestock,
-            testResults: payload.data.testResults,
+            reviewTestResults,
             piHuntRecommended: payload.data.piHuntRecommended,
             dateTime: new Date()
           },
@@ -428,7 +428,7 @@ export const claimHandlers = [
             claimStatus: status,
             claimType,
             typeOfLivestock,
-            testResults: claim.dataValues.data.testResults,
+            reviewTestResults,
             piHuntRecommended: claim.dataValues.data.piHuntRecommended,
             dateTime: new Date()
           },
