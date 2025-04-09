@@ -1,6 +1,7 @@
 import joi from 'joi'
 import { v4 as uuid } from 'uuid'
-import { getApplication, searchApplications, updateApplicationByReference, findApplication, updateApplicationData, createFlag, getFlagByFlagId, getFlagByAppRef, deleteFlag } from '../../repositories/application-repository.js'
+import { getApplication, searchApplications, updateApplicationByReference, findApplication, updateApplicationData } from '../../repositories/application-repository.js'
+import { createFlag, getFlagByFlagId, getFlagByAppRef, deleteFlag, getFlagsForApplication } from '../../repositories/flag-repository.js'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
 import { applicationStatus } from '../../constants/index.js'
@@ -228,6 +229,7 @@ export const applicationHandlers = [{
 
       const flag = await getFlagByAppRef(ref)
 
+      // If the flag already exists, and has the same appliesToMh value, then we dont create anything
       if (flag && flag.dataValues.appliesToMh === appliesToMh) {
         return h.response().code(204)
       }
@@ -243,6 +245,30 @@ export const applicationHandlers = [{
       await createFlag(data)
 
       return h.response().code(201)
+    }
+  }
+},
+{
+  method: 'get',
+  path: '/api/application/{ref}/flag',
+  options: {
+    validate: {
+      params: joi.object({
+        ref: joi.string().valid()
+      }),
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      const { ref } = request.params
+
+      request.logger.setBindings({ ref })
+
+      const flags = await getFlagsForApplication(ref)
+
+      return h.response(flags).code(200)
     }
   }
 },

@@ -17,7 +17,7 @@ export const flag = (sequelize, DataTypes) => {
       sbi: DataTypes.STRING,
       note: DataTypes.STRING,
       createdBy: DataTypes.STRING,
-      createdAt: { type: DataTypes.DATE },
+      createdAt: DataTypes.DATE,
       appliesToMh: { type: DataTypes.BOOLEAN, defaultValue: false },
       deletedAt: { type: DataTypes.DATE, defaultValue: null },
       deletedBy: { type: DataTypes.STRING, defaultValue: null }
