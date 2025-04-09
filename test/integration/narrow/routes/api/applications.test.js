@@ -317,6 +317,16 @@ describe('Applications test', () => {
       jest.clearAllMocks()
     })
 
+    test('when payload missing required values, returns 400', async () => {
+      const res = await server.inject({
+        method: 'put',
+        url: '/api/applications/AHWR-OLDS-KOOL/data'
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(updateApplicationData).toHaveBeenCalledTimes(0)
+    })
+
     test('when application not found, return 404', async () => {
       findApplication.mockResolvedValueOnce(null)
       const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'updated person' }))
