@@ -401,7 +401,7 @@ export const claimHandlers = [
         if (!claim.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
-        const { typeOfLivestock, claimType, reviewTestResults, vetVisitsReviewTestResults } = claim.dataValues.data || {}
+        const { typeOfLivestock, reviewTestResults, vetVisitsReviewTestResults } = claim.dataValues.data || {}
         const applicationReference = claim.dataValues.applicationReference
 
         const application = await getApplication(applicationReference)
@@ -427,7 +427,7 @@ export const claimHandlers = [
             agreementReference: applicationReference,
             claimReference: reference,
             claimStatus: status,
-            claimType,
+            claimType: claim.dataValues.data.claimType,
             typeOfLivestock,
             reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
             piHuntRecommended: claim.dataValues.data.piHuntRecommended,
@@ -452,7 +452,7 @@ export const claimHandlers = [
               sbi,
               whichReview: typeOfLivestock,
               isEndemics: true,
-              claimType,
+              claimType: claim.dataValues.data.claimType,
               reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
               frn,
               optionalPiHuntValue
