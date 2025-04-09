@@ -1,6 +1,6 @@
 import joi from 'joi'
 import { v4 as uuid } from 'uuid'
-import { getApplication, searchApplications, updateApplicationByReference, findApplication, updateApplicationData } from '../../repositories/application-repository.js'
+import { getApplication, searchApplications, updateApplicationByReference, findApplication, updateApplicationData, createFlag, getFlagByFlagId, getFlagByAppRef, deleteFlag } from '../../repositories/application-repository.js'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
 import { applicationStatus } from '../../constants/index.js'
@@ -191,6 +191,90 @@ export const applicationHandlers = [{
       const oldValue = application.data[updatedProperty] ?? ''
 
       await updateApplicationData(reference, updatedProperty, newValue, oldValue, note, user)
+
+      return h.response().code(204)
+    }
+  }
+},
+{
+  method: 'post',
+  path: '/api/application/{ref}/flag',
+  options: {
+    validate: {
+      params: joi.object({
+        ref: joi.string().valid()
+      }),
+      payload: joi.object({
+        user: joi.string(),
+        note: joi.string(),
+        appliesToMh: joi.bool()
+      }),
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      const { user, note, appliesToMh } = request.payload
+      const { ref } = request.params
+
+      request.logger.setBindings({ appliesToMh, user, note, ref })
+
+      const application = await findApplication(ref)
+
+      if (application === null) {
+        return h.response('Not Found').code(404).takeover()
+      }
+
+      const flag = await getFlagByAppRef(ref)
+
+      if (flag && flag.dataValues.appliesToMh === appliesToMh) {
+        return h.response().code(204)
+      }
+
+      const data = {
+        applicationReference: ref,
+        sbi: application.data.organisation.sbi,
+        note,
+        createdBy: user,
+        appliesToMh
+      }
+
+      await createFlag(data)
+
+      return h.response().code(201)
+    }
+  }
+},
+{
+  method: 'post',
+  path: '/api/application/flag/{flagId}/delete',
+  options: {
+    validate: {
+      params: joi.object({
+        flagId: joi.string().valid()
+      }),
+      payload: joi.object({
+        user: joi.string()
+      }),
+      failAction: async (request, h, err) => {
+        request.logger.setBindings({ err })
+        return h.response({ err }).code(400).takeover()
+      }
+    },
+    handler: async (request, h) => {
+      const { user } = request.payload
+      const { flagId } = request.params
+
+      request.logger.setBindings({ flagId, user })
+
+      const flag = await getFlagByFlagId(flagId)
+
+      if (flag === null) {
+        return h.response('Not Found').code(404).takeover()
+      }
+
+      await deleteFlag(flagId, user)
 
       return h.response().code(204)
     }
