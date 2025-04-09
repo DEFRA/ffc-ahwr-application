@@ -453,7 +453,7 @@ export const claimHandlers = [
               whichReview: typeOfLivestock,
               isEndemics: true,
               claimType,
-              reviewTestResults : reviewTestResults ?? vetVisitsReviewTestResults,
+              reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
               frn,
               optionalPiHuntValue
             },
