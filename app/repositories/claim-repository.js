@@ -41,6 +41,9 @@ export const getByApplicationReference = async (applicationReference, typeOfLive
 }
 
 export const setClaim = async (data) => {
+  console.log({
+    data
+  })
   const sbi = data.sbi
   const result = await models.claim.create(data)
   await raiseClaimEvents({

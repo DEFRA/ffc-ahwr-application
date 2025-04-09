@@ -457,7 +457,8 @@ describe('Post claim test', () => {
         typeOfLivestock: 'beef',
         reviewTestResults: 'negative',
         dateTime: expect.any(Date),
-        piHuntRecommended: 'yes'
+        piHuntRecommended: 'yes',
+        piHuntAllAnimals: 'yes'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -1000,6 +1001,84 @@ describe('PUT claim test', () => {
         sbi: '106705779',
         crn: '1100014934',
         piHuntRecommended: 'yes',
+        piHuntAllAnimals: 'yes',
+        reviewTestResults: 'negative'
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        reference: 'REBC-J9AR-KILQ',
+        whichReview: 'beef',
+        isEndemics: true,
+        claimType: 'E',
+        reviewTestResults: 'negative',
+        optionalPiHuntValue: 'yesPiHunt',
+        frn: '1102569649',
+        sbi: '106705779'
+      },
+      'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+  })
+
+  test('should update claim status and send status update message when old world review test results', async () => {
+    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 9,
+        user: 'admin',
+        note: 'updating status'
+      }
+    }
+    getClaimByReference.mockResolvedValueOnce({
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'beef',
+          claimType: 'E',
+          vetVisitsReviewTestResults: 'negative',
+          piHunt: 'yes',
+          piHuntAllAnimals: 'yes',
+          piHuntRecommended: 'yes',
+          testResults: 'negative'
+        }
+      }
+    })
+    getApplication.mockResolvedValueOnce({
+      dataValues: {
+        data: {
+          organisation: {
+            sbi: '106705779',
+            crn: '1100014934',
+            frn: '1102569649'
+          }
+        }
+      }
+    })
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(updateClaimByReference).toHaveBeenCalledWith({
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      statusId: 9,
+      updatedBy: 'admin'
+    }, 'updating status', expect.any(Object))
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: 9,
+        typeOfLivestock: 'beef',
+        claimType: 'E',
+        dateTime: expect.any(Date),
+        sbi: '106705779',
+        crn: '1100014934',
+        piHuntRecommended: 'yes',
+        piHuntAllAnimals: 'yes',
         reviewTestResults: 'negative'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }

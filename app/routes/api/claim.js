@@ -336,6 +336,7 @@ export const claimHandlers = [
             typeOfLivestock,
             reviewTestResults,
             piHuntRecommended: payload.data.piHuntRecommended,
+            piHuntAllAnimals: payload.data.piHuntAllAnimals,
             dateTime: new Date()
           },
           messageGeneratorMsgType,
@@ -400,7 +401,7 @@ export const claimHandlers = [
         if (!claim.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
-        const { typeOfLivestock, claimType, reviewTestResults } = claim.dataValues.data || {}
+        const { typeOfLivestock, claimType, reviewTestResults, vetVisitsReviewTestResults } = claim.dataValues.data || {}
         const applicationReference = claim.dataValues.applicationReference
 
         const application = await getApplication(applicationReference)
@@ -428,8 +429,9 @@ export const claimHandlers = [
             claimStatus: status,
             claimType,
             typeOfLivestock,
-            reviewTestResults,
+            reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
             piHuntRecommended: claim.dataValues.data.piHuntRecommended,
+            piHuntAllAnimals: claim.dataValues.data.piHuntAllAnimals,
             dateTime: new Date()
           },
           messageGeneratorMsgType,
@@ -451,7 +453,7 @@ export const claimHandlers = [
               whichReview: typeOfLivestock,
               isEndemics: true,
               claimType,
-              reviewTestResults,
+              reviewTestResults : reviewTestResults ?? vetVisitsReviewTestResults,
               frn,
               optionalPiHuntValue
             },
