@@ -21,7 +21,7 @@ export const getFlagByAppRef = async (appRef) => {
     return result
   } catch (error) {
     console.error(
-      'Error finding application flag by application reference: ',
+      `Error getting application flag by application reference ${appRef}: `,
       error
     )
     throw error
@@ -34,7 +34,7 @@ export const getFlagByFlagId = async (flagId) => {
 
     return result
   } catch (error) {
-    console.error('Error finding application flag by flag ID: ', error)
+    console.error(`Error getting application flag by flag ID ${flagId}`, error)
     throw error
   }
 }
@@ -47,7 +47,7 @@ export const getFlagsForApplication = async (applicationReference) => {
 
     return result.map(entry => entry.dataValues)
   } catch (error) {
-    console.error('Error finding application flag by flag ID: ', error)
+    console.error(`Error finding application flags by application reference: ${applicationReference}`, error)
     throw error
   }
 }
@@ -59,7 +59,7 @@ export const deleteFlag = async (flagId, user) => {
       { where: { id: flagId } }
     )
   } catch (error) {
-    console.error('Error deleting application flag: ', error)
+    console.error(`Error deleting application flag with ID ${flagId}`, error)
     throw error
   }
 }

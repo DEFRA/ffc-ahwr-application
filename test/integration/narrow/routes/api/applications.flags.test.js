@@ -22,6 +22,18 @@ describe('Application Flag tests', () => {
   })
 
   describe('POST /api/application/{ref}/flag', () => {
+    test('returns a 400 if joi schema catches invalid payload', async () => {
+      const options = {
+        method: 'POST',
+        url: '/api/application/IAHW-F3F4-GGDE/flag',
+        payload: { user: 'Tom' }
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+      expect(createFlag).not.toHaveBeenCalled()
+    })
+
     test('flagging an application returns a 201 if application exists and same flag does not already exist', async () => {
       getFlagByAppRef.mockResolvedValueOnce(null)
 
@@ -117,6 +129,18 @@ describe('Application Flag tests', () => {
   })
 
   describe('POST /api/application/flag/{flagId}/delete', () => {
+    test('returns a 400 if no user in payload', async () => {
+      const options = {
+        method: 'POST',
+        url: '/api/application/flag/abc123/delete'
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+      expect(getFlagByFlagId).not.toHaveBeenCalled()
+      expect(deleteFlag).not.toHaveBeenCalled()
+    })
+
     test('deletes a flag if it exists', async () => {
       const flagId = '333c18ef-fb26-4beb-ac87-c483fc886fea'
       getFlagByFlagId.mockResolvedValueOnce({

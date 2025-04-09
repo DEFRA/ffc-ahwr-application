@@ -206,9 +206,9 @@ export const applicationHandlers = [{
         ref: joi.string().valid()
       }),
       payload: joi.object({
-        user: joi.string(),
-        note: joi.string(),
-        appliesToMh: joi.bool()
+        user: joi.string().required(),
+        note: joi.string().required(),
+        appliesToMh: joi.bool().required()
       }),
       failAction: async (request, h, err) => {
         request.logger.setBindings({ err })
@@ -281,7 +281,7 @@ export const applicationHandlers = [{
         flagId: joi.string().valid()
       }),
       payload: joi.object({
-        user: joi.string()
+        user: joi.string().required()
       }),
       failAction: async (request, h, err) => {
         request.logger.setBindings({ err })
