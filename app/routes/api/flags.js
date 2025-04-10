@@ -1,5 +1,6 @@
 import joi from 'joi'
-import { getFlagByFlagId, deleteFlag, getAllFlags } from '../../repositories/flag-repository.js'
+import { deleteFlag, getAllFlags } from '../../repositories/flag-repository.js'
+import HttpStatus from 'http-status-codes'
 
 export const flagHandlers = [
   {
@@ -15,7 +16,7 @@ export const flagHandlers = [
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
-          return h.response({ err }).code(400).takeover()
+          return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
       handler: async (request, h) => {
@@ -24,15 +25,13 @@ export const flagHandlers = [
 
         request.logger.setBindings({ flagId, user })
 
-        const flag = await getFlagByFlagId(flagId)
+        const [rowsChanged] = await deleteFlag(flagId, user)
 
-        if (flag === null) {
-          return h.response('Not Found').code(404).takeover()
+        if (rowsChanged === 0) {
+          return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
 
-        await deleteFlag(flagId, user)
-
-        return h.response().code(204)
+        return h.response().code(HttpStatus.NO_CONTENT)
       }
     }
   },
@@ -40,10 +39,10 @@ export const flagHandlers = [
     method: 'get',
     path: '/api/flags',
     options: {
-      handler: async (request, h) => {
+      handler: async (_request, h) => {
         const flags = await getAllFlags()
 
-        return h.response(flags).code(200)
+        return h.response(flags).code(HttpStatus.OK)
       }
     }
   }]

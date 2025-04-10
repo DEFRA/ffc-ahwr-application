@@ -142,18 +142,8 @@ describe('Application Flag tests', () => {
     })
 
     test('deletes a flag if it exists', async () => {
+      deleteFlag.mockResolvedValueOnce([1])
       const flagId = '333c18ef-fb26-4beb-ac87-c483fc886fea'
-      getFlagByFlagId.mockResolvedValueOnce({
-        id: flagId,
-        applicationReference: 'IAHW-U6ZE-5R5E',
-        sbi: '123456789',
-        note: 'Flag this please',
-        createdBy: 'Tom',
-        createdAt: '2025-04-09T11:59:54.075Z',
-        appliesToMh: false,
-        deletedAt: null,
-        deletedBy: null
-      })
 
       const options = {
         method: 'PATCH',
@@ -165,13 +155,12 @@ describe('Application Flag tests', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(204)
-      expect(getFlagByFlagId).toHaveBeenCalledWith(flagId)
       expect(deleteFlag).toHaveBeenCalledWith(flagId, 'fred.jones')
     })
 
     test('returns a 404 if the flag does not exist', async () => {
+      deleteFlag.mockResolvedValueOnce([0])
       const flagId = '333c18ef-fb26-4beb-ac87-c483fc886fea'
-      getFlagByFlagId.mockResolvedValueOnce(null)
 
       const options = {
         method: 'PATCH',
@@ -183,8 +172,7 @@ describe('Application Flag tests', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(404)
-      expect(getFlagByFlagId).toHaveBeenCalledWith(flagId)
-      expect(deleteFlag).not.toHaveBeenCalled()
+      expect(deleteFlag).toHaveBeenCalled()
     })
   })
 

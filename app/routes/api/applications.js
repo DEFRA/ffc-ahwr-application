@@ -1,7 +1,7 @@
 import joi from 'joi'
 import { v4 as uuid } from 'uuid'
 import { getApplication, searchApplications, updateApplicationByReference, findApplication, updateApplicationData } from '../../repositories/application-repository.js'
-import { createFlag, getFlagByFlagId, getFlagByAppRef, deleteFlag, getFlagsForApplication } from '../../repositories/flag-repository.js'
+import { createFlag, getFlagByAppRef, getFlagsForApplication } from '../../repositories/flag-repository.js'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
 import { applicationStatus } from '../../constants/index.js'
@@ -270,40 +270,6 @@ export const applicationHandlers = [{
       const flags = await getFlagsForApplication(ref)
 
       return h.response(flags).code(HttpStatus.OK)
-    }
-  }
-},
-{
-  method: 'post',
-  path: '/api/application/flag/{flagId}/delete',
-  options: {
-    validate: {
-      params: joi.object({
-        flagId: joi.string().valid()
-      }),
-      payload: joi.object({
-        user: joi.string().required()
-      }),
-      failAction: async (request, h, err) => {
-        request.logger.setBindings({ err })
-        return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
-      }
-    },
-    handler: async (request, h) => {
-      const { user } = request.payload
-      const { flagId } = request.params
-
-      request.logger.setBindings({ flagId, user })
-
-      const flag = await getFlagByFlagId(flagId)
-
-      if (flag === null) {
-        return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
-      }
-
-      await deleteFlag(flagId, user)
-
-      return h.response().code(HttpStatus.NO_CONTENT)
     }
   }
 }]
