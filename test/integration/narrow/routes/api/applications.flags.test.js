@@ -1,6 +1,6 @@
 import { server } from '../../../../../app/server'
 import { findApplication } from '../../../../../app/repositories/application-repository'
-import { createFlag, getFlagByAppRef, getFlagsForApplication, getFlagByFlagId, deleteFlag } from '../../../../../app/repositories/flag-repository'
+import { createFlag, getFlagByAppRef, getFlagsForApplication, getFlagByFlagId, deleteFlag, getAllFlags } from '../../../../../app/repositories/flag-repository'
 
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/flag-repository')
@@ -128,10 +128,10 @@ describe('Application Flag tests', () => {
     })
   })
 
-  describe('POST /api/application/flag/{flagId}/delete', () => {
+  describe('PATCH /api/application/flag/{flagId}/delete', () => {
     test('returns a 400 if no user in payload', async () => {
       const options = {
-        method: 'POST',
+        method: 'PATCH',
         url: '/api/application/flag/abc123/delete'
       }
       const res = await server.inject(options)
@@ -156,7 +156,7 @@ describe('Application Flag tests', () => {
       })
 
       const options = {
-        method: 'POST',
+        method: 'PATCH',
         url: `/api/application/flag/${flagId}/delete`,
         payload: {
           user: 'fred.jones'
@@ -174,7 +174,7 @@ describe('Application Flag tests', () => {
       getFlagByFlagId.mockResolvedValueOnce(null)
 
       const options = {
-        method: 'POST',
+        method: 'PATCH',
         url: `/api/application/flag/${flagId}/delete`,
         payload: {
           user: 'fred.jones'
@@ -185,6 +185,60 @@ describe('Application Flag tests', () => {
       expect(res.statusCode).toBe(404)
       expect(getFlagByFlagId).toHaveBeenCalledWith(flagId)
       expect(deleteFlag).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('GET /api/flags', () => {
+    test('returns an array of flags', async () => {
+      const flags = [
+        {
+          id: '333c18ef-fb26-4beb-ac87-c483fc886fea',
+          applicationReference: 'IAHW-U6ZE-5R5E',
+          sbi: '123456789',
+          note: 'Flag this please',
+          createdBy: 'Tom',
+          createdAt: '2025-04-09T11:59:54.075Z',
+          appliesToMh: false,
+          deletedAt: null,
+          deletedBy: null
+        },
+        {
+          id: '53dbbc6c-dd14-4d01-be11-ad288cb16b08',
+          applicationReference: 'IAHW-U6ZE-5R5E',
+          sbi: '123456789',
+          note: 'Flag this please',
+          createdBy: 'Ben',
+          createdAt: '2025-04-09T12:01:23.322Z',
+          appliesToMh: true,
+          deletedAt: null,
+          deletedBy: null
+        }]
+
+      getAllFlags.mockResolvedValueOnce(flags)
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/flags'
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(getAllFlags).toHaveBeenCalled()
+      expect(JSON.parse(res.payload)).toEqual(flags)
+    })
+
+    test('returns an empty array if there are no flags', async () => {
+      const flags = []
+
+      getAllFlags.mockResolvedValueOnce(flags)
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/flags'
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(getAllFlags).toHaveBeenCalled()
+      expect(JSON.parse(res.payload)).toEqual(flags)
     })
   })
 })

@@ -1,5 +1,5 @@
 import { buildData } from '../../../../app/data'
-import { createFlag, deleteFlag, getFlagByAppRef, getFlagByFlagId, getFlagsForApplication } from '../../../../app/repositories/flag-repository'
+import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagByFlagId, getFlagsForApplication } from '../../../../app/repositories/flag-repository'
 
 const { models } = buildData
 
@@ -44,9 +44,9 @@ describe('Flag Repository tests', () => {
   test('getFlagByAppRef', async () => {
     const appRef = 'IAHW-U6ZE-5R5E'
 
-    await getFlagByAppRef(appRef)
+    await getFlagByAppRef(appRef, true)
 
-    expect(models.flag.findOne).toHaveBeenCalledWith({ where: { applicationReference: appRef, deletedAt: null, deletedBy: null } })
+    expect(models.flag.findOne).toHaveBeenCalledWith({ where: { applicationReference: appRef, deletedAt: null, deletedBy: null, appliesToMh: true } })
   })
 
   test('getFlagByFlagId', async () => {
@@ -81,5 +81,11 @@ describe('Flag Repository tests', () => {
     await deleteFlag(flagId)
 
     expect(models.flag.update).toHaveBeenCalledWith({ deletedAt: expect.any(Date), deletedBy: undefined }, { where: { id: flagId } })
+  })
+
+  test('getAllFlags', async () => {
+    await getAllFlags()
+
+    expect(models.flag.findAll).toHaveBeenCalledWith({ where: { deletedAt: null, deletedBy: null } })
   })
 })

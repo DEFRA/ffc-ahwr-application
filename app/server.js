@@ -12,6 +12,7 @@ import { claimHandlers } from './routes/api/claim.js'
 import { claimsHandlers } from './routes/api/claims.js'
 import { holidayHandlers } from './routes/api/holidays.js'
 import { contactHistoryHandlers } from './routes/api/contact-history.js'
+import { flagHandlers } from './routes/api/flags.js'
 
 export const server = Hapi.server({
   port: process.env.PORT
@@ -29,7 +30,8 @@ server.route([
   ...claimsHandlers,
   ...holidayHandlers,
   ...contactHistoryHandlers,
-  ...latestContactDetailsHandlers
+  ...latestContactDetailsHandlers,
+  ...flagHandlers
 ])
 
 server.register(logger)
