@@ -1,0 +1,46 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+<changeSet id="30" author="Rob Catton">
+  <createTable tableName="flag">
+    <column name="id" type="uuid" defaultValueComputed="public.uuid_generate_v4()">
+        <constraints nullable="false" primaryKey="true" />
+    </column>
+    <column name="applicationReference" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="sbi" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="note" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="createdBy" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="createdAt" defaultValueComputed="now()" type="timestamp with time zone">
+      <constraints nullable="false" />
+    </column>
+    <column name="appliesToMh" type="boolean" defaultValue="false">
+      <constraints nullable="false" />
+    </column>
+    <column name="deletedBy" type="varchar">
+      <constraints nullable="true" />
+    </column>
+    <column name="deletedAt" defaultValueComputed="now()" type="timestamp with time zone">
+      <constraints nullable="true" />
+    </column>
+  </createTable>
+
+  <addForeignKeyConstraint
+    baseTableName="flag"
+    baseColumnNames="applicationReference"
+    constraintName="fk_flag_application_reference"
+    referencedTableName="application"
+    referencedColumnNames="reference" />
+</changeSet>
+
+<changeSet id="30-tag" author="Rob Catton">
+  <tagDatabase tag="v1.30.0" />
+</changeSet>
+
+</databaseChangeLog>

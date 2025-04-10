@@ -8,6 +8,7 @@ import { stageConfiguration } from './models/stage-configuration.js'
 import { stageExecution } from './models/stage-execution.js'
 import { status } from './models/status.js'
 import { claimUpdateHistory } from './models/claim-update-history.js'
+import { flag } from './models/flag.js'
 
 export const buildData = (() => {
   const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
@@ -20,6 +21,7 @@ export const buildData = (() => {
   stageConfiguration(sequelize, DataTypes)
   stageExecution(sequelize, DataTypes)
   status(sequelize, DataTypes)
+  flag(sequelize, DataTypes)
 
   sequelize.models.application.associate(sequelize.models)
   sequelize.models.claim.associate(sequelize.models)
@@ -27,6 +29,7 @@ export const buildData = (() => {
   sequelize.models.contact_history.associate(sequelize.models)
   sequelize.models.stage_execution.associate(sequelize.models)
   sequelize.models.status.associate(sequelize.models)
+  sequelize.models.flag.associate(sequelize.models)
 
   return {
     models: sequelize.models,

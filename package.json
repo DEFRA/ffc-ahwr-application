@@ -1,6 +1,6 @@
 {
   "name": "ffc-ahwr-application",
-  "version": "2.4.4",
+  "version": "2.5.0",
   "description": "Application manager for AHWR",
   "homepage": "https://github.com/DEFRA/ffc-ahwr-application",
   "main": "app/index.js",
@@ -28,6 +28,7 @@
     "ffc-ahwr-event-publisher": "^2.0.0",
     "ffc-messaging": "^2.10.2",
     "hapi-pino": "11.0.1",
+    "http-status-codes": "^2.3.0",
     "joi": "^17.6.0",
     "node-cron": "^3.0.2",
     "pg": "^8.7.3",

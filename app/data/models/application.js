@@ -14,7 +14,7 @@ export const application = (sequelize, DataTypes) => {
     },
     data: DataTypes.JSONB,
     claimed: { type: DataTypes.BOOLEAN, defaultValue: false },
-    createdAt: { type: DataTypes.DATE, defaultValue: Date.now() },
+    createdAt: { type: DataTypes.DATE },
     updatedAt: { type: DataTypes.DATE, defaultValue: null },
     createdBy: DataTypes.STRING,
     updatedBy: { type: DataTypes.STRING, defaultValue: null },
