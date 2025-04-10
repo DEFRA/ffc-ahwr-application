@@ -257,7 +257,7 @@ export const claimHandlers = [
         const applicationReference = payload?.applicationReference
         const tempClaimReference = payload?.reference
         const { type } = payload
-        const { typeOfLivestock, dateOfVisit } = payload.data
+        const { typeOfLivestock, dateOfVisit, reviewTestResults } = payload.data
         const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
         const laboratoryURN = payload?.data?.laboratoryURN
 
@@ -334,8 +334,9 @@ export const claimHandlers = [
             claimStatus: statusId,
             claimType: type,
             typeOfLivestock,
-            testResults: payload.data.testResults,
+            reviewTestResults,
             piHuntRecommended: payload.data.piHuntRecommended,
+            piHuntAllAnimals: payload.data.piHuntAllAnimals,
             dateTime: new Date()
           },
           messageGeneratorMsgType,
@@ -400,7 +401,7 @@ export const claimHandlers = [
         if (!claim.dataValues) {
           return h.response('Not Found').code(404).takeover()
         }
-        const { typeOfLivestock, claimType, reviewTestResults } = claim.dataValues.data || {}
+        const { typeOfLivestock, reviewTestResults, vetVisitsReviewTestResults } = claim.dataValues.data || {}
         const applicationReference = claim.dataValues.applicationReference
 
         const application = await getApplication(applicationReference)
@@ -426,10 +427,11 @@ export const claimHandlers = [
             agreementReference: applicationReference,
             claimReference: reference,
             claimStatus: status,
-            claimType,
+            claimType: claim.dataValues.data.claimType,
             typeOfLivestock,
-            testResults: claim.dataValues.data.testResults,
+            reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
             piHuntRecommended: claim.dataValues.data.piHuntRecommended,
+            piHuntAllAnimals: claim.dataValues.data.piHuntAllAnimals,
             dateTime: new Date()
           },
           messageGeneratorMsgType,
@@ -450,8 +452,8 @@ export const claimHandlers = [
               sbi,
               whichReview: typeOfLivestock,
               isEndemics: true,
-              claimType,
-              reviewTestResults,
+              claimType: claim.dataValues.data.claimType,
+              reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
               frn,
               optionalPiHuntValue
             },
