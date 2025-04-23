@@ -114,7 +114,7 @@ export const searchApplications = async (searchText, searchType, filter, offset 
         }
         break
       case 'status':
-        query.include[0] = 
+        query.include[0] =
           {
             model: models.status,
             attributes: ['status'],
@@ -125,7 +125,7 @@ export const searchApplications = async (searchText, searchType, filter, offset 
   }
 
   if (filter && filter.length > 0) {
-    query.include[0] = 
+    query.include[0] =
       {
         model: models.status,
         attributes: ['status'],
@@ -138,7 +138,7 @@ export const searchApplications = async (searchText, searchType, filter, offset 
     applicationStatus = await models.application.findAll({
       attributes: ['status.status', [sequelize.fn('COUNT', 'application.id'), 'total']],
       ...query,
-      group: ['status.status','flags.id'],
+      group: ['status.status', 'flags.id'],
       raw: true
     })
     sort = evalSortField(sort)

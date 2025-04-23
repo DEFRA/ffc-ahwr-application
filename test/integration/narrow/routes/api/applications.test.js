@@ -49,54 +49,60 @@ describe('Applications test', () => {
     }]
 
   describe('GET /api/application/get route', () => {
-    getApplication.mockResolvedValue({
-      dataValues: {
-        reference,
-        createdBy: 'admin',
-        createdAt: '2025-04-16T14:08:50.862Z',
-        data
-      }
-    })
 
     test('returns the application requested', async () => {
-      getFlagsForApplication.mockResolvedValueOnce([])
+      getApplication.mockResolvedValue({
+        dataValues: {
+          reference,
+          createdBy: 'admin',
+          createdAt: '2025-04-16T14:08:50.862Z',
+          data,
+          flags: []
+        }
+      })
       const options = {
         method: 'GET',
         url: '/api/application/get/IAHW-U6ZE-5R5E'
       }
+
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
       expect(getApplication).toHaveBeenCalledTimes(1)
-      expect(getFlagsForApplication).toHaveBeenCalledTimes(1)
       expect(JSON.parse(res.payload)).toEqual({
         createdAt: '2025-04-16T14:08:50.862Z',
         createdBy: 'admin',
         data: { organisation: { sbi: '1231' }, whichReview: 'sheep' },
-        flaggedForMultiHerdTAndCs: false,
-        flaggedForOtherReason: false,
-        reference: 'IAHW-U6ZE-5R5E'
+        reference: 'IAHW-U6ZE-5R5E',
+        flags: []
       })
     })
 
     test('returns the application requested with flags if they exist', async () => {
-      getFlagsForApplication.mockResolvedValueOnce(flags)
+      getApplication.mockResolvedValue({
+        dataValues: {
+          reference,
+          createdBy: 'admin',
+          createdAt: '2025-04-16T14:08:50.862Z',
+          data,
+          flags,
+        }
+      })
       const options = {
         method: 'GET',
         url: '/api/application/get/ABC-1234'
       }
+
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
       expect(getApplication).toHaveBeenCalledTimes(1)
-      expect(getFlagsForApplication).toHaveBeenCalledTimes(1)
       expect(JSON.parse(res.payload)).toEqual({
         createdAt: '2025-04-16T14:08:50.862Z',
         createdBy: 'admin',
         data: { organisation: { sbi: '1231' }, whichReview: 'sheep' },
-        flaggedForMultiHerdTAndCs: true,
-        flaggedForOtherReason: true,
-        reference: 'IAHW-U6ZE-5R5E'
+        reference: 'IAHW-U6ZE-5R5E',
+        flags
       })
     })
 
@@ -197,7 +203,7 @@ describe('Applications test', () => {
     )
   })
 
-  describe('PUT /api/application/search route', () => {
+  describe('PUT /api/application/{ref} route', () => {
     const method = 'PUT'
 
     test('returns 200 when new status is Withdrawn (2)', async () => {
@@ -206,7 +212,8 @@ describe('Applications test', () => {
           reference,
           createdBy: 'admin',
           createdAt: new Date(),
-          data
+          data,
+          flags: []
         }
       })
 
@@ -228,7 +235,8 @@ describe('Applications test', () => {
           reference,
           createdBy: 'admin',
           createdAt: new Date(),
-          data
+          data,
+          flags: []
         }
       })
 
@@ -303,7 +311,8 @@ describe('Applications test', () => {
             reference,
             createdBy: 'admin',
             createdAt: new Date(),
-            data
+            data,
+            flags: []
           }
         })
 
@@ -332,7 +341,8 @@ describe('Applications test', () => {
           reference,
           createdBy: 'admin',
           createdAt: new Date(),
-          data
+          data,
+          flags: []
         }
       })
       sendMessage.mockImplementation(() => {
@@ -652,4 +662,36 @@ describe('Applications test', () => {
       expect(updateApplicationData).toHaveBeenCalledTimes(0)
     })
   })
+
+  describe('GET /api/application/{ref}/flag route', () => {
+
+    test('returns flags when application flags exists', async () => {
+      getFlagsForApplication.mockResolvedValueOnce(flags)
+      const options = {
+        method: 'GET',
+        url: '/api/application/IAHW-U6ZE-5R5E/flag'
+      }
+
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+      expect(getFlagsForApplication).toHaveBeenCalledTimes(1)
+      expect(JSON.parse(res.payload)).toEqual(flags)
+    })
+
+    test('returns no flags when application flags do not exist', async () => {
+      getFlagsForApplication.mockResolvedValueOnce([])
+      const options = {
+        method: 'GET',
+        url: '/api/application/IAHW-U6ZE-5R5E/flag'
+      }
+
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+      expect(getFlagsForApplication).toHaveBeenCalledTimes(1)
+      expect(JSON.parse(res.payload)).toEqual([])
+    })
+  })
+
 })

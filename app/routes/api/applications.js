@@ -9,7 +9,6 @@ import {
 } from '../../repositories/application-repository.js'
 import {
   createFlag,
-  getAllFlags,
   getFlagByAppRef,
   getFlagsForApplication
 } from '../../repositories/flag-repository.js'
