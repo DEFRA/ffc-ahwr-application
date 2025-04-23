@@ -130,9 +130,19 @@ export const searchClaims = async (search, filter, offset, limit, sort = { field
       {
         model: models.status,
         attributes: ['status']
-      }, {
+      },
+      {
         model: models.application,
         attributes: ['data']
+      },
+      {
+        model: models.flag,
+        as: 'flags',
+        attributes: ['appliesToMh'],
+        where: {
+          deletedBy: null
+        },
+        required: false
       }
     ]
   }
@@ -163,6 +173,15 @@ export const searchClaims = async (search, filter, offset, limit, sort = { field
             model: models.status,
             attributes: ['status'],
             where: { status: { [Op.iLike]: `%${search.text}%` } }
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }]
         break
       case 'sbi':
@@ -175,6 +194,15 @@ export const searchClaims = async (search, filter, offset, limit, sort = { field
             model: models.application,
             attributes: ['data'],
             where: { 'data.organisation.sbi': search.text }
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }]
         break
       case 'date':

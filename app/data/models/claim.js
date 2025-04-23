@@ -42,6 +42,11 @@ export const claim = (sequelize, DataTypes) => {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
+    claimModel.hasMany(models.flag, {
+      foreignKey: 'applicationReference',
+      sourceKey: 'applicationReference',
+      as: 'flags'
+    })
   }
   return claimModel
 }

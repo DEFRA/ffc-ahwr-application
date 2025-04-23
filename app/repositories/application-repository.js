@@ -14,6 +14,15 @@ export const getApplication = async (reference) => {
         {
           model: models.status,
           attributes: ['status']
+        },
+        {
+          model: models.flag,
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          where: {
+            deletedBy: null
+          },
+          required: false
         }
       ]
     })
@@ -70,6 +79,15 @@ export const searchApplications = async (searchText, searchType, filter, offset 
       {
         model: models.status,
         attributes: ['status']
+      },
+      {
+        model: models.flag,
+        as: 'flags',
+        attributes: ['appliesToMh'],
+        where: {
+          deletedBy: null
+        },
+        required: false
       }
     ]
   }
@@ -96,24 +114,23 @@ export const searchApplications = async (searchText, searchType, filter, offset 
         }
         break
       case 'status':
-        query.include = [
+        query.include[0] = 
           {
             model: models.status,
             attributes: ['status'],
             where: { status: { [Op.iLike]: `%${searchText}%` } }
-          }]
+          }
         break
     }
   }
 
   if (filter && filter.length > 0) {
-    query.include = [
+    query.include[0] = 
       {
         model: models.status,
         attributes: ['status'],
         where: { status: filter }
       }
-    ]
   }
   total = await models.application.count(query)
 
@@ -121,7 +138,7 @@ export const searchApplications = async (searchText, searchType, filter, offset 
     applicationStatus = await models.application.findAll({
       attributes: ['status.status', [sequelize.fn('COUNT', 'application.id'), 'total']],
       ...query,
-      group: ['status.status'],
+      group: ['status.status','flags.id'],
       raw: true
     })
     sort = evalSortField(sort)

@@ -1,6 +1,6 @@
 import { server } from '../../../../../app/server'
 import { findApplication } from '../../../../../app/repositories/application-repository'
-import { createFlag, getFlagByAppRef, getFlagsForApplication, getFlagByFlagId, deleteFlag, getAllFlags } from '../../../../../app/repositories/flag-repository'
+import { createFlag, getFlagByAppRef, getFlagsForApplication, deleteFlag, getAllFlags } from '../../../../../app/repositories/flag-repository'
 
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/flag-repository')
@@ -137,7 +137,6 @@ describe('Application Flag tests', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(400)
-      expect(getFlagByFlagId).not.toHaveBeenCalled()
       expect(deleteFlag).not.toHaveBeenCalled()
     })
 

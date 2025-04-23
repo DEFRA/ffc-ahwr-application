@@ -1,5 +1,5 @@
 import { buildData } from '../../../../app/data'
-import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagByFlagId, getFlagsForApplication } from '../../../../app/repositories/flag-repository'
+import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagsForApplication } from '../../../../app/repositories/flag-repository'
 
 const { models } = buildData
 
@@ -47,14 +47,6 @@ describe('Flag Repository tests', () => {
     await getFlagByAppRef(appRef, true)
 
     expect(models.flag.findOne).toHaveBeenCalledWith({ where: { applicationReference: appRef, deletedAt: null, deletedBy: null, appliesToMh: true } })
-  })
-
-  test('getFlagByFlagId', async () => {
-    const flagId = 'abc123'
-
-    await getFlagByFlagId(flagId)
-
-    expect(models.flag.findOne).toHaveBeenCalledWith({ where: { id: flagId } })
   })
 
   test('getFlagsForApplication', async () => {

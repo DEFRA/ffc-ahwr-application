@@ -5,8 +5,8 @@ export const getApplicationHistory = async (reference) => {
   return queryEntitiesByPartitionKey(
     'ffcahwrapplicationstatus',
     reference,
-    // The partition key in the application status table is the application reference
-    // so query where it's an exact match
+    // The partition key in the application status table is either
+    // the application reference OR the claim reference.
     odata`PartitionKey eq ${reference}`
   )
 }

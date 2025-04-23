@@ -33,6 +33,12 @@ export const flag = (sequelize, DataTypes) => {
       sourceKey: 'applicationReference',
       foreignKey: 'reference'
     })
+
+    flagModel.belongsTo(models.claim, {
+      foreignKey: 'applicationReference',
+      targetKey: 'applicationReference',
+      as: 'claim'
+    })
   }
 
   return flagModel
