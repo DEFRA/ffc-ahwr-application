@@ -94,3 +94,53 @@ export const raiseClaimEvents = async (event, sbi = 'none') => {
     }
   ])
 }
+
+export const raiseApplicationFlaggedEvent = async (event, sbi) => {
+  await new PublishEventBatch(config.eventQueue).sendEvents([
+    {
+      name: 'application-flagged',
+      properties: {
+        id: event.application.id,
+        sbi,
+        cph: 'n/a',
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        status: 'success',
+        action: {
+          type: 'application:flagged',
+          message: event.message,
+          data: {
+            flagId: event.flag.id,
+            flagDetail: event.flag.note,
+            flagAppliesToMh: event.flag.appliesToMh
+          },
+          raisedBy: event.raisedBy,
+          raisedOn: event.raisedOn.toISOString()
+        }
+      }
+    }
+  ])
+}
+
+export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
+  await new PublishEventBatch(config.eventQueue).sendEvents([
+    {
+      name: 'application-flag-deleted',
+      properties: {
+        id: event.application.id,
+        sbi,
+        cph: 'n/a',
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        status: 'success',
+        action: {
+          type: 'application:unflagged',
+          message: event.message,
+          data: {
+            flagId: event.flag.id
+          },
+          raisedBy: event.raisedBy,
+          raisedOn: event.raisedOn.toISOString()
+        }
+      }
+    }
+  ])
+}

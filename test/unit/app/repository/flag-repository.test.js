@@ -72,7 +72,7 @@ describe('Flag Repository tests', () => {
 
     await deleteFlag(flagId)
 
-    expect(models.flag.update).toHaveBeenCalledWith({ deletedAt: expect.any(Date), deletedBy: undefined }, { where: { id: flagId } })
+    expect(models.flag.update).toHaveBeenCalledWith({ deletedAt: expect.any(Date), deletedBy: undefined }, { where: { id: flagId }, returning: true })
   })
 
   test('getAllFlags', async () => {

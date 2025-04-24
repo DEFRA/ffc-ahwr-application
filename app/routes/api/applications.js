@@ -18,6 +18,7 @@ import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.j
 import { processApplicationApi } from '../../messaging/application/process-application.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
+import { raiseApplicationFlaggedEvent } from '../../event-publisher/index.js'
 
 const { submitPaymentRequestMsgType, submitRequestQueue } = config
 
@@ -287,15 +288,25 @@ export const applicationHandlers = [
           return h.response().code(HttpStatus.NO_CONTENT)
         }
 
+        const sbi = application.data.organisation.sbi
+
         const data = {
           applicationReference: ref,
-          sbi: application.data.organisation.sbi,
+          sbi,
           note,
           createdBy: user,
           appliesToMh
         }
 
-        await createFlag(data)
+        const result = await createFlag(data)
+
+        await raiseApplicationFlaggedEvent({
+          application: { id: application.reference },
+          message: 'Application flagged',
+          flag: { id: result.dataValues.id, note: result.dataValues.note, appliesToMh: result.dataValues.appliesToMh },
+          raisedBy: result.dataValues.createdBy,
+          raisedOn: result.dataValues.createdAt
+        }, sbi)
 
         return h.response().code(HttpStatus.CREATED)
       }
