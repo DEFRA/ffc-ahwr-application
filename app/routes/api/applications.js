@@ -49,11 +49,10 @@ export const applicationHandlers = [
       validate: {
         payload: joi.object({
           ...searchPayloadSchema,
-          sort: joi
-            .object({
-              field: joi.string().valid().optional().default('CREATEDAT'),
-              direction: joi.string().valid().optional().allow('ASC')
-            })
+          sort: joi.object({
+            field: joi.string().valid().optional().default('CREATEDAT'),
+            direction: joi.string().valid().optional().allow('ASC')
+          })
             .optional(),
           filter: joi.array().optional()
         }),
@@ -203,14 +202,13 @@ export const applicationHandlers = [
         params: joi.object({
           reference: joi.string()
         }),
-        payload: joi
-          .object({
-            vetName: joi.string(),
-            visitDate: joi.string(),
-            vetRcvs: joi.string().pattern(/^\d{6}[\dX]$/i),
-            note: joi.string().required(),
-            user: joi.string().required()
-          })
+        payload: joi.object({
+          vetName: joi.string(),
+          visitDate: joi.string(),
+          vetRcvs: joi.string().pattern(/^\d{6}[\dX]$/i),
+          note: joi.string().required(),
+          user: joi.string().required()
+        })
           .or('vetName', 'visitDate', 'vetRcvs')
           .required(),
         failAction: async (request, h, err) => {

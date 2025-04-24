@@ -105,27 +105,29 @@ export const isURNNumberUnique = async (sbi, laboratoryURN) => {
 }
 
 const evalSortField = (sort) => {
-  if (sort !== null && sort !== undefined && sort.field !== undefined) {
-    switch (sort.field.toLowerCase()) {
-      case 'status':
-        return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
-      case 'claim date':
-        return ['createdAt', sort.direction ?? 'ASC']
-      case 'sbi':
-        return ['data.organisation.sbi', sort.direction ?? 'ASC']
-      case 'claim number':
-        return ['reference', sort.direction ?? 'ASC']
-      case 'type of visit':
-        return ['type', sort.direction ?? 'ASC']
-      case 'species':
-        return ['data.typeOfLivestock', sort.direction ?? 'ASC']
-    }
+  const direction = sort?.direction ?? 'ASC'
+  const field = sort?.field?.toLowerCase();
+
+  if (!field) {
+    return ['createdAt', direction];
   }
-  return ['createdAt', sort.direction ?? 'ASC']
+
+  const orderBySortField = {
+    'status': [models.status, field, direction],
+    'claim date': ['createdAt', direction],
+    'sbi': ['data.organisation.sbi', direction],
+    'claim number': ['reference', direction],
+    'type of visit': ['type', direction],
+    'species': ['data.typeOfLivestock', direction],
+  };
+
+  return orderBySortField[field] || ['createdAt', direction];
 }
 
 const applySearchConditions = (query, search) => {
-  if (!search?.text || !search?.type) return
+  if (!search?.text || !search?.type) {
+    return
+  }
 
   const { text, type } = search
 
