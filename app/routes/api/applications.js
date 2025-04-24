@@ -65,8 +65,8 @@ export const applicationHandlers = [
       handler: async (request, h) => {
         const { applications, total, applicationStatus } =
           await searchApplications(
-            request.payload.search.text ?? '',
-            request.payload.search.type,
+            request.payload.search?.text ?? '',
+            request.payload.search?.type,
             request.payload.filter,
             request.payload.offset,
             request.payload.limit,

@@ -49,7 +49,6 @@ describe('Applications test', () => {
     }]
 
   describe('GET /api/application/get route', () => {
-
     test('returns the application requested', async () => {
       getApplication.mockResolvedValue({
         dataValues: {
@@ -85,7 +84,7 @@ describe('Applications test', () => {
           createdBy: 'admin',
           createdAt: '2025-04-16T14:08:50.862Z',
           data,
-          flags,
+          flags
         }
       })
       const options = {
@@ -122,10 +121,22 @@ describe('Applications test', () => {
 
   describe('POST /api/application/search route', () => {
     const method = 'POST'
-
+    const createdAt = new Date()
     searchApplications.mockResolvedValue({
       applications: [
-        { toJSON: () => ({ reference, createdBy: 'admin', createdAt: new Date(), data }) }
+        {
+          toJSON: () => ({
+            reference,
+            createdBy: 'admin',
+            createdAt,
+            data,
+            flags: [
+              {
+                appliesToMh: true
+              }
+            ]
+          })
+        }
       ],
       total: 1
     })
@@ -155,6 +166,27 @@ describe('Applications test', () => {
 
       expect(res.statusCode).toBe(200)
       expect(searchApplications).toHaveBeenCalledTimes(1)
+      expect(JSON.parse(res.payload)).toEqual({
+        applications: [
+          {
+            createdAt: createdAt.toISOString(),
+            createdBy: 'admin',
+            data: {
+              organisation: {
+                sbi: '1231'
+              },
+              whichReview: 'sheep'
+            },
+            flags: [
+              {
+                appliesToMh: true
+              }
+            ],
+            reference: 'IAHW-U6ZE-5R5E'
+          }
+        ],
+        total: 1
+      })
     })
 
     test.each([
@@ -664,7 +696,6 @@ describe('Applications test', () => {
   })
 
   describe('GET /api/application/{ref}/flag route', () => {
-
     test('returns flags when application flags exists', async () => {
       getFlagsForApplication.mockResolvedValueOnce(flags)
       const options = {
@@ -693,5 +724,4 @@ describe('Applications test', () => {
       expect(JSON.parse(res.payload)).toEqual([])
     })
   })
-
 })

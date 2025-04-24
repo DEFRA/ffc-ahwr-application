@@ -675,6 +675,14 @@ describe('Claim repository test', () => {
             [Op.iLike]: '%ON HOLD%'
           }
         }
+      },
+      {
+        as: 'flags',
+        attributes: ['appliesToMh'],
+        where: {
+          deletedBy: null
+        },
+        required: false
       }],
       offset,
       limit,

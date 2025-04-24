@@ -175,6 +175,15 @@ describe('Application Repository test', () => {
         {
           model: models.status,
           attributes: ['status']
+        },
+        {
+          model: models.flag,
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          where: {
+            deletedBy: null
+          },
+          required: false
         }
       ],
       where: {
@@ -535,6 +544,15 @@ describe('Application Repository test', () => {
             {
               model: models.status,
               attributes: ['status']
+            },
+            {
+              model: models.flag,
+              as: 'flags',
+              attributes: ['appliesToMh'],
+              where: {
+                deletedBy: null
+              },
+              required: false
             }
           ]
         })
@@ -554,6 +572,15 @@ describe('Application Repository test', () => {
           {
             model: models.status,
             attributes: ['status']
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ],
         where: {
@@ -575,6 +602,15 @@ describe('Application Repository test', () => {
           {
             model: models.status,
             attributes: ['status']
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ],
         where: {
@@ -587,6 +623,15 @@ describe('Application Repository test', () => {
           {
             model: models.status,
             attributes: ['status']
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ],
         where: {
@@ -609,6 +654,15 @@ describe('Application Repository test', () => {
             model: models.status,
             attributes: ['status'],
             where: { status: { [Op.iLike]: '%IN PROGRESS%' } }
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ]
       })
@@ -619,6 +673,15 @@ describe('Application Repository test', () => {
             model: models.status,
             attributes: ['status'],
             where: { status: { [Op.iLike]: '%IN PROGRESS%' } }
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ]
       })
@@ -637,6 +700,15 @@ describe('Application Repository test', () => {
           {
             model: models.status,
             attributes: ['status']
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ],
         where: { 'data.organisation.name': { [Op.iLike]: `%${searchText}%` } }
@@ -647,6 +719,15 @@ describe('Application Repository test', () => {
           {
             model: models.status,
             attributes: ['status']
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ],
         where: { 'data.organisation.name': { [Op.iLike]: `%${searchText}%` } }
@@ -1102,6 +1183,15 @@ describe('Application Repository test', () => {
           {
             model: models.status,
             attributes: ['status']
+          },
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
           }
         ]
       })
@@ -1124,6 +1214,15 @@ describe('Application Repository test', () => {
         {
           model: models.status,
           attributes: ['status']
+        },
+        {
+          model: models.flag,
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          where: {
+            deletedBy: null
+          },
+          required: false
         }
       ]
     })
