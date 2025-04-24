@@ -98,7 +98,7 @@ export const raiseClaimEvents = async (event, sbi = 'none') => {
 export const raiseApplicationFlaggedEvent = async (event, sbi) => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
-      name: 'application-flagged',
+      name: 'send-session-event',
       properties: {
         id: event.application.id,
         sbi,
@@ -124,7 +124,7 @@ export const raiseApplicationFlaggedEvent = async (event, sbi) => {
 export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
-      name: 'application-flag-deleted',
+      name: 'send-session-event',
       properties: {
         id: event.application.id,
         sbi,
