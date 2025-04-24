@@ -106,22 +106,22 @@ export const isURNNumberUnique = async (sbi, laboratoryURN) => {
 
 const evalSortField = (sort) => {
   const direction = sort?.direction ?? 'ASC'
-  const field = sort?.field?.toLowerCase();
+  const field = sort?.field?.toLowerCase()
 
   if (!field) {
-    return ['createdAt', direction];
+    return ['createdAt', direction]
   }
 
   const orderBySortField = {
-    'status': [models.status, field, direction],
+    status: [models.status, field, direction],
     'claim date': ['createdAt', direction],
-    'sbi': ['data.organisation.sbi', direction],
+    sbi: ['data.organisation.sbi', direction],
     'claim number': ['reference', direction],
     'type of visit': ['type', direction],
-    'species': ['data.typeOfLivestock', direction],
-  };
+    species: ['data.typeOfLivestock', direction]
+  }
 
-  return orderBySortField[field] || ['createdAt', direction];
+  return orderBySortField[field] || ['createdAt', direction]
 }
 
 const applySearchConditions = (query, search) => {
