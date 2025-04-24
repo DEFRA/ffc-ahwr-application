@@ -73,8 +73,8 @@ export const evalSortField = (sort) => {
   return ['createdAt', sort?.direction ?? 'ASC']
 }
 
-export const searchApplications = async (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) => {
-  let query = {
+const buildSearchQuery = (searchText, searchType, filter) => {
+  const query = {
     include: [
       {
         model: models.status,
@@ -91,9 +91,7 @@ export const searchApplications = async (searchText, searchType, filter, offset 
       }
     ]
   }
-  let total = 0
-  let applications = []
-  let applicationStatus = []
+
   if (searchText) {
     switch (searchType) {
       case 'sbi':
@@ -132,6 +130,17 @@ export const searchApplications = async (searchText, searchType, filter, offset 
         where: { status: filter }
       }
   }
+
+  return query
+}
+
+export const searchApplications = async (searchText, searchType, filter, offset = 0, limit = 10, sort = { field: 'createdAt', direction: 'DESC' }) => {
+  let query = buildSearchQuery(searchText, searchType, filter)
+
+  let total = 0
+  let applications = []
+  let applicationStatus = []
+
   total = await models.application.count(query)
 
   if (total > 0) {
@@ -150,6 +159,7 @@ export const searchApplications = async (searchText, searchType, filter, offset 
     }
     applications = await models.application.findAll(query)
   }
+
   return {
     applications, total, applicationStatus
   }

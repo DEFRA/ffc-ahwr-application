@@ -14,7 +14,7 @@ import {
 } from '../../repositories/flag-repository.js'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
-import { applicationStatus } from '../../constants/index.js'
+import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.js'
 import { processApplicationApi } from '../../messaging/application/process-application.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
@@ -92,7 +92,7 @@ export const applicationHandlers = [
           ref: joi.string().valid()
         }),
         payload: joi.object({
-          status: joi.number().valid(...Object.values(applicationStatus)),
+          status: joi.number().valid(...Object.values(APPLICATION_STATUS)),
           user: joi.string(),
           note: joi.string()
         }),
@@ -163,10 +163,10 @@ export const applicationHandlers = [
         }
 
         try {
-          let statusId = applicationStatus.rejected
+          let statusId = APPLICATION_STATUS.rejected
 
           if (request.payload.approved) {
-            statusId = applicationStatus.readyToPay
+            statusId = APPLICATION_STATUS.readyToPay
 
             await sendMessage(
               {
