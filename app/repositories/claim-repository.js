@@ -195,6 +195,8 @@ const applySearchConditions = (query, search) => {
       }
       break
     }
+    default:
+      break
   }
 }
 
