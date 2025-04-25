@@ -700,7 +700,6 @@ describe('Claim repository test', () => {
       expectDataEventCall('dateOfVisit', 'claim-visitDate', oldDate, newDate)
     })
     test('unknown potential other claim data successfully', async () => {
-
       await updateClaimData('REF-UPDATE', 'testResults', 'positive', 'negative', 'note here', 'Admin')
 
       expectDbUpdateCalls('testResults', 'negative', 'positive')
