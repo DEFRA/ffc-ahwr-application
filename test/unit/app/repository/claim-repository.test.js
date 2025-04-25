@@ -620,7 +620,7 @@ describe('Claim repository test', () => {
   })
 
   describe('updateClaimData', () => {
-    test('should update claim data successfully', async () => {
+    beforeEach(() => {
       buildData.models.claim.update.mockResolvedValueOnce([
         1,
         [
@@ -643,15 +643,15 @@ describe('Claim repository test', () => {
         }
       })
       MOCK_SEND_EVENTS.mockResolvedValueOnce(null)
+    })
 
-      await updateClaimData('REF-UPDATE', 'vetsName', 'Geoff', 'Bill', 'note here', 'Admin')
-
+    function expectDbUpdateCalls (propertyUpdated, oldValue, newValue, newValueIsDate = false) {
       expect(buildData.models.claim.update).toHaveBeenCalledWith({
         data: Sequelize.fn(
           'jsonb_set',
           Sequelize.col('data'),
-          Sequelize.literal('\'{vetsName}\''),
-          Sequelize.literal('\'"Geoff"\'')
+          Sequelize.literal(`'{${propertyUpdated}}'`),
+          Sequelize.literal(`'"${newValueIsDate ? newValue.toISOString() : newValue}"'`)
         )
       }, {
         where: { reference: 'REF-UPDATE' },
@@ -661,20 +661,43 @@ describe('Claim repository test', () => {
         applicationReference: 'REF-UPDATE',
         reference: 'REF-UPDATE',
         createdBy: 'Admin',
-        eventType: 'claim-vetsName',
-        updatedProperty: 'vetsName',
-        oldValue: 'Bill',
-        newValue: 'Geoff',
+        eventType: `claim-${propertyUpdated}`,
+        updatedProperty: propertyUpdated,
+        oldValue,
+        newValue,
         note: 'note here'
       })
+    }
+    function expectDataEventCall (propertyUpdated, eventType, oldValue, newValue) {
       expect(claimDataUpdateEvent).toHaveBeenCalledWith({
         applicationReference: 'REF-UPDATE',
         reference: 'REF-UPDATE',
-        updatedProperty: 'vetsName',
-        oldValue: 'Bill',
-        newValue: 'Geoff',
+        updatedProperty: propertyUpdated,
+        oldValue,
+        newValue,
         note: 'note here'
-      }, 'claim-vetName', 'Admin', expect.any(Date), '123456789')
+      }, eventType, 'Admin', expect.any(Date), '123456789')
+    }
+    test('should update vetsName claim data successfully', async () => {
+      await updateClaimData('REF-UPDATE', 'vetsName', 'Geoff', 'Bill', 'note here', 'Admin')
+
+      expectDbUpdateCalls('vetsName', 'Bill', 'Geoff')
+      expectDataEventCall('vetsName', 'claim-vetName', 'Bill', 'Geoff')
+    })
+    test('should update vetsRcvs claim data successfully', async () => {
+      await updateClaimData('REF-UPDATE', 'vetRCVSNumber', '7654321', '1234567', 'note here', 'Admin')
+
+      expectDbUpdateCalls('vetRCVSNumber', '1234567', '7654321')
+      expectDataEventCall('vetRCVSNumber', 'claim-vetRcvs', '1234567', '7654321')
+    })
+    test('should update visitDate claim data successfully', async () => {
+      const oldDate = new Date('2024-01-01T00:00:00.000Z')
+      const newDate = new Date()
+
+      await updateClaimData('REF-UPDATE', 'dateOfVisit', newDate, oldDate, 'note here', 'Admin')
+
+      expectDbUpdateCalls('dateOfVisit', oldDate, newDate, true)
+      expectDataEventCall('dateOfVisit', 'claim-visitDate', oldDate, newDate)
     })
   })
 
