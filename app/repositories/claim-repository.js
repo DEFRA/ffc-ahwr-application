@@ -267,6 +267,6 @@ const convertUpdatedPropertyToStandardType = (updatedProperty) => {
     case 'dateOfVisit':
       return 'visitDate'
     default:
-      return ''
+      return updatedProperty
   }
 }
