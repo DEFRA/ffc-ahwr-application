@@ -104,7 +104,7 @@ export const isURNNumberUnique = async (sbi, laboratoryURN) => {
   return { isURNUnique: true }
 }
 
-export const evalSortField = (sort) => {
+const evalSortField = (sort) => {
   const direction = sort?.direction ?? 'ASC'
   const field = sort?.field?.toLowerCase()
 
@@ -124,7 +124,7 @@ export const evalSortField = (sort) => {
   return orderBySortField[field] || ['createdAt', direction]
 }
 
-export const applySearchConditions = (query, search) => {
+const applySearchConditions = (query, search) => {
   if (!search?.text || !search?.type) {
     return
   }
