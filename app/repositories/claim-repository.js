@@ -279,8 +279,8 @@ export const updateClaimData = async (reference, updatedProperty, newValue, oldV
     oldValue,
     note
   }
-  const type = `claim-${updatedProperty}`
-  await claimDataUpdateEvent(eventData, type, user, updatedAt, application.data.organisation.sbi)
+
+  await claimDataUpdateEvent(eventData, `claim-${convertUpdatedPropertyToStandardType(updatedProperty)}`, user, updatedAt, application.data.organisation.sbi)
 
   await buildData.models.claim_update_history.create({
     applicationReference,
@@ -289,7 +289,7 @@ export const updateClaimData = async (reference, updatedProperty, newValue, oldV
     updatedProperty,
     newValue,
     oldValue,
-    eventType: type,
+    eventType: `claim-${updatedProperty}`,
     createdBy: user
   })
 }
@@ -298,3 +298,16 @@ export const findAllClaimUpdateHistory = (reference) =>
   buildData.models.claim_update_history.findAll({
     where: { reference }
   })
+
+const convertUpdatedPropertyToStandardType = (updatedProperty) => {
+  switch (updatedProperty) {
+    case 'vetsName':
+      return 'vetName'
+    case 'vetRCVSNumber':
+      return 'vetRcvs'
+    case 'dateOfVisit':
+      return 'visitDate'
+    default:
+      return updatedProperty
+  }
+}

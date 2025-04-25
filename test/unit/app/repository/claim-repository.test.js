@@ -7,12 +7,14 @@ import {
   isURNNumberUnique,
   searchClaims,
   setClaim,
-  updateClaimByReference
+  updateClaimByReference,
+  updateClaimData
 } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
-import { Op } from 'sequelize'
-import { SEND_SESSION_EVENT } from '../../../../app/event-publisher'
+import { Op, Sequelize } from 'sequelize'
+import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
+import { findApplication } from '../../../../app/repositories/application-repository.js'
 
 jest.mock('../../../../app/data', () => {
   return {
@@ -29,7 +31,8 @@ jest.mock('../../../../app/data', () => {
           findAll: jest.fn()
         },
         claim_update_history: {
-          findAll: jest.fn()
+          findAll: jest.fn(),
+          create: jest.fn()
         },
         status: 'mock-status'
       }
@@ -37,7 +40,8 @@ jest.mock('../../../../app/data', () => {
   }
 })
 
-jest.mock('../../../../app/repositories/application-repository', () => {})
+jest.mock('../../../../app/repositories/application-repository')
+jest.mock('../../../../app/event-publisher/claim-data-update-event')
 
 const MOCK_SEND_EVENTS = jest.fn()
 
@@ -614,6 +618,95 @@ describe('Claim repository test', () => {
       }, note, logger)).rejects.toBe('Something failed')
     })
   })
+
+  describe('updateClaimData', () => {
+    beforeEach(() => {
+      buildData.models.claim.update.mockResolvedValueOnce([
+        1,
+        [
+          {
+            dataValues: {
+              applicationReference: 'REF-UPDATE',
+              statusId: 2,
+              updatedAt: new Date(),
+              updatedBy: 'admin'
+            }
+          }
+        ]
+      ])
+      findApplication.mockResolvedValueOnce({
+        data: {
+          organisation: {
+            sbi: '123456789',
+            email: 'business@email.com'
+          }
+        }
+      })
+      MOCK_SEND_EVENTS.mockResolvedValueOnce(null)
+    })
+
+    function expectDbUpdateCalls (propertyUpdated, oldValue, newValue, newValueIsDate = false) {
+      expect(buildData.models.claim.update).toHaveBeenCalledWith({
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal(`'{${propertyUpdated}}'`),
+          Sequelize.literal(`'"${newValueIsDate ? newValue.toISOString() : newValue}"'`)
+        )
+      }, {
+        where: { reference: 'REF-UPDATE' },
+        returning: true
+      })
+      expect(buildData.models.claim_update_history.create).toHaveBeenCalledWith({
+        applicationReference: 'REF-UPDATE',
+        reference: 'REF-UPDATE',
+        createdBy: 'Admin',
+        eventType: `claim-${propertyUpdated}`,
+        updatedProperty: propertyUpdated,
+        oldValue,
+        newValue,
+        note: 'note here'
+      })
+    }
+    function expectDataEventCall (propertyUpdated, eventType, oldValue, newValue) {
+      expect(claimDataUpdateEvent).toHaveBeenCalledWith({
+        applicationReference: 'REF-UPDATE',
+        reference: 'REF-UPDATE',
+        updatedProperty: propertyUpdated,
+        oldValue,
+        newValue,
+        note: 'note here'
+      }, eventType, 'Admin', expect.any(Date), '123456789')
+    }
+    test('should update vetsName claim data successfully', async () => {
+      await updateClaimData('REF-UPDATE', 'vetsName', 'Geoff', 'Bill', 'note here', 'Admin')
+
+      expectDbUpdateCalls('vetsName', 'Bill', 'Geoff')
+      expectDataEventCall('vetsName', 'claim-vetName', 'Bill', 'Geoff')
+    })
+    test('should update vetsRcvs claim data successfully', async () => {
+      await updateClaimData('REF-UPDATE', 'vetRCVSNumber', '7654321', '1234567', 'note here', 'Admin')
+
+      expectDbUpdateCalls('vetRCVSNumber', '1234567', '7654321')
+      expectDataEventCall('vetRCVSNumber', 'claim-vetRcvs', '1234567', '7654321')
+    })
+    test('should update visitDate claim data successfully', async () => {
+      const oldDate = new Date('2024-01-01T00:00:00.000Z')
+      const newDate = new Date()
+
+      await updateClaimData('REF-UPDATE', 'dateOfVisit', newDate, oldDate, 'note here', 'Admin')
+
+      expectDbUpdateCalls('dateOfVisit', oldDate, newDate, true)
+      expectDataEventCall('dateOfVisit', 'claim-visitDate', oldDate, newDate)
+    })
+    test('unknown potential other claim data successfully', async () => {
+      await updateClaimData('REF-UPDATE', 'testResults', 'positive', 'negative', 'note here', 'Admin')
+
+      expectDbUpdateCalls('testResults', 'negative', 'positive')
+      expectDataEventCall('testResults', 'claim-testResults', 'negative', 'positive')
+    })
+  })
+
   describe('Search Claim', () => {
     test.each([
       { searchText: 'AHWR-7C72-8871', searchType: 'ref', sort: { field: 'claim number', direction: undefined } },
