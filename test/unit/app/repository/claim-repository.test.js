@@ -15,6 +15,7 @@ import { livestockTypes } from '../../../../app/constants'
 import { Op, Sequelize } from 'sequelize'
 import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
 import { findApplication } from '../../../../app/repositories/application-repository.js'
+import { APPLICATION_STATUS_EVENT, SEND_SESSION_EVENT } from '../../../../app/event-publisher'
 
 jest.mock('../../../../app/data', () => {
   return {
@@ -523,7 +524,7 @@ describe('Claim repository test', () => {
       )
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
       expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(1, [{
-        name: 'application-status-event',
+        name: APPLICATION_STATUS_EVENT,
         properties: {
           id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
           sbi: 'none',
