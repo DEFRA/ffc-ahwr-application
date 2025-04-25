@@ -7,7 +7,9 @@ import {
   isURNNumberUnique,
   searchClaims,
   setClaim,
-  updateClaimByReference
+  updateClaimByReference,
+  evalSortField,
+  applySearchConditions
 } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
@@ -351,6 +353,44 @@ describe('Claim repository test', () => {
     await updateClaimByReference(claim, note, logger)
 
     expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
+  })
+  test.only('Does not update claim by reference if the status id matches the current status id', async () => {
+    const claim = {
+      id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
+      reference: 'AHWR-5602-BAC6',
+      applicationReference: 'AHWR-0AD3-3322',
+      data: {
+        vetsName: 'vetsName',
+        dateOfVisit: '2024-02-01T07:24:29.224Z',
+        testResults: 'testResult',
+        typeOfReview: 'typeOfReview',
+        dateOfTesting: '2024-02-01T07:24:29.224Z',
+        laboratoryURN: '12345566',
+        vetRCVSNumber: '12345',
+        detailsCorrect: 'yes',
+        typeOfLivestock: 'sheep',
+        numberAnimalsTested: '12',
+        numberOfOralFluidSamples: '23',
+        minimumNumberAnimalsRequired: '20'
+      },
+      statusId: 11,
+      type: 'R',
+      createdAt: '2024-02-01T07:24:29.224Z',
+      updatedAt: new Date(),
+      createdBy: 'admin',
+      updatedBy: null,
+      status: {
+        status: 'ON HOLD'
+      }
+    }
+
+    buildData.models.claim.findOne.mockResolvedValueOnce({ dataValues: claim })
+
+    const note = 'note'
+    const logger = { setBindings: jest.fn() }
+    await updateClaimByReference(claim, note, logger)
+
+    expect(buildData.models.claim.update).toHaveBeenCalledTimes(0)
   })
   test('Get all claimed claims', async () => {
     const claim = {
@@ -712,5 +752,20 @@ describe('Claim repository test', () => {
       where: { reference: 'some-claim' }
     })
     expect(result).toEqual(aClaimHistory)
+  })
+})
+
+describe('evalSortField', () => {
+  test('it returns the default value if no field was provided', () => {
+    const input = { direction: 'DESC' }
+    expect(evalSortField(input)).toEqual(['createdAt', input.direction])
+  })
+})
+
+describe('applySearchConditions', () => {
+  test('it does not change the query if there is no search provided', () => {
+    const query = { where: 'something' }
+    applySearchConditions(query)
+    expect(query).toEqual({ where: 'something' })
   })
 })
