@@ -3,6 +3,7 @@ import { buildData } from '../../../../../app/data'
 import { findApplication } from '../../../../../app/repositories/application-repository.js'
 
 jest.mock('../../../../../app/repositories/application-repository')
+jest.mock('../../../../../app/event-publisher/claim-data-update-event')
 
 beforeEach(jest.resetAllMocks)
 
