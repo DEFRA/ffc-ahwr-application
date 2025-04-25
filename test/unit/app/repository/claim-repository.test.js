@@ -12,6 +12,7 @@ import {
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
 import { Op } from 'sequelize'
+import { SEND_SESSION_EVENT } from '../../../../app/event-publisher'
 
 jest.mock('../../../../app/data', () => {
   return {
@@ -538,7 +539,7 @@ describe('Claim repository test', () => {
           }
         }
       }, {
-        name: 'send-session-event',
+        name: SEND_SESSION_EVENT,
         properties: {
           id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
           sbi: 'none',

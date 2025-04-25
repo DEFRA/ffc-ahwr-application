@@ -14,6 +14,7 @@ import {
 import { buildData } from '../../../../app/data'
 import { Op, Sequelize } from 'sequelize'
 import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
+import { SEND_SESSION_EVENT } from '../../../../app/event-publisher'
 
 const { models } = buildData
 
@@ -135,7 +136,7 @@ describe('Application Repository test', () => {
         }
       },
       {
-        name: 'send-session-event',
+        name: SEND_SESSION_EVENT,
         properties: {
           id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
           sbi: '123456789',
@@ -354,7 +355,7 @@ describe('Application Repository test', () => {
           }
         },
         {
-          name: 'send-session-event',
+          name: SEND_SESSION_EVENT,
           properties: {
             id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
             sbi: '123456789',
@@ -396,7 +397,7 @@ describe('Application Repository test', () => {
           }
         },
         {
-          name: 'send-session-event',
+          name: SEND_SESSION_EVENT,
           properties: {
             id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
             sbi: '123456789',
@@ -1395,14 +1396,29 @@ describe('evalSortField function', () => {
     expect(result).toEqual([models.status, 'status', 'DESC'])
   })
 
+  test('returns correct sort for status field when no direction is provided', () => {
+    const result = evalSortField({ field: 'status' })
+    expect(result).toEqual([models.status, 'status', 'ASC'])
+  })
+
   test('returns correct sort for reference field', () => {
-    const result = evalSortField({ field: 'reference', direction: 'ASC' })
+    const result = evalSortField({ field: 'reference', direction: 'DESC' })
+    expect(result).toEqual(['reference', 'DESC'])
+  })
+
+  test('returns correct sort for reference field when no direction is provided', () => {
+    const result = evalSortField({ field: 'reference' })
     expect(result).toEqual(['reference', 'ASC'])
   })
 
   test('returns correct sort for organisation field', () => {
     const result = evalSortField({ field: 'organisation', direction: 'DESC' })
     expect(result).toEqual(['data.organisation.name', 'DESC'])
+  })
+
+  test('returns correct sort for organisation field when no direction is provided', () => {
+    const result = evalSortField({ field: 'organisation' })
+    expect(result).toEqual(['data.organisation.name', 'ASC'])
   })
 
   test('returns correct sort when direction is not specified', () => {
@@ -1413,6 +1429,11 @@ describe('evalSortField function', () => {
   test('is case insensitive for field names', () => {
     const result = evalSortField({ field: 'APPLY DATE', direction: 'DESC' })
     expect(result).toEqual(['createdAt', 'DESC'])
+  })
+
+  test('returns default direction for apply date when no direction provided', () => {
+    const result = evalSortField({ field: 'apply date' })
+    expect(result).toEqual(['createdAt', 'ASC'])
   })
 
   test('returns default sort for unrecognized field', () => {
