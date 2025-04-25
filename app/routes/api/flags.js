@@ -1,6 +1,7 @@
 import joi from 'joi'
 import { deleteFlag, getAllFlags } from '../../repositories/flag-repository.js'
 import HttpStatus from 'http-status-codes'
+import { raiseApplicationFlagDeletedEvent } from '../../event-publisher/index.js'
 
 export const flagHandlers = [
   {
@@ -25,11 +26,21 @@ export const flagHandlers = [
 
         request.logger.setBindings({ flagId, user })
 
-        const [rowsChanged] = await deleteFlag(flagId, user)
+        const [rowsChanged, updatedRecords] = await deleteFlag(flagId, user)
 
         if (rowsChanged === 0) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
+
+        const { dataValues } = updatedRecords[0]
+
+        await raiseApplicationFlagDeletedEvent({
+          application: { id: dataValues.applicationReference },
+          message: 'Application flag removed',
+          flag: { id: dataValues.id },
+          raisedBy: dataValues.deletedBy,
+          raisedOn: dataValues.deletedAt
+        }, dataValues.sbi)
 
         return h.response().code(HttpStatus.NO_CONTENT)
       }

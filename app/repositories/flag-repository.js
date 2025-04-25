@@ -12,10 +12,6 @@ export const getFlagByAppRef = async (applicationReference, appliesToMh) => {
   })
 }
 
-export const getFlagByFlagId = async (flagId) => {
-  return models.flag.findOne({ where: { id: flagId } })
-}
-
 export const getFlagsForApplication = async (applicationReference) => {
   const result = await models.flag.findAll({
     where: { applicationReference, deletedAt: null, deletedBy: null }
@@ -27,7 +23,7 @@ export const getFlagsForApplication = async (applicationReference) => {
 export const deleteFlag = async (flagId, user) => {
   return models.flag.update(
     { deletedAt: new Date(), deletedBy: user },
-    { where: { id: flagId } }
+    { where: { id: flagId }, returning: true }
   )
 }
 

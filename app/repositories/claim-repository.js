@@ -105,88 +105,129 @@ export const isURNNumberUnique = async (sbi, laboratoryURN) => {
 }
 
 const evalSortField = (sort) => {
-  if (sort !== null && sort !== undefined && sort.field !== undefined) {
-    switch (sort.field.toLowerCase()) {
-      case 'status':
-        return [models.status, sort.field.toLowerCase(), sort.direction ?? 'ASC']
-      case 'claim date':
-        return ['createdAt', sort.direction ?? 'ASC']
-      case 'sbi':
-        return ['data.organisation.sbi', sort.direction ?? 'ASC']
-      case 'claim number':
-        return ['reference', sort.direction ?? 'ASC']
-      case 'type of visit':
-        return ['type', sort.direction ?? 'ASC']
-      case 'species':
-        return ['data.typeOfLivestock', sort.direction ?? 'ASC']
-    }
+  const direction = sort?.direction ?? 'ASC'
+  const field = sort?.field?.toLowerCase()
+
+  if (!field) {
+    return ['createdAt', direction]
   }
-  return ['createdAt', sort.direction ?? 'ASC']
+
+  const orderBySortField = {
+    status: [models.status, field, direction],
+    'claim date': ['createdAt', direction],
+    sbi: ['data.organisation.sbi', direction],
+    'claim number': ['reference', direction],
+    'type of visit': ['type', direction],
+    species: ['data.typeOfLivestock', direction]
+  }
+
+  return orderBySortField[field] || ['createdAt', direction]
+}
+
+const applySearchConditions = (query, search) => {
+  if (!search?.text || !search?.type) {
+    return
+  }
+
+  const { text, type } = search
+
+  switch (type) {
+    case 'ref':
+      query.where = { reference: text }
+      break
+    case 'appRef':
+      query.where = { applicationReference: text }
+      break
+    case 'type':
+      query.where = { type: text }
+      break
+    case 'species':
+      query.where = { 'data.typeOfLivestock': text }
+      break
+    case 'status':
+      query.include = [
+        {
+          model: models.application,
+          attributes: ['data']
+        },
+        {
+          model: models.status,
+          attributes: ['status'],
+          where: { status: { [Op.iLike]: `%${text}%` } }
+        },
+        {
+          model: models.flag,
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          where: { deletedBy: null },
+          required: false
+        }
+      ]
+      break
+    case 'sbi': {
+      query.include = [
+        {
+          model: models.status,
+          attributes: ['status']
+        },
+        {
+          model: models.application,
+          attributes: ['data'],
+          where: { 'data.organisation.sbi': text }
+        },
+        {
+          model: models.flag,
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          where: { deletedBy: null },
+          required: false
+        }
+      ]
+      break
+    }
+    case 'date': {
+      const { startDate, endDate } = startandEndDate(text)
+      query.where = {
+        createdAt: {
+          [Op.gte]: startDate,
+          [Op.lt]: endDate
+        }
+      }
+      break
+    }
+    default:
+      break
+  }
 }
 
 export const searchClaims = async (search, filter, offset, limit, sort = { field: 'createdAt', direction: 'DESC' }) => {
+  if (search?.type && !['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(search.type)) {
+    return { total: 0, claims: [] }
+  }
+
   const query = {
     include: [
       {
         model: models.status,
         attributes: ['status']
-      }, {
+      },
+      {
         model: models.application,
         attributes: ['data']
+      },
+      {
+        model: models.flag,
+        as: 'flags',
+        attributes: ['appliesToMh'],
+        where: {
+          deletedBy: null
+        },
+        required: false
       }
     ]
   }
 
-  if (!['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(search.type)) return { total: 0, claims: [] }
-
-  if (search.text) {
-    switch (search.type) {
-      case 'ref':
-        query.where = { reference: search.text }
-        break
-      case 'appRef':
-        query.where = { applicationReference: search.text }
-        break
-      case 'type':
-        query.where = { type: search.text }
-        break
-      case 'species':
-        query.where = { 'data.typeOfLivestock': search.text }
-        break
-      case 'status':
-        query.include = [
-          {
-            model: models.application,
-            attributes: ['data']
-          },
-          {
-            model: models.status,
-            attributes: ['status'],
-            where: { status: { [Op.iLike]: `%${search.text}%` } }
-          }]
-        break
-      case 'sbi':
-        query.include = [
-          {
-            model: models.status,
-            attributes: ['status']
-          },
-          {
-            model: models.application,
-            attributes: ['data'],
-            where: { 'data.organisation.sbi': search.text }
-          }]
-        break
-      case 'date':
-        query.where = {
-          createdAt: {
-            [Op.gte]: startandEndDate(search.text).startDate,
-            [Op.lt]: startandEndDate(search.text).endDate
-          }
-        }
-        break
-    }
-  }
+  applySearchConditions(query, search)
 
   if (filter) {
     query.where = {

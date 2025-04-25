@@ -1,5 +1,5 @@
 import { buildData } from '../../../../app/data'
-import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagByFlagId, getFlagsForApplication } from '../../../../app/repositories/flag-repository'
+import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagsForApplication } from '../../../../app/repositories/flag-repository'
 
 const { models } = buildData
 
@@ -49,14 +49,6 @@ describe('Flag Repository tests', () => {
     expect(models.flag.findOne).toHaveBeenCalledWith({ where: { applicationReference: appRef, deletedAt: null, deletedBy: null, appliesToMh: true } })
   })
 
-  test('getFlagByFlagId', async () => {
-    const flagId = 'abc123'
-
-    await getFlagByFlagId(flagId)
-
-    expect(models.flag.findOne).toHaveBeenCalledWith({ where: { id: flagId } })
-  })
-
   test('getFlagsForApplication', async () => {
     const appRef = 'IAHW-U6ZE-5R5E'
 
@@ -80,7 +72,7 @@ describe('Flag Repository tests', () => {
 
     await deleteFlag(flagId)
 
-    expect(models.flag.update).toHaveBeenCalledWith({ deletedAt: expect.any(Date), deletedBy: undefined }, { where: { id: flagId } })
+    expect(models.flag.update).toHaveBeenCalledWith({ deletedAt: expect.any(Date), deletedBy: undefined }, { where: { id: flagId }, returning: true })
   })
 
   test('getAllFlags', async () => {

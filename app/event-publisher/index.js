@@ -1,10 +1,13 @@
 import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
 import { config } from '../config/index.js'
 
+export const SEND_SESSION_EVENT = 'send-session-event'
+export const APPLICATION_STATUS_EVENT = 'application-status-event'
+
 export const raise = async (event) => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
-      name: 'application-status-event',
+      name: APPLICATION_STATUS_EVENT,
       properties: {
         id: `${event.application.id}`,
         sbi: `${event.application.data.organisation.sbi}`,
@@ -25,7 +28,7 @@ export const raise = async (event) => {
       }
     },
     {
-      name: 'send-session-event',
+      name: SEND_SESSION_EVENT,
       properties: {
         id: `${event.application.id}`,
         sbi: `${event.application.data.organisation.sbi}`,
@@ -50,7 +53,7 @@ export const raise = async (event) => {
 export const raiseClaimEvents = async (event, sbi = 'none') => {
   await new PublishEventBatch(config.eventQueue).sendEvents([
     {
-      name: 'application-status-event',
+      name: APPLICATION_STATUS_EVENT,
       properties: {
         id: `${event.claim.id}`,
         sbi,
@@ -72,7 +75,7 @@ export const raiseClaimEvents = async (event, sbi = 'none') => {
       }
     },
     {
-      name: 'send-session-event',
+      name: SEND_SESSION_EVENT,
       properties: {
         id: `${event.claim.id}`,
         sbi,
@@ -86,6 +89,56 @@ export const raiseClaimEvents = async (event, sbi = 'none') => {
             reference: event.claim.reference,
             applicationReference: event.claim.applicationReference,
             statusId: event.claim.statusId
+          },
+          raisedBy: event.raisedBy,
+          raisedOn: event.raisedOn.toISOString()
+        }
+      }
+    }
+  ])
+}
+
+export const raiseApplicationFlaggedEvent = async (event, sbi) => {
+  await new PublishEventBatch(config.eventQueue).sendEvents([
+    {
+      name: SEND_SESSION_EVENT,
+      properties: {
+        id: event.application.id,
+        sbi,
+        cph: 'n/a',
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        status: 'success',
+        action: {
+          type: 'application:flagged',
+          message: event.message,
+          data: {
+            flagId: event.flag.id,
+            flagDetail: event.flag.note,
+            flagAppliesToMh: event.flag.appliesToMh
+          },
+          raisedBy: event.raisedBy,
+          raisedOn: event.raisedOn.toISOString()
+        }
+      }
+    }
+  ])
+}
+
+export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
+  await new PublishEventBatch(config.eventQueue).sendEvents([
+    {
+      name: SEND_SESSION_EVENT,
+      properties: {
+        id: event.application.id,
+        sbi,
+        cph: 'n/a',
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        status: 'success',
+        action: {
+          type: 'application:unflagged',
+          message: event.message,
+          data: {
+            flagId: event.flag.id
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()

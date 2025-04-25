@@ -29,6 +29,11 @@ export const application = (sequelize, DataTypes) => {
       sourceKey: 'statusId',
       foreignKey: 'statusId'
     })
+
+    applicationModel.hasMany(models.flag, {
+      sourceKey: 'reference',
+      foreignKey: 'applicationReference'
+    })
   }
 
   return applicationModel

@@ -1,9 +1,23 @@
 import { server } from '../../../../../app/server'
 import { findApplication } from '../../../../../app/repositories/application-repository'
-import { createFlag, getFlagByAppRef, getFlagsForApplication, getFlagByFlagId, deleteFlag, getAllFlags } from '../../../../../app/repositories/flag-repository'
+import {
+  createFlag,
+  getFlagByAppRef,
+  getFlagsForApplication,
+  deleteFlag,
+  getAllFlags
+} from '../../../../../app/repositories/flag-repository'
+import {
+  raiseApplicationFlaggedEvent,
+  raiseApplicationFlagDeletedEvent
+} from '../../../../../app/event-publisher'
 
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/flag-repository')
+jest.mock('../../../../../app/event-publisher')
+
+raiseApplicationFlaggedEvent.mockImplementation(() => {})
+raiseApplicationFlagDeletedEvent.mockImplementation(() => {})
 
 findApplication.mockResolvedValue({
   reference: 'IAHW-F3F4-GGDE',
@@ -13,6 +27,20 @@ findApplication.mockResolvedValue({
     organisation: {
       sbi: '123456789'
     }
+  }
+})
+
+createFlag.mockResolvedValue({
+  dataValues: {
+    id: '333c18ef-fb26-4beb-ac87-c483fc886fea',
+    applicationReference: 'IAHW-U6ZE-5R5E',
+    sbi: '123456789',
+    note: 'Flag this please',
+    createdBy: 'Tom',
+    createdAt: '2025-04-09T11:59:54.075Z',
+    appliesToMh: false,
+    deletedAt: null,
+    deletedBy: null
   }
 })
 
@@ -40,21 +68,57 @@ describe('Application Flag tests', () => {
       const options = {
         method: 'POST',
         url: '/api/application/IAHW-F3F4-GGDE/flag',
-        payload: { user: 'Tom', note: 'This needs flagging', appliesToMh: false }
+        payload: {
+          user: 'Tom',
+          note: 'This needs flagging',
+          appliesToMh: false
+        }
       }
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(201)
-      expect(createFlag).toHaveBeenCalledWith({ applicationReference: 'IAHW-F3F4-GGDE', appliesToMh: false, createdBy: 'Tom', note: 'This needs flagging', sbi: '123456789' })
+      expect(createFlag).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-F3F4-GGDE',
+        appliesToMh: false,
+        createdBy: 'Tom',
+        note: 'This needs flagging',
+        sbi: '123456789'
+      })
+      expect(raiseApplicationFlaggedEvent).toHaveBeenCalledWith(
+        {
+          application: { id: 'IAHW-F3F4-GGDE' },
+          flag: {
+            appliesToMh: false,
+            id: '333c18ef-fb26-4beb-ac87-c483fc886fea',
+            note: 'Flag this please'
+          },
+          message: 'Application flagged',
+          raisedBy: 'Tom',
+          raisedOn: '2025-04-09T11:59:54.075Z'
+        },
+        '123456789'
+      )
     })
 
     test('flagging an application returns a 204 if application exists and same flag already exists', async () => {
-      getFlagByAppRef.mockResolvedValueOnce({ dataValues: { applicationReference: 'IAHW-F3F4-GGDE', appliesToMh: false, createdBy: 'Tom', note: 'This needs flagging', sbi: '123456789' } })
+      getFlagByAppRef.mockResolvedValueOnce({
+        dataValues: {
+          applicationReference: 'IAHW-F3F4-GGDE',
+          appliesToMh: false,
+          createdBy: 'Tom',
+          note: 'This needs flagging',
+          sbi: '123456789'
+        }
+      })
 
       const options = {
         method: 'POST',
         url: '/api/application/IAHW-F3F4-GGDE/flag',
-        payload: { user: 'Dave', note: 'This needs more flagging', appliesToMh: false }
+        payload: {
+          user: 'Dave',
+          note: 'This needs more flagging',
+          appliesToMh: false
+        }
       }
       const res = await server.inject(options)
 
@@ -68,7 +132,11 @@ describe('Application Flag tests', () => {
       const options = {
         method: 'POST',
         url: '/api/application/IAHW-F3F4-GGDE/flag',
-        payload: { user: 'Dave', note: 'This needs more flagging', appliesToMh: false }
+        payload: {
+          user: 'Dave',
+          note: 'This needs more flagging',
+          appliesToMh: false
+        }
       }
       const res = await server.inject(options)
 
@@ -101,7 +169,8 @@ describe('Application Flag tests', () => {
           appliesToMh: true,
           deletedAt: null,
           deletedBy: null
-        }]
+        }
+      ]
       getFlagsForApplication.mockResolvedValueOnce(flags)
 
       const options = {
@@ -137,12 +206,28 @@ describe('Application Flag tests', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(400)
-      expect(getFlagByFlagId).not.toHaveBeenCalled()
       expect(deleteFlag).not.toHaveBeenCalled()
     })
 
     test('deletes a flag if it exists', async () => {
-      deleteFlag.mockResolvedValueOnce([1])
+      deleteFlag.mockResolvedValue([
+        1,
+        [
+          {
+            dataValues: {
+              id: '333c18ef-fb26-4beb-ac87-c483fc886fea',
+              applicationReference: 'IAHW-U6ZE-5R5E',
+              sbi: '123456789',
+              note: 'Flag this please',
+              createdBy: 'Tom',
+              createdAt: '2025-04-09T11:59:54.075Z',
+              appliesToMh: false,
+              deletedAt: '2025-04-10T11:59:54.075Z',
+              deletedBy: 'Dave'
+            }
+          }
+        ]
+      ])
       const flagId = '333c18ef-fb26-4beb-ac87-c483fc886fea'
 
       const options = {
@@ -156,6 +241,7 @@ describe('Application Flag tests', () => {
 
       expect(res.statusCode).toBe(204)
       expect(deleteFlag).toHaveBeenCalledWith(flagId, 'fred.jones')
+      expect(raiseApplicationFlagDeletedEvent).toHaveBeenCalledWith({ application: { id: 'IAHW-U6ZE-5R5E' }, flag: { id: '333c18ef-fb26-4beb-ac87-c483fc886fea' }, message: 'Application flag removed', raisedBy: 'Dave', raisedOn: '2025-04-10T11:59:54.075Z' }, '123456789')
     })
 
     test('returns a 404 if the flag does not exist', async () => {
@@ -200,7 +286,8 @@ describe('Application Flag tests', () => {
           appliesToMh: true,
           deletedAt: null,
           deletedBy: null
-        }]
+        }
+      ]
 
       getAllFlags.mockResolvedValueOnce(flags)
 
