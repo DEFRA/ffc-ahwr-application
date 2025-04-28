@@ -13,7 +13,8 @@ export const flagHandlers = [
           flagId: joi.string().valid()
         }),
         payload: joi.object({
-          user: joi.string().required()
+          user: joi.string().required(),
+          deletedNote: joi.string().required()
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
@@ -21,12 +22,12 @@ export const flagHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { user } = request.payload
+        const { user, deletedNote } = request.payload
         const { flagId } = request.params
 
         request.logger.setBindings({ flagId, user })
 
-        const [rowsChanged, updatedRecords] = await deleteFlag(flagId, user)
+        const [rowsChanged, updatedRecords] = await deleteFlag(flagId, user, deletedNote)
 
         if (rowsChanged === 0) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
@@ -37,7 +38,7 @@ export const flagHandlers = [
         await raiseApplicationFlagDeletedEvent({
           application: { id: dataValues.applicationReference },
           message: 'Application flag removed',
-          flag: { id: dataValues.id },
+          flag: { id: dataValues.id, appliesToMh: dataValues.appliesToMh, deletedNote },
           raisedBy: dataValues.deletedBy,
           raisedOn: dataValues.deletedAt
         }, dataValues.sbi)
