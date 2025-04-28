@@ -5,6 +5,7 @@ export const herd = (sequelize, DataTypes) => {
       id: {
         type: DataTypes.UUID,
         primaryKey: true,
+        autoIncrement: true,
         defaultValue: sequelize.UUIDV4
       },
       version: {
