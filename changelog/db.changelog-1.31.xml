@@ -35,7 +35,7 @@
     <column name="updatedBy" type="varchar">
       <constraints nullable="true" />
     </column>
-    <column name="updatedAt" defaultValueComputed="now()" type="timestamp with time zone">
+    <column name="updatedAt" type="timestamp with time zone">
       <constraints nullable="true" />
     </column>
   </createTable>
