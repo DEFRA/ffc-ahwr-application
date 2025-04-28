@@ -10,7 +10,8 @@ export const herd = (sequelize, DataTypes) => {
       },
       version: {
         type: DataTypes.INTEGER,
-        primaryKey: true
+        primaryKey: true,
+        allowNull: false
       },
       applicationReference: {
         type: DataTypes.STRING,
@@ -23,16 +24,22 @@ export const herd = (sequelize, DataTypes) => {
       cph: DataTypes.STRING,
       othersOnSameCph: DataTypes.BOOLEAN,
       herdReasons: DataTypes.STRING,
-      isCurrent: DataTypes.BOOLEAN,
+      isCurrent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+      },
       createdBy: DataTypes.STRING,
       createdAt: {
         type: DataTypes.DATE,
         defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
       },
-      updatedBy: DataTypes.STRING,
+      updatedBy: {
+        type: DataTypes.STRING,
+        defaultValue: null
+      },
       updatedAt: {
         type: DataTypes.DATE,
-        defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: null
       }
     },
     {
