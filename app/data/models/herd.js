@@ -20,15 +20,31 @@ export const herd = (sequelize, DataTypes) => {
           this.setDataValue('applicationReference', val.toUpperCase())
         }
       },
-      herdName: DataTypes.STRING,
-      cph: DataTypes.STRING,
-      othersOnSameCph: DataTypes.BOOLEAN,
-      herdReasons: DataTypes.STRING,
+      herdName: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      cph: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      othersOnSameCph: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
+      herdReasons: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       isCurrent: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
+        defaultValue: true,
+        allowNull: false
       },
-      createdBy: DataTypes.STRING,
+      createdBy: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       createdAt: {
         type: DataTypes.DATE,
         defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
