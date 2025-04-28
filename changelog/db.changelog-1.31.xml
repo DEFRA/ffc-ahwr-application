@@ -11,15 +11,33 @@
     <column name="applicationReference" type="varchar">
       <constraints nullable="false" />
     </column>
-    <column name="herdName" type="varchar" />
-    <column name="cph" type="varchar" />
-    <column name="othersOnSameCph" type="boolean" />
-    <column name="herdReasons" type="varchar" />
-    <column name="isCurrent" type="boolean" />
-    <column name="createdBy" type="varchar" />
-    <column name="createdAt" defaultValueComputed="now()" type="timestamp with time zone" />
-    <column name="updatedBy" type="varchar" />
-    <column name="updatedAt" defaultValueComputed="now()" type="timestamp with time zone" />
+    <column name="herdName" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="cph" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="othersOnSameCph" type="boolean">
+      <constraints nullable="false" />
+    </column>
+    <column name="herdReasons" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="isCurrent" type="boolean">
+      <constraints nullable="false" />
+    </column>
+    <column name="createdBy" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="createdAt" defaultValueComputed="now()" type="timestamp with time zone">
+      <constraints nullable="false" />
+    </column>
+    <column name="updatedBy" type="varchar">
+      <constraints nullable="true" />
+    </column>
+    <column name="updatedAt" defaultValueComputed="now()" type="timestamp with time zone">
+      <constraints nullable="true" />
+    </column>
   </createTable>
 
   <addForeignKeyConstraint 
