@@ -138,7 +138,9 @@ export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
           type: 'application:unflagged',
           message: event.message,
           data: {
-            flagId: event.flag.id
+            flagId: event.flag.id,
+            flagAppliesToMh: event.flag.appliesToMh,
+            deletedNote: event.flag.deletedNote
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
