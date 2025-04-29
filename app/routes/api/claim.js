@@ -25,6 +25,9 @@ import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import { createClaimReference } from '../../lib/create-reference.js'
 import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../lib/context-helper.js'
+import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
+import { buildData } from '../../data/index.js'
+const { sequelize } = buildData
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
@@ -109,6 +112,18 @@ const isClaimDataValid = (payload) => {
   const biosecurity = { biosecurity: getBiosecurityValidation(payload) }
   const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
   const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, dateOfTesting)
+  const newHerd = Joi.object({
+    herdName: Joi.string().required(),
+    cph: Joi.string().required(),
+    othersOnSameCph: Joi.bool().required(),
+    herdReasons: Joi.string().required(),
+  })
+  const updateHerd = Joi.object({
+    herdId: Joi.string().required(),
+    cph: Joi.string().required(),
+    othersOnSameCph: Joi.bool().required(),
+    herdReasons: Joi.string().required(),
+  })
 
   const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
   const beefReviewValidations = { ...numberAnimalsTested, ...testResults }
@@ -128,6 +143,7 @@ const isClaimDataValid = (payload) => {
     speciesNumbers: Joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: Joi.string().required(),
     vetRCVSNumber: Joi.string().required(),
+    herd: Joi.alternatives().try(updateHerd, newHerd),
     ...(isReview(payload) && reviewValidations),
     ...((isReview(payload) && isBeef(payload)) && beefReviewValidations),
     ...((isReview(payload) && isDairy(payload)) && dairyReviewValidations),
@@ -148,6 +164,53 @@ const isClaimDataValid = (payload) => {
   })
 
   return claimModel.validate(payload)
+}
+
+const hasHerdChanged = (existingHerd, updatedHerd) => {
+  const fieldsToCompare = ['cph', 'othersOnSameCph', 'herdReasons'];
+  return fieldsToCompare.some(field => existingHerd[field] !== updatedHerd[field]);
+}
+
+const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
+  let herdModel
+
+  if (herd.herdId) {
+    //update herd
+    const existingHerd = await getHerdById(herd.herdId)
+    if (!existingHerd) {
+      throw Error('Herd not found')
+    }
+
+    if (hasHerdChanged(existingHerd, herd)) {
+      herdModel = await createHerd({
+        version: ++existingHerd.dataValues.version,
+        applicationReference,
+        herdName: existingHerd.dataValues.herdName,
+        cph: herd.cph,
+        othersOnSameCph: herd.othersOnSameCph,
+        herdReasons: herd.herdReasons,
+        createdBy,
+      })
+      await updateIsCurrentHerd(herd.herdId, false)
+    } else {
+      console.log('Herd has not changed')
+      herdModel = existingHerd;
+    }
+
+  } else {
+    //new herd
+    herdModel = await createHerd({
+      version: 1,
+      applicationReference,
+      herdName: herd.herdName,
+      cph: herd.cph,
+      othersOnSameCph: herd.othersOnSameCph,
+      herdReasons: herd.herdReasons,
+      createdBy,
+    })
+  }
+
+  return herdModel
 }
 
 export const claimHandlers = [
@@ -284,9 +347,27 @@ export const claimHandlers = [
         }
 
         const amount = await getAmount(request.payload)
-
         const { statusId } = await requiresComplianceCheck('claim')
-        const claim = await setClaim({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
+        const { herd, ...payloadData } = payload.data
+
+        let claim
+        
+        await sequelize.transaction(async () => {
+          const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy)
+
+          const claimHerdData = {
+            herdId: herdModel.dataValues.id,
+            herdVersion: herdModel.dataValues.version,
+            herdAssociatedAt: new Date().toISOString()
+          }
+          const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
+          claim = await setClaim({ ...payload, reference: claimReference, data: claimData, statusId, sbi })
+        })
+
+        if (!claim) {
+          throw new Error('Claim was not created');
+        }
+
         const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
           reference: claim.dataValues.reference,
           applicationReference: claim.dataValues.applicationReference,
@@ -301,7 +382,7 @@ export const claimHandlers = [
             sbi: application.dataValues.data?.organisation?.sbi
           }
         },
-        isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
+          isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         )
 
         request.logger.setBindings({ claimConfirmationEmailSent })
