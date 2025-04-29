@@ -64,7 +64,7 @@ describe('Event Raisers', () => {
     ])
   })
   it('raises application flag deleted event correctly', async () => {
-    await raiseApplicationFlagDeletedEvent(baseEvent, '123456789')
+    await raiseApplicationFlagDeletedEvent({ ...baseEvent, flag: { ...baseEvent.flag, deletedNote: 'Remove the flag' } }, '123456789')
     expect(mockSendEvents).toHaveBeenCalledWith([
       {
         name: SEND_SESSION_EVENT,
@@ -74,7 +74,9 @@ describe('Event Raisers', () => {
             type: 'application:unflagged',
             message: 'Flag processed',
             data: {
-              flagId: 'flag-001'
+              flagId: 'flag-001',
+              flagAppliesToMh: true,
+              deletedNote: 'Remove the flag'
             },
             raisedBy: 'test-user',
             raisedOn: '2025-01-01T12:00:00.000Z'
