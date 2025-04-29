@@ -20,9 +20,9 @@ export const getFlagsForApplication = async (applicationReference) => {
   return result.map(entry => entry.dataValues)
 }
 
-export const deleteFlag = async (flagId, user) => {
+export const deleteFlag = async (flagId, user, deletedNote) => {
   return models.flag.update(
-    { deletedAt: new Date(), deletedBy: user },
+    { deletedAt: new Date(), deletedBy: user, deletedNote },
     { where: { id: flagId }, returning: true }
   )
 }
