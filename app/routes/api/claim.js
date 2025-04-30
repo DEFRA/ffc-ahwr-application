@@ -27,6 +27,7 @@ import { createClaimReference } from '../../lib/create-reference.js'
 import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../lib/context-helper.js'
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 import { buildData } from '../../data/index.js'
+
 const { sequelize } = buildData
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
@@ -115,13 +116,11 @@ const isClaimDataValid = (payload) => {
   const newHerd = Joi.object({
     herdName: Joi.string().required(),
     cph: Joi.string().required(),
-    othersOnSameCph: Joi.bool().required(),
     herdReasons: Joi.string().required(),
   })
   const updateHerd = Joi.object({
     herdId: Joi.string().required(),
     cph: Joi.string().required(),
-    othersOnSameCph: Joi.bool().required(),
     herdReasons: Joi.string().required(),
   })
 
@@ -143,7 +142,7 @@ const isClaimDataValid = (payload) => {
     speciesNumbers: Joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: Joi.string().required(),
     vetRCVSNumber: Joi.string().required(),
-    herd: Joi.alternatives().try(updateHerd, newHerd),
+    ...(config.multiHerds.enabled && { herd: Joi.alternatives().try(updateHerd, newHerd).required() }),
     ...(isReview(payload) && reviewValidations),
     ...((isReview(payload) && isBeef(payload)) && beefReviewValidations),
     ...((isReview(payload) && isDairy(payload)) && dairyReviewValidations),
@@ -167,7 +166,7 @@ const isClaimDataValid = (payload) => {
 }
 
 const hasHerdChanged = (existingHerd, updatedHerd) => {
-  const fieldsToCompare = ['cph', 'othersOnSameCph', 'herdReasons'];
+  const fieldsToCompare = ['cph', 'herdReasons'];
   return fieldsToCompare.some(field => existingHerd[field] !== updatedHerd[field]);
 }
 
@@ -187,7 +186,6 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
         applicationReference,
         herdName: existingHerd.dataValues.herdName,
         cph: herd.cph,
-        othersOnSameCph: herd.othersOnSameCph,
         herdReasons: herd.herdReasons,
         createdBy,
       })
@@ -204,7 +202,6 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
       applicationReference,
       herdName: herd.herdName,
       cph: herd.cph,
-      othersOnSameCph: herd.othersOnSameCph,
       herdReasons: herd.herdReasons,
       createdBy,
     })
@@ -349,16 +346,18 @@ export const claimHandlers = [
         const amount = await getAmount(request.payload)
         const { statusId } = await requiresComplianceCheck('claim')
         const { herd, ...payloadData } = payload.data
-
         let claim
-        
-        await sequelize.transaction(async () => {
-          const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy)
 
-          const claimHerdData = {
-            herdId: herdModel.dataValues.id,
-            herdVersion: herdModel.dataValues.version,
-            herdAssociatedAt: new Date().toISOString()
+        await sequelize.transaction(async () => {
+          let claimHerdData = {}
+
+          if (config.multiHerds.enabled) {
+            const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy)
+            claimHerdData = {
+              herdId: herdModel.dataValues.id,
+              herdVersion: herdModel.dataValues.version,
+              herdAssociatedAt: new Date().toISOString()
+            }
           }
           const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
           claim = await setClaim({ ...payload, reference: claimReference, data: claimData, statusId, sbi })

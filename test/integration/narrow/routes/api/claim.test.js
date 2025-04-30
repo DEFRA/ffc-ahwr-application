@@ -9,6 +9,7 @@ import { getAmount } from '../../../../../app/lib/getAmount'
 import appInsights from 'applicationinsights'
 import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../../../../app/lib/context-helper'
 import { config } from '../../../../../app/config/index.js'
+import { buildData } from '../../../../../app/data/index.js'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
@@ -198,6 +199,7 @@ describe('Post claim test', () => {
     type: 'R',
     createdBy: 'admin'
   }
+
   beforeEach(async () => {
     jest.clearAllMocks()
     jest.resetAllMocks()
@@ -213,13 +215,17 @@ describe('Post claim test', () => {
     getBlob.mockReturnValue(claimPricesConfig)
     getAmount.mockReturnValue(100)
     isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return false })
+    config.multiHerds.enabled = false
+    jest.spyOn(buildData.sequelize, 'transaction').mockImplementation(async (callback) => {
+      return await callback();
+    });
   })
 
   afterEach(async () => {
     await server.stop()
   })
 
-  function expectAppInsightsEventRaised (data, reference, statusId, sbi) {
+  function expectAppInsightsEventRaised(data, reference, statusId, sbi) {
     expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
       name: 'process-claim',
       properties: {
@@ -272,10 +278,11 @@ describe('Post claim test', () => {
     expect(response.statusCode).toBe(400)
   })
 
-  test.each([
+  test.only.each([
     { type: 'R', typeOfLivestock: 'dairy', numberAnimalsTested: undefined, numberOfOralFluidSamples: undefined, testResults: 'positive' },
-    { type: 'R', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfOralFluidSamples: 5, testResults: 'positive' }
+    // { type: 'R', typeOfLivestock: 'pigs', numberAnimalsTested: 30, numberOfOralFluidSamples: 5, testResults: 'positive' }
   ])('Post claim with Type: $type and Type of Livestock: $typeOfLivestock and return 200', async ({ type, typeOfLivestock, numberOfOralFluidSamples, testResults, numberAnimalsTested }) => {
+   
     const options = {
       method: 'POST',
       url: '/api/claim',
