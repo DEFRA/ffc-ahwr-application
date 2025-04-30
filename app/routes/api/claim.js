@@ -117,12 +117,12 @@ const isClaimDataValid = (payload) => {
     herdId: Joi.string().required(),
     herdName: Joi.string().required(),
     cph: Joi.string().required(),
-    herdReasons: Joi.array().required(),
+    herdReasons: Joi.array().required()
   })
   const updateHerd = Joi.object({
     herdId: Joi.string().required(),
     cph: Joi.string().required(),
-    herdReasons: Joi.array().required(),
+    herdReasons: Joi.array().required()
   })
 
   const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
@@ -166,44 +166,50 @@ const isClaimDataValid = (payload) => {
   return claimModel.validate(payload)
 }
 
-const hasHerdChanged = (existingHerdModel, updatedHerd) => {
-  return existingHerdModel.dataValues.cph !== updatedHerd.cph ||
-    existingHerdModel.dataValues.herdReasons === updatedHerd.herdReasons.sort().join(',')
+const arraysAreEqual = (arr1, arr2) => {
+  if (arr1.length !== arr2.length) return false
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false
+  }
+
+  return true
 }
+
+const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || arraysAreEqual(existingHerd.herdReasons, updatedHerd.herdReasons.sort())
 
 const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
   let herdModel
   if (!herd.herdName) {
-    //update herd
+    // update herd
     const existingHerdModel = await getHerdById(herd.herdId)
     if (!existingHerdModel) {
       throw Error('Herd not found')
     }
 
-    if (hasHerdChanged(existingHerdModel, herd)) {
+    if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
       herdModel = await createHerd({
         version: ++existingHerdModel.dataValues.version,
         applicationReference,
         herdName: existingHerdModel.dataValues.herdName,
         cph: herd.cph,
-        herdReasons: herd.herdReasons.join(','),
-        createdBy,
+        herdReasons: herd.herdReasons.sort(),
+        createdBy
       })
       await updateIsCurrentHerd(herd.herdId, false)
     } else {
       console.log('Herd has not changed')
-      herdModel = existingHerdModel;
+      herdModel = existingHerdModel
     }
-
   } else {
-    //new herd
+    // new herd
     herdModel = await createHerd({
       version: 1,
       applicationReference,
       herdName: herd.herdName,
       cph: herd.cph,
-      herdReasons: herd.herdReasons.join(','),
-      createdBy,
+      herdReasons: herd.herdReasons.sort(),
+      createdBy
     })
   }
 
@@ -364,7 +370,7 @@ export const claimHandlers = [
         })
 
         if (!claim) {
-          throw new Error('Claim was not created');
+          throw new Error('Claim was not created')
         }
 
         const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
@@ -381,7 +387,7 @@ export const claimHandlers = [
             sbi: application.dataValues.data?.organisation?.sbi
           }
         },
-          isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
+        isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         )
 
         request.logger.setBindings({ claimConfirmationEmailSent })

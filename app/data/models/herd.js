@@ -29,7 +29,7 @@ export const herd = (sequelize, DataTypes) => {
         allowNull: false
       },
       herdReasons: {
-        type: DataTypes.STRING,
+        type: DataTypes.JSONB,
         allowNull: false
       },
       isCurrent: {
