@@ -180,6 +180,7 @@ const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updat
 
 const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
   let herdModel
+
   if (!herd.herdName) {
     // update herd
     const existingHerdModel = await getHerdById(herd.herdId)
