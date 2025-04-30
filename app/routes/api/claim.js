@@ -126,16 +126,19 @@ const isClaimDataValid = (payload) => {
   const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
   const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, dateOfTesting)
 
-  const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
-  const beefReviewValidations = { ...numberAnimalsTested, ...testResults }
-  const dairyReviewValidations = { ...testResults }
-  const pigReviewValidations = { ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults }
-  const sheepReviewValidations = { ...numberAnimalsTested }
-
   const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
   const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
+
+  const getReviewValidations = () => {
+    const base = { ...dateOfTesting, ...laboratoryURN }
+    if (isBeef(payload)) return { ...base, ...numberAnimalsTested, ...testResults }
+    if (isDairy(payload)) return { ...base, ...testResults }
+    if (isPigs(payload)) return { ...base, ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults }
+    if (isSheep(payload)) return { ...base, ...numberAnimalsTested }
+    return base
+  }
 
   const dataModel = Joi.object({
     amount: Joi.string().optional(),
@@ -144,16 +147,12 @@ const isClaimDataValid = (payload) => {
     speciesNumbers: Joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: Joi.string().required(),
     vetRCVSNumber: Joi.string().required(),
-    ...(config.multiHerds.enabled && { herd: Joi.alternatives().try(updateHerd, newHerd).required() }),
-    ...(isReview(payload) && reviewValidations),
-    ...((isReview(payload) && isBeef(payload)) && beefReviewValidations),
-    ...((isReview(payload) && isDairy(payload)) && dairyReviewValidations),
-    ...((isReview(payload) && isPigs(payload)) && pigReviewValidations),
-    ...((isReview(payload) && isSheep(payload)) && sheepReviewValidations),
+    ...(isReview(payload) ? getReviewValidations() : {}),
     ...((isFollowUp(payload) && isBeef(payload)) && beefFollowUpValidations),
     ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
     ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
-    ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations)
+    ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations),
+    ...(config.multiHerds.enabled && { herd: Joi.alternatives().try(updateHerd, newHerd).required() })
   })
 
   const claimModel = Joi.object({
