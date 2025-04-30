@@ -3,8 +3,6 @@ import { buildData } from '../data/index.js'
 const { models } = buildData
 
 export const createHerd = async (data) => {
-  console.log('Creating herd')
-  console.log({ data })
   return models.herd.create(data)
 }
 

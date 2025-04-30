@@ -114,14 +114,15 @@ const isClaimDataValid = (payload) => {
   const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
   const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, dateOfTesting)
   const newHerd = Joi.object({
+    herdId: Joi.string().required(),
     herdName: Joi.string().required(),
     cph: Joi.string().required(),
-    herdReasons: Joi.string().required(),
+    herdReasons: Joi.array().required(),
   })
   const updateHerd = Joi.object({
     herdId: Joi.string().required(),
     cph: Joi.string().required(),
-    herdReasons: Joi.string().required(),
+    herdReasons: Joi.array().required(),
   })
 
   const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
@@ -165,34 +166,33 @@ const isClaimDataValid = (payload) => {
   return claimModel.validate(payload)
 }
 
-const hasHerdChanged = (existingHerd, updatedHerd) => {
-  const fieldsToCompare = ['cph', 'herdReasons'];
-  return fieldsToCompare.some(field => existingHerd[field] !== updatedHerd[field]);
+const hasHerdChanged = (existingHerdModel, updatedHerd) => {
+  return existingHerdModel.dataValues.cph !== updatedHerd.cph ||
+    existingHerdModel.dataValues.herdReasons === updatedHerd.herdReasons.sort().join(',')
 }
 
 const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
   let herdModel
-
-  if (herd.herdId) {
+  if (!herd.herdName) {
     //update herd
-    const existingHerd = await getHerdById(herd.herdId)
-    if (!existingHerd) {
+    const existingHerdModel = await getHerdById(herd.herdId)
+    if (!existingHerdModel) {
       throw Error('Herd not found')
     }
 
-    if (hasHerdChanged(existingHerd, herd)) {
+    if (hasHerdChanged(existingHerdModel, herd)) {
       herdModel = await createHerd({
-        version: ++existingHerd.dataValues.version,
+        version: ++existingHerdModel.dataValues.version,
         applicationReference,
-        herdName: existingHerd.dataValues.herdName,
+        herdName: existingHerdModel.dataValues.herdName,
         cph: herd.cph,
-        herdReasons: herd.herdReasons,
+        herdReasons: herd.herdReasons.join(','),
         createdBy,
       })
       await updateIsCurrentHerd(herd.herdId, false)
     } else {
       console.log('Herd has not changed')
-      herdModel = existingHerd;
+      herdModel = existingHerdModel;
     }
 
   } else {
@@ -202,7 +202,7 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
       applicationReference,
       herdName: herd.herdName,
       cph: herd.cph,
-      herdReasons: herd.herdReasons,
+      herdReasons: herd.herdReasons.join(','),
       createdBy,
     })
   }

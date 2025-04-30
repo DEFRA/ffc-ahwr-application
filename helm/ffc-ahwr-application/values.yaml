@@ -58,6 +58,7 @@ container:
   azureStorageEndemicsSettingsContainerName: 
   sfdMessageQueueAddress: ffc-ahwr-sfd-message
   messageGeneratorQueueAddress: ffc-ahwr-message-generator
+  multiHerdsEnabled: 'false'
 
 postgresService:
   postgresDb: ffc_ahwr_application
