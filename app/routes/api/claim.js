@@ -98,6 +98,18 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
   return validations
 }
 
+const newHerd = Joi.object({
+  herdId: Joi.string().required(),
+  herdName: Joi.string().required(),
+  cph: Joi.string().required(),
+  herdReasons: Joi.array().required()
+})
+const updateHerd = Joi.object({
+  herdId: Joi.string().required(),
+  cph: Joi.string().required(),
+  herdReasons: Joi.array().required()
+})
+
 const isClaimDataValid = (payload) => {
   const dateOfTesting = { dateOfTesting: Joi.date().required() }
   const laboratoryURN = { laboratoryURN: Joi.string().required() }
@@ -113,17 +125,6 @@ const isClaimDataValid = (payload) => {
   const biosecurity = { biosecurity: getBiosecurityValidation(payload) }
   const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
   const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, dateOfTesting)
-  const newHerd = Joi.object({
-    herdId: Joi.string().required(),
-    herdName: Joi.string().required(),
-    cph: Joi.string().required(),
-    herdReasons: Joi.array().required()
-  })
-  const updateHerd = Joi.object({
-    herdId: Joi.string().required(),
-    cph: Joi.string().required(),
-    herdReasons: Joi.array().required()
-  })
 
   const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
   const beefReviewValidations = { ...numberAnimalsTested, ...testResults }
@@ -167,10 +168,14 @@ const isClaimDataValid = (payload) => {
 }
 
 const arraysAreEqual = (arr1, arr2) => {
-  if (arr1.length !== arr2.length) return false
+  if (arr1.length !== arr2.length) {
+    return false
+  }
 
   for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) return false
+    if (arr1[i] !== arr2[i]) {
+      return false
+    }
   }
 
   return true
@@ -189,8 +194,9 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
     }
 
     if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
+      const newVersion = existingHerdModel.dataValues.version + 1
       herdModel = await createHerd({
-        version: ++existingHerdModel.dataValues.version,
+        version: newVersion,
         applicationReference,
         herdName: existingHerdModel.dataValues.herdName,
         cph: herd.cph,
