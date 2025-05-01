@@ -184,7 +184,7 @@ const arraysAreEqual = (arr1, arr2) => {
 
 const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
 
-const isUpdate = (herd) => herd.version > 1 && !herd.herdName
+const isUpdate = (herd) => herd.herdVersion > 1 && !herd.herdName
 
 const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger) => {
   let herdModel
@@ -196,6 +196,9 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger)
     }
     if (!existingHerdModel.dataValues.isCurrent) {
       throw Error('Attempting to update a older version of a herd')
+    }
+    if (existingHerdModel.dataValues.version === herd.herdVersion) {
+      throw Error('Attempting to update a herd with the same version')
     }
 
     if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
