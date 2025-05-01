@@ -133,10 +133,10 @@ const isClaimDataValid = (payload) => {
 
   const getReviewValidations = () => {
     const base = { ...dateOfTesting, ...laboratoryURN }
-    if (isBeef(payload)) return { ...base, ...numberAnimalsTested, ...testResults }
-    if (isDairy(payload)) return { ...base, ...testResults }
-    if (isPigs(payload)) return { ...base, ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults }
-    if (isSheep(payload)) return { ...base, ...numberAnimalsTested }
+    if (isBeef(payload)) { return { ...base, ...numberAnimalsTested, ...testResults } }
+    if (isDairy(payload)) { return { ...base, ...testResults } }
+    if (isPigs(payload)) { return { ...base, ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults } }
+    if (isSheep(payload)) { return { ...base, ...numberAnimalsTested } }
     return base
   }
 
@@ -180,13 +180,14 @@ const arraysAreEqual = (arr1, arr2) => {
   return true
 }
 
-const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || arraysAreEqual(existingHerd.herdReasons, updatedHerd.herdReasons.sort())
+const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
 
-const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
+const isUpdate = (herd) => !herd.herdName
+
+const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger) => {
   let herdModel
 
-  if (!herd.herdName) {
-    // update herd
+  if (isUpdate(herd)) {
     const existingHerdModel = await getHerdById(herd.herdId)
     if (!existingHerdModel) {
       throw Error('Herd not found')
@@ -204,11 +205,10 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy) => {
       })
       await updateIsCurrentHerd(herd.herdId, false)
     } else {
-      console.log('Herd has not changed')
+      logger.info('Herd has not changed')
       herdModel = existingHerdModel
     }
   } else {
-    // new herd
     herdModel = await createHerd({
       version: 1,
       applicationReference,
@@ -364,7 +364,7 @@ export const claimHandlers = [
           let claimHerdData = {}
 
           if (config.multiHerds.enabled) {
-            const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy)
+            const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, request.logger)
             claimHerdData = {
               herdId: herdModel.dataValues.id,
               herdVersion: herdModel.dataValues.version,
