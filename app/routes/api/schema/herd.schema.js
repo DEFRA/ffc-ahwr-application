@@ -15,4 +15,4 @@ export const updateHerd = Joi.object({
   herdReasons: Joi.array().required()
 })
 
-export const herdModel = { herd: Joi.alternatives().try(updateHerd, newHerd).required() }
+export const herdSchema = { herd: Joi.alternatives().try(updateHerd, newHerd).required() }

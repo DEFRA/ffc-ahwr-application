@@ -27,7 +27,7 @@ import { createClaimReference } from '../../lib/create-reference.js'
 import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../lib/context-helper.js'
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 import { buildData } from '../../data/index.js'
-import { herdModel } from './schema/herd.schema.js'
+import { herdSchema } from './schema/herd.schema.js'
 
 const { sequelize } = buildData
 
@@ -141,7 +141,7 @@ const isClaimDataValid = (payload) => {
     ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
     ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
     ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations),
-    ...(config.multiHerds.enabled && herdModel)
+    ...(config.multiHerds.enabled && herdSchema)
   })
 
   const claimModel = Joi.object({
