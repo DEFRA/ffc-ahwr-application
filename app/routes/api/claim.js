@@ -186,20 +186,24 @@ const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updat
 
 const isUpdate = (herd) => herd.herdVersion > 1 && !herd.herdName
 
+const validateUpdate = (existingHerd, updatedHerd) => {
+  if (!existingHerd) {
+    throw Error('Herd not found')
+  }
+  if (!existingHerd.isCurrent) {
+    throw Error('Attempting to update an older version of a herd')
+  }
+  if (existingHerd.version === updatedHerd.herdVersion) {
+    throw Error('Attempting to update a herd with the same version')
+  }
+}
+
 const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger) => {
   let herdModel
 
   if (isUpdate(herd)) {
     const existingHerdModel = await getHerdById(herd.herdId)
-    if (!existingHerdModel) {
-      throw Error('Herd not found')
-    }
-    if (!existingHerdModel.dataValues.isCurrent) {
-      throw Error('Attempting to update a older version of a herd')
-    }
-    if (existingHerdModel.dataValues.version === herd.herdVersion) {
-      throw Error('Attempting to update a herd with the same version')
-    }
+    validateUpdate(existingHerdModel?.dataValues, herd)
 
     if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
       const newVersion = existingHerdModel.dataValues.version + 1
