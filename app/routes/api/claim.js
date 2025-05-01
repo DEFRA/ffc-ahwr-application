@@ -100,12 +100,14 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
 
 const newHerd = Joi.object({
   herdId: Joi.string().required(),
+  herdVersion: Joi.number().required(),
   herdName: Joi.string().required(),
   cph: Joi.string().required(),
   herdReasons: Joi.array().required()
 })
 const updateHerd = Joi.object({
   herdId: Joi.string().required(),
+  herdVersion: Joi.number().required(),
   cph: Joi.string().required(),
   herdReasons: Joi.array().required()
 })
@@ -182,7 +184,7 @@ const arraysAreEqual = (arr1, arr2) => {
 
 const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
 
-const isUpdate = (herd) => !herd.herdName
+const isUpdate = (herd) => herd.version > 1 && !herd.herdName
 
 const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger) => {
   let herdModel
@@ -191,6 +193,9 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger)
     const existingHerdModel = await getHerdById(herd.herdId)
     if (!existingHerdModel) {
       throw Error('Herd not found')
+    }
+    if (!existingHerdModel.dataValues.isCurrent) {
+      throw Error('Attempting to update a older version of a herd')
     }
 
     if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
