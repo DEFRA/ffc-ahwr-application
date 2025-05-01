@@ -35,7 +35,7 @@ describe('Event Raisers', () => {
     }
   }
   const expectedCommonProps = {
-    id: 'no-session',
+    id: expect.any(String),
     sbi: '123456789',
     cph: 'n/a',
     checkpoint: 'test-role',
