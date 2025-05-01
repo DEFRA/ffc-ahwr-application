@@ -1,5 +1,6 @@
 import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
 import { config } from '../config/index.js'
+import { randomUUID } from 'node:crypto'
 
 export const SEND_SESSION_EVENT = 'send-session-event'
 export const APPLICATION_STATUS_EVENT = 'application-status-event'
@@ -103,7 +104,7 @@ export const raiseApplicationFlaggedEvent = async (event, sbi) => {
     {
       name: SEND_SESSION_EVENT,
       properties: {
-        id: 'no-session',
+        id: randomUUID(),
         sbi,
         cph: 'n/a',
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
@@ -130,7 +131,7 @@ export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
     {
       name: SEND_SESSION_EVENT,
       properties: {
-        id: 'no-session',
+        id: randomUUID(),
         sbi,
         cph: 'n/a',
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
