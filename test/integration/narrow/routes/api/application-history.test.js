@@ -1,9 +1,40 @@
 import { server } from '../../../../../app/server'
 import { getApplicationHistory } from '../../../../../app/azure-storage/application-status-repository'
 import { findAllClaimUpdateHistory } from '../../../../../app/repositories/claim-repository'
+import { getFlagsForApplicationIncludingDeleted } from '../../../../../app/repositories/flag-repository'
 
 jest.mock('../../../../../app/azure-storage/application-status-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
+jest.mock('../../../../../app/repositories/flag-repository')
+
+getFlagsForApplicationIncludingDeleted.mockResolvedValue([
+  {
+    dataValues: {
+      id: '333c18ef-fb26-4beb-ac87-c483fc886fea',
+      applicationReference: 'AHWR-7C72-8871',
+      sbi: '123456789',
+      note: 'Flag this please',
+      createdBy: 'Tom',
+      createdAt: '2025-04-09T11: 59: 54.075Z',
+      appliesToMh: false,
+      deletedAt: null,
+      deletedBy: null
+    }
+  },
+  {
+    dataValues: {
+      id: '53dbbc6c-dd14-4d01-be11-ad288cb16b08',
+      applicationReference: 'AHWR-7C72-8871',
+      sbi: '123456789',
+      note: 'Flag this please',
+      createdBy: 'Ben',
+      createdAt: '2025-04-09T12: 01: 23.322Z',
+      appliesToMh: true,
+      deletedAt: null,
+      deletedBy: null
+    }
+  }
+])
 
 describe('Application history test', () => {
   beforeEach(async () => {
@@ -75,6 +106,24 @@ describe('Application history test', () => {
         updatedAt: '2023-03-24T00:00:00.000Z',
         updatedBy: 'Mr Test',
         updatedProperty: 'visitDate'
+      },
+      {
+        eventType: 'Agreement flagged (non-Multiple Herds)',
+        newValue: 'Flagged (non-Multiple Herds)',
+        note: 'Flag this please',
+        oldValue: 'Unflagged',
+        updatedAt: '2025-04-09T11: 59: 54.075Z',
+        updatedBy: 'Tom',
+        updatedProperty: 'agreementFlag'
+      },
+      {
+        eventType: 'Agreement flagged (Multiple Herds)',
+        newValue: 'Flagged (Multiple Herds)',
+        note: 'Flag this please',
+        oldValue: 'Unflagged',
+        updatedAt: '2025-04-09T12: 01: 23.322Z',
+        updatedBy: 'Ben',
+        updatedProperty: 'agreementFlag'
       }
     ]
 
