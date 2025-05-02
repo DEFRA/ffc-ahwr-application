@@ -1,5 +1,5 @@
 import { buildData } from '../../../../app/data'
-import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagsForApplication } from '../../../../app/repositories/flag-repository'
+import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagsForApplication, getFlagsForApplicationIncludingDeleted } from '../../../../app/repositories/flag-repository'
 
 const { models } = buildData
 
@@ -79,5 +79,11 @@ describe('Flag Repository tests', () => {
     await getAllFlags()
 
     expect(models.flag.findAll).toHaveBeenCalledWith({ where: { deletedAt: null, deletedBy: null } })
+  })
+
+  test('getFlagsForApplicationIncludingDeleted', async () => {
+    await getFlagsForApplicationIncludingDeleted('IAHW-1234-ABCD')
+
+    expect(models.flag.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'IAHW-1234-ABCD' } })
   })
 })

@@ -1,6 +1,6 @@
 import { server } from '../../../../../app/server'
 import { getApplicationHistory } from '../../../../../app/azure-storage/application-status-repository'
-import { findAllClaimUpdateHistory } from '../../../../../app/repositories/claim-repository'
+import { findAllClaimUpdateHistory, getClaimByReference } from '../../../../../app/repositories/claim-repository'
 import { getFlagsForApplicationIncludingDeleted } from '../../../../../app/repositories/flag-repository'
 
 jest.mock('../../../../../app/azure-storage/application-status-repository')
@@ -30,8 +30,8 @@ getFlagsForApplicationIncludingDeleted.mockResolvedValue([
       createdBy: 'Ben',
       createdAt: '2025-04-09T12:01:23.322Z',
       appliesToMh: true,
-      deletedAt: null,
-      deletedBy: null
+      deletedAt: '2025-04-10T12:01:23.322Z',
+      deletedBy: 'Ben'
     }
   }
 ])
@@ -41,40 +41,41 @@ describe('Application history test', () => {
     jest.clearAllMocks()
   })
 
+  const statusHistory = [
+    {
+      EventType: 'status-updated',
+      Payload: '{\n  "note": "in check",\n "reference": "AHWR-7C72-8871",\n  "statusId": 5\n}',
+      ChangedBy: 'Daniel Jones',
+      ChangedOn: '2023-03-23T10:00:12.000Z'
+    },
+    {
+      EventType: 'status-updated',
+      ChangedOn: '2023-03-25T11:10:15:12.000Z',
+      Payload: '{\n "note": "rejected",\n "reference": "AHWR-7C72-8871",\n  "statusId": 10\n}',
+      ChangedBy: 'Amanda Hassan'
+    }
+  ]
+
+  const updateHistory = [
+    {
+      dataValues: {
+        applicationReference: 'AHWR-209E-ED2E',
+        reference: 'AHWR-209E-ED2E',
+        note: 'test',
+        updatedProperty: 'visitDate',
+        newValue: '2025-03-03T00:00:00.000Z',
+        oldValue: '2025-03-18T00:00:00.000Z',
+        eventType: 'application-visitDate',
+        createdAt: new Date('2023/03/24'),
+        createdBy: 'Mr Test'
+      }
+    }
+  ]
+
+  getApplicationHistory.mockResolvedValue(statusHistory)
+  findAllClaimUpdateHistory.mockResolvedValue(updateHistory)
+
   test('returns historyRecords', async () => {
-    const statusHistory = [
-      {
-        EventType: 'status-updated',
-        Payload: '{\n  "note": "in check",\n "reference": "AHWR-7C72-8871",\n  "statusId": 5\n}',
-        ChangedBy: 'Daniel Jones',
-        ChangedOn: '2023-03-23T10:00:12.000Z'
-      },
-      {
-        EventType: 'status-updated',
-        ChangedOn: '2023-03-25T11:10:15:12.000Z',
-        Payload: '{\n "note": "rejected",\n "reference": "AHWR-7C72-8871",\n  "statusId": 10\n}',
-        ChangedBy: 'Amanda Hassan'
-      }
-    ]
-
-    const updateHistory = [
-      {
-        dataValues: {
-          applicationReference: 'AHWR-209E-ED2E',
-          reference: 'AHWR-209E-ED2E',
-          note: 'test',
-          updatedProperty: 'visitDate',
-          newValue: '2025-03-03T00:00:00.000Z',
-          oldValue: '2025-03-18T00:00:00.000Z',
-          eventType: 'application-visitDate',
-          createdAt: new Date('2023/03/24'),
-          createdBy: 'Mr Test'
-        }
-      }
-    ]
-
-    getApplicationHistory.mockResolvedValue(statusHistory)
-    findAllClaimUpdateHistory.mockResolvedValue(updateHistory)
     const options = {
       method: 'GET',
       url: '/api/application/history/AHWR-7C72-8871'
@@ -122,6 +123,79 @@ describe('Application history test', () => {
         note: 'Flag this please',
         oldValue: 'Unflagged',
         updatedAt: '2025-04-09T12:01:23.322Z',
+        updatedBy: 'Ben',
+        updatedProperty: 'agreementFlag'
+      },
+      {
+        eventType: 'Agreement unflagged (Multiple Herds)',
+        newValue: 'Unflagged (Multiple Herds)',
+        oldValue: 'Flagged',
+        updatedAt: '2025-04-10T12:01:23.322Z',
+        updatedBy: 'Ben',
+        updatedProperty: 'agreementFlag'
+      }
+    ]
+
+    expect(JSON.parse(res.payload)).toEqual({ historyRecords })
+  })
+
+  test('returns historyRecords when provided with a claim reference instead of an old world application reference', async () => {
+    getClaimByReference.mockResolvedValue({ dataValues: { applicationReference: 'AHWR-ABCD-EFGH' } })
+    const options = {
+      method: 'GET',
+      url: '/api/application/history/REBC-ABCD-EFGH'
+    }
+    const res = await server.inject(options)
+
+    const historyRecords = [
+      {
+        eventType: 'status-updated',
+        newValue: 5,
+        note: 'in check',
+        updatedAt: '2023-03-23T10:00:12.000Z',
+        updatedBy: 'Daniel Jones',
+        updatedProperty: 'statusId'
+      },
+      {
+        eventType: 'status-updated',
+        newValue: 10,
+        note: 'rejected',
+        updatedAt: '2023-03-25T11:10:15:12.000Z',
+        updatedBy: 'Amanda Hassan',
+        updatedProperty: 'statusId'
+      },
+      {
+        eventType: 'application-visitDate',
+        newValue: '2025-03-03T00:00:00.000Z',
+        note: 'test',
+        oldValue: '2025-03-18T00:00:00.000Z',
+        updatedAt: '2023-03-24T00:00:00.000Z',
+        updatedBy: 'Mr Test',
+        updatedProperty: 'visitDate'
+      },
+      {
+        eventType: 'Agreement flagged (non-Multiple Herds)',
+        newValue: 'Flagged (non-Multiple Herds)',
+        note: 'Flag this please',
+        oldValue: 'Unflagged',
+        updatedAt: '2025-04-09T11:59:54.075Z',
+        updatedBy: 'Tom',
+        updatedProperty: 'agreementFlag'
+      },
+      {
+        eventType: 'Agreement flagged (Multiple Herds)',
+        newValue: 'Flagged (Multiple Herds)',
+        note: 'Flag this please',
+        oldValue: 'Unflagged',
+        updatedAt: '2025-04-09T12:01:23.322Z',
+        updatedBy: 'Ben',
+        updatedProperty: 'agreementFlag'
+      },
+      {
+        eventType: 'Agreement unflagged (Multiple Herds)',
+        newValue: 'Unflagged (Multiple Herds)',
+        oldValue: 'Flagged',
+        updatedAt: '2025-04-10T12:01:23.322Z',
         updatedBy: 'Ben',
         updatedProperty: 'agreementFlag'
       }
