@@ -28,12 +28,8 @@ export const herd = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
       },
-      othersOnSameCph: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false
-      },
       herdReasons: {
-        type: DataTypes.STRING,
+        type: DataTypes.JSONB,
         allowNull: false
       },
       isCurrent: {

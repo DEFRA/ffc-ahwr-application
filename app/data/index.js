@@ -10,8 +10,12 @@ import { status } from './models/status.js'
 import { claimUpdateHistory } from './models/claim-update-history.js'
 import { flag } from './models/flag.js'
 import { herd } from './models/herd.js'
+import { createNamespace } from 'cls-hooked'
 
 export const buildData = (() => {
+  const namespace = createNamespace('transaction-namespace')
+  Sequelize.useCLS(namespace)
+
   const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
 
   application(sequelize, DataTypes)
