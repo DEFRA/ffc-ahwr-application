@@ -28,6 +28,7 @@ import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../lib/context-helper
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 import { buildData } from '../../data/index.js'
 import { herdSchema } from './schema/herd.schema.js'
+import { arraysAreEqual } from '../../lib/array-utils.js'
 
 const { sequelize } = buildData
 
@@ -153,20 +154,6 @@ const isClaimDataValid = (payload) => {
   })
 
   return claimModel.validate(payload)
-}
-
-const arraysAreEqual = (arr1, arr2) => {
-  if (arr1.length !== arr2.length) {
-    return false
-  }
-
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) {
-      return false
-    }
-  }
-
-  return true
 }
 
 const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
