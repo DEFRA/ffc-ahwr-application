@@ -31,7 +31,10 @@ const buildConfig = () => {
     sfdMessage: {
       enabled: Joi.bool()
     },
-    messageGeneratorMsgType: Joi.string()
+    messageGeneratorMsgType: Joi.string(),
+    multiHerds: {
+      enabled: Joi.bool().required()
+    }
   })
 
   const config = {
@@ -58,7 +61,10 @@ const buildConfig = () => {
     sfdMessage: {
       enabled: process.env.SFD_MESSAGE_ENABLED === 'true'
     },
-    messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`
+    messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
+    multiHerds: {
+      enabled: process.env.MULTI_HERDS_ENABLED === 'true'
+    }
   }
 
   const { error } = schema.validate(config, { abortEarly: false })
