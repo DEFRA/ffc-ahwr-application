@@ -15,7 +15,7 @@ getFlagsForApplicationIncludingDeleted.mockResolvedValue([
       sbi: '123456789',
       note: 'Flag this please',
       createdBy: 'Tom',
-      createdAt: '2025-04-09T11: 59: 54.075Z',
+      createdAt: '2025-04-09T11:59:54.075Z',
       appliesToMh: false,
       deletedAt: null,
       deletedBy: null
@@ -28,7 +28,7 @@ getFlagsForApplicationIncludingDeleted.mockResolvedValue([
       sbi: '123456789',
       note: 'Flag this please',
       createdBy: 'Ben',
-      createdAt: '2025-04-09T12: 01: 23.322Z',
+      createdAt: '2025-04-09T12:01:23.322Z',
       appliesToMh: true,
       deletedAt: null,
       deletedBy: null
@@ -112,7 +112,7 @@ describe('Application history test', () => {
         newValue: 'Flagged (non-Multiple Herds)',
         note: 'Flag this please',
         oldValue: 'Unflagged',
-        updatedAt: '2025-04-09T11: 59: 54.075Z',
+        updatedAt: '2025-04-09T11:59:54.075Z',
         updatedBy: 'Tom',
         updatedProperty: 'agreementFlag'
       },
@@ -121,7 +121,7 @@ describe('Application history test', () => {
         newValue: 'Flagged (Multiple Herds)',
         note: 'Flag this please',
         oldValue: 'Unflagged',
-        updatedAt: '2025-04-09T12: 01: 23.322Z',
+        updatedAt: '2025-04-09T12:01:23.322Z',
         updatedBy: 'Ben',
         updatedProperty: 'agreementFlag'
       }
