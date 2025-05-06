@@ -10,9 +10,11 @@ import {
 import { getAllFlags, getFlagsForApplication } from '../../../../../app/repositories/flag-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
 import { processApplicationApi } from '../../../../../app/messaging/application/process-application'
+import { getHerdsByAppRefAndLivestock } from '../../../../../app/repositories/herd-repository'
 
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/flag-repository')
+jest.mock('../../../../../app/repositories/herd-repository')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/application/process-application')
 jest.mock('uuid', () => ({ v4: () => '123456789' }))
@@ -722,6 +724,31 @@ describe('Applications test', () => {
       expect(res.statusCode).toBe(200)
       expect(getFlagsForApplication).toHaveBeenCalledTimes(1)
       expect(JSON.parse(res.payload)).toEqual([])
+    })
+  })
+
+  describe('GET /api/application/{ref}/herds', () => {
+    test('returns herds for valid application reference and typeOfLivestock', async () => {
+      const mockHerds = [{ id: 1, name: 'Beef Herd' }]
+      getHerdsByAppRefAndLivestock.mockResolvedValueOnce(mockHerds)
+  
+      const res = await server.inject({
+        method: 'get',
+        url: `/api/application/IAHW-U6ZE-5R5E/herds?typeOfLivestock=beef`
+      })
+  
+      expect(res.statusCode).toBe(200)
+      expect(JSON.parse(res.payload)).toEqual(mockHerds)
+    })
+  
+    test('returns 400 when typeOfLivestock is not one of the valid types', async () => {
+      const res = await server.inject({
+        method: 'get',
+        url: `/api/application/IAHW-U6ZE-5R5E/herds?typeOfLivestock=goat`
+      })
+  
+      expect(res.statusCode).toBe(400)
+      expect(JSON.parse(res.payload)).toHaveProperty('err')
     })
   })
 })
