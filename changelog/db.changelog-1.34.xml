@@ -6,7 +6,7 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
 
   <changeSet id="34" author="Ross Jarvis">
-    <addColumn tableName="flag">
+    <addColumn tableName="herd">
       <column name="species" type="varchar">
         <constraints nullable="false"/>
       </column>
