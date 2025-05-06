@@ -172,7 +172,7 @@ const validateUpdate = (existingHerd, updatedHerd) => {
   }
 }
 
-const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger) => {
+const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfLivestock, logger) => {
   let herdModel
 
   if (isUpdate(herd)) {
@@ -184,6 +184,7 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger)
       herdModel = await createHerd({
         version: newVersion,
         applicationReference,
+        species: existingHerdModel.dataValues.species,
         herdName: existingHerdModel.dataValues.herdName,
         cph: herd.cph,
         herdReasons: herd.herdReasons.sort(),
@@ -198,6 +199,7 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, logger)
     herdModel = await createHerd({
       version: 1,
       applicationReference,
+      species: typeOfLivestock,
       herdName: herd.herdName,
       cph: herd.cph,
       herdReasons: herd.herdReasons.sort(),
@@ -350,7 +352,7 @@ export const claimHandlers = [
           let claimHerdData = {}
 
           if (config.multiHerds.enabled) {
-            const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, request.logger)
+            const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
             claimHerdData = {
               herdId: herdModel.dataValues.id,
               herdVersion: herdModel.dataValues.version,

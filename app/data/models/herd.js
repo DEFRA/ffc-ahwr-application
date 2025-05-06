@@ -20,6 +20,10 @@ export const herd = (sequelize, DataTypes) => {
           this.setDataValue('applicationReference', val.toUpperCase())
         }
       },
+      species: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       herdName: {
         type: DataTypes.STRING,
         allowNull: false
