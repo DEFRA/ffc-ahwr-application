@@ -102,28 +102,16 @@ export const applicationHistoryHandlers = [
 
         const isOldWorldAgreementReference = reference.includes('AHWR')
 
-        let oldWorldApplicationFlagHistory
-        let claimApplicationFlagHistory
+        const applicationReference = isOldWorldAgreementReference ? reference : (await getClaimByReference(reference)).dataValues.applicationReference
 
-        if (isOldWorldAgreementReference) {
-          const flags = await getFlagsForApplicationIncludingDeleted(reference)
+        const flags = await getFlagsForApplicationIncludingDeleted(applicationReference)
 
-          oldWorldApplicationFlagHistory = buildFlagEvents(flags)
-        } else {
-          const claim = await getClaimByReference(reference)
-          const { applicationReference } = claim.dataValues
-
-          const flags = await getFlagsForApplicationIncludingDeleted(
-            applicationReference
-          )
-
-          claimApplicationFlagHistory = buildFlagEvents(flags)
-        }
+        const applicationFlagHistory = buildFlagEvents(flags)
 
         const historyRecords = [
           ...normalisedHistoryRecords,
           ...normalisedDataUpdates,
-          ...(isOldWorldAgreementReference ? oldWorldApplicationFlagHistory : claimApplicationFlagHistory)
+          ...applicationFlagHistory
         ].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
 
         return h.response({ historyRecords }).code(200)
