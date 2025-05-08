@@ -1,8 +1,7 @@
 import { createHerd, getHerdById, getHerdsByAppRefAndSpecies, updateIsCurrentHerd } from '../../../../app/repositories/herd-repository'
 import { buildData } from '../../../../app/data/index.js'
-import { QueryTypes } from 'sequelize'
 
-const { models, sequelize } = buildData
+const { models } = buildData
 
 jest.mock('../../../../app/data/index.js', () => {
   return {

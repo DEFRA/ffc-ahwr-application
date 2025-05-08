@@ -346,7 +346,7 @@ export const applicationHandlers = [
           ref: joi.string().valid()
         }),
         query: joi.object({
-          species: joi.string().valid(...Object.values(livestockTypes)),
+          species: joi.string().valid(...Object.values(livestockTypes))
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })

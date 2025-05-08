@@ -14,6 +14,7 @@ import { getHerdsByAppRefAndSpecies } from '../../../../../app/repositories/herd
 
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/flag-repository')
+jest.mock('../../../../../app/repositories/herd-repository')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/messaging/application/process-application')
 jest.mock('uuid', () => ({ v4: () => '123456789' }))
@@ -476,7 +477,7 @@ describe('Applications test', () => {
   })
 
   describe('put /api/applications/{reference}/data', () => {
-    function getOptionsForUpdatedValue(updatedValue) {
+    function getOptionsForUpdatedValue (updatedValue) {
       return {
         method: 'put',
         url: '/api/applications/AHWR-OLDS-KOOL/data',
@@ -734,7 +735,7 @@ describe('GET /api/application/{ref}/herds', () => {
 
     const res = await server.inject({
       method: 'get',
-      url: `/api/application/IAHW-U6ZE-5R5E/herds?species=beef`
+      url: '/api/application/IAHW-U6ZE-5R5E/herds?species=beef'
     })
 
     expect(res.statusCode).toBe(200)
@@ -744,7 +745,7 @@ describe('GET /api/application/{ref}/herds', () => {
   test('returns 400 when species is not one of the valid types', async () => {
     const res = await server.inject({
       method: 'get',
-      url: `/api/application/IAHW-U6ZE-5R5E/herds?species=goat`
+      url: '/api/application/IAHW-U6ZE-5R5E/herds?species=goat'
     })
 
     expect(res.statusCode).toBe(400)
