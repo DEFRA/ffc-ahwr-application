@@ -14,11 +14,12 @@ import {
 } from '../../repositories/flag-repository.js'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
-import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.js'
+import { applicationStatus as APPLICATION_STATUS, livestockTypes } from '../../constants/index.js'
 import { processApplicationApi } from '../../messaging/application/process-application.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { raiseApplicationFlaggedEvent } from '../../event-publisher/index.js'
+import { getHerdsByAppRefAndSpecies } from '../../repositories/herd-repository.js'
 
 const { submitPaymentRequestMsgType, submitRequestQueue } = config
 
@@ -333,6 +334,34 @@ export const applicationHandlers = [
         const flags = await getFlagsForApplication(ref)
 
         return h.response(flags).code(HttpStatus.OK)
+      }
+    }
+  },
+  {
+    method: 'get',
+    path: '/api/application/{ref}/herds',
+    options: {
+      validate: {
+        params: joi.object({
+          ref: joi.string().valid()
+        }),
+        query: joi.object({
+          species: joi.string().valid(...Object.values(livestockTypes)),
+        }),
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ err })
+          return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const { ref } = request.params
+        const { species } = request.query
+
+        request.logger.setBindings({ ref, species })
+
+        const herds = await getHerdsByAppRefAndSpecies(ref, species)
+
+        return h.response(herds).code(HttpStatus.OK)
       }
     }
   }

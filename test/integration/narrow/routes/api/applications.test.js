@@ -10,6 +10,7 @@ import {
 import { getAllFlags, getFlagsForApplication } from '../../../../../app/repositories/flag-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
 import { processApplicationApi } from '../../../../../app/messaging/application/process-application'
+import { getHerdsByAppRefAndSpecies } from '../../../../../app/repositories/herd-repository'
 
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/flag-repository')
@@ -475,7 +476,7 @@ describe('Applications test', () => {
   })
 
   describe('put /api/applications/{reference}/data', () => {
-    function getOptionsForUpdatedValue (updatedValue) {
+    function getOptionsForUpdatedValue(updatedValue) {
       return {
         method: 'put',
         url: '/api/applications/AHWR-OLDS-KOOL/data',
@@ -723,5 +724,30 @@ describe('Applications test', () => {
       expect(getFlagsForApplication).toHaveBeenCalledTimes(1)
       expect(JSON.parse(res.payload)).toEqual([])
     })
+  })
+})
+
+describe('GET /api/application/{ref}/herds', () => {
+  test('returns herds for valid application reference and species', async () => {
+    const mockHerds = [{ id: 1, name: 'Beef Herd' }]
+    getHerdsByAppRefAndSpecies.mockResolvedValueOnce(mockHerds)
+
+    const res = await server.inject({
+      method: 'get',
+      url: `/api/application/IAHW-U6ZE-5R5E/herds?species=beef`
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(JSON.parse(res.payload)).toEqual(mockHerds)
+  })
+
+  test('returns 400 when species is not one of the valid types', async () => {
+    const res = await server.inject({
+      method: 'get',
+      url: `/api/application/IAHW-U6ZE-5R5E/herds?species=goat`
+    })
+
+    expect(res.statusCode).toBe(400)
+    expect(JSON.parse(res.payload)).toHaveProperty('err')
   })
 })
