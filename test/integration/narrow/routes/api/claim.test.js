@@ -7,7 +7,7 @@ import { claimPricesConfig } from '../../../../data/claim-prices-config'
 import { getBlob } from '../../../../../app/storage/getBlob'
 import { getAmount } from '../../../../../app/lib/getAmount'
 import appInsights from 'applicationinsights'
-import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../../../../app/lib/context-helper'
+import { isVisitDateAfterGoLive } from '../../../../../app/lib/context-helper'
 import { config } from '../../../../../app/config/index.js'
 
 jest.mock('../../../../../app/insights')
@@ -212,7 +212,7 @@ describe('Post claim test', () => {
     }))
     getBlob.mockReturnValue(claimPricesConfig)
     getAmount.mockReturnValue(100)
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return false })
+    isVisitDateAfterGoLive.mockImplementation(() => { return false })
   })
 
   afterEach(async () => {
@@ -401,7 +401,7 @@ describe('Post claim test', () => {
         }
       }
     }
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+    isVisitDateAfterGoLive.mockImplementation(() => { return true })
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {
@@ -715,7 +715,7 @@ describe('PUT claim test', () => {
   })
 
   beforeEach(() => {
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return false })
+    isVisitDateAfterGoLive.mockImplementation(() => { return false })
   })
 
   afterAll(async () => {
@@ -870,8 +870,8 @@ describe('PUT claim test', () => {
     expect(res.statusCode).toBe(404)
   })
 
-  test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is yes', async () => {
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+  test('should update claim and submit payment request when piHunt is yes', async () => {
+    isVisitDateAfterGoLive.mockImplementation(() => { return true })
     const options = {
       method: 'PUT',
       url: '/api/claim/update-by-reference',
@@ -943,8 +943,8 @@ describe('PUT claim test', () => {
       'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
   })
 
-  test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is yes and piHuntRecommended is yes', async () => {
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+  test('should update claim and submit payment request when piHunt is yes and piHuntRecommended is yes', async () => {
+    isVisitDateAfterGoLive.mockImplementation(() => { return true })
     const options = {
       method: 'PUT',
       url: '/api/claim/update-by-reference',
@@ -1021,7 +1021,7 @@ describe('PUT claim test', () => {
   })
 
   test('should update claim status and send status update message when old world review test results', async () => {
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+    isVisitDateAfterGoLive.mockImplementation(() => { return true })
     const options = {
       method: 'PUT',
       url: '/api/claim/update-by-reference',
@@ -1098,7 +1098,7 @@ describe('PUT claim test', () => {
   })
 
   test('should update claim and submit payment request when optionalPiHunt is enabled and piHunt is no', async () => {
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+    isVisitDateAfterGoLive.mockImplementation(() => { return true })
     const options = {
       method: 'PUT',
       url: '/api/claim/update-by-reference',

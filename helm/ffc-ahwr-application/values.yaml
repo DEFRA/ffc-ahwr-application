@@ -53,7 +53,6 @@ container:
   azureStorageUseConnectionString: true
   azureStorageAccountName:
   claimComplianceCheckRatio:
-  optionalPIHuntEnabled:
   endemicsClaimComplianceCheckRatio:
   azureStorageEndemicsSettingsContainerName: 
   sfdMessageQueueAddress: ffc-ahwr-sfd-message

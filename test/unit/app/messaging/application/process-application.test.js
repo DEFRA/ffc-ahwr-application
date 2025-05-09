@@ -137,57 +137,55 @@ describe(('Store application in database'), () => {
       }))
     })
 
-    describe('when endemics toggle is enabled', () => {
-      test('throws an error when existing endemics application', async () => {
-        const mockApplicationDate = mockMonthsAgo(30)
+    test('throws an error when existing endemics application', async () => {
+      const mockApplicationDate = mockMonthsAgo(30)
 
-        when(getBySbi)
-          .calledWith(
-            data.organisation.sbi
-          )
-          .mockResolvedValue({
-            dataValues: {
-              reference: MOCK_NW_REFERENCE,
-              createdAt: mockApplicationDate
-            },
-            statusId: applicationStatus.readyToPay,
-            createdAt: mockApplicationDate,
-            type: 'EE'
-          })
-
-        await processApplication(data)
-
-        expect(setApplication).toHaveBeenCalledTimes(0)
-        expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          'Failed to process application',
-          new Error(`Recent application already exists: ${JSON.stringify({
+      when(getBySbi)
+        .calledWith(
+          data.organisation.sbi
+        )
+        .mockResolvedValue({
+          dataValues: {
             reference: MOCK_NW_REFERENCE,
             createdAt: mockApplicationDate
-          })}`)
+          },
+          statusId: applicationStatus.readyToPay,
+          createdAt: mockApplicationDate,
+          type: 'EE'
+        })
+
+      await processApplication(data)
+
+      expect(setApplication).toHaveBeenCalledTimes(0)
+      expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to process application',
+        new Error(`Recent application already exists: ${JSON.stringify({
+          reference: MOCK_NW_REFERENCE,
+          createdAt: mockApplicationDate
+        })}`)
+      )
+    })
+
+    test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
+      const mockApplicationDate = mockMonthsAgo(11)
+      when(getBySbi)
+        .calledWith(
+          data.organisation.sbi
         )
-      })
+        .mockResolvedValue({
+          dataValues: {
+            reference: MOCK_REFERENCE
+          },
+          createdAt: mockApplicationDate,
+          statusId: applicationStatus.readyToPay,
+          type: 'VV'
+        })
 
-      test('submits and does not throw an error with statusId 9 (ready to pay) and date more than 10 months ago', async () => {
-        const mockApplicationDate = mockMonthsAgo(11)
-        when(getBySbi)
-          .calledWith(
-            data.organisation.sbi
-          )
-          .mockResolvedValue({
-            dataValues: {
-              reference: MOCK_REFERENCE
-            },
-            createdAt: mockApplicationDate,
-            statusId: applicationStatus.readyToPay,
-            type: 'VV'
-          })
+      await processApplication(data)
 
-        await processApplication(data)
-
-        expect(setApplication).toHaveBeenCalledTimes(1)
-        expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(1)
-      })
+      expect(setApplication).toHaveBeenCalledTimes(1)
+      expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(1)
     })
   })
 

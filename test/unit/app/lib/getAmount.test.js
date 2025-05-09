@@ -1,8 +1,7 @@
 import { getAmount } from '../../../../app/lib/getAmount'
-import { setOptionalPIHuntEnabled } from '../../../mocks/config'
 import { livestockTypes, claimType, testResults } from '../../../../app/constants'
 import { claimPricesConfig as mockClaimPricesConfig } from '../../../data/claim-prices-config'
-import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../../../app/lib/context-helper.js'
+import { isVisitDateAfterGoLive } from '../../../../app/lib/context-helper.js'
 
 jest.mock('../../../../app/lib/context-helper.js')
 
@@ -13,10 +12,9 @@ jest.mock('../../../../app/storage/getBlob', () => ({
 const { beef, dairy, pigs, sheep } = livestockTypes
 const { review, endemics } = claimType
 
-describe('getAmount when optionalPiHunt flag TRUE', () => {
+describe('getAmount', () => {
   beforeEach(async () => {
-    setOptionalPIHuntEnabled(true)
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return true })
+    isVisitDateAfterGoLive.mockImplementation(() => { return true })
   })
   afterAll(() => {
     jest.resetAllMocks()
@@ -182,159 +180,5 @@ describe('getAmount when optionalPiHunt flag TRUE', () => {
     }
   ])('for type: $payload.type $payload.data.typeOfLivestock $payload.data.testResults $payload.data.piHunt should return $amount', async ({ payload, amount }) => {
     expect(await getAmount(payload)).toBe(amount)
-  })
-})
-
-describe('getAmount when optionalPiHunt flag FALSE', () => {
-  beforeEach(async () => {
-    setOptionalPIHuntEnabled(false)
-    isPIHuntEnabledAndVisitDateAfterGoLive.mockImplementation(() => { return false })
-  })
-  afterAll(() => {
-    jest.resetAllMocks()
-  })
-
-  test('returns correct amount for beef for claim type review', async () => {
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: beef,
-        testResults: 'positive'
-      }
-    })).toBe(522)
-
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: beef,
-        testResults: 'negative'
-      }
-    })).toBe(522)
-  })
-
-  test('returns correct amount for beef for claim type follow-up', async () => {
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: beef,
-        reviewTestResults: 'positive'
-      }
-    })).toBe(837)
-
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: beef,
-        reviewTestResults: 'negative'
-      }
-    })).toBe(215)
-  })
-
-  test('returns correct amount for dairy for claim type review', async () => {
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: dairy,
-        testResults: 'positive'
-      }
-    })).toBe(372)
-
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: dairy,
-        testResults: 'negative'
-      }
-    })).toBe(372)
-  })
-
-  test('returns correct amount for dairy for claim type follow-up', async () => {
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: dairy,
-        reviewTestResults: 'positive'
-      }
-    })).toBe(1714)
-
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: dairy,
-        reviewTestResults: 'negative'
-      }
-    })).toBe(215)
-  })
-
-  test('returns correct amount for pigs for claim type review', async () => {
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: pigs,
-        testResults: 'positive'
-      }
-    })).toBe(557)
-
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: pigs,
-        testResults: 'negative'
-      }
-    })).toBe(557)
-  })
-
-  test('returns correct amount for pigs for claim type follow-up', async () => {
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: pigs,
-        testResults: 'positive'
-      }
-    })).toBe(923)
-
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: pigs,
-        testResults: 'negative'
-      }
-    })).toBe(923)
-  })
-
-  test('returns correct amount for sheep for claim type review', async () => {
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: sheep,
-        testResults: 'positive'
-      }
-    })).toBe(436)
-
-    expect(await getAmount({
-      type: review,
-      data: {
-        typeOfLivestock: sheep,
-        testResults: 'negative'
-      }
-    })).toBe(436)
-  })
-
-  test('returns correct amount for sheep for claim type follow-up', async () => {
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: sheep,
-        testResults: 'positive'
-      }
-    })).toBe(639)
-
-    expect(await getAmount({
-      type: endemics,
-      data: {
-        typeOfLivestock: sheep,
-        testResults: 'negative'
-      }
-    })).toBe(639)
   })
 })

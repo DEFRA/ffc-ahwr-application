@@ -24,7 +24,7 @@ import { getAmount } from '../../lib/getAmount.js'
 import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import { createClaimReference } from '../../lib/create-reference.js'
-import { isPIHuntEnabledAndVisitDateAfterGoLive } from '../../lib/context-helper.js'
+import { isVisitDateAfterGoLive } from '../../lib/context-helper.js'
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
@@ -116,8 +116,8 @@ const isClaimDataValid = (payload) => {
   const pigReviewValidations = { ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults }
   const sheepReviewValidations = { ...numberAnimalsTested }
 
-  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
-  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isPIHuntEnabledAndVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
+  const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
+  const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
 
@@ -442,7 +442,7 @@ export const claimHandlers = [
         if (status === applicationStatus.readyToPay) {
           let optionalPiHuntValue
 
-          if (isPIHuntEnabledAndVisitDateAfterGoLive(claim.dataValues.data.dateOfVisit)) {
+          if (isVisitDateAfterGoLive(claim.dataValues.data.dateOfVisit)) {
             optionalPiHuntValue = claim.dataValues.data.piHunt === piHunt.yes && claim.dataValues.data.piHuntAllAnimals === piHuntAllAnimals.yes ? 'yesPiHunt' : 'noPiHunt'
           }
 
