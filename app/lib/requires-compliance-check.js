@@ -20,6 +20,7 @@ export const requiresComplianceCheck = async (claimOrApplication) => {
   let statusId = applicationStatus.inCheck
   let claimed = false
 
+  console.log('Claim compliance check ratio:', complianceCheckRatio, claimedApplicationsCount)
   if (complianceCheckRatio <= 0 || (claimedApplicationsCount + 1) % complianceCheckRatio !== 0) {
     // if the claim does not trigger the configurable compliance check volume ratio, set as onHold
     // if complianceCheckRatio is 0 or less this means compliance checks are turned off

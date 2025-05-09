@@ -24,13 +24,7 @@ const buildConfig = () => {
       complianceCheckRatio: Joi.number().default(5),
       endemicsComplianceCheckRatio: Joi.number().default(1)
     },
-    optionalPIHunt: {
-      enabled: Joi.bool()
-    },
     sfdRequestMsgType: Joi.string(),
-    sfdMessage: {
-      enabled: Joi.bool()
-    },
     messageGeneratorMsgType: Joi.string(),
     multiHerds: {
       enabled: Joi.bool().required()
@@ -54,13 +48,7 @@ const buildConfig = () => {
       endemicsComplianceCheckRatio:
         process.env.ENDEMICS_CLAIM_COMPLIANCE_CHECK_RATIO
     },
-    optionalPIHunt: {
-      enabled: process.env.OPTIONAL_PIHUNT_ENABLED === 'true'
-    },
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
-    sfdMessage: {
-      enabled: process.env.SFD_MESSAGE_ENABLED === 'true'
-    },
     messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
     multiHerds: {
       enabled: process.env.MULTI_HERDS_ENABLED === 'true'
