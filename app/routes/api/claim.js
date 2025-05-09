@@ -25,6 +25,12 @@ import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import { createClaimReference } from '../../lib/create-reference.js'
 import { isVisitDateAfterGoLive } from '../../lib/context-helper.js'
+import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
+import { buildData } from '../../data/index.js'
+import { herdSchema } from './schema/herd.schema.js'
+import { arraysAreEqual } from '../../lib/array-utils.js'
+
+const { sequelize } = buildData
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
@@ -110,16 +116,19 @@ const isClaimDataValid = (payload) => {
   const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
   const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, dateOfTesting)
 
-  const reviewValidations = { ...dateOfTesting, ...laboratoryURN }
-  const beefReviewValidations = { ...numberAnimalsTested, ...testResults }
-  const dairyReviewValidations = { ...testResults }
-  const pigReviewValidations = { ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults }
-  const sheepReviewValidations = { ...numberAnimalsTested }
-
   const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
   const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isVisitDateAfterGoLive(payload.data.dateOfVisit) && piHunt), ...(isVisitDateAfterGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
   const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
+
+  const getReviewValidations = () => {
+    const base = { ...dateOfTesting, ...laboratoryURN }
+    if (isBeef(payload)) { return { ...base, ...numberAnimalsTested, ...testResults } }
+    if (isDairy(payload)) { return { ...base, ...testResults } }
+    if (isPigs(payload)) { return { ...base, ...numberAnimalsTested, ...numberOfOralFluidSamples, ...testResults } }
+    if (isSheep(payload)) { return { ...base, ...numberAnimalsTested } }
+    return base
+  }
 
   const dataModel = Joi.object({
     amount: Joi.string().optional(),
@@ -128,15 +137,12 @@ const isClaimDataValid = (payload) => {
     speciesNumbers: Joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: Joi.string().required(),
     vetRCVSNumber: Joi.string().required(),
-    ...(isReview(payload) && reviewValidations),
-    ...((isReview(payload) && isBeef(payload)) && beefReviewValidations),
-    ...((isReview(payload) && isDairy(payload)) && dairyReviewValidations),
-    ...((isReview(payload) && isPigs(payload)) && pigReviewValidations),
-    ...((isReview(payload) && isSheep(payload)) && sheepReviewValidations),
+    ...(isReview(payload) ? getReviewValidations() : {}),
     ...((isFollowUp(payload) && isBeef(payload)) && beefFollowUpValidations),
     ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
     ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
-    ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations)
+    ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations),
+    ...(config.multiHerds.enabled && herdSchema)
   })
 
   const claimModel = Joi.object({
@@ -148,6 +154,60 @@ const isClaimDataValid = (payload) => {
   })
 
   return claimModel.validate(payload)
+}
+
+const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
+
+const isUpdate = (herd) => herd.herdVersion > 1 && !herd.herdName
+
+const validateUpdate = (existingHerd, updatedHerd) => {
+  if (!existingHerd) {
+    throw Error('Herd not found')
+  }
+  if (!existingHerd.isCurrent) {
+    throw Error('Attempting to update an older version of a herd')
+  }
+  if (existingHerd.version === updatedHerd.herdVersion) {
+    throw Error('Attempting to update a herd with the same version')
+  }
+}
+
+const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfLivestock, logger) => {
+  let herdModel
+
+  if (isUpdate(herd)) {
+    const existingHerdModel = await getHerdById(herd.herdId)
+    validateUpdate(existingHerdModel?.dataValues, herd)
+
+    if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
+      const newVersion = existingHerdModel.dataValues.version + 1
+      herdModel = await createHerd({
+        version: newVersion,
+        applicationReference,
+        species: existingHerdModel.dataValues.species,
+        herdName: existingHerdModel.dataValues.herdName,
+        cph: herd.cph,
+        herdReasons: herd.herdReasons.sort(),
+        createdBy
+      })
+      await updateIsCurrentHerd(herd.herdId, false)
+    } else {
+      logger.info('Herd has not changed')
+      herdModel = existingHerdModel
+    }
+  } else {
+    herdModel = await createHerd({
+      version: 1,
+      applicationReference,
+      species: typeOfLivestock,
+      herdName: herd.herdName,
+      cph: herd.cph,
+      herdReasons: herd.herdReasons.sort(),
+      createdBy
+    })
+  }
+
+  return herdModel
 }
 
 export const claimHandlers = [
@@ -284,9 +344,29 @@ export const claimHandlers = [
         }
 
         const amount = await getAmount(request.payload)
-
         const { statusId } = await requiresComplianceCheck('claim')
-        const claim = await setClaim({ ...payload, reference: claimReference, data: { ...payload?.data, amount, claimType: request.payload.type }, statusId, sbi })
+        const { herd, ...payloadData } = payload.data
+        let claim
+
+        await sequelize.transaction(async () => {
+          let claimHerdData = {}
+
+          if (config.multiHerds.enabled) {
+            const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
+            claimHerdData = {
+              herdId: herdModel.dataValues.id,
+              herdVersion: herdModel.dataValues.version,
+              herdAssociatedAt: new Date().toISOString()
+            }
+          }
+          const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
+          claim = await setClaim({ ...payload, reference: claimReference, data: claimData, statusId, sbi })
+        })
+
+        if (!claim) {
+          throw new Error('Claim was not created')
+        }
+
         const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
           reference: claim.dataValues.reference,
           applicationReference: claim.dataValues.applicationReference,

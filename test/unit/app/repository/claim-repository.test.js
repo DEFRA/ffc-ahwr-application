@@ -36,6 +36,9 @@ jest.mock('../../../../app/data', () => {
           create: jest.fn()
         },
         status: 'mock-status'
+      },
+      sequelize: {
+        query: jest.fn()
       }
     }
   }
@@ -201,26 +204,16 @@ describe('Claim repository test', () => {
       }
     ]
 
-    when(buildData.models.claim.findAll)
-      .calledWith({
-        where: { applicationReference: application.reference.toUpperCase() },
-        include: [
-          {
-            model: buildData.models.status,
-            attributes: ['status']
-          }
-        ],
-        order: [['createdAt', 'DESC']]
-      })
-      .mockResolvedValue(claims)
+    when(buildData.sequelize.query).mockResolvedValue(claims)
 
     const result = await getByApplicationReference(
       application.reference, undefined
     )
 
-    expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(1)
-    expect(claims).toEqual(result)
+    expect(buildData.sequelize.query).toHaveBeenCalledTimes(1)
+    expect(result).toEqual(claims)
   })
+
   test('Get all claims by application reference when a query string is passed to the function', async () => {
     const application = {
       id: '0ad33322-c833-40c9-8116-0a293f0850a1',
@@ -253,23 +246,13 @@ describe('Claim repository test', () => {
       }
     }
 
-    buildData.models.claim.findAll.mockResolvedValueOnce([])
+    buildData.sequelize.query.mockResolvedValueOnce([])
 
     const result = await getByApplicationReference(
       application.reference, livestockTypes.beef
     )
 
-    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
-      include: [{
-        attributes: ['status'],
-        model: 'mock-status'
-      }],
-      order: [['createdAt', 'DESC']],
-      where: {
-        applicationReference: 'AHWR-0AD3-3322',
-        'data.typeOfLivestock': livestockTypes.beef
-      }
-    })
+    expect(buildData.sequelize.query.mock.calls[0][0].replace(/\s+/g, ' ').trim()).toBe('SELECT claim.*, to_jsonb(herd) AS herd FROM claim LEFT JOIN herd ON claim.data->>\'herdId\' = herd.id::text AND herd."isCurrent" = true WHERE claim."applicationReference" = :applicationReference AND claim.data->>\'typeOfLivestock\' = :typeOfLivestock ORDER BY claim."createdAt" DESC')
     expect(result).toEqual([])
   })
   test('Get claim by reference', async () => {

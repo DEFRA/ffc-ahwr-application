@@ -20,7 +20,8 @@ export const flag = (sequelize, DataTypes) => {
       createdAt: DataTypes.DATE,
       appliesToMh: { type: DataTypes.BOOLEAN, defaultValue: false },
       deletedAt: { type: DataTypes.DATE, defaultValue: null },
-      deletedBy: { type: DataTypes.STRING, defaultValue: null }
+      deletedBy: { type: DataTypes.STRING, defaultValue: null },
+      deletedNote: DataTypes.STRING
     },
     {
       freezeTableName: true,

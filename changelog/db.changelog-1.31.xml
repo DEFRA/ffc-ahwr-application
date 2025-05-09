@@ -1,0 +1,55 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+<changeSet id="31" author="Ross Jarvis">
+  <createTable tableName="herd">
+    <column name="id" type="uuid" defaultValueComputed="public.uuid_generate_v4()">
+      <constraints nullable="false" primaryKey="true" />
+    </column>
+    <column name="version" type="int">
+      <constraints nullable="false" primaryKey="true" />
+    </column>
+    <column name="applicationReference" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="herdName" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="cph" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="othersOnSameCph" type="boolean">
+      <constraints nullable="false" />
+    </column>
+    <column name="herdReasons" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="isCurrent" type="boolean">
+      <constraints nullable="false" />
+    </column>
+    <column name="createdBy" type="varchar">
+      <constraints nullable="false" />
+    </column>
+    <column name="createdAt" defaultValueComputed="now()" type="timestamp with time zone">
+      <constraints nullable="false" />
+    </column>
+    <column name="updatedBy" type="varchar">
+      <constraints nullable="true" />
+    </column>
+    <column name="updatedAt" type="timestamp with time zone">
+      <constraints nullable="true" />
+    </column>
+  </createTable>
+
+  <addForeignKeyConstraint 
+    baseTableName="herd"
+    baseColumnNames="applicationReference"
+    constraintName="fk_herd_application_reference"
+    referencedTableName="application"
+    referencedColumnNames="reference" />
+</changeSet>
+
+<changeSet id="31-tag" author="Ross Jarvis">
+  <tagDatabase tag="v1.31.0"/>
+</changeSet>
+
+</databaseChangeLog>

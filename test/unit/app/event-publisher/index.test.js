@@ -35,7 +35,7 @@ describe('Event Raisers', () => {
     }
   }
   const expectedCommonProps = {
-    id: 'app-123',
+    id: expect.any(String),
     sbi: '123456789',
     cph: 'n/a',
     checkpoint: 'test-role',
@@ -49,9 +49,10 @@ describe('Event Raisers', () => {
         properties: {
           ...expectedCommonProps,
           action: {
-            type: 'application:flagged',
+            type: 'application-flagged',
             message: 'Flag processed',
             data: {
+              applicationReference: baseEvent.application.id,
               flagId: 'flag-001',
               flagDetail: 'Missing paperwork',
               flagAppliesToMh: true
@@ -64,17 +65,20 @@ describe('Event Raisers', () => {
     ])
   })
   it('raises application flag deleted event correctly', async () => {
-    await raiseApplicationFlagDeletedEvent(baseEvent, '123456789')
+    await raiseApplicationFlagDeletedEvent({ ...baseEvent, flag: { ...baseEvent.flag, deletedNote: 'Remove the flag' } }, '123456789')
     expect(mockSendEvents).toHaveBeenCalledWith([
       {
         name: SEND_SESSION_EVENT,
         properties: {
           ...expectedCommonProps,
           action: {
-            type: 'application:unflagged',
+            type: 'application-flag-deleted',
             message: 'Flag processed',
             data: {
-              flagId: 'flag-001'
+              applicationReference: baseEvent.application.id,
+              flagId: 'flag-001',
+              flagAppliesToMh: true,
+              deletedNote: 'Remove the flag'
             },
             raisedBy: 'test-user',
             raisedOn: '2025-01-01T12:00:00.000Z'

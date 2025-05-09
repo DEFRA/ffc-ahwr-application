@@ -2,10 +2,10 @@ import { buildData } from '../data/index.js'
 import { raiseClaimEvents } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
-import { Op, Sequelize } from 'sequelize'
+import { Op, QueryTypes, Sequelize } from 'sequelize'
 import { findApplication } from './application-repository.js'
 
-const { models } = buildData
+const { models, sequelize } = buildData
 
 export const getClaimByReference = (reference) => {
   return models.claim.findOne({
@@ -20,24 +20,35 @@ export const getClaimByReference = (reference) => {
 }
 
 export const getByApplicationReference = async (applicationReference, typeOfLivestock) => {
-  let where = { applicationReference: applicationReference.toUpperCase() }
-
-  if (typeOfLivestock) {
-    where = { ...where, 'data.typeOfLivestock': typeOfLivestock }
+  const replacements = {
+    applicationReference: applicationReference.toUpperCase()
   }
 
-  const result = await models.claim.findAll({
-    where,
-    include: [
-      {
-        model: models.status,
-        attributes: ['status']
-      }
-    ],
-    order: [['createdAt', 'DESC']]
-  })
+  let typeFilter = ''
 
-  return result
+  if (typeOfLivestock) {
+    typeFilter = 'AND claim.data->>\'typeOfLivestock\' = :typeOfLivestock'
+    replacements.typeOfLivestock = typeOfLivestock
+  }
+
+  const results = await sequelize.query(
+    `
+    SELECT claim.*, to_jsonb(herd) AS herd
+    FROM claim
+    LEFT JOIN herd 
+      ON claim.data->>'herdId' = herd.id::text
+      AND herd."isCurrent" = true
+    WHERE claim."applicationReference" = :applicationReference
+    ${typeFilter}
+    ORDER BY claim."createdAt" DESC
+    `,
+    {
+      replacements,
+      type: QueryTypes.SELECT
+    }
+  )
+
+  return results
 }
 
 export const setClaim = async (data) => {

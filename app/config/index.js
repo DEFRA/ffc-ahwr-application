@@ -25,7 +25,10 @@ const buildConfig = () => {
       endemicsComplianceCheckRatio: Joi.number().default(1)
     },
     sfdRequestMsgType: Joi.string(),
-    messageGeneratorMsgType: Joi.string()
+    messageGeneratorMsgType: Joi.string(),
+    multiHerds: {
+      enabled: Joi.bool().required()
+    }
   })
 
   const config = {
@@ -46,7 +49,10 @@ const buildConfig = () => {
         process.env.ENDEMICS_CLAIM_COMPLIANCE_CHECK_RATIO
     },
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
-    messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`
+    messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
+    multiHerds: {
+      enabled: process.env.MULTI_HERDS_ENABLED === 'true'
+    }
   }
 
   const { error } = schema.validate(config, { abortEarly: false })

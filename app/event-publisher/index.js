@@ -1,5 +1,6 @@
 import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
 import { config } from '../config/index.js'
+import { randomUUID } from 'node:crypto'
 
 export const SEND_SESSION_EVENT = 'send-session-event'
 export const APPLICATION_STATUS_EVENT = 'application-status-event'
@@ -103,18 +104,19 @@ export const raiseApplicationFlaggedEvent = async (event, sbi) => {
     {
       name: SEND_SESSION_EVENT,
       properties: {
-        id: event.application.id,
+        id: randomUUID(),
         sbi,
         cph: 'n/a',
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
         status: 'success',
         action: {
-          type: 'application:flagged',
+          type: 'application-flagged',
           message: event.message,
           data: {
             flagId: event.flag.id,
             flagDetail: event.flag.note,
-            flagAppliesToMh: event.flag.appliesToMh
+            flagAppliesToMh: event.flag.appliesToMh,
+            applicationReference: event.application.id
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
@@ -129,16 +131,19 @@ export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
     {
       name: SEND_SESSION_EVENT,
       properties: {
-        id: event.application.id,
+        id: randomUUID(),
         sbi,
         cph: 'n/a',
         checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
         status: 'success',
         action: {
-          type: 'application:unflagged',
+          type: 'application-flag-deleted',
           message: event.message,
           data: {
-            flagId: event.flag.id
+            flagId: event.flag.id,
+            flagAppliesToMh: event.flag.appliesToMh,
+            deletedNote: event.flag.deletedNote,
+            applicationReference: event.application.id
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()

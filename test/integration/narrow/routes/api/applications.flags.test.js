@@ -11,6 +11,7 @@ import {
   raiseApplicationFlaggedEvent,
   raiseApplicationFlagDeletedEvent
 } from '../../../../../app/event-publisher'
+import HttpStatus from 'http-status-codes'
 
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/flag-repository')
@@ -58,7 +59,7 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST)
       expect(createFlag).not.toHaveBeenCalled()
     })
 
@@ -76,7 +77,7 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(201)
+      expect(res.statusCode).toBe(HttpStatus.CREATED)
       expect(createFlag).toHaveBeenCalledWith({
         applicationReference: 'IAHW-F3F4-GGDE',
         appliesToMh: false,
@@ -122,7 +123,7 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(204)
+      expect(res.statusCode).toBe(HttpStatus.NO_CONTENT)
       expect(createFlag).not.toHaveBeenCalled()
     })
 
@@ -140,7 +141,7 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(404)
+      expect(res.statusCode).toBe(HttpStatus.NOT_FOUND)
       expect(createFlag).not.toHaveBeenCalled()
     })
   })
@@ -179,7 +180,7 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(HttpStatus.OK)
       expect(JSON.parse(res.payload)).toEqual(flags)
     })
 
@@ -192,7 +193,7 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(HttpStatus.OK)
       expect(JSON.parse(res.payload)).toEqual([])
     })
   })
@@ -205,7 +206,7 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST)
       expect(deleteFlag).not.toHaveBeenCalled()
     })
 
@@ -234,17 +235,18 @@ describe('Application Flag tests', () => {
         method: 'PATCH',
         url: `/api/application/flag/${flagId}/delete`,
         payload: {
-          user: 'fred.jones'
+          user: 'fred.jones',
+          deletedNote: 'Flag no longer needed'
         }
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(204)
-      expect(deleteFlag).toHaveBeenCalledWith(flagId, 'fred.jones')
-      expect(raiseApplicationFlagDeletedEvent).toHaveBeenCalledWith({ application: { id: 'IAHW-U6ZE-5R5E' }, flag: { id: '333c18ef-fb26-4beb-ac87-c483fc886fea' }, message: 'Application flag removed', raisedBy: 'Dave', raisedOn: '2025-04-10T11:59:54.075Z' }, '123456789')
+      expect(res.statusCode).toBe(HttpStatus.NO_CONTENT)
+      expect(deleteFlag).toHaveBeenCalledWith(flagId, 'fred.jones', 'Flag no longer needed')
+      expect(raiseApplicationFlagDeletedEvent).toHaveBeenCalledWith({ application: { id: 'IAHW-U6ZE-5R5E' }, flag: { id: '333c18ef-fb26-4beb-ac87-c483fc886fea', deletedNote: 'Flag no longer needed', appliesToMh: false }, message: 'Application flag removed', raisedBy: 'Dave', raisedOn: '2025-04-10T11:59:54.075Z' }, '123456789')
     })
 
-    test('returns a 404 if the flag does not exist', async () => {
+    test('returns a 400 if deletedNote is not provided', async () => {
       deleteFlag.mockResolvedValueOnce([0])
       const flagId = '333c18ef-fb26-4beb-ac87-c483fc886fea'
 
@@ -257,7 +259,25 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      expect(res.statusCode).toBe(404)
+      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST)
+      expect(deleteFlag).not.toHaveBeenCalled()
+    })
+
+    test('returns a 404 if the flag does not exist', async () => {
+      deleteFlag.mockResolvedValueOnce([0])
+      const flagId = '333c18ef-fb26-4beb-ac87-c483fc886fea'
+
+      const options = {
+        method: 'PATCH',
+        url: `/api/application/flag/${flagId}/delete`,
+        payload: {
+          user: 'fred.jones',
+          deletedNote: 'Flag no longer needed'
+        }
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(HttpStatus.NOT_FOUND)
       expect(deleteFlag).toHaveBeenCalled()
     })
   })
@@ -296,7 +316,7 @@ describe('Application Flag tests', () => {
         url: '/api/flags'
       })
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(HttpStatus.OK)
       expect(getAllFlags).toHaveBeenCalled()
       expect(JSON.parse(res.payload)).toEqual(flags)
     })
@@ -311,7 +331,7 @@ describe('Application Flag tests', () => {
         url: '/api/flags'
       })
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(HttpStatus.OK)
       expect(getAllFlags).toHaveBeenCalled()
       expect(JSON.parse(res.payload)).toEqual(flags)
     })
