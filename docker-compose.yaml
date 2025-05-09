@@ -37,7 +37,7 @@ services:
       OPTIONAL_PIHUNT_ENABLED: ${OPTIONAL_PIHUNT_ENABLED:-false}
       SFD_MESSAGE_QUEUE_ADDRESS: ${SFD_MESSAGE_QUEUE_ADDRESS:-ffc-ahwr-sfd-message}${MESSAGE_QUEUE_SUFFIX}
       MESSAGE_GENERATOR_QUEUE_ADDRESS: ${MESSAGE_GENERATOR_QUEUE_ADDRESS:-ffc-ahwr-message-generator}${MESSAGE_QUEUE_SUFFIX}
-      MULTI_HERDS_ENABLED: ${MULTI_HERDS_ENABLED:-false}
+      MULTI_HERDS_ENABLED: ${MULTI_HERDS_ENABLED:-true}
 
   ffc-ahwr-application-postgres:
     image: postgres:11.4-alpine
