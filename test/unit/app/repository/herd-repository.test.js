@@ -1,4 +1,4 @@
-import { createHerd, getHerdById, updateIsCurrentHerd } from '../../../../app/repositories/herd-repository'
+import { createHerd, getHerdById, getHerdsByAppRefAndSpecies, updateIsCurrentHerd } from '../../../../app/repositories/herd-repository'
 import { buildData } from '../../../../app/data/index.js'
 
 const { models } = buildData
@@ -10,6 +10,7 @@ jest.mock('../../../../app/data/index.js', () => {
         herd: {
           create: jest.fn(),
           findOne: jest.fn(),
+          findAll: jest.fn(),
           update: jest.fn()
         }
       }
@@ -104,7 +105,7 @@ describe('herdService', () => {
 
   describe('updateIsCurrentHerd', () => {
     it('should update isCurrent field of a herd', async () => {
-      models.herd.update.mockResolvedValue([1]) // Sequelize update returns [affectedCount]
+      models.herd.update.mockResolvedValue([1])
 
       const result = await updateIsCurrentHerd(1, false)
 
@@ -113,6 +114,43 @@ describe('herdService', () => {
         { where: { id: 1 } }
       )
       expect(result).toEqual([1])
+    })
+  })
+
+  describe('getHerdsByAppRefAndSpecies', () => {
+    it('should query herds with correct parameters and return results', async () => {
+      const mockResult = [
+        {
+          dataValues: {
+            id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+            createdAt: '2024-02-14T09:59:46.756Z',
+            applicationReference: 'AHWR-0AD3-3322',
+            version: 1,
+            herdName: 'Sample herd one',
+            cph: '43200',
+            herdReasons: ['separateManagementNeeds'],
+            createdBy: 'admin'
+          }
+        },
+        {
+          dataValues: {
+            id: '1a2d4a26-6a25-4f5b-882e-e18587ba9f4b',
+            createdAt: '2024-02-14T09:59:46.756Z',
+            applicationReference: 'AHWR-0AD3-3322',
+            version: 1,
+            herdName: 'Sample herd two',
+            cph: '12321',
+            herdReasons: ['separateManagementNeeds'],
+            createdBy: 'admin'
+          }
+        }
+      ]
+      models.herd.findAll.mockResolvedValueOnce(mockResult)
+
+      const result = await getHerdsByAppRefAndSpecies('AHWR-0AD3-3322', 'sheep')
+
+      expect(buildData.models.herd.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'AHWR-0AD3-3322', species: 'sheep' } })
+      expect(result).toEqual(mockResult)
     })
   })
 })
