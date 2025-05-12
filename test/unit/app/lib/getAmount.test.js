@@ -1,7 +1,7 @@
 import { getAmount } from '../../../../app/lib/getAmount'
 import { livestockTypes, claimType, testResults } from '../../../../app/constants'
 import { claimPricesConfig as mockClaimPricesConfig } from '../../../data/claim-prices-config'
-import { isVisitDateAfterGoLive } from '../../../../app/lib/context-helper.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../../app/lib/context-helper.js'
 
 jest.mock('../../../../app/lib/context-helper.js')
 
@@ -14,7 +14,7 @@ const { review, endemics } = claimType
 
 describe('getAmount', () => {
   beforeEach(async () => {
-    isVisitDateAfterGoLive.mockImplementation(() => { return true })
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => { return true })
   })
   afterAll(() => {
     jest.resetAllMocks()

@@ -1,6 +1,6 @@
 import { getBlob } from '../storage/getBlob.js'
 import { livestockTypes, claimType, testResults, piHunt as piHuntMap, piHuntAllAnimals as piHuntAllAnimalsMap } from './../constants/index.js'
-import { isVisitDateAfterGoLive } from '../lib/context-helper.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive } from '../lib/context-helper.js'
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
   const optionalPiHuntValue = (piHunt === piHuntMap.yes && piHuntAllAnimals === piHuntAllAnimalsMap.yes) ? 'yesPiHunt' : 'noPiHunt'
@@ -23,7 +23,7 @@ const getNonPiHuntValue = (reviewTestResults, pricesConfig, claimType, typeOfLiv
 const getBeefDairyAmount = (data, pricesConfig, claimType) => {
   const { typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals, dateOfVisit } = data
 
-  if (isVisitDateAfterGoLive(dateOfVisit)) {
+  if (isVisitDateAfterPIHuntAndDairyGoLive(dateOfVisit)) {
     return getPiHuntValue(reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock)
   }
 
