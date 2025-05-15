@@ -5,7 +5,8 @@ export const newHerd = Joi.object({
   herdVersion: Joi.number().required(),
   herdName: Joi.string().required(),
   cph: Joi.string().required(),
-  herdReasons: Joi.array().required()
+  herdReasons: Joi.array().required(),
+  herdSame: Joi.string().valid('yes', 'no')
 })
 
 export const updateHerd = Joi.object({

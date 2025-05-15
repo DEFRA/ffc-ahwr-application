@@ -357,6 +357,10 @@ export const claimHandlers = [
               herdVersion: herdModel.dataValues.version,
               herdAssociatedAt: new Date().toISOString()
             }
+
+            if (herd.herdSame === 'yes') {
+              console.log('AWHR-734 TODO.. update all previous claims')
+            }
           }
           const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
           claim = await setClaim({ ...payload, reference: claimReference, data: claimData, statusId, sbi })
