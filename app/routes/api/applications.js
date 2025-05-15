@@ -362,11 +362,11 @@ export const applicationHandlers = [
         const herds = await getHerdsByAppRefAndSpecies(ref, species)
 
         return h.response(herds.map((herd) => ({
-            herdId: herd.id,
-            herdVersion: herd.version,
-            herdName: herd.herdName,
-            cph: herd.cph,
-            herdReasons: herd.herdReasons        
+          herdId: herd.id,
+          herdVersion: herd.version,
+          herdName: herd.herdName,
+          cph: herd.cph,
+          herdReasons: herd.herdReasons
         }))).code(HttpStatus.OK)
       }
     }
