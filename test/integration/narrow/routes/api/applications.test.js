@@ -730,8 +730,15 @@ describe('Applications test', () => {
 
 describe('GET /api/application/{ref}/herds', () => {
   test('returns herds for valid application reference and species', async () => {
-    const mockHerds = [{ id: 1, name: 'Beef Herd' }]
-    getHerdsByAppRefAndSpecies.mockResolvedValueOnce(mockHerds)
+    getHerdsByAppRefAndSpecies.mockResolvedValueOnce([
+      { 
+        id: 1, 
+        version: 1,
+        herdName: 'Beef Herd',
+        cph: "22/333/4444",
+        herdReasons: ['one', 'two']
+      }
+    ])
 
     const res = await server.inject({
       method: 'get',
@@ -739,7 +746,13 @@ describe('GET /api/application/{ref}/herds', () => {
     })
 
     expect(res.statusCode).toBe(200)
-    expect(JSON.parse(res.payload)).toEqual(mockHerds)
+    expect(JSON.parse(res.payload)).toEqual([{
+      herdId: 1,
+      herdVersion: 1,
+      herdName: 'Beef Herd',
+      cph: "22/333/4444",
+      herdReasons: ['one', 'two']
+    }])
   })
 
   test('returns 400 when species is not one of the valid types', async () => {
