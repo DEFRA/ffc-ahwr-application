@@ -26,4 +26,5 @@ data:
   SFD_MESSAGE_QUEUE_ADDRESS: {{ quote .Values.container.sfdMessageQueueAddress }}
   MESSAGE_GENERATOR_QUEUE_ADDRESS: {{ quote .Values.container.messageGeneratorQueueAddress }}
   MULTI_HERDS_ENABLED: {{ quote .Values.container.multiHerdsEnabled }}
+  MULTI_HERDS_RELEASE_DATE: {{ quote .Values.container.multiHerdsReleaseDate }}
 {{- end -}}

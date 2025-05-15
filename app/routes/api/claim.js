@@ -24,7 +24,7 @@ import { getAmount } from '../../lib/getAmount.js'
 import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import { createClaimReference } from '../../lib/create-reference.js'
-import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../lib/context-helper.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive, isMultipleHerdsUserJourney } from '../../lib/context-helper.js'
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 import { buildData } from '../../data/index.js'
 import { herdSchema } from './schema/herd.schema.js'
@@ -142,7 +142,7 @@ const isClaimDataValid = (payload) => {
     ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
     ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
     ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations),
-    ...(config.multiHerds.enabled && herdSchema)
+    ...(isMultipleHerdsUserJourney(payload.data.dateOfVisit) && herdSchema)
   })
 
   const claimModel = Joi.object({
@@ -350,8 +350,7 @@ export const claimHandlers = [
 
         await sequelize.transaction(async () => {
           let claimHerdData = {}
-
-          if (config.multiHerds.enabled) {
+          if (isMultipleHerdsUserJourney(dateOfVisit)) {
             const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
             claimHerdData = {
               herdId: herdModel.dataValues.id,
