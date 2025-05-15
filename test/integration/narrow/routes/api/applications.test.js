@@ -731,11 +731,11 @@ describe('Applications test', () => {
 describe('GET /api/application/{ref}/herds', () => {
   test('returns herds for valid application reference and species', async () => {
     getHerdsByAppRefAndSpecies.mockResolvedValueOnce([
-      { 
-        id: 1, 
+      {
+        id: 1,
         version: 1,
         herdName: 'Beef Herd',
-        cph: "22/333/4444",
+        cph: '22/333/4444',
         herdReasons: ['one', 'two']
       }
     ])
@@ -750,7 +750,7 @@ describe('GET /api/application/{ref}/herds', () => {
       herdId: 1,
       herdVersion: 1,
       herdName: 'Beef Herd',
-      cph: "22/333/4444",
+      cph: '22/333/4444',
       herdReasons: ['one', 'two']
     }])
   })
