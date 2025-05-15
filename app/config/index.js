@@ -27,7 +27,8 @@ const buildConfig = () => {
     sfdRequestMsgType: Joi.string(),
     messageGeneratorMsgType: Joi.string(),
     multiHerds: {
-      enabled: Joi.bool().required()
+      enabled: Joi.bool().required(),
+      releaseDate: Joi.string().required()
     }
   })
 
@@ -51,7 +52,8 @@ const buildConfig = () => {
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
     messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
     multiHerds: {
-      enabled: process.env.MULTI_HERDS_ENABLED === 'true'
+      enabled: process.env.MULTI_HERDS_ENABLED === 'true',
+      releaseDate: process.env.MULTI_HERDS_RELEASE_DATE || '2025-05-01'
     }
   }
 
