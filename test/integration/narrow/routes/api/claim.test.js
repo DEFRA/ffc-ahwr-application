@@ -1,5 +1,5 @@
 import { server } from '../../../../../app/server'
-import { getClaimByReference, getByApplicationReference, isURNNumberUnique, setClaim, updateClaimByReference, searchClaims } from '../../../../../app/repositories/claim-repository'
+import { getClaimByReference, getByApplicationReference, isURNNumberUnique, setClaim, updateClaimByReference, searchClaims, addHerdToClaimData } from '../../../../../app/repositories/claim-repository'
 import { getApplication } from '../../../../../app/repositories/application-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
 import { requestClaimConfirmationEmail } from '../../../../../app/lib/request-email.js'
@@ -817,6 +817,144 @@ describe('Post claim test', () => {
       statusId: 11,
       type: 'R'
     })
+    expect(createHerd).toHaveBeenCalledWith({
+      version: 1,
+      applicationReference: 'AHWR-0AD3-3322',
+      species: 'pigs',
+      herdName: 'Sample herd one',
+      cph: '43231',
+      herdReasons: ['differentBreed', 'separateManagementNeeds'],
+      createdBy: 'admin'
+    })
+  })
+
+  test('should create a new herd and link it to the claim and previousClaims when herdSame', async () => {
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        ...claim,
+        ...{
+          data: {
+            ...claim.data,
+            dateOfVisit: '2025-05-01T00:00:00.000Z',
+            dateOfTesting: '2025-05-01T00:00:00.000Z',
+            herd: {
+              herdId: 'TEMP-ID',
+              herdName: 'Sample herd one',
+              cph: '43231',
+              herdReasons: ['separateManagementNeeds', 'differentBreed'],
+              herdVersion: 1,
+              herdSame: 'yes'
+            }
+          }
+        }
+      }
+    }
+    isMultipleHerdsUserJourney.mockImplementation(() => { return true })
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValueOnce({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: 'AHWR-0F5D-4A26',
+        applicationReference: 'AHWR-0AD3-3322',
+        data: {
+          vetsName: 'Afshin',
+          dateOfVisit: '2025-05-01T00:00:00.000Z',
+          testResults: 'positive',
+          typeOfReview: 'review one',
+          dateOfTesting: '2025-05-01T00:00:00.000Z',
+          laboratoryURN: 'AK-2024',
+          vetRCVSNumber: 'AK-2024',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'pigs',
+          numberAnimalsTested: 30,
+          organisation: {
+            crn: '1100014934',
+            sbi: '106705779'
+          }
+        },
+        statusId: 1,
+        type: 'R',
+        createdBy: 'admin'
+      }
+    })
+    createHerd.mockResolvedValueOnce({
+      dataValues: {
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        createdAt: '2024-02-14T09:59:46.756Z',
+        applicationReference: 'AHWR-0AD3-3322',
+        species: 'pigs',
+        version: 1,
+        herdName: 'Sample herd one',
+        cph: '43231',
+        herdReasons: ['differentBreed', 'separateManagementNeeds'],
+        createdBy: 'admin'
+      }
+    })
+    getByApplicationReference.mockResolvedValueOnce([{
+      createdAt: '2024-02-14T09:59:46.756Z',
+      id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+      updatedAt: '2024-02-14T10:43:03.544Z',
+      updatedBy: 'admin',
+      reference: 'AHWR-0F5D-4A26',
+      applicationReference: 'AHWR-0AD3-3322',
+      data: {
+        vetsName: 'Afshin',
+        dateOfVisit: '2025-05-01T00:00:00.000Z',
+        testResults: 'positive',
+        typeOfReview: 'review one',
+        dateOfTesting: '2025-05-01T00:00:00.000Z',
+        laboratoryURN: 'AK-2024',
+        vetRCVSNumber: 'AK-2024',
+        speciesNumbers: 'yes',
+        typeOfLivestock: 'pigs',
+        numberAnimalsTested: 30,
+        organisation: {
+          crn: '1100014934',
+          sbi: '106705779'
+        }
+      }
+    }])
+    setClaim.mockResolvedValueOnce({
+      dataValues: {
+        reference: claim.reference,
+        applicationReference: claim.applicationReference
+      }
+    })
+
+    await server.inject(options)
+
+    expect(setClaim).toHaveBeenCalledWith({
+      applicationReference: 'AHWR-0AD3-3322',
+      createdBy: 'admin',
+      data: {
+        amount: 100,
+        claimType: 'R',
+        dateOfTesting: '2025-05-01T00:00:00.000Z',
+        dateOfVisit: '2025-05-01T00:00:00.000Z',
+        herdAssociatedAt: expect.any(String),
+        herdId: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        herdVersion: 1,
+        laboratoryURN: 'AK-2024',
+        numberAnimalsTested: 30,
+        numberOfOralFluidSamples: 5,
+        speciesNumbers: 'yes',
+        testResults: 'positive',
+        typeOfLivestock: 'pigs',
+        vetRCVSNumber: 'AK-2024',
+        vetsName: 'Afshin'
+      },
+      reference: 'TEMP-O9UD-22F6',
+      sbi: '106705779',
+      statusId: 11,
+      type: 'R'
+    })
+    expect(getByApplicationReference).toHaveBeenCalledWith("AHWR-0AD3-3322", "pigs")
+    expect(addHerdToClaimData).toHaveBeenCalledWith("AHWR-0F5D-4A26", "0f5d4a26-6a25-4f5b-882e-e18587ba9f4b", 1, expect.any(String), "admin") 
     expect(createHerd).toHaveBeenCalledWith({
       version: 1,
       applicationReference: 'AHWR-0AD3-3322',

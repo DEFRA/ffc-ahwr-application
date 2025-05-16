@@ -305,6 +305,37 @@ export const updateClaimData = async (reference, updatedProperty, newValue, oldV
   })
 }
 
+export const addHerdToClaimData = async (reference, herdId, herdVersion, herdAssociatedAt, user) => {
+  const data = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.fn(
+      'jsonb_set',
+      Sequelize.fn(
+        'jsonb_set',
+        Sequelize.col('data'),
+        Sequelize.literal('\'{herdId}\''),
+        Sequelize.literal(`'${JSON.stringify(herdId)}'`)
+      ),
+      Sequelize.literal('\'{herdVersion}\''),
+      Sequelize.literal(`'${JSON.stringify(herdVersion)}'`)
+    ),
+    Sequelize.literal('\'{herdAssociatedAt}\''),
+    Sequelize.literal(`'${JSON.stringify(herdAssociatedAt)}'`)
+  )
+
+  // eslint-disable-next-line no-unused-vars
+  const [_, _updates] = await buildData.models.claim.update(
+    {
+      data,
+      updatedBy: user
+    },
+    {
+      where: { reference },
+      returning: true
+    }
+  )
+}
+
 export const findAllClaimUpdateHistory = (reference) =>
   buildData.models.claim_update_history.findAll({
     where: { reference }
