@@ -347,7 +347,6 @@ export const claimHandlers = [
         const { statusId } = await requiresComplianceCheck('claim')
         const { herd, ...payloadData } = payload.data
 
-        console.log({herd})
         let claim
 
         await sequelize.transaction(async () => {
