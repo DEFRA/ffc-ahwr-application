@@ -17,7 +17,7 @@ import {
   applicationStatus,
   livestockToReadableSpecies
 } from '../../constants/index.js'
-import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository.js'
+import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique, addHerdToClaimData } from '../../repositories/claim-repository.js'
 import { getApplication } from '../../repositories/application-repository.js'
 import { requestClaimConfirmationEmail } from '../../lib/request-email.js'
 import { getAmount } from '../../lib/getAmount.js'
@@ -210,6 +210,14 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfL
   return herdModel
 }
 
+const addHerdToPreviousClaims = async (herdClaimData, applicationReference, createdBy, typeOfLivestock, logger) => {
+  logger.info('Associating new herd with previous claims for agreement ' + applicationReference)
+  const previousClaimsWithoutHerd = (await getByApplicationReference(applicationReference, typeOfLivestock)).filter(claim => { return !claim.data.herdId })
+  await Promise.all(previousClaimsWithoutHerd.map(claim =>
+    addHerdToClaimData(claim.reference, herdClaimData.herdId, herdClaimData.herdVersion, herdClaimData.herdAssociatedAt, createdBy)
+  ))
+}
+
 export const claimHandlers = [
   {
     method: 'GET',
@@ -356,6 +364,9 @@ export const claimHandlers = [
               herdId: herdModel.dataValues.id,
               herdVersion: herdModel.dataValues.version,
               herdAssociatedAt: new Date().toISOString()
+            }
+            if (herd.herdSame === 'yes') {
+              addHerdToPreviousClaims(claimHerdData, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
             }
           }
           const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
