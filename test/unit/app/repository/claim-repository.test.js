@@ -8,7 +8,8 @@ import {
   searchClaims,
   setClaim,
   updateClaimByReference,
-  updateClaimData
+  updateClaimData,
+  addHerdToClaimData
 } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
@@ -688,6 +689,35 @@ describe('Claim repository test', () => {
 
       expectDbUpdateCalls('testResults', 'negative', 'positive')
       expectDataEventCall('testResults', 'claim-testResults', 'negative', 'positive')
+    })
+  })
+
+  describe('addHerdToClaimData', () => {
+    test('should update vetsName claim data successfully', async () => {
+      await addHerdToClaimData('fake-reference', 'fake-herdId', 1, 'fake-herdAssociatedAt', 'fake-user')
+
+      expect(buildData.models.claim.update).toHaveBeenCalledWith({
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.fn(
+            'jsonb_set',
+            Sequelize.fn(
+              'jsonb_set',
+              Sequelize.col('data'),
+              Sequelize.literal('\'{herdId}\''),
+              Sequelize.literal("'\"fake-herdId\"'")
+            ),
+            Sequelize.literal('\'{herdVersion}\''),
+            Sequelize.literal("'1'")
+          ),
+          Sequelize.literal('\'{herdAssociatedAt}\''),
+          Sequelize.literal("'\"fake-herdAssociatedAt\"'")
+        ),
+        updatedBy: 'fake-user'
+      }, {
+        where: { reference: 'fake-reference' },
+        returning: true
+      })
     })
   })
 
