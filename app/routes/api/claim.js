@@ -158,7 +158,7 @@ const isClaimDataValid = (payload) => {
 
 const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
 
-const isUpdate = (herd) => herd.herdVersion > 1 && !herd.herdName
+const isUpdate = (herd) => herd.herdVersion > 1
 
 const validateUpdate = (existingHerd, updatedHerd) => {
   if (!existingHerd) {
@@ -346,6 +346,8 @@ export const claimHandlers = [
         const amount = await getAmount(request.payload)
         const { statusId } = await requiresComplianceCheck('claim')
         const { herd, ...payloadData } = payload.data
+
+        console.log({herd})
         let claim
 
         await sequelize.transaction(async () => {
