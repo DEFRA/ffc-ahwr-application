@@ -149,7 +149,7 @@ describe('herdService', () => {
 
       const result = await getHerdsByAppRefAndSpecies('AHWR-0AD3-3322', 'sheep')
 
-      expect(buildData.models.herd.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'AHWR-0AD3-3322', species: 'sheep' } })
+      expect(buildData.models.herd.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'AHWR-0AD3-3322', species: 'sheep', isCurrent: true } })
       expect(result).toEqual(mockResult)
     })
   })

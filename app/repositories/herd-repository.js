@@ -21,6 +21,6 @@ export const updateIsCurrentHerd = async (id, isCurrent) => {
 
 export const getHerdsByAppRefAndSpecies = async (applicationReference, species) => {
   return models.herd.findAll({
-    where: { applicationReference, species }
+    where: { applicationReference, species, isCurrent: true }
   })
 }
