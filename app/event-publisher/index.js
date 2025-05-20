@@ -167,8 +167,8 @@ export const raiseHerdEvent = async ({ sbi, message, data, type }) => {
           type,
           message,
           data,
-          raisedBy: 'admin', // Is this ok?
-          raisedOn: new Date() // Is this ok?
+          raisedBy: 'admin',
+          raisedOn: new Date()
         }
       }
     }
