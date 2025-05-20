@@ -223,6 +223,38 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, crea
   ))
 }
 
+const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdated }) => {
+  const { herdId, herdVersion, herdName, species: herdSpecies, cph: herdCph, herdReasons } = herdData
+
+  await raiseHerdEvent({ sbi, message: 'Herd associated with claim', type: 'claim-herdAssociated', data: { herdId, herdVersion } })
+
+  if (herdVersion === 1) {
+    await raiseHerdEvent({ sbi, message: 'Herd temporary ID became herdId', type: 'herd-tempIdHerdId', data: { tempHerdId, herdId } })
+  }
+
+  if (herdGotUpdated) {
+    await raiseHerdEvent({
+      sbi,
+      message: 'Herd version created',
+      type: 'herd-versionCreated',
+      data: {
+        herdId,
+        herdVersion,
+        herdName,
+        herdSpecies,
+        herdCph,
+        herdReasonManagementNeeds: herdReasons.includes('separateManagementNeeds'),
+        herdReasonUniqueHealth: herdReasons.includes('uniqueHealthNeeds'),
+        herdReasonDifferentBreed: herdReasons.includes('differentBreed'),
+        herdReasonOtherPurpose: herdReasons.includes('differentPurpose'),
+        herdReasonKeptSeparate: herdReasons.includes('keptSeparate'),
+        herdReasonOnlyHerd: herdReasons.includes('keptSeparate'),
+        herdReasonOther: herdReasons.includes('other')
+      }
+    })
+  }
+}
+
 export const claimHandlers = [
   {
     method: 'GET',
@@ -360,16 +392,15 @@ export const claimHandlers = [
         const { statusId } = await requiresComplianceCheck('claim')
         const { herd, ...payloadData } = payload.data
 
-        let claim, herdId, herdVersion, herdGotUpdated
+        let claim, herdGotUpdated
         let herdData = {}
+        const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit)
 
         await sequelize.transaction(async () => {
           let claimHerdData = {}
-          if (isMultipleHerdsUserJourney(dateOfVisit)) {
+          if (isMultiHerdsClaim) {
             const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
 
-            herdId = herdModel.dataValues.id
-            herdVersion = herdModel.dataValues.version
             herdGotUpdated = herdWasUpdated
             herdData = herdModel.dataValues
 
@@ -390,34 +421,8 @@ export const claimHandlers = [
           throw new Error('Claim was not created')
         }
 
-        await raiseHerdEvent({ sbi, message: 'Herd associated with claim', type: 'claim-herdAssociated', data: { herdId, herdVersion } })
-
-        if (herdVersion === 1) {
-          await raiseHerdEvent({ sbi, message: 'Herd temporary ID became herdId', type: 'herd-tempIdHerdId', data: { tempHerdId: herd.herdId, herdId } })
-        }
-
-        if (herdGotUpdated) {
-          const { herdName, species: herdSpecies, cph: herdCph, herdReasons } = herdData
-
-          await raiseHerdEvent({
-            sbi,
-            message: 'Herd version created',
-            type: 'herd-versionCreated',
-            data: {
-              herdId,
-              herdVersion,
-              herdName,
-              herdSpecies,
-              herdCph,
-              herdReasonManagementNeeds: herdReasons.includes('separateManagementNeeds'),
-              herdReasonUniqueHealth: herdReasons.includes('uniqueHealthNeeds'),
-              herdReasonDifferentBreed: herdReasons.includes('differentBreed'),
-              herdReasonOtherPurpose: herdReasons.includes('differentPurpose'),
-              herdReasonKeptSeparate: herdReasons.includes('keptSeparate'),
-              herdReasonOnlyHerd: herdReasons.includes('keptSeparate'),
-              herdReasonOther: herdReasons.includes('other')
-            }
-          })
+        if (isMultiHerdsClaim) {
+          await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated })
         }
 
         const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
