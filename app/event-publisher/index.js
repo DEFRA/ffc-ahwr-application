@@ -152,3 +152,25 @@ export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
     }
   ])
 }
+
+export const raiseHerdEvent = async ({ sbi, message, data, type }) => {
+  await new PublishEventBatch(config.eventQueue).sendEvents([
+    {
+      name: SEND_SESSION_EVENT,
+      properties: {
+        id: randomUUID(),
+        sbi,
+        cph: 'n/a',
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        status: 'success',
+        action: {
+          type,
+          message,
+          data,
+          raisedBy: 'admin', // Is this ok?
+          raisedOn: new Date() // Is this ok?
+        }
+      }
+    }
+  ])
+}
