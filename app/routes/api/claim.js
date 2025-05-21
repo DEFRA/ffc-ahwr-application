@@ -258,7 +258,7 @@ const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdated, cla
         herdReasonDifferentBreed: herdReasons.includes('differentBreed'),
         herdReasonOtherPurpose: herdReasons.includes('differentPurpose'),
         herdReasonKeptSeparate: herdReasons.includes('keptSeparate'),
-        herdReasonOnlyHerd: herdReasons.includes('keptSeparate'),
+        herdReasonOnlyHerd: herdReasons.includes('onlyHerd'),
         herdReasonOther: herdReasons.includes('other')
       }
     })
