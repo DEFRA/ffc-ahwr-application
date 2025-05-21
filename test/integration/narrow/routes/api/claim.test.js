@@ -1040,6 +1040,7 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(createHerd).toHaveBeenCalledWith({
+      id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
       version: 2,
       applicationReference: 'AHWR-0AD3-3322',
       herdName: 'Sample herd one',
@@ -1048,7 +1049,7 @@ describe('Post claim test', () => {
       herdReasons: ['differentBreed', 'separateManagementNeeds'],
       createdBy: 'admin'
     })
-    expect(updateIsCurrentHerd).toHaveBeenCalledWith('0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', false)
+    expect(updateIsCurrentHerd).toHaveBeenCalledWith('0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', false, 1)
     expect(setClaim).toHaveBeenCalledWith({
       applicationReference: 'AHWR-0AD3-3322',
       createdBy: 'admin',
@@ -1150,6 +1151,7 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(createHerd).toHaveBeenCalledWith({
+      id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
       version: 2,
       applicationReference: 'AHWR-0AD3-3322',
       species: 'pigs',
@@ -1158,7 +1160,7 @@ describe('Post claim test', () => {
       herdReasons: ['differentBreed', 'separateManagementNeeds'],
       createdBy: 'admin'
     })
-    expect(updateIsCurrentHerd).toHaveBeenCalledWith('0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', false)
+    expect(updateIsCurrentHerd).toHaveBeenCalledWith('0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', false, 1)
     expect(setClaim).toHaveBeenCalledWith({
       applicationReference: 'AHWR-0AD3-3322',
       createdBy: 'admin',
@@ -1260,6 +1262,7 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(createHerd).toHaveBeenCalledWith({
+      id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
       version: 2,
       applicationReference: 'AHWR-0AD3-3322',
       species: 'pigs',
@@ -1268,7 +1271,7 @@ describe('Post claim test', () => {
       herdReasons: ['differentBreed', 'separateManagementNeeds'],
       createdBy: 'admin'
     })
-    expect(updateIsCurrentHerd).toHaveBeenCalledWith('0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', false)
+    expect(updateIsCurrentHerd).toHaveBeenCalledWith('0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', false, 1)
     expect(setClaim).toHaveBeenCalledWith({
       applicationReference: 'AHWR-0AD3-3322',
       createdBy: 'admin',

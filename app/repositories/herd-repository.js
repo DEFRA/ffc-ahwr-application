@@ -12,10 +12,10 @@ export const getHerdById = async (id) => {
   })
 }
 
-export const updateIsCurrentHerd = async (id, isCurrent) => {
+export const updateIsCurrentHerd = async (id, isCurrent, version) => {
   return models.herd.update(
     { isCurrent },
-    { where: { id } }
+    { where: { id, version } }
   )
 }
 

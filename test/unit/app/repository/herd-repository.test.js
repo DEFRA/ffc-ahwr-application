@@ -107,11 +107,11 @@ describe('herdService', () => {
     it('should update isCurrent field of a herd', async () => {
       models.herd.update.mockResolvedValue([1])
 
-      const result = await updateIsCurrentHerd(1, false)
+      const result = await updateIsCurrentHerd(1, false, 2)
 
       expect(buildData.models.herd.update).toHaveBeenCalledWith(
         { isCurrent: false },
-        { where: { id: 1 } }
+        { where: { id: 1, version: 2 } }
       )
       expect(result).toEqual([1])
     })
