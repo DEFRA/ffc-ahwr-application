@@ -1,4 +1,4 @@
-import { raiseHerdEvent } from '../event-publisher'
+import { raiseHerdEvent } from '../event-publisher/index.js'
 
 export const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdated, claimReference, applicationReference }) => {
   const { herdId, herdVersion, herdName, species: herdSpecies, cph: herdCph, herdReasons } = herdData

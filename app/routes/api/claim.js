@@ -181,18 +181,18 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfL
     validateUpdate(existingHerdModel?.dataValues, herd)
 
     if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
-      const newVersion = existingHerdModel.dataValues.version + 1
+      const { id, version, species, herdName } = existingHerdModel.dataValues
       herdModel = await createHerd({
-        version: newVersion,
+        id,
+        version: version + 1,
         applicationReference,
-        species: existingHerdModel.dataValues.species,
-        herdName: existingHerdModel.dataValues.herdName,
+        species,
+        herdName,
         cph: herd.cph,
         herdReasons: herd.herdReasons.sort(),
         createdBy
       })
-      await updateIsCurrentHerd(herd.herdId, false)
-      herdWasUpdated = true
+      await updateIsCurrentHerd(herd.herdId, false, version)
     } else {
       logger.info('Herd has not changed')
       herdModel = existingHerdModel
