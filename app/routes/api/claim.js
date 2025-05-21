@@ -223,10 +223,20 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, crea
   ))
 }
 
-const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdated }) => {
+const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdated, claimReference, applicationReference }) => {
   const { herdId, herdVersion, herdName, species: herdSpecies, cph: herdCph, herdReasons } = herdData
 
-  await raiseHerdEvent({ sbi, message: 'Herd associated with claim', type: 'claim-herdAssociated', data: { herdId, herdVersion } })
+  await raiseHerdEvent({ 
+    sbi, 
+    message: 'Herd associated with claim', 
+    type: 'claim-herdAssociated', 
+    data: { 
+      herdId, 
+      herdVersion, 
+      reference: claimReference, 
+      applicationReference  
+    } 
+  })
 
   if (herdVersion === 1) {
     await raiseHerdEvent({ sbi, message: 'Herd temporary ID became herdId', type: 'herd-tempIdHerdId', data: { tempHerdId, herdId } })
@@ -422,7 +432,7 @@ export const claimHandlers = [
         }
 
         if (isMultiHerdsClaim) {
-          await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated })
+          await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
 
         const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
