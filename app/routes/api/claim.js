@@ -29,6 +29,7 @@ import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories
 import { buildData } from '../../data/index.js'
 import { herdSchema } from './schema/herd.schema.js'
 import { arraysAreEqual } from '../../lib/array-utils.js'
+import { emitHerdMIEvents } from '../../lib/emit-herd-MI-events.js'
 
 const { sequelize } = buildData
 
@@ -173,7 +174,7 @@ const validateUpdate = (existingHerd, updatedHerd) => {
 }
 
 const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfLivestock, logger) => {
-  let herdModel
+  let herdModel, herdWasUpdated
 
   if (isUpdate(herd)) {
     const existingHerdModel = await getHerdById(herd.herdId)
@@ -191,9 +192,11 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfL
         createdBy
       })
       await updateIsCurrentHerd(herd.herdId, false)
+      herdWasUpdated = true
     } else {
       logger.info('Herd has not changed')
       herdModel = existingHerdModel
+      herdWasUpdated = false
     }
   } else {
     herdModel = await createHerd({
@@ -205,9 +208,11 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfL
       herdReasons: herd.herdReasons.sort(),
       createdBy
     })
+
+    herdWasUpdated = true
   }
 
-  return herdModel
+  return { herdModel, herdWasUpdated }
 }
 
 const addHerdToPreviousClaims = async (herdClaimData, applicationReference, createdBy, typeOfLivestock, logger) => {
@@ -355,12 +360,18 @@ export const claimHandlers = [
         const { statusId } = await requiresComplianceCheck('claim')
         const { herd, ...payloadData } = payload.data
 
-        let claim
+        let claim, herdGotUpdated
+        let herdData = {}
+        const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit)
 
         await sequelize.transaction(async () => {
           let claimHerdData = {}
-          if (isMultipleHerdsUserJourney(dateOfVisit)) {
-            const herdModel = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
+          if (isMultiHerdsClaim) {
+            const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
+
+            herdGotUpdated = herdWasUpdated
+            herdData = herdModel.dataValues
+
             claimHerdData = {
               herdId: herdModel.dataValues.id,
               herdVersion: herdModel.dataValues.version,
@@ -376,6 +387,10 @@ export const claimHandlers = [
 
         if (!claim) {
           throw new Error('Claim was not created')
+        }
+
+        if (isMultiHerdsClaim) {
+          await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
 
         const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
