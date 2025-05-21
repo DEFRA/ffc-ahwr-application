@@ -226,16 +226,16 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, crea
 const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdated, claimReference, applicationReference }) => {
   const { herdId, herdVersion, herdName, species: herdSpecies, cph: herdCph, herdReasons } = herdData
 
-  await raiseHerdEvent({ 
-    sbi, 
-    message: 'Herd associated with claim', 
-    type: 'claim-herdAssociated', 
-    data: { 
-      herdId, 
-      herdVersion, 
-      reference: claimReference, 
-      applicationReference  
-    } 
+  await raiseHerdEvent({
+    sbi,
+    message: 'Herd associated with claim',
+    type: 'claim-herdAssociated',
+    data: {
+      herdId,
+      herdVersion,
+      reference: claimReference,
+      applicationReference
+    }
   })
 
   if (herdVersion === 1) {
