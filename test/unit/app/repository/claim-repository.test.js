@@ -16,7 +16,10 @@ import { livestockTypes } from '../../../../app/constants'
 import { Op, Sequelize } from 'sequelize'
 import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
 import { findApplication } from '../../../../app/repositories/application-repository.js'
-import { APPLICATION_STATUS_EVENT, SEND_SESSION_EVENT } from '../../../../app/event-publisher'
+import {
+  APPLICATION_STATUS_EVENT,
+  SEND_SESSION_EVENT
+} from '../../../../app/event-publisher'
 
 jest.mock('../../../../app/data', () => {
   return {
@@ -36,7 +39,11 @@ jest.mock('../../../../app/data', () => {
           findAll: jest.fn(),
           create: jest.fn()
         },
-        status: 'mock-status'
+        status: 'mock-status',
+        flag: 'mock-flag',
+        herd: {
+          findAll: jest.fn()
+        }
       },
       sequelize: {
         query: jest.fn()
@@ -58,6 +65,107 @@ jest.mock('ffc-ahwr-event-publisher', () => {
       }
     })
   }
+})
+
+describe('Claim repository: Search Claim', () => {
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  buildData.models.herd.findAll.mockResolvedValue([
+    {
+      dataValues: {
+        id: 'aaa111',
+        version: 1,
+        herdName: 'My first herd'
+      },
+      toJSON: () => ({
+        id: 'aaa111',
+        version: 1,
+        herdName: 'My first herd'
+      })
+    },
+    {
+      dataValues: {
+        id: 'aaa222',
+        version: 1,
+        herdName: 'My second herd'
+      },
+      toJSON: () => ({
+        id: 'aaa222',
+        version: 1,
+        herdName: 'My second herd'
+      })
+    }
+  ])
+
+  buildData.models.claim.findAll.mockResolvedValue([
+    {
+      dataValues: { data: { herdId: 'aaa111', herdVersion: 1 } },
+      toJSON: () => ({ data: { herdId: 'aaa111', herdVersion: 1 } })
+    },
+    {
+      dataValues: { data: { herdId: 'aaa222', herdVersion: 1 } },
+      toJSON: () => ({ data: { herdId: 'aaa222', herdVersion: 1 } })
+    }
+  ])
+
+  buildData.models.claim.count.mockResolvedValue(2)
+
+  test('it returns nothing if the search type doesnt match one of the allowed values', async () => {
+    const search = { type: 'incorrectValue' }
+    const filter = undefined
+    const offset = 10
+    const limit = 20
+    const sort = { field: 'createdAt', direction: 'DESC' }
+
+    expect(await searchClaims(search, filter, offset, limit, sort)).toEqual({
+      total: 0,
+      claims: []
+    })
+  })
+
+  test('it applies the filter to the query if provided', async () => {
+    const search = { type: 'appRef' }
+    const filter = { field: 'X', op: 'lte', value: 'Z' }
+    const offset = 10
+    const limit = 20
+    const sort = { field: 'createdAt', direction: 'DESC' }
+
+    const result = await searchClaims(search, filter, offset, limit, sort)
+
+    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
+      include: [
+        { attributes: ['status'], model: 'mock-status' },
+        { attributes: ['data'], model: { findAll: expect.anything() } },
+        {
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          model: 'mock-flag',
+          required: false,
+          where: { deletedBy: null }
+        }
+      ],
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+      where: { [filter.field]: expect.any(Object) }
+    })
+
+    expect(result).toEqual({
+      claims: [
+        {
+          data: { herdId: 'aaa111', herdVersion: 1 },
+          herd: { id: 'aaa111', version: 1, herdName: 'My first herd' }
+        },
+        {
+          data: { herdId: 'aaa222', herdVersion: 1 },
+          herd: { id: 'aaa222', version: 1, herdName: 'My second herd' }
+        }
+      ],
+      total: 2
+    })
+  })
 })
 
 describe('Claim repository test', () => {
@@ -113,7 +221,9 @@ describe('Claim repository test', () => {
     await setClaim(claimDataRequest)
 
     expect(buildData.models.claim.create).toHaveBeenCalledTimes(1)
-    expect(buildData.models.claim.create).toHaveBeenCalledWith(claimDataRequest)
+    expect(buildData.models.claim.create).toHaveBeenCalledWith(
+      claimDataRequest
+    )
   })
   test('Get all claims by application reference', async () => {
     const application = {
@@ -208,7 +318,8 @@ describe('Claim repository test', () => {
     when(buildData.sequelize.query).mockResolvedValue(claims)
 
     const result = await getByApplicationReference(
-      application.reference, undefined
+      application.reference,
+      undefined
     )
 
     expect(buildData.sequelize.query).toHaveBeenCalledTimes(1)
@@ -250,10 +361,15 @@ describe('Claim repository test', () => {
     buildData.sequelize.query.mockResolvedValueOnce([])
 
     const result = await getByApplicationReference(
-      application.reference, livestockTypes.beef
+      application.reference,
+      livestockTypes.beef
     )
 
-    expect(buildData.sequelize.query.mock.calls[0][0].replace(/\s+/g, ' ').trim()).toBe('SELECT claim.*, to_jsonb(herd) AS herd FROM claim LEFT JOIN herd ON claim.data->>\'herdId\' = herd.id::text AND herd."isCurrent" = true WHERE claim."applicationReference" = :applicationReference AND claim.data->>\'typeOfLivestock\' = :typeOfLivestock ORDER BY claim."createdAt" DESC')
+    expect(
+      buildData.sequelize.query.mock.calls[0][0].replace(/\s+/g, ' ').trim()
+    ).toBe(
+      'SELECT claim.*, to_jsonb(herd) AS herd FROM claim LEFT JOIN herd ON claim.data->>\'herdId\' = herd.id::text AND herd."isCurrent" = true WHERE claim."applicationReference" = :applicationReference AND claim.data->>\'typeOfLivestock\' = :typeOfLivestock ORDER BY claim."createdAt" DESC'
+    )
     expect(result).toEqual([])
   })
   test('Get claim by reference', async () => {
@@ -333,7 +449,10 @@ describe('Claim repository test', () => {
       }
     }
 
-    when(buildData.models.claim.update).mockResolvedValue([0, [{ dataValues: claim }]])
+    when(buildData.models.claim.update).mockResolvedValue([
+      0,
+      [{ dataValues: claim }]
+    ])
 
     const note = 'note'
     const logger = { setBindings: jest.fn() }
@@ -379,29 +498,99 @@ describe('Claim repository test', () => {
   })
 
   test.each([
-    { urnNumber: '123456', applications: [], claims: [], response: { isURNUnique: true } },
+    {
+      urnNumber: '123456',
+      applications: [],
+      claims: [],
+      response: { isURNUnique: true }
+    },
 
-    { urnNumber: '123456', applications: [{ dataValues: { data: { urnResult: '123456' } } }], claims: [], response: { isURNUnique: false } },
-    { urnNumber: '123456', applications: [{ dataValues: { data: { urnResult: '654321' } } }], claims: [], response: { isURNUnique: true } },
-    { urnNumber: 'urn123', applications: [{ dataValues: { data: { urnResult: 'urn123' } } }], claims: [], response: { isURNUnique: false } },
-    { urnNumber: 'URN123', applications: [{ dataValues: { data: { urnResult: 'urn123' } } }], claims: [], response: { isURNUnique: false } },
-    { urnNumber: 'urn123', applications: [{ dataValues: { data: { urnResult: 'URN123' } } }], claims: [], response: { isURNUnique: false } },
-    { urnNumber: 'urn123', applications: [{ dataValues: { data: { urnResult: 'URN1234' } } }], claims: [], response: { isURNUnique: true } },
+    {
+      urnNumber: '123456',
+      applications: [{ dataValues: { data: { urnResult: '123456' } } }],
+      claims: [],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: '123456',
+      applications: [{ dataValues: { data: { urnResult: '654321' } } }],
+      claims: [],
+      response: { isURNUnique: true }
+    },
+    {
+      urnNumber: 'urn123',
+      applications: [{ dataValues: { data: { urnResult: 'urn123' } } }],
+      claims: [],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: 'URN123',
+      applications: [{ dataValues: { data: { urnResult: 'urn123' } } }],
+      claims: [],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: 'urn123',
+      applications: [{ dataValues: { data: { urnResult: 'URN123' } } }],
+      claims: [],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: 'urn123',
+      applications: [{ dataValues: { data: { urnResult: 'URN1234' } } }],
+      claims: [],
+      response: { isURNUnique: true }
+    },
 
-    { urnNumber: '123456', applications: [], claims: [{ dataValues: { data: { laboratoryURN: '123456' } } }], response: { isURNUnique: false } },
-    { urnNumber: '123456', applications: [], claims: [{ dataValues: { data: { laboratoryURN: '654321' } } }], response: { isURNUnique: true } },
-    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }], response: { isURNUnique: false } },
-    { urnNumber: 'URN123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }], response: { isURNUnique: false } },
-    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN123' } } }], response: { isURNUnique: false } },
-    { urnNumber: 'urn123', applications: [], claims: [{ dataValues: { data: { laboratoryURN: 'URN1234' } } }], response: { isURNUnique: true } }
-  ])('check if URN is unique for all previous claims made by same SBI', async ({ urnNumber, applications, claims, response }) => {
-    when(buildData.models.application.findAll).mockResolvedValue(applications)
-    when(buildData.models.claim.findAll).mockResolvedValue(claims)
+    {
+      urnNumber: '123456',
+      applications: [],
+      claims: [{ dataValues: { data: { laboratoryURN: '123456' } } }],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: '123456',
+      applications: [],
+      claims: [{ dataValues: { data: { laboratoryURN: '654321' } } }],
+      response: { isURNUnique: true }
+    },
+    {
+      urnNumber: 'urn123',
+      applications: [],
+      claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: 'URN123',
+      applications: [],
+      claims: [{ dataValues: { data: { laboratoryURN: 'urn123' } } }],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: 'urn123',
+      applications: [],
+      claims: [{ dataValues: { data: { laboratoryURN: 'URN123' } } }],
+      response: { isURNUnique: false }
+    },
+    {
+      urnNumber: 'urn123',
+      applications: [],
+      claims: [{ dataValues: { data: { laboratoryURN: 'URN1234' } } }],
+      response: { isURNUnique: true }
+    }
+  ])(
+    'check if URN is unique for all previous claims made by same SBI',
+    async ({ urnNumber, applications, claims, response }) => {
+      when(buildData.models.application.findAll).mockResolvedValue(
+        applications
+      )
+      when(buildData.models.claim.findAll).mockResolvedValue(claims)
 
-    const result = await isURNNumberUnique('sbi', urnNumber)
+      const result = await isURNNumberUnique('sbi', urnNumber)
 
-    expect(result).toEqual(response)
-  })
+      expect(result).toEqual(response)
+    }
+  )
 
   describe('updateByReference function', () => {
     const mockData = {
@@ -419,7 +608,15 @@ describe('Claim repository test', () => {
     test('should update an application by reference successfully', async () => {
       const updateResult = [
         1,
-        [{ dataValues: { ...mockData, updatedAt: new Date(), updatedBy: 'admin' } }]
+        [
+          {
+            dataValues: {
+              ...mockData,
+              updatedAt: new Date(),
+              updatedBy: 'admin'
+            }
+          }
+        ]
       ]
 
       buildData.models.claim.update.mockResolvedValue(updateResult)
@@ -440,7 +637,9 @@ describe('Claim repository test', () => {
       buildData.models.claim.update.mockRejectedValueOnce('Update failed')
       const logger = { setBindings: jest.fn() }
       const note = null
-      await expect(updateClaimByReference(mockData, note, logger)).rejects.toBe('Update failed')
+      await expect(updateClaimByReference(mockData, note, logger)).rejects.toBe(
+        'Update failed'
+      )
       expect(MOCK_SEND_EVENTS).not.toHaveBeenCalled()
     })
   })
@@ -462,7 +661,8 @@ describe('Claim repository test', () => {
               reference
             },
             returning: true
-          })
+          }
+        )
         .mockResolvedValue([
           1,
           [
@@ -486,11 +686,15 @@ describe('Claim repository test', () => {
 
       const note = 'admin override'
       const logger = { setBindings: jest.fn() }
-      await updateClaimByReference({
-        reference,
-        statusId: 3,
-        updatedBy: 'admin'
-      }, note, logger)
+      await updateClaimByReference(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
+        },
+        note,
+        logger
+      )
 
       expect(buildData.models.claim.update).toHaveBeenCalledTimes(1)
       expect(buildData.models.claim.update).toHaveBeenCalledWith(
@@ -507,46 +711,49 @@ describe('Claim repository test', () => {
         }
       )
       expect(MOCK_SEND_EVENTS).toHaveBeenCalledTimes(1)
-      expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(1, [{
-        name: APPLICATION_STATUS_EVENT,
-        properties: {
-          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-          sbi: 'none',
-          cph: 'n/a',
-          checkpoint: 'cloud_role',
-          status: 'success',
-          action: {
-            type: 'status-updated',
-            message: 'Claim has been updated',
-            data: {
-              reference,
-              statusId: 3,
-              note
-            },
-            raisedBy: 'admin',
-            raisedOn: mockNow.toISOString()
+      expect(MOCK_SEND_EVENTS).toHaveBeenNthCalledWith(1, [
+        {
+          name: APPLICATION_STATUS_EVENT,
+          properties: {
+            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+            sbi: 'none',
+            cph: 'n/a',
+            checkpoint: 'cloud_role',
+            status: 'success',
+            action: {
+              type: 'status-updated',
+              message: 'Claim has been updated',
+              data: {
+                reference,
+                statusId: 3,
+                note
+              },
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
+            }
+          }
+        },
+        {
+          name: SEND_SESSION_EVENT,
+          properties: {
+            id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+            sbi: 'none',
+            cph: 'n/a',
+            checkpoint: 'cloud_role',
+            status: 'success',
+            action: {
+              type: 'application:status-updated:3',
+              message: 'Claim has been updated',
+              data: {
+                reference,
+                statusId: 3
+              },
+              raisedBy: 'admin',
+              raisedOn: mockNow.toISOString()
+            }
           }
         }
-      }, {
-        name: SEND_SESSION_EVENT,
-        properties: {
-          id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
-          sbi: 'none',
-          cph: 'n/a',
-          checkpoint: 'cloud_role',
-          status: 'success',
-          action: {
-            type: 'application:status-updated:3',
-            message: 'Claim has been updated',
-            data: {
-              reference,
-              statusId: 3
-            },
-            raisedBy: 'admin',
-            raisedOn: mockNow.toISOString()
-          }
-        }
-      }])
+      ])
     })
 
     test('Update status of a claim which is holding same status', async () => {
@@ -566,11 +773,15 @@ describe('Claim repository test', () => {
 
       const note = null
       const logger = { setBindings: jest.fn() }
-      await updateClaimByReference({
-        reference,
-        statusId: 3,
-        updatedBy: 'admin'
-      }, note, logger)
+      await updateClaimByReference(
+        {
+          reference,
+          statusId: 3,
+          updatedBy: 'admin'
+        },
+        note,
+        logger
+      )
 
       expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
     })
@@ -591,16 +802,23 @@ describe('Claim repository test', () => {
               reference
             },
             returning: true
-          })
+          }
+        )
         .mockRejectedValue('Something failed')
 
       const note = null
       const logger = { setBindings: jest.fn() }
-      await expect(updateClaimByReference({
-        reference,
-        statusId: 3,
-        updatedBy: 'admin'
-      }, note, logger)).rejects.toBe('Something failed')
+      await expect(
+        updateClaimByReference(
+          {
+            reference,
+            statusId: 3,
+            updatedBy: 'admin'
+          },
+          note,
+          logger
+        )
+      ).rejects.toBe('Something failed')
     })
   })
 
@@ -630,132 +848,186 @@ describe('Claim repository test', () => {
       MOCK_SEND_EVENTS.mockResolvedValueOnce(null)
     })
 
-    function expectDbUpdateCalls (propertyUpdated, oldValue, newValue, newValueIsDate = false) {
-      expect(buildData.models.claim.update).toHaveBeenCalledWith({
-        data: Sequelize.fn(
-          'jsonb_set',
-          Sequelize.col('data'),
-          Sequelize.literal(`'{${propertyUpdated}}'`),
-          Sequelize.literal(`'"${newValueIsDate ? newValue.toISOString() : newValue}"'`)
-        )
-      }, {
-        where: { reference: 'REF-UPDATE' },
-        returning: true
-      })
-      expect(buildData.models.claim_update_history.create).toHaveBeenCalledWith({
-        applicationReference: 'REF-UPDATE',
-        reference: 'REF-UPDATE',
-        createdBy: 'Admin',
-        eventType: `claim-${propertyUpdated}`,
-        updatedProperty: propertyUpdated,
-        oldValue,
-        newValue,
-        note: 'note here'
-      })
+    function expectDbUpdateCalls (
+      propertyUpdated,
+      oldValue,
+      newValue,
+      newValueIsDate = false
+    ) {
+      expect(buildData.models.claim.update).toHaveBeenCalledWith(
+        {
+          data: Sequelize.fn(
+            'jsonb_set',
+            Sequelize.col('data'),
+            Sequelize.literal(`'{${propertyUpdated}}'`),
+            Sequelize.literal(
+              `'"${newValueIsDate ? newValue.toISOString() : newValue}"'`
+            )
+          )
+        },
+        {
+          where: { reference: 'REF-UPDATE' },
+          returning: true
+        }
+      )
+      expect(buildData.models.claim_update_history.create).toHaveBeenCalledWith(
+        {
+          applicationReference: 'REF-UPDATE',
+          reference: 'REF-UPDATE',
+          createdBy: 'Admin',
+          eventType: `claim-${propertyUpdated}`,
+          updatedProperty: propertyUpdated,
+          oldValue,
+          newValue,
+          note: 'note here'
+        }
+      )
     }
-    function expectDataEventCall (propertyUpdated, eventType, oldValue, newValue) {
-      expect(claimDataUpdateEvent).toHaveBeenCalledWith({
-        applicationReference: 'REF-UPDATE',
-        reference: 'REF-UPDATE',
-        updatedProperty: propertyUpdated,
-        oldValue,
-        newValue,
-        note: 'note here'
-      }, eventType, 'Admin', expect.any(Date), '123456789')
+    function expectDataEventCall (
+      propertyUpdated,
+      eventType,
+      oldValue,
+      newValue
+    ) {
+      expect(claimDataUpdateEvent).toHaveBeenCalledWith(
+        {
+          applicationReference: 'REF-UPDATE',
+          reference: 'REF-UPDATE',
+          updatedProperty: propertyUpdated,
+          oldValue,
+          newValue,
+          note: 'note here'
+        },
+        eventType,
+        'Admin',
+        expect.any(Date),
+        '123456789'
+      )
     }
     test('should update vetsName claim data successfully', async () => {
-      await updateClaimData('REF-UPDATE', 'vetsName', 'Geoff', 'Bill', 'note here', 'Admin')
+      await updateClaimData(
+        'REF-UPDATE',
+        'vetsName',
+        'Geoff',
+        'Bill',
+        'note here',
+        'Admin'
+      )
 
       expectDbUpdateCalls('vetsName', 'Bill', 'Geoff')
       expectDataEventCall('vetsName', 'claim-vetName', 'Bill', 'Geoff')
     })
     test('should update vetsRcvs claim data successfully', async () => {
-      await updateClaimData('REF-UPDATE', 'vetRCVSNumber', '7654321', '1234567', 'note here', 'Admin')
+      await updateClaimData(
+        'REF-UPDATE',
+        'vetRCVSNumber',
+        '7654321',
+        '1234567',
+        'note here',
+        'Admin'
+      )
 
       expectDbUpdateCalls('vetRCVSNumber', '1234567', '7654321')
-      expectDataEventCall('vetRCVSNumber', 'claim-vetRcvs', '1234567', '7654321')
+      expectDataEventCall(
+        'vetRCVSNumber',
+        'claim-vetRcvs',
+        '1234567',
+        '7654321'
+      )
     })
     test('should update visitDate claim data successfully', async () => {
       const oldDate = new Date('2024-01-01T00:00:00.000Z')
       const newDate = new Date()
 
-      await updateClaimData('REF-UPDATE', 'dateOfVisit', newDate, oldDate, 'note here', 'Admin')
+      await updateClaimData(
+        'REF-UPDATE',
+        'dateOfVisit',
+        newDate,
+        oldDate,
+        'note here',
+        'Admin'
+      )
 
       expectDbUpdateCalls('dateOfVisit', oldDate, newDate, true)
       expectDataEventCall('dateOfVisit', 'claim-visitDate', oldDate, newDate)
     })
     test('unknown potential other claim data successfully', async () => {
-      await updateClaimData('REF-UPDATE', 'testResults', 'positive', 'negative', 'note here', 'Admin')
+      await updateClaimData(
+        'REF-UPDATE',
+        'testResults',
+        'positive',
+        'negative',
+        'note here',
+        'Admin'
+      )
 
       expectDbUpdateCalls('testResults', 'negative', 'positive')
-      expectDataEventCall('testResults', 'claim-testResults', 'negative', 'positive')
+      expectDataEventCall(
+        'testResults',
+        'claim-testResults',
+        'negative',
+        'positive'
+      )
     })
   })
 
   describe('addHerdToClaimData', () => {
     test('should update vetsName claim data successfully', async () => {
-      await addHerdToClaimData('fake-reference', 'fake-herdId', 1, 'fake-herdAssociatedAt', 'fake-user')
+      await addHerdToClaimData(
+        'fake-reference',
+        'fake-herdId',
+        1,
+        'fake-herdAssociatedAt',
+        'fake-user'
+      )
 
-      expect(buildData.models.claim.update).toHaveBeenCalledWith({
-        data: Sequelize.fn(
-          'jsonb_set',
-          Sequelize.fn(
+      expect(buildData.models.claim.update).toHaveBeenCalledWith(
+        {
+          data: Sequelize.fn(
             'jsonb_set',
             Sequelize.fn(
               'jsonb_set',
-              Sequelize.col('data'),
-              Sequelize.literal('\'{herdId}\''),
-              Sequelize.literal("'\"fake-herdId\"'")
+              Sequelize.fn(
+                'jsonb_set',
+                Sequelize.col('data'),
+                Sequelize.literal("'{herdId}'"),
+                Sequelize.literal("'\"fake-herdId\"'")
+              ),
+              Sequelize.literal("'{herdVersion}'"),
+              Sequelize.literal("'1'")
             ),
-            Sequelize.literal('\'{herdVersion}\''),
-            Sequelize.literal("'1'")
+            Sequelize.literal("'{herdAssociatedAt}'"),
+            Sequelize.literal("'\"fake-herdAssociatedAt\"'")
           ),
-          Sequelize.literal('\'{herdAssociatedAt}\''),
-          Sequelize.literal("'\"fake-herdAssociatedAt\"'")
-        ),
-        updatedBy: 'fake-user'
-      }, {
-        where: { reference: 'fake-reference' },
-        returning: true
-      })
-    })
-  })
-
-  describe('Search Claim', () => {
-    test.each([
-      { searchText: 'AHWR-7C72-8871', searchType: 'ref', sort: { field: 'claim number', direction: undefined } },
-      { searchText: 'AHWR-7C72-8871', searchType: 'ref', sort: { field: 'claim number', direction: 'DESC' } },
-      { searchText: '12/07/2024', searchType: 'date', sort: { field: 'claim date', direction: undefined } },
-      { searchText: '12/07/2024', searchType: 'date', sort: { field: 'claim date', direction: 'DESC' } },
-      { searchText: 'R', searchType: 'type', sort: { field: 'type of visit', direction: undefined } },
-      { searchText: 'R', searchType: 'type', sort: { field: 'type of visit', direction: 'DESC' } },
-      { searchText: 'Sheep', searchType: 'species', sort: { field: 'species', direction: undefined } },
-      { searchText: 'Sheep', searchType: 'species', sort: { field: 'species', direction: 'DESC' } },
-      { searchText: 'Agreed', searchType: 'status', sort: { field: 'status', direction: undefined } },
-      { searchText: 'Agreed', searchType: 'status', sort: { field: 'status', direction: 'DESC' } },
-      { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: undefined } },
-      { searchText: '113494460', searchType: 'sbi', sort: { field: 'sbi', direction: 'DECS' } },
-      { searchText: '113494460', searchType: 'sbi', sort: undefined },
-      { searchText: 'AHWR-TEST-TEST', searchType: 'appRef' },
-      { searchType: 'adsdf' },
-      { searchText: 'dfdf', searchType: 'adsdf', sort: undefined }
-    ])('Search claim by search text $searchText, search type $searchType ', async ({ searchText, searchType, sort }) => {
-      const callTimes = searchType !== 'adsdf' ? 1 : 0
-      when(buildData.models.claim.count).mockResolvedValue(2)
-      when(buildData.models.claim.findAll).mockResolvedValue(['claims1', 'claims2'])
-      const search = {
-        text: searchText,
-        type: searchType
-      }
-      const filter = searchType === 'status' ? {} : undefined
-      await searchClaims(search, filter, undefined, undefined, sort)
-
-      expect(buildData.models.claim.count).toHaveBeenCalledTimes(callTimes)
-      expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(callTimes)
+          updatedBy: 'fake-user'
+        },
+        {
+          where: { reference: 'fake-reference' },
+          returning: true
+        }
+      )
     })
   })
 
   test('adds filter to query', async () => {
+    buildData.models.herd.findAll.mockResolvedValue([
+      {
+        dataValues: {
+          id: 'aaa111',
+          version: 1
+        },
+        toJSON: () => ({
+          id: 'aaa111',
+          version: 1
+        })
+      }
+    ])
+    when(buildData.models.claim.findAll).mockResolvedValue([
+      {
+        dataValues: { data: { herdId: 'aaa111', herdVersion: 1 } },
+        toJSON: () => ({ data: { herdId: 'aaa111', herdVersion: 1 } })
+      }
+    ])
     const search = {
       text: 'ON HOLD',
       type: 'status'
@@ -770,33 +1042,35 @@ describe('Claim repository test', () => {
     await searchClaims(search, filter, offset, limit)
 
     const expected = {
-      include: [{
-        attributes: ['data'],
-        model: {
-          findAll: expect.any(Function)
-        }
-      }, {
-        attributes: ['status'],
-        model: 'mock-status',
-        where: {
-          status: {
-            [Op.iLike]: '%ON HOLD%'
+      include: [
+        {
+          attributes: ['data'],
+          model: {
+            findAll: expect.any(Function)
           }
-        }
-      },
-      {
-        as: 'flags',
-        attributes: ['appliesToMh'],
-        where: {
-          deletedBy: null
         },
-        required: false
-      }],
+        {
+          attributes: ['status'],
+          model: 'mock-status',
+          where: {
+            status: {
+              [Op.iLike]: '%ON HOLD%'
+            }
+          }
+        },
+        {
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          where: {
+            deletedBy: null
+          },
+          required: false,
+          model: 'mock-flag'
+        }
+      ],
       offset,
       limit,
-      order: [
-        ['createdAt', 'DESC']
-      ],
+      order: [['createdAt', 'DESC']],
       where: {
         updatedAt: {
           [Op.lte]: '2025-01-16'
@@ -804,14 +1078,22 @@ describe('Claim repository test', () => {
       }
     }
 
-    expect(buildData.models.claim.findAll.mock.calls).toEqual([
-      [expected]
-    ])
+    expect(buildData.models.claim.findAll.mock.calls).toEqual([[expected]])
   })
 
   test('findAllClaimUpdateHistory calls through to findAll', async () => {
-    const aClaimHistory = [{ reference: 'some-claim', applicationReference: 'some-app', updatedProperty: 'vetsName', newValue: 'Ken', oldValue: 'Tim' }]
-    when(buildData.models.claim_update_history.findAll).mockResolvedValue(aClaimHistory)
+    const aClaimHistory = [
+      {
+        reference: 'some-claim',
+        applicationReference: 'some-app',
+        updatedProperty: 'vetsName',
+        newValue: 'Ken',
+        oldValue: 'Tim'
+      }
+    ]
+    when(buildData.models.claim_update_history.findAll).mockResolvedValue(
+      aClaimHistory
+    )
 
     const result = await findAllClaimUpdateHistory('some-claim')
 
