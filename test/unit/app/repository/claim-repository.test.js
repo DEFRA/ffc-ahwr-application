@@ -166,6 +166,174 @@ describe('Claim repository: Search Claim', () => {
       total: 2
     })
   })
+
+  test('it applies the search for appRef if provided', async () => {
+    const search = { type: 'appRef', text: 'IAHW-1111-2222' }
+    const filter = { field: 'X', op: 'lte', value: 'Z' }
+    const offset = 10
+    const limit = 20
+    const sort = { field: 'createdAt', direction: 'DESC' }
+
+    const result = await searchClaims(search, filter, offset, limit, sort)
+
+    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
+      include: [
+        { attributes: ['status'], model: 'mock-status' },
+        { attributes: ['data'], model: { findAll: expect.anything() } },
+        {
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          model: 'mock-flag',
+          required: false,
+          where: { deletedBy: null }
+        }
+      ],
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+      where: { [filter.field]: expect.any(Object), applicationReference: search.text }
+    })
+
+    expect(result).toEqual({
+      claims: [
+        {
+          data: { herdId: 'aaa111', herdVersion: 1 },
+          herd: { id: 'aaa111', version: 1, herdName: 'My first herd' }
+        },
+        {
+          data: { herdId: 'aaa222', herdVersion: 1 },
+          herd: { id: 'aaa222', version: 1, herdName: 'My second herd' }
+        }
+      ],
+      total: 2
+    })
+  })
+
+  test('it applies the search for species if provided', async () => {
+    const search = { type: 'species', text: 'sheep' }
+    const filter = { field: 'X', op: 'lte', value: 'Z' }
+    const offset = 10
+    const limit = 20
+    const sort = { field: 'createdAt', direction: 'DESC' }
+
+    const result = await searchClaims(search, filter, offset, limit, sort)
+
+    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
+      include: [
+        { attributes: ['status'], model: 'mock-status' },
+        { attributes: ['data'], model: { findAll: expect.anything() } },
+        {
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          model: 'mock-flag',
+          required: false,
+          where: { deletedBy: null }
+        }
+      ],
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+      where: { [filter.field]: expect.any(Object), 'data.typeOfLivestock': search.text }
+    })
+
+    expect(result).toEqual({
+      claims: [
+        {
+          data: { herdId: 'aaa111', herdVersion: 1 },
+          herd: { id: 'aaa111', version: 1, herdName: 'My first herd' }
+        },
+        {
+          data: { herdId: 'aaa222', herdVersion: 1 },
+          herd: { id: 'aaa222', version: 1, herdName: 'My second herd' }
+        }
+      ],
+      total: 2
+    })
+  })
+
+  test('it applies the search for type if provided', async () => {
+    const search = { type: 'type', text: 'R' }
+    const filter = { field: 'X', op: 'lte', value: 'Z' }
+    const offset = 10
+    const limit = 20
+    const sort = { field: 'createdAt', direction: 'DESC' }
+
+    const result = await searchClaims(search, filter, offset, limit, sort)
+
+    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
+      include: [
+        { attributes: ['status'], model: 'mock-status' },
+        { attributes: ['data'], model: { findAll: expect.anything() } },
+        {
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          model: 'mock-flag',
+          required: false,
+          where: { deletedBy: null }
+        }
+      ],
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+      where: { [filter.field]: expect.any(Object), type: search.text }
+    })
+
+    expect(result).toEqual({
+      claims: [
+        {
+          data: { herdId: 'aaa111', herdVersion: 1 },
+          herd: { id: 'aaa111', version: 1, herdName: 'My first herd' }
+        },
+        {
+          data: { herdId: 'aaa222', herdVersion: 1 },
+          herd: { id: 'aaa222', version: 1, herdName: 'My second herd' }
+        }
+      ],
+      total: 2
+    })
+  })
+
+  test('it applies the search for type if provided', async () => {
+    const search = { type: 'sbi', text: '121334432' }
+    const filter = { field: 'X', op: 'lte', value: 'Z' }
+    const offset = 10
+    const limit = 20
+    const sort = { field: 'createdAt', direction: 'DESC' }
+
+    const result = await searchClaims(search, filter, offset, limit, sort)
+
+    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
+      include: [
+        { attributes: ['status'], model: 'mock-status' },
+        { attributes: ['data'], model: { findAll: expect.anything() }, where: { 'data.organisation.sbi': search.text } },
+        {
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          model: 'mock-flag',
+          required: false,
+          where: { deletedBy: null }
+        }
+      ],
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+      where: { [filter.field]: expect.any(Object) }
+    })
+
+    expect(result).toEqual({
+      claims: [
+        {
+          data: { herdId: 'aaa111', herdVersion: 1 },
+          herd: { id: 'aaa111', version: 1, herdName: 'My first herd' }
+        },
+        {
+          data: { herdId: 'aaa222', herdVersion: 1 },
+          herd: { id: 'aaa222', version: 1, herdName: 'My second herd' }
+        }
+      ],
+      total: 2
+    })
+  })
 })
 
 describe('Claim repository test', () => {
