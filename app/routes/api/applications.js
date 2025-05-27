@@ -366,7 +366,8 @@ export const applicationHandlers = [
           herdVersion: herd.version,
           herdName: herd.herdName,
           cph: herd.cph,
-          herdReasons: herd.herdReasons
+          herdReasons: herd.herdReasons,
+          species: herd.species
         }))).code(HttpStatus.OK)
       }
     }

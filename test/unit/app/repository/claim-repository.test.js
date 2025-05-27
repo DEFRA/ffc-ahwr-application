@@ -622,12 +622,12 @@ describe('Claim repository test', () => {
           }
         ]
       })
-      .mockResolvedValue(claim)
+      .mockResolvedValue({ dataValues: claim })
 
     const result = await getClaimByReference(claim.reference)
 
     expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
-    expect(claim).toEqual(result)
+    expect({ dataValues: claim }).toEqual(result)
   })
   test('Update claim by reference', async () => {
     const claim = {

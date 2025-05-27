@@ -7,8 +7,8 @@ import { findApplication } from './application-repository.js'
 
 const { models, sequelize } = buildData
 
-export const getClaimByReference = (reference) => {
-  return models.claim.findOne({
+export const getClaimByReference = async (reference) => {
+  const claim = await models.claim.findOne({
     where: { reference: reference.toUpperCase() },
     include: [
       {
@@ -17,6 +17,27 @@ export const getClaimByReference = (reference) => {
       }
     ]
   })
+
+  const { herdId, herdVersion } = claim.dataValues.data || {}
+
+  if (herdId && herdVersion) {
+    const herd = await models.herd.findOne({
+      where: {
+        id: herdId,
+        version: herdVersion
+      }
+    })
+
+    return {
+      ...claim,
+      dataValues: {
+        ...claim.dataValues,
+        herd: herd.dataValues
+      }
+    }
+  }
+
+  return claim
 }
 
 export const getByApplicationReference = async (applicationReference, typeOfLivestock) => {
