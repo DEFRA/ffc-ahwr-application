@@ -249,9 +249,55 @@ export const searchClaims = async (search, filter, offset, limit, sort = { field
     }
   }
 
+  const claims = await models.claim.findAll({
+    ...query,
+    order: [evalSortField(sort)],
+    limit,
+    offset
+  })
+
+  const total = await models.claim.count(query)
+
+  const herdKeys = claims
+    .map((claim) => {
+      const { herdId, herdVersion } = claim.dataValues.data || {}
+      return herdId && herdVersion ? `${herdId}::${herdVersion}` : null
+    })
+    .filter(Boolean)
+
+  const uniqueKeys = [...new Set(herdKeys)]
+
+  const herdWhere = {
+    [Op.or]: uniqueKeys.map((key) => {
+      const [id, version] = key.split('::')
+
+      return {
+        id,
+        version
+      }
+    })
+  }
+
+  const herds = await models.herd.findAll({ where: herdWhere })
+
+  const herdMap = new Map(
+    herds.map((herd) => [`${herd.dataValues.id}::${herd.dataValues.version}`, herd.toJSON()])
+  )
+
+  const claimsWithHerd = claims.map((claim) => {
+    const { herdId, herdVersion } = claim.dataValues.data || {}
+    const herdKey = `${herdId}::${herdVersion}`
+    const herd = herdMap.get(herdKey)
+
+    return {
+      ...claim.toJSON(),
+      herd
+    }
+  })
+
   return {
-    total: await models.claim.count(query),
-    claims: await models.claim.findAll({ ...query, order: [evalSortField(sort)], limit, offset })
+    total,
+    claims: claimsWithHerd
   }
 }
 
