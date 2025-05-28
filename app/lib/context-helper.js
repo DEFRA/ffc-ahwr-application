@@ -20,6 +20,5 @@ export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
     return false
   }
 
-  console.log('BH TEST.. isMultipleHerdsUserJourney=true')
   return true
 }
