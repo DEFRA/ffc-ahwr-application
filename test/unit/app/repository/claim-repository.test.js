@@ -42,7 +42,8 @@ jest.mock('../../../../app/data', () => {
         status: 'mock-status',
         flag: 'mock-flag',
         herd: {
-          findAll: jest.fn()
+          findAll: jest.fn(),
+          findOne: jest.fn()
         }
       },
       sequelize: {
@@ -627,7 +628,72 @@ describe('Claim repository test', () => {
     const result = await getClaimByReference(claim.reference)
 
     expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
-    expect({ dataValues: claim }).toEqual(result)
+    expect(buildData.models.herd.findOne).toHaveBeenCalledTimes(0)
+    expect(result).toEqual({ dataValues: claim })
+  })
+
+  test('Get claim by reference when herd information is found', async () => {
+    const claim = {
+      id: '5602bac6-0812-42b6-bfb0-35f7ed2fd16c',
+      reference: 'AHWR-5602-BAC6',
+      applicationReference: 'AHWR-0AD3-3322',
+      data: {
+        vetsName: 'vetsName',
+        dateOfVisit: '2024-02-01T07:24:29.224Z',
+        testResults: 'testResult',
+        typeOfReview: 'typeOfReview',
+        dateOfTesting: '2024-02-01T07:24:29.224Z',
+        laboratoryURN: '12345566',
+        vetRCVSNumber: '12345',
+        detailsCorrect: 'yes',
+        typeOfLivestock: 'sheep',
+        numberAnimalsTested: '12',
+        numberOfOralFluidSamples: '23',
+        minimumNumberAnimalsRequired: '20',
+        herdId: 'something',
+        herdVersion: 1
+      },
+      statusId: 11,
+      type: 'R',
+      createdAt: '2024-02-01T07:24:29.224Z',
+      updatedAt: '2024-02-01T08:02:30.356Z',
+      createdBy: 'admin',
+      updatedBy: null,
+      status: {
+        status: 'ON HOLD'
+      }
+    }
+
+    const herd = {
+      id: '749908bc-072c-462b-a004-79bff170cbba',
+      version: 1,
+      herdName: 'Fattening herd',
+      cph: '22/333/4444',
+      herdReasons: ['onlyHerd'],
+      species: 'pigs'
+    }
+
+    buildData.models.herd.findOne.mockResolvedValue({
+      dataValues: herd
+    })
+
+    when(buildData.models.claim.findOne)
+      .calledWith({
+        where: { reference: claim.reference.toUpperCase() },
+        include: [
+          {
+            model: buildData.models.status,
+            attributes: ['status']
+          }
+        ]
+      })
+      .mockResolvedValue({ dataValues: claim })
+
+    const result = await getClaimByReference(claim.reference)
+
+    expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
+    expect(buildData.models.herd.findOne).toHaveBeenCalledTimes(1)
+    expect(result).toEqual({ dataValues: { ...claim, herd } })
   })
   test('Update claim by reference', async () => {
     const claim = {
