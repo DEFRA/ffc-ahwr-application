@@ -613,22 +613,11 @@ describe('Claim repository test', () => {
       }
     }
 
-    when(buildData.models.claim.findOne)
-      .calledWith({
-        where: { reference: claim.reference.toUpperCase() },
-        include: [
-          {
-            model: buildData.models.status,
-            attributes: ['status']
-          }
-        ]
-      })
-      .mockResolvedValue({ dataValues: claim })
+    when(buildData.sequelize.query).mockResolvedValue([claim])
 
     const result = await getClaimByReference(claim.reference)
 
-    expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
-    expect(buildData.models.herd.findOne).toHaveBeenCalledTimes(0)
+    expect(buildData.sequelize.query).toHaveBeenCalledTimes(1)
     expect(result).toEqual({ dataValues: claim })
   })
 
@@ -673,26 +662,11 @@ describe('Claim repository test', () => {
       species: 'pigs'
     }
 
-    buildData.models.herd.findOne.mockResolvedValue({
-      dataValues: herd
-    })
-
-    when(buildData.models.claim.findOne)
-      .calledWith({
-        where: { reference: claim.reference.toUpperCase() },
-        include: [
-          {
-            model: buildData.models.status,
-            attributes: ['status']
-          }
-        ]
-      })
-      .mockResolvedValue({ dataValues: claim })
+    when(buildData.sequelize.query).mockResolvedValue([{ ...claim, herd }])
 
     const result = await getClaimByReference(claim.reference)
 
-    expect(buildData.models.claim.findOne).toHaveBeenCalledTimes(1)
-    expect(buildData.models.herd.findOne).toHaveBeenCalledTimes(1)
+    expect(buildData.sequelize.query).toHaveBeenCalledTimes(1)
     expect(result).toEqual({ dataValues: { ...claim, herd } })
   })
   test('Update claim by reference', async () => {
