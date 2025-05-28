@@ -19,7 +19,6 @@ export const getClaimByReference = async (reference) => {
       ON claim.data->>'herdId' = herd.id::text
       AND (claim.data->>'herdVersion')::int = herd.version
       AND claim."applicationReference" = herd."applicationReference"
-      AND herd."isCurrent" = true
     LEFT JOIN status
       ON claim."statusId" = status."statusId"
     WHERE claim."reference" = :reference
