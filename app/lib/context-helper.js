@@ -16,7 +16,7 @@ export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
   }
 
   // only check for rejected T&Cs flag if MH enabled and visit date on/after golive
-  if (agreementFlags && agreementFlags.some(f => f.appliesToMh)) {
+  if (agreementFlags?.some(f => f.appliesToMh)) {
     return false
   }
 
