@@ -1,7 +1,20 @@
 import { queryEntitiesByPartitionKey } from './query-entities.js'
 import { odata } from '@azure/data-tables'
+import { config } from '../config/index.js'
+import { getHistoryByReference } from '../repositories/status-history-repository.js'
 
 export const getApplicationHistory = async (reference) => {
+  const { enabled: dbHistory } = config.storeHistoryInDb
+  if (dbHistory) {
+    // If the database history is enabled, fetch the history from the database.
+    const history = await getHistoryByReference(reference)
+    return history.map(item => ({
+      Payload: JSON.stringify({
+        ...item.dataValues
+      })
+    }))
+  }
+
   return queryEntitiesByPartitionKey(
     'ffcahwrapplicationstatus',
     reference,
