@@ -501,6 +501,31 @@ describe('Post claim test', () => {
       }
     }
 
+    const applicationRef = 'IAHW-0AD3-3322'
+    getApplication.mockResolvedValueOnce({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: applicationRef,
+        applicationReference: applicationRef,
+        data: {
+          organisation: {
+            email: 'test@test-unit.com',
+            farmerName: 'farmerName',
+            name: 'orgName',
+            orgEmail: 'test@test-unit.org',
+            crn: '1100014934',
+            sbi: '106705779'
+          }
+        },
+        statusId: 1,
+        type: 'E',
+        createdBy: 'admin'
+      }
+    })
+
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(400)

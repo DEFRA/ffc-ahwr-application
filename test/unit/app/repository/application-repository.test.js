@@ -15,11 +15,13 @@ import { buildData } from '../../../../app/data'
 import { Op, Sequelize } from 'sequelize'
 import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
 import { SEND_SESSION_EVENT } from '../../../../app/event-publisher'
+import { getFlagsForApplication } from '../../../../app/repositories/flag-repository.js'
 
 const { models } = buildData
 
 jest.mock('../../../../app/data')
 jest.mock('../../../../app/event-publisher/claim-data-update-event')
+jest.mock('../../../../app/repositories/flag-repository')
 
 models.application.create = jest.fn()
 models.application.update = jest.fn()
@@ -769,19 +771,26 @@ describe('Application Repository test', () => {
       {
         toString: () => 'no applications found',
         given: {
-          sbi: 105110298
+          sbi: 105110298,
+          getFlagsForApplicationResult: undefined
         },
         when: {
           foundApplications: []
         },
         expect: {
-          result: []
+          result: [],
+          numGetFlagsForApplicationCalls: 0
         }
       },
       {
         toString: () => 'one application found',
         given: {
-          sbi: 105110298
+          sbi: 105110298,
+          getFlagsForApplicationResult: [
+            { id: 'a8a5e2e1-5bec-4018-91aa-270364ccb4c1', appliesToMh: false },
+            { id: 'b8a5e2e1-5bec-4018-91aa-270364ccb4c2', appliesToMh: true },
+            { id: 'c8a5e2e1-5bec-4018-91aa-270364ccb4c3', appliesToMh: false }
+          ]
         },
         when: {
           foundApplications: [
@@ -839,15 +848,18 @@ describe('Application Repository test', () => {
               updatedAt: '2023-01-17 13:55:20',
               createdBy: 'David Jones',
               updatedBy: 'David Jones',
-              statusId: 1
+              statusId: 1,
+              flags: [{ appliesToMh: false }, { appliesToMh: true }, { appliesToMh: false }]
             }
-          ]
+          ],
+          numGetFlagsForApplicationCalls: 1
         }
       },
       {
         toString: () => 'many application found',
         given: {
-          sbi: 105110298
+          sbi: 105110298,
+          getFlagsForApplicationResult: []
         },
         when: {
           foundApplications: [
@@ -1009,7 +1021,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-AAAA',
               statusId: 1,
               updatedAt: '2023-01-17 14:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1035,7 +1048,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-BBBB',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1061,7 +1075,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-CCCC',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1087,7 +1102,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-DDDD',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1113,12 +1129,16 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-EEEE',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             }
-          ]
+          ],
+          numGetFlagsForApplicationCalls: 5
         }
       }
     ])('%s', async (testCase) => {
+      getFlagsForApplication.mockResolvedValue(testCase.given.getFlagsForApplicationResult)
+
       when(models.application.findAll)
         .calledWith({
           where: {
@@ -1140,6 +1160,7 @@ describe('Application Repository test', () => {
         raw: true
       })
       expect(result).toEqual(testCase.expect.result)
+      expect(getFlagsForApplication).toHaveBeenCalledTimes(testCase.expect.numGetFlagsForApplicationCalls)
     })
   })
 

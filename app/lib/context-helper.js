@@ -10,7 +10,16 @@ export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
   return dateOfVisitParsed >= PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE
 }
 
-export const isMultipleHerdsUserJourney = (dateOfVisit) => {
-  const userAcceptedMultiHerdTCs = true // TODO MultiHerds impl user rejects T&Cs check
-  return config.multiHerds.enabled && userAcceptedMultiHerdTCs && new Date(dateOfVisit) >= MULTIPLE_HERDS_RELEASE_DATE
+export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
+  if (!config.multiHerds.enabled || new Date(dateOfVisit) < MULTIPLE_HERDS_RELEASE_DATE) {
+    return false
+  }
+
+  // only check for rejected T&Cs flag if MH enabled and visit date on/after golive
+  if (agreementFlags && agreementFlags.some(f => f.appliesToMh)) {
+    return false
+  }
+
+  console.log('BH TEST.. isMultipleHerdsUserJourney=true')
+  return true
 }

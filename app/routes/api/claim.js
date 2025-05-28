@@ -101,7 +101,7 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
   return validations
 }
 
-const isClaimDataValid = (payload) => {
+const isClaimDataValid = (payload, application) => {
   const dateOfTesting = { dateOfTesting: Joi.date().required() }
   const laboratoryURN = { laboratoryURN: Joi.string().required() }
   const numberAnimalsTested = { numberAnimalsTested: getNumberAnimalsTestedValidation(payload) }
@@ -143,7 +143,7 @@ const isClaimDataValid = (payload) => {
     ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
     ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
     ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations),
-    ...(isMultipleHerdsUserJourney(payload.data.dateOfVisit) && herdSchema)
+    ...(isMultipleHerdsUserJourney(payload.data.dateOfVisit, application.dataValues.flags) && herdSchema)
   })
 
   const claimModel = Joi.object({
@@ -317,7 +317,15 @@ export const claimHandlers = [
     path: '/api/claim',
     options: {
       handler: async (request, h) => {
-        const { error } = isClaimDataValid(request.payload)
+        const { payload } = request
+        const applicationReference = payload?.applicationReference
+        const application = await getApplication(applicationReference)
+
+        if (!application?.dataValues) {
+          return h.response('Not Found').code(404).takeover()
+        }
+
+        const { error } = isClaimDataValid(request.payload, application)
 
         if (error) {
           request.logger.setBindings({ error })
@@ -326,8 +334,6 @@ export const claimHandlers = [
         }
 
         const isFollowUp = request.payload.type === claimType.endemics
-        const { payload } = request
-        const applicationReference = payload?.applicationReference
         const tempClaimReference = payload?.reference
         const { type } = payload
         const { typeOfLivestock, dateOfVisit, reviewTestResults } = payload.data
@@ -340,11 +346,6 @@ export const claimHandlers = [
           claimReference,
           laboratoryURN
         })
-        const application = await getApplication(applicationReference)
-
-        if (!application?.dataValues) {
-          return h.response('Not Found').code(404).takeover()
-        }
 
         const sbi = application.dataValues.data?.organisation?.sbi || 'not-found'
 
@@ -362,7 +363,7 @@ export const claimHandlers = [
 
         let claim, herdGotUpdated
         let herdData = {}
-        const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit)
+        const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 
         await sequelize.transaction(async () => {
           let claimHerdData = {}
