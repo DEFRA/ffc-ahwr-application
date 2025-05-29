@@ -11,7 +11,10 @@ export const getApplicationHistory = async (reference) => {
     return history.map(item => ({
       Payload: JSON.stringify({
         ...item.dataValues
-      })
+      }),
+      ChangedBy: item.dataValues.createdBy,
+      ChangedOn: item.dataValues.createdAt,
+      EventType: 'status-updated'
     }))
   }
 

@@ -75,7 +75,10 @@ describe('Application Status Repository test', () => {
           note: 'Initial status',
           createdAt: '2023-03-23T10:00:12.000Z',
           createdBy: 'Daniel Jones'
-        })
+        }),
+        ChangedOn: '2023-03-23T10:00:12.000Z',
+        ChangedBy: 'Daniel Jones',
+        EventType: 'status-updated'
       },
       {
         Payload: JSON.stringify({
@@ -84,7 +87,10 @@ describe('Application Status Repository test', () => {
           note: 'Status updated',
           createdAt: '2023-03-24T09:30:00.000Z',
           createdBy: 'Daniel Jones'
-        })
+        }),
+        ChangedOn: '2023-03-24T09:30:00.000Z',
+        ChangedBy: 'Daniel Jones',
+        EventType: 'status-updated'
       }
     ])
   })
