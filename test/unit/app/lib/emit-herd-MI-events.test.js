@@ -11,7 +11,7 @@ describe('emitHerdMIEvents', () => {
 
   test('it always sends the herd associated with claim event', async () => {
     const sbi = 111222
-    const herdData = { herdId: 'this-is-the-herd-id', herdVersion: 2 }
+    const herdData = { id: 'this-is-the-herd-id', version: 2 }
     const tempHerdId = randomUUID()
     const herdGotUpdated = false
     const claimReference = 'REBC-AA11-33FF'
@@ -22,8 +22,8 @@ describe('emitHerdMIEvents', () => {
     expect(raiseHerdEvent).toHaveBeenCalledWith({
       data: {
         applicationReference,
-        herdId: herdData.herdId,
-        herdVersion: herdData.herdVersion,
+        herdId: herdData.id,
+        herdVersion: herdData.version,
         reference: claimReference
       },
       message: 'Herd associated with claim',
@@ -34,7 +34,7 @@ describe('emitHerdMIEvents', () => {
 
   test('it sends the herd associated with claim event as well as the temporary ID event if the herd version is 1', async () => {
     const sbi = 111222
-    const herdData = { herdId: 'this-is-the-herd-id', herdVersion: 1 }
+    const herdData = { id: 'this-is-the-herd-id', version: 1 }
     const tempHerdId = randomUUID()
     const herdGotUpdated = false
     const claimReference = 'REBC-AA11-33FF'
@@ -46,8 +46,8 @@ describe('emitHerdMIEvents', () => {
     expect(raiseHerdEvent).toHaveBeenCalledWith({
       data: {
         applicationReference,
-        herdId: herdData.herdId,
-        herdVersion: herdData.herdVersion,
+        herdId: herdData.id,
+        herdVersion: herdData.version,
         reference: claimReference
       },
       message: 'Herd associated with claim',
@@ -56,7 +56,7 @@ describe('emitHerdMIEvents', () => {
     })
     expect(raiseHerdEvent).toHaveBeenCalledWith({
       data: {
-        herdId: herdData.herdId,
+        herdId: herdData.id,
         tempHerdId
       },
       message: 'Herd temporary ID became herdId',
@@ -68,8 +68,8 @@ describe('emitHerdMIEvents', () => {
   test('it sends the herd associated with claim event as well as the herd updated event if the herdUpdated param is true', async () => {
     const sbi = 111222
     const herdData = {
-      herdId: 'this-is-the-herd-id',
-      herdVersion: 2,
+      id: 'this-is-the-herd-id',
+      version: 2,
       herdReasons: ['uniqueHealthNeeds'],
       herdName: 'Fattening herd',
       species: 'beef',
@@ -86,8 +86,8 @@ describe('emitHerdMIEvents', () => {
     expect(raiseHerdEvent).toHaveBeenCalledWith({
       data: {
         applicationReference,
-        herdId: herdData.herdId,
-        herdVersion: herdData.herdVersion,
+        herdId: herdData.id,
+        herdVersion: herdData.version,
         reference: claimReference
       },
       message: 'Herd associated with claim',
@@ -96,8 +96,8 @@ describe('emitHerdMIEvents', () => {
     })
     expect(raiseHerdEvent).toHaveBeenCalledWith({
       data: {
-        herdId: herdData.herdId,
-        herdVersion: herdData.herdVersion,
+        herdId: herdData.id,
+        herdVersion: herdData.version,
         herdName: herdData.herdName,
         herdSpecies: herdData.species,
         herdCph: herdData.cph,
