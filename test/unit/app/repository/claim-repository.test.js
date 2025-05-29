@@ -1223,13 +1223,18 @@ describe('Claim repository test', () => {
 
   describe('addHerdToClaimData', () => {
     test('should update vetsName claim data successfully', async () => {
-      await addHerdToClaimData(
-        'fake-reference',
-        'fake-herdId',
-        1,
-        'fake-herdAssociatedAt',
-        'fake-user'
-      )
+      await addHerdToClaimData({
+        claimRef: 'fake-reference',
+        herdClaimData: {
+          herdName: 'herd',
+          herdId: 'fake-herdId',
+          herdVersion: 1,
+          herdAssociatedAt: 'fake-herdAssociatedAt'
+        },
+        createdBy: 'fake-user',
+        applicationReference: 'fake-application-reference',
+        sbi: '123456789'
+      })
 
       expect(buildData.models.claim.update).toHaveBeenCalledWith(
         {
@@ -1256,6 +1261,30 @@ describe('Claim repository test', () => {
           returning: true
         }
       )
+
+      expect(MOCK_SEND_EVENTS).toHaveBeenCalledWith([
+        {
+          name: 'send-session-event',
+          properties: {
+            action: {
+              data: {
+                applicationReference: 'fake-application-reference',
+                herdId: 'fake-herdId',
+                herdVersion: 1,
+                reference: 'fake-reference'
+              },
+              message: 'Herd associated with claim',
+              raisedBy: 'admin',
+              raisedOn: expect.any(String),
+              type: 'claim-herdAssociated'
+            },
+            checkpoint: 'ffc-ahwr-eligibility',
+            cph: 'n/a',
+            id: expect.any(String),
+            sbi: '123456789',
+            status: 'success'
+          }
+        }])
     })
   })
 
