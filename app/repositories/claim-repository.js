@@ -412,7 +412,7 @@ export const addHerdToClaimData = async ({ claimRef, herdClaimData, createdBy, a
   await buildData.models.claim_update_history.create({
     applicationReference,
     reference: claimRef,
-    note: 'Herd details was retroactively applied to this pre-multiple herds claim',
+    note: 'Herd details were retroactively applied to this pre-multiple herds claim',
     updatedProperty: 'herdName',
     newValue: herdName,
     oldValue: 'Unnamed herd',

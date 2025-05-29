@@ -1223,6 +1223,7 @@ describe('Claim repository test', () => {
 
   describe('addHerdToClaimData', () => {
     test('should update vetsName claim data successfully', async () => {
+      process.env.APPINSIGHTS_CLOUDROLE = 'cloud_role'
       await addHerdToClaimData({
         claimRef: 'fake-reference',
         herdClaimData: {
@@ -1278,7 +1279,7 @@ describe('Claim repository test', () => {
               raisedOn: expect.any(String),
               type: 'claim-herdAssociated'
             },
-            checkpoint: 'ffc-ahwr-eligibility',
+            checkpoint: 'cloud_role',
             cph: 'n/a',
             id: expect.any(String),
             sbi: '123456789',
