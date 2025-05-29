@@ -11,6 +11,7 @@ import { claimUpdateHistory } from './models/claim-update-history.js'
 import { flag } from './models/flag.js'
 import { herd } from './models/herd.js'
 import { createNamespace } from 'cls-hooked'
+import { statusHistory } from './models/status-history.js'
 
 export const buildData = (() => {
   const namespace = createNamespace('transaction-namespace')
@@ -28,6 +29,7 @@ export const buildData = (() => {
   status(sequelize, DataTypes)
   flag(sequelize, DataTypes)
   herd(sequelize, DataTypes)
+  statusHistory(sequelize, DataTypes)
 
   sequelize.models.application.associate(sequelize.models)
   sequelize.models.claim.associate(sequelize.models)

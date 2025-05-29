@@ -59,6 +59,7 @@ container:
   messageGeneratorQueueAddress: ffc-ahwr-message-generator
   multiHerdsEnabled: 'false'
   multiHerdsReleaseDate: '2025-05-01'
+  storeHistoryInDbEnabled: 'false'
 
 postgresService:
   postgresDb: ffc_ahwr_application
