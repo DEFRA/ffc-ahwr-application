@@ -173,7 +173,8 @@ export const applicationHandlers = [
               {
                 reference,
                 sbi: application.dataValues.data.organisation.sbi,
-                whichReview: application.dataValues.data.whichReview
+                whichReview: application.dataValues.data.whichReview,
+                ...(application.dataValues.data.organisation.frn ? {frn: application.dataValues.data.organisation.frn} : {}),
               },
               submitPaymentRequestMsgType,
               submitRequestQueue,
