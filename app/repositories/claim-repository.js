@@ -7,16 +7,31 @@ import { findApplication } from './application-repository.js'
 
 const { models, sequelize } = buildData
 
-export const getClaimByReference = (reference) => {
-  return models.claim.findOne({
-    where: { reference: reference.toUpperCase() },
-    include: [
-      {
-        model: models.status,
-        attributes: ['status']
-      }
-    ]
-  })
+export const getClaimByReference = async (reference) => {
+  const results = await sequelize.query(
+    `
+    SELECT
+      claim.*,
+      to_jsonb(herd) AS herd,
+      status.status AS "status"
+    FROM claim
+    LEFT JOIN herd
+      ON claim.data->>'herdId' = herd.id::text
+      AND (claim.data->>'herdVersion')::int = herd.version
+      AND claim."applicationReference" = herd."applicationReference"
+    LEFT JOIN status
+      ON claim."statusId" = status."statusId"
+    WHERE claim."reference" = :reference
+    ORDER BY claim."createdAt" DESC
+    LIMIT 1
+    `,
+    {
+      replacements: { reference: reference.toUpperCase() },
+      type: QueryTypes.SELECT
+    }
+  )
+
+  return { dataValues: results[0] }
 }
 
 export const getByApplicationReference = async (applicationReference, typeOfLivestock) => {
