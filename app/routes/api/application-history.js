@@ -88,8 +88,6 @@ export const applicationHistoryHandlers = [
           }
         })
 
-        console.log(normalisedHistoryRecords)
-
         const dataUpdates = await findAllClaimUpdateHistory(reference)
 
         const normalisedDataUpdates = dataUpdates.map(({ dataValues }) => ({
