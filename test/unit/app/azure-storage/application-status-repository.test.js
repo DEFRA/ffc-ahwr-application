@@ -1,14 +1,22 @@
 import { getApplicationHistory } from '../../../../app/azure-storage/application-status-repository'
 import { queryEntitiesByPartitionKey } from '../../../../app/azure-storage/query-entities'
+import { config } from '../../../../app/config/index.js'
+import { getHistoryByReference } from '../../../../app/repositories/status-history-repository.js'
 
 jest.mock('../../../../app/azure-storage/query-entities')
+
+jest.mock('../../../../app/repositories/status-history-repository')
 
 describe('Application Status Repository test', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test('getApplicationHistory - application history found', async () => {
+  afterEach(() => {
+    config.storeHistoryInDb.enabled = false
+  })
+
+  test('getApplicationHistory - application history found from azure storage when store in DB disabled', async () => {
     const events = [
       {
         ChangedOn: '2023-03-23T10:00:12.000Z',
@@ -31,5 +39,53 @@ describe('Application Status Repository test', () => {
     const result = await getApplicationHistory('AHWR-7C72-8871')
 
     expect(result).toEqual(events)
+  })
+
+  test('getApplicationHistory - application history found from DB when store in DB enabled', async () => {
+    config.storeHistoryInDb.enabled = true
+    const events = [
+      {
+        dataValues: {
+          reference: 'AHWR-7C72-8871',
+          statusId: 91,
+          note: 'Initial status',
+          createdAt: '2023-03-23T10:00:12.000Z',
+          createdBy: 'Daniel Jones'
+        }
+      },
+      {
+        dataValues: {
+          reference: 'AHWR-7C72-8871',
+          statusId: 2,
+          note: 'Status updated',
+          createdAt: '2023-03-24T09:30:00.000Z',
+          createdBy: 'Daniel Jones'
+        }
+      }
+    ]
+    getHistoryByReference.mockResolvedValueOnce(events)
+
+    const result = await getApplicationHistory('AHWR-7C72-8871')
+
+    expect(result).toEqual([
+      {
+        Payload: JSON.stringify({
+          reference: 'AHWR-7C72-8871',
+          statusId: 91,
+          note: 'Initial status',
+          createdAt: '2023-03-23T10:00:12.000Z',
+          createdBy: 'Daniel Jones'
+        })
+      },
+      {
+        Payload: JSON.stringify({
+          reference: 'AHWR-7C72-8871',
+          statusId: 2,
+          note: 'Status updated',
+          createdAt: '2023-03-24T09:30:00.000Z',
+          createdBy: 'Daniel Jones'
+        })
+      }
+    ])
   })
 })
