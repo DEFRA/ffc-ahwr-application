@@ -1,5 +1,5 @@
 import { buildData } from '../data/index.js'
-import { raiseClaimEvents } from '../event-publisher/index.js'
+import { raiseClaimEvents, raiseHerdEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 import { Op, QueryTypes, Sequelize } from 'sequelize'
@@ -366,7 +366,8 @@ export const updateClaimData = async (reference, updatedProperty, newValue, oldV
   })
 }
 
-export const addHerdToClaimData = async (reference, herdId, herdVersion, herdAssociatedAt, user) => {
+export const addHerdToClaimData = async ({ claimRef, herdClaimData, createdBy, applicationReference, sbi }) => {
+  const { herdId, herdVersion, herdAssociatedAt, herdName } = herdClaimData
   const data = Sequelize.fn(
     'jsonb_set',
     Sequelize.fn(
@@ -388,13 +389,36 @@ export const addHerdToClaimData = async (reference, herdId, herdVersion, herdAss
   const [_, _updates] = await buildData.models.claim.update(
     {
       data,
-      updatedBy: user
+      updatedBy: createdBy
     },
     {
-      where: { reference },
+      where: { reference: claimRef },
       returning: true
     }
   )
+
+  await buildData.models.claim_update_history.create({
+    applicationReference,
+    reference: claimRef,
+    note: 'Herd details were retroactively applied to this pre-multiple herds claim',
+    updatedProperty: 'herdName',
+    newValue: herdName,
+    oldValue: 'Unnamed herd',
+    eventType: 'claim-herdAssociated',
+    createdBy
+  })
+
+  await raiseHerdEvent({
+    sbi,
+    message: 'Herd associated with claim',
+    type: 'claim-herdAssociated',
+    data: {
+      herdId,
+      herdVersion,
+      reference: claimRef,
+      applicationReference
+    }
+  })
 }
 
 export const findAllClaimUpdateHistory = (reference) =>

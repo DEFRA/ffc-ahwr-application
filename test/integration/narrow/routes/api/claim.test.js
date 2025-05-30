@@ -979,7 +979,18 @@ describe('Post claim test', () => {
       type: 'R'
     })
     expect(getByApplicationReference).toHaveBeenCalledWith('AHWR-0AD3-3322', 'pigs')
-    expect(addHerdToClaimData).toHaveBeenCalledWith('AHWR-0F5D-4A26', '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', 1, expect.any(String), 'admin')
+    expect(addHerdToClaimData).toHaveBeenCalledWith({
+      claimRef: 'AHWR-0F5D-4A26',
+      herdClaimData: {
+        herdId: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        herdVersion: options.payload.data.herd.herdVersion,
+        herdAssociatedAt: expect.any(String),
+        herdName: 'Sample herd one'
+      },
+      createdBy: 'admin',
+      applicationReference: claim.applicationReference,
+      sbi: '106705779'
+    })
     expect(createHerd).toHaveBeenCalledWith({
       version: 1,
       applicationReference: 'AHWR-0AD3-3322',

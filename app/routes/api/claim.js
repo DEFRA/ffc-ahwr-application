@@ -215,11 +215,11 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfL
   return { herdModel, herdWasUpdated }
 }
 
-const addHerdToPreviousClaims = async (herdClaimData, applicationReference, createdBy, typeOfLivestock, logger) => {
+const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi, createdBy, typeOfLivestock, logger) => {
   logger.info('Associating new herd with previous claims for agreement ' + applicationReference)
   const previousClaimsWithoutHerd = (await getByApplicationReference(applicationReference, typeOfLivestock)).filter(claim => { return !claim.data.herdId })
   await Promise.all(previousClaimsWithoutHerd.map(claim =>
-    addHerdToClaimData(claim.reference, herdClaimData.herdId, herdClaimData.herdVersion, herdClaimData.herdAssociatedAt, createdBy)
+    addHerdToClaimData({ claimRef: claim.reference, herdClaimData, createdBy, applicationReference, sbi })
   ))
 }
 
@@ -379,7 +379,7 @@ export const claimHandlers = [
               herdAssociatedAt: new Date().toISOString()
             }
             if (herd.herdSame === 'yes') {
-              addHerdToPreviousClaims(claimHerdData, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
+              await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
             }
           }
           const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
