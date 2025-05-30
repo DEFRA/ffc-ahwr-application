@@ -29,13 +29,24 @@ export const getApplication = async (reference) => {
 }
 
 export const getLatestApplicationsBySbi = async (sbi) => {
-  return models.application
+  return await models.application
     .findAll(
       {
         where: { 'data.organisation.sbi': sbi },
-        order: [['createdAt', 'DESC']],
-        raw: true
-      })
+        include: [
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
+          }
+        ],
+        order: [['createdAt', 'DESC']]
+      }
+    )
 }
 
 export const getBySbi = async (sbi) => {
