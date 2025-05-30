@@ -15,7 +15,6 @@ import { buildData } from '../../../../app/data'
 import { Op, Sequelize } from 'sequelize'
 import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
 import { SEND_SESSION_EVENT } from '../../../../app/event-publisher'
-import { getFlagsForApplication } from '../../../../app/repositories/flag-repository.js'
 
 const { models } = buildData
 
@@ -785,12 +784,7 @@ describe('Application Repository test', () => {
       {
         toString: () => 'one application found',
         given: {
-          sbi: 105110298,
-          getFlagsForApplicationResult: [
-            { id: 'a8a5e2e1-5bec-4018-91aa-270364ccb4c1', appliesToMh: false },
-            { id: 'b8a5e2e1-5bec-4018-91aa-270364ccb4c2', appliesToMh: true },
-            { id: 'c8a5e2e1-5bec-4018-91aa-270364ccb4c3', appliesToMh: false }
-          ]
+          sbi: 105110298
         },
         when: {
           foundApplications: [
@@ -813,6 +807,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [{ appliesToMh: false }, { appliesToMh: true }, { appliesToMh: false }],
               claimed: false,
               createdAt: '2023-01-17 13:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -851,15 +846,13 @@ describe('Application Repository test', () => {
               statusId: 1,
               flags: [{ appliesToMh: false }, { appliesToMh: true }, { appliesToMh: false }]
             }
-          ],
-          numGetFlagsForApplicationCalls: 1
+          ]
         }
       },
       {
         toString: () => 'many application found',
         given: {
-          sbi: 105110298,
-          getFlagsForApplicationResult: []
+          sbi: 105110298
         },
         when: {
           foundApplications: [
@@ -882,6 +875,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 14:55:20',
               updatedAt: '2023-01-17 14:55:20',
@@ -908,6 +902,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 13:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -934,6 +929,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 15:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -960,6 +956,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 16:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -986,6 +983,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 13:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -1132,20 +1130,27 @@ describe('Application Repository test', () => {
               updatedBy: 'David Jones',
               flags: []
             }
-          ],
-          numGetFlagsForApplicationCalls: 5
+          ]
         }
       }
     ])('%s', async (testCase) => {
-      getFlagsForApplication.mockResolvedValue(testCase.given.getFlagsForApplicationResult)
-
       when(models.application.findAll)
         .calledWith({
           where: {
             'data.organisation.sbi': testCase.given.sbi
           },
-          order: [['createdAt', 'DESC']],
-          raw: true
+          include: [
+            {
+              model: models.flag,
+              as: 'flags',
+              attributes: ['appliesToMh'],
+              where: {
+                deletedBy: null
+              },
+              required: false
+            }
+          ],
+          order: [['createdAt', 'DESC']]
         })
         .mockResolvedValue(testCase.when.foundApplications)
 
@@ -1156,11 +1161,20 @@ describe('Application Repository test', () => {
         where: {
           'data.organisation.sbi': testCase.given.sbi
         },
-        order: [['createdAt', 'DESC']],
-        raw: true
+        include: [
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
+          }
+        ],
+        order: [['createdAt', 'DESC']]
       })
       expect(result).toEqual(testCase.expect.result)
-      expect(getFlagsForApplication).toHaveBeenCalledTimes(testCase.expect.numGetFlagsForApplicationCalls)
     })
   })
 

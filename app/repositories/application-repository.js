@@ -3,7 +3,6 @@ import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
-import { getFlagsForApplication } from './flag-repository.js'
 
 const { models, sequelize } = buildData
 
@@ -30,22 +29,24 @@ export const getApplication = async (reference) => {
 }
 
 export const getLatestApplicationsBySbi = async (sbi) => {
-  const applications = await models.application
+  return await models.application
     .findAll(
       {
         where: { 'data.organisation.sbi': sbi },
-        order: [['createdAt', 'DESC']],
-        raw: true
-      })
-
-  const applicationsWithFlags = await Promise.all(
-    applications.map(async (app) => {
-      const flags = (await getFlagsForApplication(app.reference)).map(({ appliesToMh }) => ({ appliesToMh }))
-      return { ...app, flags: [].concat(flags) }
-    })
-  )
-
-  return applicationsWithFlags
+        include: [
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
+          }
+        ],
+        order: [['createdAt', 'DESC']]
+      }
+    )
 }
 
 export const getBySbi = async (sbi) => {
