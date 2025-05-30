@@ -101,7 +101,7 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
   return validations
 }
 
-const isClaimDataValid = (payload, application) => {
+const isClaimDataValid = (payload, agreementFlags) => {
   const dateOfTesting = { dateOfTesting: Joi.date().required() }
   const laboratoryURN = { laboratoryURN: Joi.string().required() }
   const numberAnimalsTested = { numberAnimalsTested: getNumberAnimalsTestedValidation(payload) }
@@ -143,7 +143,7 @@ const isClaimDataValid = (payload, application) => {
     ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
     ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
     ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations),
-    ...(isMultipleHerdsUserJourney(payload.data.dateOfVisit, application.dataValues.flags) && herdSchema)
+    ...(isMultipleHerdsUserJourney(payload.data.dateOfVisit, agreementFlags) && herdSchema)
   })
 
   const claimModel = Joi.object({
@@ -325,7 +325,7 @@ export const claimHandlers = [
           return h.response('Not Found').code(404).takeover()
         }
 
-        const { error } = isClaimDataValid(request.payload, application)
+        const { error } = isClaimDataValid(request.payload, application.dataValues.flags)
 
         if (error) {
           request.logger.setBindings({ error })
