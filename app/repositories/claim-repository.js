@@ -397,6 +397,17 @@ export const addHerdToClaimData = async ({ claimRef, herdClaimData, createdBy, a
     }
   )
 
+  await buildData.models.claim_update_history.create({
+    applicationReference,
+    reference: claimRef,
+    note: 'Herd details were retroactively applied to this pre-multiple herds claim',
+    updatedProperty: 'herdName',
+    newValue: herdName,
+    oldValue: 'Unnamed herd',
+    eventType: 'claim-herdAssociated',
+    createdBy
+  })
+
   await raiseHerdEvent({
     sbi,
     message: 'Herd associated with claim',
@@ -407,17 +418,6 @@ export const addHerdToClaimData = async ({ claimRef, herdClaimData, createdBy, a
       reference: claimRef,
       applicationReference
     }
-  })
-
-  await buildData.models.claim_update_history.create({
-    applicationReference,
-    reference: claimRef,
-    note: 'Herd details were retroactively applied to this pre-multiple herds claim',
-    updatedProperty: 'herdName',
-    newValue: herdName,
-    oldValue: 'Unnamed herd',
-    eventType: 'claim-herdAssociated',
-    createdBy
   })
 }
 
