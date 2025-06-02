@@ -20,6 +20,7 @@ const { models } = buildData
 
 jest.mock('../../../../app/data')
 jest.mock('../../../../app/event-publisher/claim-data-update-event')
+jest.mock('../../../../app/repositories/flag-repository')
 
 models.application.create = jest.fn()
 models.application.update = jest.fn()
@@ -769,13 +770,15 @@ describe('Application Repository test', () => {
       {
         toString: () => 'no applications found',
         given: {
-          sbi: 105110298
+          sbi: 105110298,
+          getFlagsForApplicationResult: undefined
         },
         when: {
           foundApplications: []
         },
         expect: {
-          result: []
+          result: [],
+          numGetFlagsForApplicationCalls: 0
         }
       },
       {
@@ -804,6 +807,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [{ appliesToMh: false }, { appliesToMh: true }, { appliesToMh: false }],
               claimed: false,
               createdAt: '2023-01-17 13:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -839,7 +843,8 @@ describe('Application Repository test', () => {
               updatedAt: '2023-01-17 13:55:20',
               createdBy: 'David Jones',
               updatedBy: 'David Jones',
-              statusId: 1
+              statusId: 1,
+              flags: [{ appliesToMh: false }, { appliesToMh: true }, { appliesToMh: false }]
             }
           ]
         }
@@ -870,6 +875,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 14:55:20',
               updatedAt: '2023-01-17 14:55:20',
@@ -896,6 +902,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 13:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -922,6 +929,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 15:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -948,6 +956,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 16:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -974,6 +983,7 @@ describe('Application Repository test', () => {
                 eligibleSpecies: 'yes',
                 confirmCheckDetails: 'yes'
               },
+              flags: [],
               claimed: false,
               createdAt: '2023-01-17 13:55:20',
               updatedAt: '2023-01-17 13:55:20',
@@ -1009,7 +1019,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-AAAA',
               statusId: 1,
               updatedAt: '2023-01-17 14:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1035,7 +1046,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-BBBB',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1061,7 +1073,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-CCCC',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1087,7 +1100,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-DDDD',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             },
             {
               claimed: false,
@@ -1113,7 +1127,8 @@ describe('Application Repository test', () => {
               reference: 'AHWR-5C1C-EEEE',
               statusId: 1,
               updatedAt: '2023-01-17 13:55:20',
-              updatedBy: 'David Jones'
+              updatedBy: 'David Jones',
+              flags: []
             }
           ]
         }
@@ -1124,8 +1139,18 @@ describe('Application Repository test', () => {
           where: {
             'data.organisation.sbi': testCase.given.sbi
           },
-          order: [['createdAt', 'DESC']],
-          raw: true
+          include: [
+            {
+              model: models.flag,
+              as: 'flags',
+              attributes: ['appliesToMh'],
+              where: {
+                deletedBy: null
+              },
+              required: false
+            }
+          ],
+          order: [['createdAt', 'DESC']]
         })
         .mockResolvedValue(testCase.when.foundApplications)
 
@@ -1136,8 +1161,18 @@ describe('Application Repository test', () => {
         where: {
           'data.organisation.sbi': testCase.given.sbi
         },
-        order: [['createdAt', 'DESC']],
-        raw: true
+        include: [
+          {
+            model: models.flag,
+            as: 'flags',
+            attributes: ['appliesToMh'],
+            where: {
+              deletedBy: null
+            },
+            required: false
+          }
+        ],
+        order: [['createdAt', 'DESC']]
       })
       expect(result).toEqual(testCase.expect.result)
     })
