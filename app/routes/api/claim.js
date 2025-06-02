@@ -459,7 +459,8 @@ export const claimHandlers = [
             reviewTestResults,
             piHuntRecommended: payload.data.piHuntRecommended,
             piHuntAllAnimals: payload.data.piHuntAllAnimals,
-            dateTime: new Date()
+            dateTime: new Date(),
+            herdName: herdData.herdName ?? 'Unnamed herd'
           },
           messageGeneratorMsgType,
           messageGeneratorQueue,

@@ -342,7 +342,8 @@ describe('Post claim test', () => {
         claimStatus: 11,
         claimType: 'R',
         typeOfLivestock,
-        dateTime: expect.any(Date)
+        dateTime: expect.any(Date),
+        herdName: 'Unnamed herd'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -435,7 +436,7 @@ describe('Post claim test', () => {
         statusId: 1,
         type: 'E',
         createdBy: 'admin'
-      }
+       }
     })
 
     setClaim.mockResolvedValueOnce({
@@ -471,7 +472,8 @@ describe('Post claim test', () => {
         reviewTestResults: 'negative',
         dateTime: expect.any(Date),
         piHuntRecommended: 'yes',
-        piHuntAllAnimals: 'yes'
+        piHuntAllAnimals: 'yes',
+        herdName: 'Unnamed herd'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -948,6 +950,20 @@ describe('Post claim test', () => {
       herdNameLabel: 'Herd name',
       herdName: 'Sample herd one'
     }, config.notify.templateIdFarmerEndemicsReviewComplete)
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        crn: '1100014934',
+        sbi: '106705779',
+        agreementReference: 'AHWR-0AD3-3322',
+        claimReference: 'TEMP-O9UD-22F6',
+        claimStatus: 11,
+        claimType: 'R',
+        typeOfLivestock: 'pigs',
+        herdName: 'Sample herd one',
+        dateTime: expect.any(Date)
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
   })
 
   test('should create a new herd and link it to the claim and previousClaims when herdSame', async () => {
@@ -1208,6 +1224,20 @@ describe('Post claim test', () => {
       statusId: 11,
       type: 'R'
     })
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        crn: '1100014934',
+        sbi: '106705779',
+        agreementReference: 'AHWR-0AD3-3322',
+        claimReference: 'TEMP-O9UD-22F6',
+        claimStatus: 11,
+        claimType: 'R',
+        typeOfLivestock: 'pigs',
+        herdName: 'Sample herd one',
+        dateTime: expect.any(Date)
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
   })
 
   test('should create a new version of the herd when updating a herd and the herd reasons has changed', async () => {
