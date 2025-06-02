@@ -29,7 +29,7 @@ export const getApplication = async (reference) => {
 }
 
 export const getLatestApplicationsBySbi = async (sbi) => {
-  return await models.application
+  return models.application
     .findAll(
       {
         where: { 'data.organisation.sbi': sbi },
