@@ -460,7 +460,7 @@ export const claimHandlers = [
             piHuntRecommended: payload.data.piHuntRecommended,
             piHuntAllAnimals: payload.data.piHuntAllAnimals,
             dateTime: new Date(),
-            herdName: herdData.herdName ?? 'Unnamed herd'
+            ...(config.multiHerds.enabled ? { herdName: herdData.herdName ?? 'Unnamed herd' } : {})
           },
           messageGeneratorMsgType,
           messageGeneratorQueue,
