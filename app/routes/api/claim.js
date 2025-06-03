@@ -437,10 +437,6 @@ export const claimHandlers = [
 
         const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount })
 
-        if (!claim) {
-          throw new Error('Claim was not created')
-        }
-
         if (isMultiHerdsClaim) {
           await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
