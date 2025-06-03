@@ -342,8 +342,7 @@ describe('Post claim test', () => {
         claimStatus: 11,
         claimType: 'R',
         typeOfLivestock,
-        dateTime: expect.any(Date),
-        herdName: 'Unnamed herd'
+        dateTime: expect.any(Date)
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -472,8 +471,7 @@ describe('Post claim test', () => {
         reviewTestResults: 'negative',
         dateTime: expect.any(Date),
         piHuntRecommended: 'yes',
-        piHuntAllAnimals: 'yes',
-        herdName: 'Unnamed herd'
+        piHuntAllAnimals: 'yes'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -1121,6 +1119,7 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: { ...claim, ...{ data: { ...claim.data, herd: { herdId: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', cph: '13232', herdReasons: ['separateManagementNeeds', 'differentBreed'], herdVersion: 2 } } } }
     }
+    config.multiHerds.enabled = true
     isMultipleHerdsUserJourney.mockImplementation(() => { return true })
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
