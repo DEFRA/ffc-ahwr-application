@@ -230,6 +230,7 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
 
   const { payload } = request
   const { herd, ...payloadData } = payload.data
+  const { typeOfLivestock } = payloadData
 
   await sequelize.transaction(async () => {
     let claimHerdData = {}
