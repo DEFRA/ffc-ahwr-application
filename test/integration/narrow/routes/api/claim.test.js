@@ -22,6 +22,7 @@ jest.mock('../../../../../app/lib/request-email.js')
 jest.mock('../../../../../app/lib/getAmount')
 jest.mock('../../../../../app/storage/getBlob')
 jest.mock('../../../../../app/lib/context-helper')
+jest.mock('../../../../../app/lib/emit-herd-MI-events')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -447,15 +448,16 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith({
       applicationReference: applicationRef,
       reference: claimRef,
       species: 'Beef cattle',
       email: 'test@test-unit.com',
       amount: 100,
       farmerName: 'farmerName',
-      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', crn: '1100014934', sbi: '106705779' }
-    }), config.notify.templateIdFarmerEndemicsFollowupComplete)
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', crn: '1100014934', sbi: '106705779' },
+      herdName: 'Unnamed herd'
+    }, config.notify.templateIdFarmerEndemicsFollowupComplete)
     expect(sendMessage).toHaveBeenCalledWith(
       {
         sbi: '106705779',
@@ -765,6 +767,7 @@ describe('Post claim test', () => {
       }
     }
     isMultipleHerdsUserJourney.mockImplementation(() => { return true })
+    config.multiHerds.enabled = true
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {
@@ -787,7 +790,11 @@ describe('Post claim test', () => {
           numberAnimalsTested: 30,
           organisation: {
             crn: '1100014934',
-            sbi: '106705779'
+            sbi: '106705779',
+            email: 'test@test-unit.com',
+            farmerName: 'John Doe',
+            orgEmail: 'org@test-unit.com',
+            name: 'Farm Co'
           }
         },
         statusId: 1,
@@ -851,6 +858,16 @@ describe('Post claim test', () => {
       herdReasons: ['differentBreed', 'separateManagementNeeds'],
       createdBy: 'admin'
     })
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith({
+      reference: 'TEMP-O9UD-22F6',
+      applicationReference: 'AHWR-0AD3-3322',
+      email: 'test@test-unit.com',
+      amount: 100,
+      farmerName: 'John Doe',
+      species: 'Pigs',
+      orgData: { orgName: 'Farm Co', orgEmail: 'org@test-unit.com', sbi: '106705779', crn: '1100014934' },
+      herdName: 'Sample herd one'
+    }, config.notify.templateIdFarmerEndemicsReviewComplete)
   })
 
   test('should create a new herd and link it to the claim and previousClaims when herdSame', async () => {

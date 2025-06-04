@@ -406,7 +406,8 @@ export const claimHandlers = [
             orgEmail: application.dataValues.data?.organisation?.orgEmail,
             crn: application.dataValues.data?.organisation?.crn,
             sbi: application.dataValues.data?.organisation?.sbi
-          }
+          },
+          herdName: herdData.herdName ?? 'Unnamed herd'
         },
         isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
         )
