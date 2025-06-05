@@ -1,0 +1,22 @@
+trigger:
+  - main
+  - feature/*
+
+pr:
+- main
+- releases/*
+
+resources:
+  repositories:
+    - repository: templates
+      endpoint: DEFRA
+      type: github
+      name: defra/fcp-pipeline-common
+      
+extends:
+  template: fcp-common-pipeline.yaml@templates
+  # parameters: 
+  #   appFrameworkType: nodejs # default is nodejs
+    
+
+    
