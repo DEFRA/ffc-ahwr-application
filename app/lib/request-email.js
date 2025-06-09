@@ -71,7 +71,7 @@ export const requestClaimConfirmationEmail = async (data, templateId) => {
     amount: data.amount,
     crn: orgData.crn,
     sbi: orgData.sbi,
-    ...(config.multiHerds.enabled ? { herdName } : {})
+    herdName
   }
 
   if (!email && !orgData.orgEmail) {
