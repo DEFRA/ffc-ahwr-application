@@ -2,7 +2,6 @@ import { when, resetAllWhenMocks } from 'jest-when'
 import {
   evalSortField, findApplication,
   getAllApplications,
-  getAllClaimedApplications,
   getApplication,
   getByEmail,
   getBySbi,
@@ -513,17 +512,6 @@ describe('Application Repository test', () => {
     expect(models.application.findAll).toHaveBeenCalledTimes(1)
     expect(models.application.findAll).toHaveBeenCalledWith({
       order: [['createdAt', 'DESC']]
-    })
-  })
-
-  test('getAllClaimedApplications returns a count', async () => {
-    await getAllClaimedApplications([5, 9, 10])
-
-    expect(models.application.count).toHaveBeenCalledTimes(1)
-    expect(models.application.count).toHaveBeenCalledWith({
-      where: {
-        statusId: [5, 9, 10]
-      }
     })
   })
 

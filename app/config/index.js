@@ -20,10 +20,7 @@ const buildConfig = () => {
     fetchClaimRequestMsgType: Joi.string(),
     fetchClaimResponseMsgType: Joi.string(),
     submitPaymentRequestMsgType: Joi.string(),
-    compliance: {
-      complianceCheckRatio: Joi.number().default(5),
-      endemicsComplianceCheckRatio: Joi.number().default(1)
-    },
+    complianceCheckRatio: Joi.number().default(1),
     sfdRequestMsgType: Joi.string(),
     messageGeneratorMsgType: Joi.string(),
     multiHerds: {
@@ -47,11 +44,7 @@ const buildConfig = () => {
     fetchClaimRequestMsgType: `${msgTypePrefix}.fetch.claim.request`,
     fetchClaimResponseMsgType: `${msgTypePrefix}.fetch.claim.response`,
     submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
-    compliance: {
-      complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
-      endemicsComplianceCheckRatio:
-        process.env.ENDEMICS_CLAIM_COMPLIANCE_CHECK_RATIO
-    },
+    complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
     messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
     multiHerds: {

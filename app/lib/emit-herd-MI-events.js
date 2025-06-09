@@ -3,18 +3,6 @@ import { raiseHerdEvent } from '../event-publisher/index.js'
 export const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdated, claimReference, applicationReference }) => {
   const { id: herdId, version: herdVersion, herdName, species: herdSpecies, cph: herdCph, herdReasons } = herdData
 
-  await raiseHerdEvent({
-    sbi,
-    message: 'Herd associated with claim',
-    type: 'claim-herdAssociated',
-    data: {
-      herdId,
-      herdVersion,
-      reference: claimReference,
-      applicationReference
-    }
-  })
-
   if (herdVersion === 1) {
     await raiseHerdEvent({ sbi, message: 'Herd temporary ID became herdId', type: 'herd-tempIdHerdId', data: { tempHerdId, herdId } })
   }
@@ -40,4 +28,16 @@ export const emitHerdMIEvents = async ({ sbi, herdData, tempHerdId, herdGotUpdat
       }
     })
   }
+
+  await raiseHerdEvent({
+    sbi,
+    message: 'Herd associated with claim',
+    type: 'claim-herdAssociated',
+    data: {
+      herdId,
+      herdVersion,
+      reference: claimReference,
+      applicationReference
+    }
+  })
 }
