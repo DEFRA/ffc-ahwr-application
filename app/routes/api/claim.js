@@ -358,7 +358,7 @@ export const claimHandlers = [
         }
 
         const amount = await getAmount(request.payload)
-        const { statusId } = await requiresComplianceCheck('claim')
+        const statusId = await requiresComplianceCheck()
         const { herd, ...payloadData } = payload.data
 
         let claim, herdGotUpdated

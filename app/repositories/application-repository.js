@@ -183,14 +183,6 @@ export const getAllApplications = async () => {
   return models.application.findAll(query)
 }
 
-export const getAllClaimedApplications = async (claimStatusIds) => {
-  return models.application.count({
-    where: {
-      statusId: claimStatusIds // shorthand for IN operator
-    }
-  })
-}
-
 export const setApplication = async (data) => {
   const result = await models.application.create(data)
   await raiseApplicationStatusEvent({
