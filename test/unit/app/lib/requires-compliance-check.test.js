@@ -88,4 +88,14 @@ describe('Test requires compliance check', () => {
 
     expect(result).toBe(applicationStatus.onHold)
   })
+
+  test('should return inCheck when no existing claim applications and ratio is 1', async () => {
+    const { config } = require('../../../../app/config/index')
+    config.complianceCheckRatio = '1'
+    mockGetAllClaimedClaims.mockResolvedValue(0)
+
+    const result = await requiresComplianceCheck()
+
+    expect(result).toBe(applicationStatus.inCheck)
+  })
 })
