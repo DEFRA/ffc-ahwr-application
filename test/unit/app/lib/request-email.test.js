@@ -217,7 +217,7 @@ describe('sendEmail', () => {
       expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
     })
 
-    test('sendFarmerEndemicsClaimConfirmationEmail sends email with herdName when multi herds is enabled', async () => {
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email with herdNameLabel and herdName', async () => {
       config.notify.carbonCopyEmailAddress = 'test@test.com'
       const data = {
         ...baseInputData,
@@ -226,10 +226,10 @@ describe('sendEmail', () => {
           crn: '1234567890',
           sbi: '123456789'
         },
+        herdNameLabel: 'Herd name',
         herdName: 'Commercial herd'
       }
       const templateId = 'templateIdFarmerEndemicsClaimComplete'
-      config.multiHerds.enabled = true
 
       const result = await requestClaimConfirmationEmail(data, templateId)
 
@@ -240,6 +240,7 @@ describe('sendEmail', () => {
         crn: data.orgData.crn,
         sbi: data.orgData.sbi,
         species: data.species,
+        herdNameLabel: 'Herd name',
         herdName: 'Commercial herd'
       }
       expect(result).toBe(true)
