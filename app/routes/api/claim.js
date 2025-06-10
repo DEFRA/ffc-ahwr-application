@@ -253,7 +253,7 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
   return { claim, herdGotUpdated, herdData }
 }
 
-const sendClaimConfirmationEmail = async (request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, isFollowUp, herdData }) => {
+const sendClaimConfirmationEmail = async (request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData }) => {
   const { payload } = request
 
   const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
@@ -271,7 +271,7 @@ const sendClaimConfirmationEmail = async (request, claim, application, { sbi, ap
     },
     herdName: herdData.herdName ?? 'Unnamed herd'
   },
-  isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
+  isFollowUp(payload) ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
   )
 
   request.logger.setBindings({ claimConfirmationEmailSent })
@@ -405,7 +405,6 @@ export const claimHandlers = [
           return h.response({ error }).code(400).takeover()
         }
 
-        const isFollowUp = request.payload.type === claimType.endemics
         const tempClaimReference = payload?.reference
         const { type } = payload
         const { typeOfLivestock, dateOfVisit, reviewTestResults, herd } = payload.data
@@ -413,7 +412,7 @@ export const claimHandlers = [
         const laboratoryURN = payload?.data?.laboratoryURN
 
         request.logger.setBindings({
-          isFollowUp,
+          isFollowUp: isFollowUp(payload),
           applicationReference,
           claimReference,
           laboratoryURN
@@ -443,7 +442,7 @@ export const claimHandlers = [
           await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
 
-        await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, isFollowUp, herdData })
+        await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData })
 
         await sendMessage(
           {
