@@ -45,7 +45,7 @@ const isPositiveReviewTestResult = (payload) => payload.data.reviewTestResults =
 const isPiHuntYes = (payload) => payload.data.piHunt === piHunt.yes
 const isPiHuntRecommendedYes = (payload) => payload.data.piHuntRecommended === piHuntRecommended.yes
 const getHerdNameLabel = (payload) => isSheep(payload) ? 'Flock name' : 'Herd name'
-const getUnamedHerdValue = (payload) => isSheep(payload) ? 'Unnamed flock' : 'Unnamed herd'
+const getUnnamedHerdValue = (payload) => isSheep(payload) ? 'Unnamed flock' : 'Unnamed herd'
 
 const getTestResultsValidation = (payload) => (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
 const pigsTestResults = (payload) => isPigs(payload) && Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
@@ -272,7 +272,7 @@ const sendClaimConfirmationEmail = async (request, claim, application, { sbi, ap
       sbi: application.dataValues.data?.organisation?.sbi
     },
     herdNameLabel: getHerdNameLabel(payload),
-    herdName: herdData.herdName ?? getUnamedHerdValue(payload)
+    herdName: herdData.herdName ?? getUnnamedHerdValue(payload)
   },
   isFollowUp(payload) ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
   )
