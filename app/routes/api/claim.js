@@ -450,7 +450,6 @@ export const claimHandlers = [
             agreementReference: applicationReference,
             claimReference,
             claimStatus: statusId,
-
             claimType: type,
             typeOfLivestock,
             reviewTestResults,
