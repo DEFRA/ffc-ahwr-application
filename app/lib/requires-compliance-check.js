@@ -2,7 +2,7 @@ import { config } from '../config/index.js'
 import { applicationStatus } from '../constants/index.js'
 import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count.js'
 
-export const requiresComplianceCheck = async () => {
+export const generateClaimStatus = async () => {
   const complianceCheckRatio = Number(config.complianceCheckRatio)
 
   // if complianceCheckRatio is 0 or less this means compliance checks are turned off
