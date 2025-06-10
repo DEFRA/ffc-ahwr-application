@@ -44,6 +44,8 @@ const isSheep = (payload) => payload.data.typeOfLivestock === livestockTypes.she
 const isPositiveReviewTestResult = (payload) => payload.data.reviewTestResults === testResultsConstant.positive
 const isPiHuntYes = (payload) => payload.data.piHunt === piHunt.yes
 const isPiHuntRecommendedYes = (payload) => payload.data.piHuntRecommended === piHuntRecommended.yes
+const getHerdNameLabel = (payload) => isSheep(payload) ? 'Flock name' : 'Herd name'
+const getUnnamedHerdValue = (payload) => isSheep(payload) ? 'Unnamed flock' : 'Unnamed herd'
 
 const getTestResultsValidation = (payload) => (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
 const pigsTestResults = (payload) => isPigs(payload) && Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
@@ -223,6 +225,80 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi,
   ))
 }
 
+const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount }) => {
+  let claim; let herdGotUpdated; let herdData = {}
+
+  const { payload } = request
+  const { herd, ...payloadData } = payload.data
+
+  await sequelize.transaction(async () => {
+    let claimHerdData = {}
+    if (isMultiHerdsClaim) {
+      const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
+
+      herdGotUpdated = herdWasUpdated
+      herdData = herdModel.dataValues
+
+      claimHerdData = {
+        herdId: herdModel.dataValues.id,
+        herdVersion: herdModel.dataValues.version,
+        herdAssociatedAt: new Date().toISOString()
+      }
+      if (herd.herdSame === 'yes') {
+        await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
+      }
+    }
+    const data = { ...payloadData, amount, claimType: payload.type, ...claimHerdData }
+    claim = await setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
+  })
+
+  return { claim, herdGotUpdated, herdData }
+}
+
+const sendClaimConfirmationEmail = async (request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData }) => {
+  const { payload } = request
+
+  const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
+    reference: claim.dataValues.reference,
+    applicationReference: claim.dataValues.applicationReference,
+    amount,
+    email: application.dataValues.data?.organisation?.email,
+    farmerName: application.dataValues.data?.organisation?.farmerName,
+    species: livestockToReadableSpecies[typeOfLivestock],
+    orgData: {
+      orgName: application.dataValues.data?.organisation?.name,
+      orgEmail: application.dataValues.data?.organisation?.orgEmail,
+      crn: application.dataValues.data?.organisation?.crn,
+      sbi: application.dataValues.data?.organisation?.sbi
+    },
+    herdNameLabel: getHerdNameLabel(payload),
+    herdName: herdData.herdName ?? getUnnamedHerdValue(payload)
+  },
+  isFollowUp(payload) ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
+  )
+
+  request.logger.setBindings({ claimConfirmationEmailSent })
+
+  if (claimConfirmationEmailSent) {
+    appInsights.defaultClient.trackEvent({
+      name: 'process-claim',
+      properties: {
+        data: {
+          applicationReference,
+          typeOfLivestock,
+          dateOfVisit,
+          claimType: type,
+          piHunt: payload.data.piHunt
+        },
+        reference: claim?.dataValues?.reference,
+        status: statusId,
+        sbi,
+        scheme: 'new-world'
+      }
+    })
+  }
+}
+
 export const claimHandlers = [
   {
     method: 'GET',
@@ -326,22 +402,20 @@ export const claimHandlers = [
         }
 
         const { error } = isClaimDataValid(request.payload, application.dataValues.flags)
-
         if (error) {
           request.logger.setBindings({ error })
           appInsights.defaultClient.trackException({ exception: error })
           return h.response({ error }).code(400).takeover()
         }
 
-        const isFollowUp = request.payload.type === claimType.endemics
         const tempClaimReference = payload?.reference
         const { type } = payload
-        const { typeOfLivestock, dateOfVisit, reviewTestResults } = payload.data
+        const { typeOfLivestock, dateOfVisit, reviewTestResults, herd } = payload.data
         const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
         const laboratoryURN = payload?.data?.laboratoryURN
 
         request.logger.setBindings({
-          isFollowUp,
+          isFollowUp: isFollowUp(payload),
           applicationReference,
           claimReference,
           laboratoryURN
@@ -353,38 +427,15 @@ export const claimHandlers = [
 
         if (laboratoryURN) {
           const { isURNUnique } = await isURNNumberUnique(sbi, laboratoryURN)
-
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
         const amount = await getAmount(request.payload)
         const statusId = await requiresComplianceCheck()
-        const { herd, ...payloadData } = payload.data
 
-        let claim, herdGotUpdated
-        let herdData = {}
         const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 
-        await sequelize.transaction(async () => {
-          let claimHerdData = {}
-          if (isMultiHerdsClaim) {
-            const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
-
-            herdGotUpdated = herdWasUpdated
-            herdData = herdModel.dataValues
-
-            claimHerdData = {
-              herdId: herdModel.dataValues.id,
-              herdVersion: herdModel.dataValues.version,
-              herdAssociatedAt: new Date().toISOString()
-            }
-            if (herd.herdSame === 'yes') {
-              await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
-            }
-          }
-          const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
-          claim = await setClaim({ ...payload, reference: claimReference, data: claimData, statusId, sbi })
-        })
+        const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount })
 
         if (!claim) {
           throw new Error('Claim was not created')
@@ -394,43 +445,7 @@ export const claimHandlers = [
           await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
 
-        const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
-          reference: claim.dataValues.reference,
-          applicationReference: claim.dataValues.applicationReference,
-          amount,
-          email: application.dataValues.data?.organisation?.email,
-          farmerName: application.dataValues.data?.organisation?.farmerName,
-          species: livestockToReadableSpecies[typeOfLivestock],
-          orgData: {
-            orgName: application.dataValues.data?.organisation?.name,
-            orgEmail: application.dataValues.data?.organisation?.orgEmail,
-            crn: application.dataValues.data?.organisation?.crn,
-            sbi: application.dataValues.data?.organisation?.sbi
-          }
-        },
-        isFollowUp ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
-        )
-
-        request.logger.setBindings({ claimConfirmationEmailSent })
-
-        if (claimConfirmationEmailSent) {
-          appInsights.defaultClient.trackEvent({
-            name: 'process-claim',
-            properties: {
-              data: {
-                applicationReference,
-                typeOfLivestock,
-                dateOfVisit,
-                claimType: type,
-                piHunt: payload.data.piHunt
-              },
-              reference: claim?.dataValues?.reference,
-              status: statusId,
-              sbi,
-              scheme: 'new-world'
-            }
-          })
-        }
+        await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData })
 
         await sendMessage(
           {

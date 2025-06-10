@@ -22,6 +22,7 @@ jest.mock('../../../../../app/lib/request-email.js')
 jest.mock('../../../../../app/lib/getAmount')
 jest.mock('../../../../../app/storage/getBlob')
 jest.mock('../../../../../app/lib/context-helper')
+jest.mock('../../../../../app/lib/emit-herd-MI-events')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -447,15 +448,17 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith({
       applicationReference: applicationRef,
       reference: claimRef,
       species: 'Beef cattle',
       email: 'test@test-unit.com',
       amount: 100,
       farmerName: 'farmerName',
-      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', crn: '1100014934', sbi: '106705779' }
-    }), config.notify.templateIdFarmerEndemicsFollowupComplete)
+      orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', crn: '1100014934', sbi: '106705779' },
+      herdNameLabel: 'Herd name',
+      herdName: 'Unnamed herd'
+    }, config.notify.templateIdFarmerEndemicsFollowupComplete)
     expect(sendMessage).toHaveBeenCalledWith(
       {
         sbi: '106705779',
@@ -471,6 +474,84 @@ describe('Post claim test', () => {
         piHuntAllAnimals: 'yes'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+  })
+
+  test('Post claim with Type: endemics and Type of Livestock: sheep returns 200 and calls requestClaimConfirmationEmail with flock not herd', async () => {
+    const claimRef = 'TEMP-3FS2-334F'
+    const applicationRef = 'IAHW-0AD3-3322'
+    const options = {
+      method: 'POST',
+      url: '/api/claim',
+      payload: {
+        applicationReference: applicationRef,
+        reference: claimRef,
+        type: 'E',
+        createdBy: 'admin',
+        data: {
+          amount: '639',
+          vetsName: 'hope',
+          dateOfVisit: '2025-04-30T00:00:00.000Z',
+          dateOfTesting: '2025-04-30T00:00:00.000Z',
+          vetRCVSNumber: '1122334',
+          speciesNumbers: 'yes',
+          typeOfLivestock: 'sheep',
+          numberAnimalsTested: '10',
+          sheepEndemicsPackage: 'improvedEwePerformance',
+          testResults: [{ diseaseType: 'johnes', result: 'positive' }]
+        }
+      }
+    }
+
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => { return true })
+    isMultipleHerdsUserJourney.mockImplementation(() => { return false })
+    isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
+    getApplication.mockResolvedValueOnce({
+      dataValues: {
+        createdAt: '2024-02-14T09:59:46.756Z',
+        id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
+        updatedAt: '2024-02-14T10:43:03.544Z',
+        updatedBy: 'admin',
+        reference: applicationRef,
+        applicationReference: applicationRef,
+        data: {
+          organisation: {
+            email: 'test@test-unit.com',
+            farmerName: 'farmerName',
+            name: 'orgName',
+            orgEmail: 'test@test-unit.org',
+            crn: '1100014934',
+            sbi: '106705779'
+          }
+        },
+        statusId: 1,
+        type: 'E',
+        createdBy: 'admin'
+      }
+    })
+    setClaim.mockResolvedValueOnce({
+      dataValues: {
+        reference: claimRef,
+        applicationReference: applicationRef
+      }
+    })
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(
+      {
+        applicationReference: applicationRef,
+        reference: claimRef,
+        species: 'Sheep',
+        email: 'test@test-unit.com',
+        amount: 100,
+        farmerName: 'farmerName',
+        orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', crn: '1100014934', sbi: '106705779' },
+        herdNameLabel: 'Flock name',
+        herdName: 'Unnamed flock'
+      },
+      config.notify.templateIdFarmerEndemicsFollowupComplete
     )
   })
 
@@ -765,6 +846,7 @@ describe('Post claim test', () => {
       }
     }
     isMultipleHerdsUserJourney.mockImplementation(() => { return true })
+    config.multiHerds.enabled = true
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {
@@ -787,7 +869,11 @@ describe('Post claim test', () => {
           numberAnimalsTested: 30,
           organisation: {
             crn: '1100014934',
-            sbi: '106705779'
+            sbi: '106705779',
+            email: 'test@test-unit.com',
+            farmerName: 'John Doe',
+            orgEmail: 'org@test-unit.com',
+            name: 'Farm Co'
           }
         },
         statusId: 1,
@@ -851,6 +937,17 @@ describe('Post claim test', () => {
       herdReasons: ['differentBreed', 'separateManagementNeeds'],
       createdBy: 'admin'
     })
+    expect(requestClaimConfirmationEmail).toHaveBeenCalledWith({
+      reference: 'TEMP-O9UD-22F6',
+      applicationReference: 'AHWR-0AD3-3322',
+      email: 'test@test-unit.com',
+      amount: 100,
+      farmerName: 'John Doe',
+      species: 'Pigs',
+      orgData: { orgName: 'Farm Co', orgEmail: 'org@test-unit.com', sbi: '106705779', crn: '1100014934' },
+      herdNameLabel: 'Herd name',
+      herdName: 'Sample herd one'
+    }, config.notify.templateIdFarmerEndemicsReviewComplete)
   })
 
   test('should create a new herd and link it to the claim and previousClaims when herdSame', async () => {

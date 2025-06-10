@@ -60,7 +60,7 @@ export const requestApplicationDocumentGenerateAndEmail = async (emailParams) =>
 }
 
 export const requestClaimConfirmationEmail = async (data, templateId) => {
-  const { orgData, reference, applicationReference, species } = data
+  const { orgData, reference, applicationReference, species, herdNameLabel, herdName } = data
   let email = data.email
   let isSuccessful = true
 
@@ -70,7 +70,9 @@ export const requestClaimConfirmationEmail = async (data, templateId) => {
     species,
     amount: data.amount,
     crn: orgData.crn,
-    sbi: orgData.sbi
+    sbi: orgData.sbi,
+    herdNameLabel,
+    herdName
   }
 
   if (!email && !orgData.orgEmail) {

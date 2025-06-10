@@ -23,6 +23,7 @@ const userType = 'newUser'
 describe('sendEmail', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    config.multiHerds.enabled = false
   })
 
   test('sendFarmerConfirmationEmail calls sendMessage via SFD', async () => {
@@ -214,6 +215,57 @@ describe('sendEmail', () => {
 
       expect(result).toBe(true)
       expect(sendSFDEmail).toHaveBeenCalledWith(templateIdFarmerEndemicsClaimComplete, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+    })
+
+    test('sendFarmerEndemicsClaimConfirmationEmail sends email with herdNameLabel and herdName', async () => {
+      config.notify.carbonCopyEmailAddress = 'test@test.com'
+      const data = {
+        ...baseInputData,
+        orgData: {
+          orgEmail: 'test@unit-test.org',
+          crn: '1234567890',
+          sbi: '123456789'
+        },
+        herdNameLabel: 'Herd name',
+        herdName: 'Commercial herd'
+      }
+      const templateId = 'templateIdFarmerEndemicsClaimComplete'
+
+      const result = await requestClaimConfirmationEmail(data, templateId)
+
+      const expectedPersonalisation = {
+        reference: data.reference,
+        applicationReference: data.applicationReference,
+        amount: data.amount || '£[amount]',
+        crn: data.orgData.crn,
+        sbi: data.orgData.sbi,
+        species: data.species,
+        herdNameLabel: 'Herd name',
+        herdName: 'Commercial herd'
+      }
+      expect(result).toBe(true)
+      expect(sendSFDEmail).toHaveBeenCalledTimes(3)
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, 'test@test.com', { personalisation: expectedPersonalisation })
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.email, { personalisation: expectedPersonalisation, reference: data.reference })
+      expect(sendSFDEmail).toHaveBeenCalledWith(templateId, data.orgData.orgEmail, { personalisation: expectedPersonalisation, reference: data.reference })
+      expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+        name: 'claim-email-requested',
+        properties: {
+          addressType: 'CC',
+          reference: 'RESH-DFEF-6037',
+          status: true,
+          templateId: 'templateIdFarmerEndemicsClaimComplete'
+        }
+      })
+      expect(applicationInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
+        name: 'claim-email-requested',
+        properties: {
+          addressType: 'email',
+          reference: 'RESH-DFEF-6037',
+          status: true,
+          templateId: 'templateIdFarmerEndemicsClaimComplete'
+        }
+      })
     })
   })
 })
