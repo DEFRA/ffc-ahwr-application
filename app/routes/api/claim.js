@@ -358,8 +358,8 @@ export const claimHandlers = [
         }
 
         const amount = await getAmount(request.payload)
-        const statusId = await requiresComplianceCheck()
         const { herd, ...payloadData } = payload.data
+        let statusId = applicationStatus.onHold // default status
 
         let claim, herdGotUpdated
         let herdData = {}
@@ -382,6 +382,7 @@ export const claimHandlers = [
               await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
             }
           }
+          statusId = await requiresComplianceCheck()
           const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
           claim = await setClaim({ ...payload, reference: claimReference, data: claimData, statusId, sbi })
         })

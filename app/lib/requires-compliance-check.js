@@ -1,11 +1,8 @@
 import { config } from '../config/index.js'
 import { applicationStatus } from '../constants/index.js'
-import { getAllClaimedClaims } from '../repositories/claim-repository.js'
+import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count.js'
 
 export const requiresComplianceCheck = async () => {
-  const claimStatusIds = [applicationStatus.inCheck, applicationStatus.readyToPay, applicationStatus.rejected, applicationStatus.onHold, applicationStatus.recommendToPay, applicationStatus.recommendToReject]
-
-  const claimedApplicationsCount = await getAllClaimedClaims(claimStatusIds)
   const complianceCheckRatio = Number(config.complianceCheckRatio)
 
   // if complianceCheckRatio is 0 or less this means compliance checks are turned off
@@ -13,8 +10,10 @@ export const requiresComplianceCheck = async () => {
     return applicationStatus.onHold
   }
 
+  const complianceCheckNumber = await getAndIncrementComplianceCheckCount()
+
   // if claim hits the compliance check ratio, it should be inCheck
-  if ((claimedApplicationsCount + 1) % complianceCheckRatio === 0) {
+  if (complianceCheckNumber % complianceCheckRatio === 0) {
     return applicationStatus.inCheck
   }
 
