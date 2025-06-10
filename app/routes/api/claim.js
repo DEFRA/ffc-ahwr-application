@@ -223,6 +223,36 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi,
   ))
 }
 
+const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount }) => {
+  let claim; let herdGotUpdated; let herdData = {}
+
+  const { payload } = request
+  const { herd, ...payloadData } = payload.data
+
+  await sequelize.transaction(async () => {
+    let claimHerdData = {}
+    if (isMultiHerdsClaim) {
+      const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
+
+      herdGotUpdated = herdWasUpdated
+      herdData = herdModel.dataValues
+
+      claimHerdData = {
+        herdId: herdModel.dataValues.id,
+        herdVersion: herdModel.dataValues.version,
+        herdAssociatedAt: new Date().toISOString()
+      }
+      if (herd.herdSame === 'yes') {
+        await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
+      }
+    }
+    const data = { ...payloadData, amount, claimType: payload.type, ...claimHerdData }
+    claim = await setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
+  })
+
+  return { claim, herdGotUpdated, herdData }
+}
+
 export const claimHandlers = [
   {
     method: 'GET',
@@ -326,7 +356,6 @@ export const claimHandlers = [
         }
 
         const { error } = isClaimDataValid(request.payload, application.dataValues.flags)
-
         if (error) {
           request.logger.setBindings({ error })
           appInsights.defaultClient.trackException({ exception: error })
@@ -336,7 +365,7 @@ export const claimHandlers = [
         const isFollowUp = request.payload.type === claimType.endemics
         const tempClaimReference = payload?.reference
         const { type } = payload
-        const { typeOfLivestock, dateOfVisit, reviewTestResults } = payload.data
+        const { typeOfLivestock, dateOfVisit, reviewTestResults, herd } = payload.data
         const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
         const laboratoryURN = payload?.data?.laboratoryURN
 
@@ -353,38 +382,16 @@ export const claimHandlers = [
 
         if (laboratoryURN) {
           const { isURNUnique } = await isURNNumberUnique(sbi, laboratoryURN)
-
           if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(400).takeover()
         }
 
         const amount = await getAmount(request.payload)
         const statusId = await requiresComplianceCheck()
-        const { herd, ...payloadData } = payload.data
 
-        let claim, herdGotUpdated
-        let herdData = {}
         const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 
-        await sequelize.transaction(async () => {
-          let claimHerdData = {}
-          if (isMultiHerdsClaim) {
-            const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
-
-            herdGotUpdated = herdWasUpdated
-            herdData = herdModel.dataValues
-
-            claimHerdData = {
-              herdId: herdModel.dataValues.id,
-              herdVersion: herdModel.dataValues.version,
-              herdAssociatedAt: new Date().toISOString()
-            }
-            if (herd.herdSame === 'yes') {
-              await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
-            }
-          }
-          const claimData = { ...payloadData, amount, claimType: request.payload.type, ...claimHerdData }
-          claim = await setClaim({ ...payload, reference: claimReference, data: claimData, statusId, sbi })
-        })
+        const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim,
+          { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount })
 
         if (!claim) {
           throw new Error('Claim was not created')
