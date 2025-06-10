@@ -226,13 +226,12 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi,
 }
 
 const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount }) => {
-  let claim; let herdGotUpdated; let herdData = {}
+  let herdGotUpdated; let herdData = {}
 
   const { payload } = request
   const { herd, ...payloadData } = payload.data
-  const { typeOfLivestock } = payloadData
 
-  await sequelize.transaction(async () => {
+  const claim = await sequelize.transaction(async () => {
     let claimHerdData = {}
     if (isMultiHerdsClaim) {
       const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
@@ -250,7 +249,7 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
       }
     }
     const data = { ...payloadData, amount, claimType: payload.type, ...claimHerdData }
-    claim = await setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
+    return setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
   })
 
   return { claim, herdGotUpdated, herdData }
@@ -451,6 +450,7 @@ export const claimHandlers = [
             agreementReference: applicationReference,
             claimReference,
             claimStatus: statusId,
+
             claimType: type,
             typeOfLivestock,
             reviewTestResults,
