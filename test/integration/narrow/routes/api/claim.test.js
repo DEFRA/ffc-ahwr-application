@@ -555,6 +555,20 @@ describe('Post claim test', () => {
       },
       config.notify.templateIdFarmerEndemicsFollowupComplete
     )
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        sbi: '106705779',
+        crn: '1100014934',
+        agreementReference: applicationRef,
+        claimReference: claimRef,
+        claimStatus: 11,
+        claimType: 'E',
+        typeOfLivestock: 'sheep',
+        dateTime: expect.any(Date),
+        herdName: 'Unnamed flock'
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
   })
 
   test('Post claim with non-found application reference return 404', async () => {
