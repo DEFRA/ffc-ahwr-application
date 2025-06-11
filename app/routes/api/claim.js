@@ -30,7 +30,6 @@ import { buildData } from '../../data/index.js'
 import { herdSchema } from './schema/herd.schema.js'
 import { arraysAreEqual } from '../../lib/array-utils.js'
 import { emitHerdMIEvents } from '../../lib/emit-herd-MI-events.js'
-import { ap } from '@faker-js/faker/dist/airline-D6ksJFwG.js'
 
 const { sequelize } = buildData
 
