@@ -10,10 +10,10 @@ export const generateClaimStatus = async () => {
     return applicationStatus.onHold
   }
 
-  const complianceCheckNumber = await getAndIncrementComplianceCheckCount()
+  const complianceCheckCount = await getAndIncrementComplianceCheckCount()
 
   // if claim hits the compliance check ratio, it should be inCheck
-  if (complianceCheckNumber % complianceCheckRatio === 0) {
+  if (complianceCheckCount % complianceCheckRatio === 0) {
     return applicationStatus.inCheck
   }
 

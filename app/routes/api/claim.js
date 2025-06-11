@@ -226,7 +226,7 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi,
 }
 
 const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount }) => {
-  let claim; let herdGotUpdated; let herdData = {}
+  let herdGotUpdated; let herdData = {}
 
   const { payload } = request
   const { herd, ...payloadData } = payload.data
@@ -433,7 +433,6 @@ export const claimHandlers = [
         }
 
         const amount = await getAmount(request.payload)
-        const { herd } = payload.data
 
         const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 

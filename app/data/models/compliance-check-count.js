@@ -12,12 +12,12 @@ export const complianceCheckCount = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0
       },
-       createdAt: DataTypes.DATE,
-       updatedAt: DataTypes.DATE
+      createdAt: DataTypes.DATE,
+      updatedAt: DataTypes.DATE
     },
     {
       freezeTableName: true,
-      tableName: 'compliance_check_count',
+      tableName: 'compliance_check_count'
     })
 
   return complianceCheckCountModel
