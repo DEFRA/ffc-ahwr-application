@@ -230,7 +230,6 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
 
   const { payload } = request
   const { herd, ...payloadData } = payload.data
-  let statusId = applicationStatus.onHold
 
   const claim = await sequelize.transaction(async () => {
     let claimHerdData = {}
@@ -249,15 +248,15 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
         await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
       }
     }
-    statusId = await generateClaimStatus()
+    const statusId = await generateClaimStatus()
     const data = { ...payloadData, amount, claimType: payload.type, ...claimHerdData }
     return setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
   })
 
-  return { claim, herdGotUpdated, herdData, statusId }
+  return { claim, herdGotUpdated, herdData }
 }
 
-const sendClaimConfirmationEmail = async (request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData }) => {
+const sendClaimConfirmationEmail = async (request, claim, application, { sbi, applicationReference, type, typeOfLivestock, dateOfVisit, amount, herdData }) => {
   const { payload } = request
 
   const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
@@ -293,7 +292,7 @@ const sendClaimConfirmationEmail = async (request, claim, application, { sbi, ap
           piHunt: payload.data.piHunt
         },
         reference: claim?.dataValues?.reference,
-        status: statusId,
+        status: claim?.dataValues?.statusId,
         sbi,
         scheme: 'new-world'
       }
@@ -436,8 +435,8 @@ export const claimHandlers = [
 
         const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 
-        const { claim, herdGotUpdated, herdData, statusId } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount })
-
+        const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount })
+        console.log('CLAIM', claim)
         if (!claim) {
           throw new Error('Claim was not created')
         }
@@ -446,7 +445,7 @@ export const claimHandlers = [
           await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
 
-        await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData })
+        await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, type, typeOfLivestock, dateOfVisit, amount, herdData })
 
         await sendMessage(
           {
@@ -454,7 +453,7 @@ export const claimHandlers = [
             sbi,
             agreementReference: applicationReference,
             claimReference,
-            claimStatus: statusId,
+            claimStatus: claim.dataValues.statusId,
             claimType: type,
             typeOfLivestock,
             reviewTestResults,

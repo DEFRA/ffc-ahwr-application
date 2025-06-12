@@ -1,5 +1,5 @@
-import { requiresComplianceCheck } from '../../../../app/lib/requires-compliance-check'
-import { getAllClaimedClaims } from '../../../../app/repositories/claim-repository'
+import { generateClaimStatus } from '../../../../app/lib/requires-compliance-check'
+import { getAndIncrementComplianceCheckCount } from '../../../../app/repositories/compliance-check-count'
 import { applicationStatus } from '../../../../app/constants/index'
 
 jest.mock('../../../../app/constants/index', () => ({
@@ -9,8 +9,8 @@ jest.mock('../../../../app/constants/index', () => ({
   }
 }))
 
-jest.mock('../../../../app/repositories/claim-repository', () => ({
-  getAllClaimedClaims: jest.fn()
+jest.mock('../../../../app/repositories/compliance-check-count', () => ({
+  getAndIncrementComplianceCheckCount: jest.fn()
 }))
 jest.mock('../../../../app/config/index', () => ({
   config: {
@@ -18,53 +18,47 @@ jest.mock('../../../../app/config/index', () => ({
   }
 }))
 
-const mockGetAllClaimedClaims = getAllClaimedClaims
+const mockGetAndIncrementComplianceCheckCount = getAndIncrementComplianceCheckCount
 
-describe('Test requires compliance check', () => {
+describe('Test generateClaimStatus', () => {
   afterEach(() => jest.clearAllMocks())
 
   test('should return inCheck when compliance checks are enabled and ratio matches', async () => {
-    mockGetAllClaimedClaims.mockResolvedValue(4)
-    const result = await requiresComplianceCheck()
+    mockGetAndIncrementComplianceCheckCount.mockResolvedValue(5)
+    const result = await generateClaimStatus()
 
-    expect(mockGetAllClaimedClaims).toHaveBeenCalledTimes(1)
-    expect(mockGetAllClaimedClaims).toHaveBeenCalledWith([
-      applicationStatus.inCheck,
-      applicationStatus.readyToPay,
-      applicationStatus.rejected,
-      applicationStatus.onHold,
-      applicationStatus.recommendToPay,
-      applicationStatus.recommendToReject
-    ])
+    expect(mockGetAndIncrementComplianceCheckCount).toHaveBeenCalledTimes(1)
     expect(result).toBe(applicationStatus.inCheck)
   })
 
   test('should return onHold when compliance checks are disabled (ratio <= 0)', async () => {
     const { config } = require('../../../../app/config/index')
     config.complianceCheckRatio = '0'
-    mockGetAllClaimedClaims.mockResolvedValue(10)
+    mockGetAndIncrementComplianceCheckCount.mockResolvedValue(10)
 
-    const result = await requiresComplianceCheck()
+    const result = await generateClaimStatus()
 
     expect(result).toBe(applicationStatus.onHold)
+    expect(mockGetAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
   })
 
   test('should return onHold when compliance checks are disabled (negative ratio)', async () => {
     const { config } = require('../../../../app/config/index')
     config.complianceCheckRatio = '-1'
-    mockGetAllClaimedClaims.mockResolvedValue(5)
+    mockGetAndIncrementComplianceCheckCount.mockResolvedValue(5)
 
-    const result = await requiresComplianceCheck()
+    const result = await generateClaimStatus()
 
     expect(result).toBe(applicationStatus.onHold)
+    expect(mockGetAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
   })
 
   test('should return onHold when claim count does not match ratio interval', async () => {
     const { config } = require('../../../../app/config/index')
     config.complianceCheckRatio = '5'
-    mockGetAllClaimedClaims.mockResolvedValue(6)
+    mockGetAndIncrementComplianceCheckCount.mockResolvedValue(6)
 
-    const result = await requiresComplianceCheck()
+    const result = await generateClaimStatus()
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -72,30 +66,30 @@ describe('Test requires compliance check', () => {
   test('should return inCheck when claim count matches ratio interval', async () => {
     const { config } = require('../../../../app/config/index')
     config.complianceCheckRatio = '3'
-    mockGetAllClaimedClaims.mockResolvedValue(2)
+    mockGetAndIncrementComplianceCheckCount.mockResolvedValue(3)
 
-    const result = await requiresComplianceCheck()
+    const result = await generateClaimStatus()
 
     expect(result).toBe(applicationStatus.inCheck)
   })
 
-  test('should return onHold when no existing claim applications', async () => {
+  test('should return inCheck when claim count is multiple of ratio', async () => {
     const { config } = require('../../../../app/config/index')
     config.complianceCheckRatio = '5'
-    mockGetAllClaimedClaims.mockResolvedValue(0)
+    mockGetAndIncrementComplianceCheckCount.mockResolvedValue(10)
 
-    const result = await requiresComplianceCheck()
-
-    expect(result).toBe(applicationStatus.onHold)
-  })
-
-  test('should return inCheck when no existing claim applications and ratio is 1', async () => {
-    const { config } = require('../../../../app/config/index')
-    config.complianceCheckRatio = '1'
-    mockGetAllClaimedClaims.mockResolvedValue(0)
-
-    const result = await requiresComplianceCheck()
+    const result = await generateClaimStatus()
 
     expect(result).toBe(applicationStatus.inCheck)
+  })
+
+  test('should return onHold when claim count is not multiple of ratio', async () => {
+    const { config } = require('../../../../app/config/index')
+    config.complianceCheckRatio = '3'
+    mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
+
+    const result = await generateClaimStatus()
+
+    expect(result).toBe(applicationStatus.onHold)
   })
 })
