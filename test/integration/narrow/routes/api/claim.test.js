@@ -26,12 +26,6 @@ jest.mock('../../../../../app/lib/context-helper')
 jest.mock('../../../../../app/lib/emit-herd-MI-events')
 jest.mock('../../../../../app/lib/requires-compliance-check.js')
 
-// Create a proper mock for generateClaimStatus
-// const mockGenerateClaimStatus = jest.fn().mockResolvedValue(11)
-// jest.mock('../../../../../app/lib/requires-compliance-check', () => ({
-//   generateClaimStatus: mockGenerateClaimStatus
-// }))
-
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
   { diseaseType: 'sheepScab', result: 'positive' }
@@ -213,7 +207,6 @@ describe('Post claim test', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks()
-    // mockGenerateClaimStatus.mockClear()
     await server.start()
     jest.mock('../../../../../app/config', () => ({
       storage: {
@@ -341,7 +334,6 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    // expect(mockGenerateClaimStatus).toHaveBeenCalledTimes(1)
     expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(sendMessage).toHaveBeenCalledWith(
       {
@@ -469,7 +461,6 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    // expect(mockGenerateClaimStatus).toHaveBeenCalledTimes(1)
     expect(requestClaimConfirmationEmail).toHaveBeenCalledWith({
       applicationReference: applicationRef,
       reference: claimRef,
@@ -562,7 +553,6 @@ describe('Post claim test', () => {
     const res = await server.inject(options)
 
     expect(res.statusCode).toBe(200)
-    // expect(mockGenerateClaimStatus).toHaveBeenCalledTimes(1)
     expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(
       {
         applicationReference: applicationRef,
@@ -709,7 +699,6 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledTimes(1)
-    // expect(mockGenerateClaimStatus).toHaveBeenCalledTimes(1)
     expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       reference: 'AHWR-0F5D-4A26',
