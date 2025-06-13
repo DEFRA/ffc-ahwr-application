@@ -35,6 +35,9 @@ const { sequelize } = buildData
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
+const UNNAMED_FLOCK = 'Unnamed flock'
+const UNNAMED_HERD = 'Unnamed herd'
+
 const isReview = (payload) => payload.type === claimType.review
 const isFollowUp = (payload) => payload.type === claimType.endemics
 const isPigs = (payload) => payload.data.typeOfLivestock === livestockTypes.pigs
@@ -45,8 +48,8 @@ const isPositiveReviewTestResult = (payload) => payload.data.reviewTestResults =
 const isPiHuntYes = (payload) => payload.data.piHunt === piHunt.yes
 const isPiHuntRecommendedYes = (payload) => payload.data.piHuntRecommended === piHuntRecommended.yes
 const getHerdNameLabel = (payload) => isSheep(payload) ? 'Flock name' : 'Herd name'
-const getUnnamedHerdValue = (payload) => isSheep(payload) ? 'Unnamed flock' : 'Unnamed herd'
-const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) => typeOfLivestock === 'sheep' ? 'Unnamed flock' : 'Unnamed herd'
+const getUnnamedHerdValue = (payload) => isSheep(payload) ? UNNAMED_FLOCK : UNNAMED_HERD
+const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) => typeOfLivestock === livestockTypes.sheep ? UNNAMED_FLOCK : UNNAMED_HERD
 
 const getTestResultsValidation = (payload) => (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
 const pigsTestResults = (payload) => isPigs(payload) && Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
