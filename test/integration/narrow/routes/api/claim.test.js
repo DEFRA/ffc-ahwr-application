@@ -546,7 +546,8 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claimRef,
-        applicationReference: applicationRef
+        applicationReference: applicationRef,
+        statusId: 11
       }
     })
 
