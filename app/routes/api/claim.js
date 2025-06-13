@@ -436,7 +436,7 @@ export const claimHandlers = [
         const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 
         const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount })
-        console.log('CLAIM', claim)
+
         if (!claim) {
           throw new Error('Claim was not created')
         }
