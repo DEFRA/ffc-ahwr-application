@@ -11,6 +11,7 @@ import { isVisitDateAfterPIHuntAndDairyGoLive, isMultipleHerdsUserJourney } from
 import { config } from '../../../../../app/config/index.js'
 import { buildData } from '../../../../../app/data/index.js'
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../../../../app/repositories/herd-repository'
+import { generateClaimStatus } from '../../../../../app/lib/requires-compliance-check.js'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
@@ -23,6 +24,7 @@ jest.mock('../../../../../app/lib/getAmount')
 jest.mock('../../../../../app/storage/getBlob')
 jest.mock('../../../../../app/lib/context-helper')
 jest.mock('../../../../../app/lib/emit-herd-MI-events')
+jest.mock('../../../../../app/lib/requires-compliance-check.js')
 
 const sheepTestResultsMockData = [
   { diseaseType: 'flystrike', result: 'negative' },
@@ -205,7 +207,6 @@ describe('Post claim test', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks()
-    jest.resetAllMocks()
     await server.start()
     jest.mock('../../../../../app/config', () => ({
       storage: {
@@ -325,7 +326,8 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claim.reference,
-        applicationReference: claim.applicationReference
+        applicationReference: claim.applicationReference,
+        statusId: 11
       }
     })
 
@@ -377,10 +379,19 @@ describe('Post claim test', () => {
           createdBy: 'admin'
         }
       })
+      setClaim.mockResolvedValueOnce({
+        dataValues: {
+          reference: claim.reference,
+          applicationReference: claim.applicationReference,
+          statusId: 11
+        }
+      })
+      generateClaimStatus.mockResolvedValueOnce(11)
 
       await server.inject(options)
 
       expect(setClaim).toHaveBeenCalledTimes(1)
+      expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
     }
   )
 
@@ -442,7 +453,8 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claimRef,
-        applicationReference: applicationRef
+        applicationReference: applicationRef,
+        statusId: 11
       }
     })
 
@@ -534,7 +546,8 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claimRef,
-        applicationReference: applicationRef
+        applicationReference: applicationRef,
+        statusId: 11
       }
     })
 
@@ -678,7 +691,8 @@ describe('Post claim test', () => {
           dateOfTesting: '2024-01-22T00:00:00.000Z',
           laboratoryURN: 'AK-2024',
           vetRCVSNumber: 'AK-2024'
-        }
+        },
+        statusId: 11
       }
     })
     requestClaimConfirmationEmail.mockResolvedValueOnce(true)
@@ -913,9 +927,11 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claim.reference,
-        applicationReference: claim.applicationReference
+        applicationReference: claim.applicationReference,
+        statusId: 11
       }
     })
+    generateClaimStatus.mockResolvedValueOnce(11)
 
     await server.inject(options)
 
@@ -1077,6 +1093,7 @@ describe('Post claim test', () => {
         applicationReference: claim.applicationReference
       }
     })
+    generateClaimStatus.mockResolvedValueOnce(11)
 
     await server.inject(options)
 
@@ -1196,9 +1213,11 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claim.reference,
-        applicationReference: claim.applicationReference
+        applicationReference: claim.applicationReference,
+        statusId: 11
       }
     })
+    generateClaimStatus.mockResolvedValueOnce(11)
 
     await server.inject(options)
 
@@ -1324,6 +1343,7 @@ describe('Post claim test', () => {
         applicationReference: claim.applicationReference
       }
     })
+    generateClaimStatus.mockResolvedValueOnce(11)
 
     await server.inject(options)
 
@@ -1432,9 +1452,11 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claim.reference,
-        applicationReference: claim.applicationReference
+        applicationReference: claim.applicationReference,
+        statusId: 11
       }
     })
+    generateClaimStatus.mockResolvedValueOnce(11)
 
     await server.inject(options)
 
@@ -1530,14 +1552,17 @@ describe('Post claim test', () => {
     setClaim.mockResolvedValueOnce({
       dataValues: {
         reference: claim.reference,
-        applicationReference: claim.applicationReference
+        applicationReference: claim.applicationReference,
+        statusId: 11
       }
     })
+    generateClaimStatus.mockResolvedValueOnce(11)
 
     await server.inject(options)
 
     expect(createHerd).not.toHaveBeenCalled()
     expect(updateIsCurrentHerd).not.toHaveBeenCalled()
+    expect(generateClaimStatus).toHaveBeenCalledTimes(1)
     expect(setClaim).toHaveBeenCalledWith({
       applicationReference: 'AHWR-0AD3-3322',
       createdBy: 'admin',

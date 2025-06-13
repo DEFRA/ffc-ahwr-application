@@ -21,7 +21,7 @@ import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, ge
 import { getApplication } from '../../repositories/application-repository.js'
 import { requestClaimConfirmationEmail } from '../../lib/request-email.js'
 import { getAmount } from '../../lib/getAmount.js'
-import { requiresComplianceCheck } from '../../lib/requires-compliance-check.js'
+import { generateClaimStatus } from '../../lib/requires-compliance-check.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import { createClaimReference } from '../../lib/create-reference.js'
 import { isVisitDateAfterPIHuntAndDairyGoLive, isMultipleHerdsUserJourney } from '../../lib/context-helper.js'
@@ -225,7 +225,7 @@ const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi,
   ))
 }
 
-const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount }) => {
+const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount }) => {
   let herdGotUpdated; let herdData = {}
 
   const { payload } = request
@@ -248,6 +248,7 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
         await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
       }
     }
+    const statusId = await generateClaimStatus()
     const data = { ...payloadData, amount, claimType: payload.type, ...claimHerdData }
     return setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
   })
@@ -255,7 +256,7 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
   return { claim, herdGotUpdated, herdData }
 }
 
-const sendClaimConfirmationEmail = async (request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData }) => {
+const sendClaimConfirmationEmail = async (request, claim, application, { sbi, applicationReference, type, typeOfLivestock, dateOfVisit, amount, herdData }) => {
   const { payload } = request
 
   const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
@@ -291,7 +292,7 @@ const sendClaimConfirmationEmail = async (request, claim, application, { sbi, ap
           piHunt: payload.data.piHunt
         },
         reference: claim?.dataValues?.reference,
-        status: statusId,
+        status: claim?.dataValues?.statusId,
         sbi,
         scheme: 'new-world'
       }
@@ -431,17 +432,20 @@ export const claimHandlers = [
         }
 
         const amount = await getAmount(request.payload)
-        const statusId = await requiresComplianceCheck()
 
         const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 
-        const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, statusId, typeOfLivestock, amount })
+        const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount })
+
+        if (!claim) {
+          throw new Error('Claim was not created')
+        }
 
         if (isMultiHerdsClaim) {
           await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
 
-        await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, statusId, type, typeOfLivestock, dateOfVisit, amount, herdData })
+        await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, type, typeOfLivestock, dateOfVisit, amount, herdData })
 
         await sendMessage(
           {
@@ -449,7 +453,7 @@ export const claimHandlers = [
             sbi,
             agreementReference: applicationReference,
             claimReference,
-            claimStatus: statusId,
+            claimStatus: claim.dataValues.statusId,
             claimType: type,
             typeOfLivestock,
             reviewTestResults,

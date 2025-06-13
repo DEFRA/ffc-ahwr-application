@@ -12,6 +12,7 @@ import { flag } from './models/flag.js'
 import { herd } from './models/herd.js'
 import { createNamespace } from 'cls-hooked'
 import { statusHistory } from './models/status-history.js'
+import { complianceCheckCount } from './models/compliance-check-count.js'
 
 export const buildData = (() => {
   const namespace = createNamespace('transaction-namespace')
@@ -30,6 +31,7 @@ export const buildData = (() => {
   flag(sequelize, DataTypes)
   herd(sequelize, DataTypes)
   statusHistory(sequelize, DataTypes)
+  complianceCheckCount(sequelize, DataTypes)
 
   sequelize.models.application.associate(sequelize.models)
   sequelize.models.claim.associate(sequelize.models)
