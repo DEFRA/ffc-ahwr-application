@@ -1882,7 +1882,8 @@ describe('PUT claim test', () => {
         claimType: 'R',
         typeOfLivestock: 'sheep',
         reviewTestResults: 'positive',
-        dateTime: expect.any(Date)
+        dateTime: expect.any(Date),
+        herdName: 'Unnamed flock'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -1939,7 +1940,8 @@ describe('PUT claim test', () => {
         claimType: 'R',
         typeOfLivestock: 'sheep',
         reviewTestResults: 'positive',
-        dateTime: expect.any(Date)
+        dateTime: expect.any(Date),
+        herdName: 'Unnamed flock'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -2019,7 +2021,8 @@ describe('PUT claim test', () => {
         dateTime: expect.any(Date),
         sbi: '106705779',
         crn: '1100014934',
-        reviewTestResults: 'positive'
+        reviewTestResults: 'positive',
+        herdName: 'Unnamed flock'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -2097,7 +2100,8 @@ describe('PUT claim test', () => {
         crn: '1100014934',
         piHuntRecommended: 'yes',
         piHuntAllAnimals: 'yes',
-        reviewTestResults: 'negative'
+        reviewTestResults: 'negative',
+        herdName: 'Unnamed herd'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -2175,7 +2179,8 @@ describe('PUT claim test', () => {
         crn: '1100014934',
         piHuntRecommended: 'yes',
         piHuntAllAnimals: 'yes',
-        reviewTestResults: 'negative'
+        reviewTestResults: 'negative',
+        herdName: 'Unnamed herd'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -2249,7 +2254,8 @@ describe('PUT claim test', () => {
         dateTime: expect.any(Date),
         sbi: '106705779',
         crn: '1100014934',
-        reviewTestResults: 'positive'
+        reviewTestResults: 'positive',
+        herdName: 'Unnamed flock'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
@@ -2321,7 +2327,8 @@ describe('PUT claim test', () => {
         dateTime: expect.any(Date),
         sbi: '106705779',
         crn: '1100014934',
-        reviewTestResults: 'positive'
+        reviewTestResults: 'positive',
+        herdName: 'Unnamed flock'
       },
       'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
     )
