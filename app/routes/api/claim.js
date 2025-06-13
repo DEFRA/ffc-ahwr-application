@@ -555,7 +555,8 @@ export const claimHandlers = [
             reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
             piHuntRecommended: claim.dataValues.data.piHuntRecommended,
             piHuntAllAnimals: claim.dataValues.data.piHuntAllAnimals,
-            dateTime: new Date()
+            dateTime: new Date(),
+            herdName: claim.dataValues.herd?.herdName ?? (typeOfLivestock === 'sheep' ? 'Unnamed flock' : 'Unnamed herd')
           },
           messageGeneratorMsgType,
           messageGeneratorQueue,
