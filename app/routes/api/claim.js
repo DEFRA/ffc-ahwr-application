@@ -46,6 +46,7 @@ const isPiHuntYes = (payload) => payload.data.piHunt === piHunt.yes
 const isPiHuntRecommendedYes = (payload) => payload.data.piHuntRecommended === piHuntRecommended.yes
 const getHerdNameLabel = (payload) => isSheep(payload) ? 'Flock name' : 'Herd name'
 const getUnnamedHerdValue = (payload) => isSheep(payload) ? 'Unnamed flock' : 'Unnamed herd'
+const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) => typeOfLivestock === 'sheep' ? 'Unnamed flock' : 'Unnamed herd'
 
 const getTestResultsValidation = (payload) => (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
 const pigsTestResults = (payload) => isPigs(payload) && Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
@@ -556,7 +557,7 @@ export const claimHandlers = [
             piHuntRecommended: claim.dataValues.data.piHuntRecommended,
             piHuntAllAnimals: claim.dataValues.data.piHuntAllAnimals,
             dateTime: new Date(),
-            herdName: claim.dataValues.herd?.herdName ?? (typeOfLivestock === 'sheep' ? 'Unnamed flock' : 'Unnamed herd')
+            herdName: getUnnamedHerdValueByTypeOfLivestock(typeOfLivestock)
           },
           messageGeneratorMsgType,
           messageGeneratorQueue,
