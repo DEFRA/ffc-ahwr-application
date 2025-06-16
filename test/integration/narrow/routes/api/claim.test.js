@@ -2345,6 +2345,99 @@ describe('PUT claim test', () => {
       'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
   })
 
+  test('should update claim when herd exists', async () => {
+    const options = {
+      method: 'PUT',
+      url: '/api/claim/update-by-reference',
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 9,
+        user: 'admin',
+        note: 'updating status'
+      }
+    }
+    getClaimByReference.mockResolvedValueOnce({
+      dataValues: {
+        reference: 'REBC-J9AR-KILQ',
+        applicationReference: 'AHWR-KJLI-2678',
+        data: {
+          typeOfLivestock: 'beef',
+          claimType: 'E',
+          reviewTestResults: 'negative',
+          piHuntAllAnimals: 'yes',
+          piHuntRecommended: 'yes',
+          testResults: 'negative'
+        },
+        herd: {
+          id: 'a2e35593-aba9-4732-9da3-2f01ef9be888',
+          cph: '22/333/4444',
+          species: 'beef',
+          version: 1,
+          herdName: 'Commercial herd',
+          createdAt: '2025-06-12T13:08:27.21397+00:00',
+          createdBy: 'admin',
+          isCurrent: true,
+          updatedAt: null,
+          updatedBy: null,
+          herdReasons: [
+            'differentBreed',
+            'uniqueHealthNeeds'
+          ],
+          applicationReference: 'IAHW-Y2W3-2N2X'
+        }
+      }
+    })
+    getApplication.mockResolvedValueOnce({
+      dataValues: {
+        data: {
+          organisation: {
+            sbi: '106705779',
+            crn: '1100014934',
+            frn: '1102569649'
+          }
+        }
+      }
+    })
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(200)
+    expect(updateClaimByReference).toHaveBeenCalledWith({
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      statusId: 9,
+      updatedBy: 'admin'
+    }, 'updating status', expect.any(Object))
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'AHWR-KJLI-2678',
+        claimReference: 'REBC-J9AR-KILQ',
+        claimStatus: 9,
+        typeOfLivestock: 'beef',
+        claimType: 'E',
+        dateTime: expect.any(Date),
+        sbi: '106705779',
+        crn: '1100014934',
+        piHuntRecommended: 'yes',
+        piHuntAllAnimals: 'yes',
+        reviewTestResults: 'negative',
+        herdName: 'Commercial herd'
+      },
+      'uk.gov.ffc.ahwr.claim.status.update', expect.any(Object), { sessionId: expect.any(String) }
+    )
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        reference: 'REBC-J9AR-KILQ',
+        whichReview: 'beef',
+        isEndemics: true,
+        claimType: 'E',
+        reviewTestResults: 'negative',
+        frn: '1102569649',
+        sbi: '106705779'
+      },
+      'uk.gov.ffc.ahwr.submit.payment.request', expect.any(Object), { sessionId: expect.any(String) })
+  })
+
   test('Update claim should failed when reference is not provieded', async () => {
     const options = {
       method: 'PUT',

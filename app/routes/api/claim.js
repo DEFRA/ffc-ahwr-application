@@ -560,7 +560,7 @@ export const claimHandlers = [
             piHuntRecommended: claim.dataValues.data.piHuntRecommended,
             piHuntAllAnimals: claim.dataValues.data.piHuntAllAnimals,
             dateTime: new Date(),
-            herdName: getUnnamedHerdValueByTypeOfLivestock(typeOfLivestock)
+            herdName: claim.dataValues?.herd?.herdName || getUnnamedHerdValueByTypeOfLivestock(typeOfLivestock)
           },
           messageGeneratorMsgType,
           messageGeneratorQueue,
