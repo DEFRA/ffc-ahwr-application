@@ -221,15 +221,15 @@ const createOrUpdateHerd = async (herd, applicationReference, createdBy, typeOfL
   return { herdModel, herdWasUpdated }
 }
 
-const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi, createdBy, typeOfLivestock, logger) => {
+const addHerdToPreviousClaims = async (herdClaimData, applicationReference, sbi, createdBy, previousClaims, logger) => {
   logger.info('Associating new herd with previous claims for agreement ' + applicationReference)
-  const previousClaimsWithoutHerd = (await getByApplicationReference(applicationReference, typeOfLivestock)).filter(claim => { return !claim.data.herdId })
+  const previousClaimsWithoutHerd = previousClaims.filter(claim => { return !claim.data.herdId })
   await Promise.all(previousClaimsWithoutHerd.map(claim =>
     addHerdToClaimData({ claimRef: claim.reference, herdClaimData, createdBy, applicationReference, sbi })
   ))
 }
 
-const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount }) => {
+const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount, dateOfVisit }) => {
   let herdGotUpdated; let herdData = {}
 
   const { payload } = request
@@ -237,6 +237,8 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
 
   const claim = await sequelize.transaction(async () => {
     let claimHerdData = {}
+    const previousClaims = await getByApplicationReference(applicationReference, typeOfLivestock)
+
     if (isMultiHerdsClaim) {
       const { herdModel, herdWasUpdated } = await createOrUpdateHerd(herd, applicationReference, payload.createdBy, typeOfLivestock, request.logger)
 
@@ -249,10 +251,10 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
         herdAssociatedAt: new Date().toISOString()
       }
       if (herd.herdSame === 'yes') {
-        await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, typeOfLivestock, request.logger)
+        await addHerdToPreviousClaims({ ...claimHerdData, herdName: herdModel.dataValues.herdName }, applicationReference, sbi, payload.createdBy, previousClaims, request.logger)
       }
     }
-    const statusId = await generateClaimStatus()
+    const statusId = await generateClaimStatus(dateOfVisit, typeOfLivestock, claimHerdData.herdId, previousClaims)
     const data = { ...payloadData, amount, claimType: payload.type, ...claimHerdData }
     return setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
   })
@@ -439,7 +441,7 @@ export const claimHandlers = [
 
         const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, application.dataValues.flags)
 
-        const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount })
+        const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(request, isMultiHerdsClaim, { sbi, applicationReference, claimReference, typeOfLivestock, amount, dateOfVisit })
 
         if (!claim) {
           throw new Error('Claim was not created')
