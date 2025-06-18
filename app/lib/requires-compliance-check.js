@@ -4,10 +4,10 @@ import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-
 
 export const generateClaimStatus = async (visitDateAsString, herdId, previousClaimsForSpecies, logger) => {
   if (isFeatureAssuranceEnabledAndStartedBeforeVisitDate(visitDateAsString)) {
-    return await getClaimStatusBasedOnFeatureAssuranceRules(herdId, previousClaimsForSpecies, logger)
+    return getClaimStatusBasedOnFeatureAssuranceRules(herdId, previousClaimsForSpecies, logger)
   }
 
-  return await getClaimStatusBasedOnRatio()
+  return getClaimStatusBasedOnRatio()
 }
 
 const getClaimStatusBasedOnRatio = async () => {
@@ -42,5 +42,5 @@ const getClaimStatusBasedOnFeatureAssuranceRules = async (herdId, previousClaims
     return applicationStatus.inCheck
   }
 
-  return await getClaimStatusBasedOnRatio()
+  return getClaimStatusBasedOnRatio()
 }
