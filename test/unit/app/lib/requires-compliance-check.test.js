@@ -33,10 +33,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(5)
 
     const visitDate = '2025-06-01'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(mockGetAndIncrementComplianceCheckCount).toHaveBeenCalledTimes(1)
     expect(result).toBe(applicationStatus.inCheck)
@@ -48,10 +47,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(10)
 
     const visitDate = '2025-06-01'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
     expect(mockGetAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
@@ -63,10 +61,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(5)
 
     const visitDate = '2025-06-01'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
     expect(mockGetAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
@@ -78,10 +75,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(6)
 
     const visitDate = '2025-06-01'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -92,10 +88,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(3)
 
     const visitDate = '2025-06-01'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.inCheck)
   })
@@ -106,10 +101,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(10)
 
     const visitDate = '2025-06-01'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.inCheck)
   })
@@ -120,10 +114,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-01'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -136,10 +129,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-25'
-    const species = 'sheep'
     const herdId = undefined
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -152,10 +144,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-27'
-    const species = 'sheep'
     const herdId = 'fake-herd-id'
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -168,10 +159,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-27'
-    const species = 'sheep'
     const herdId = 'fake-herd-id'
     const previousClaims = []
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -184,10 +174,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-27'
-    const species = 'sheep'
     const herdId = 'fake-herd-id'
     const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId }, applicationReference: 'IAHW-FAK3-FAK3' }]
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -200,10 +189,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-27'
-    const species = 'sheep'
     const herdId = 'fake-herd-id'
     const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId }, applicationReference: 'IAHW-FAK3-FAK3' }]
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
   })
@@ -216,10 +204,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-27'
-    const species = 'sheep'
     const herdId = 'fake-herd-id-2'
     const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId: 'fake-herd-id-1' }, applicationReference: 'IAHW-FAK3-FAK3' }]
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(mockLogger.info).toHaveBeenCalledWith('Agreement \'IAHW-FAK3-FAK3\' had a claim set to inCheck due to feature assurance rules')
     expect(result).toBe(applicationStatus.inCheck)
@@ -233,10 +220,9 @@ describe('Test generateClaimStatus', () => {
     mockGetAndIncrementComplianceCheckCount.mockResolvedValue(4)
 
     const visitDate = '2025-06-27'
-    const species = 'sheep'
     const herdId = 'fake-herd-id-2'
     const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId: 'fake-herd-id-1' }, applicationReference: 'IAHW-FAK3-FAK3' }, { typeOfLivestock: 'sheep', herdId: 'fake-herd-id-2', applicationReference: 'IAHW-FAK3-FAK3' }]
-    const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
+    const result = await generateClaimStatus(visitDate, herdId, previousClaims, mockLogger)
 
     expect(mockLogger.info).toHaveBeenCalledWith('Agreement \'IAHW-FAK3-FAK3\' had a claim set to inCheck due to feature assurance rules')
     expect(result).toBe(applicationStatus.inCheck)

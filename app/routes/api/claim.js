@@ -255,8 +255,8 @@ const addClaimAndHerdToDatabase = async (request, isMultiHerdsClaim, { sbi, appl
       }
     }
 
-    const previousClaimsForSpecies = await getByApplicationReference(applicationReference, typeOfLivestock)
-    const statusId = await generateClaimStatus(dateOfVisit, typeOfLivestock, claimHerdData.herdId, previousClaimsForSpecies, request.logger)
+    const previousClaimsForSpeciesAfterUpdates = await getByApplicationReference(applicationReference, typeOfLivestock)
+    const statusId = await generateClaimStatus(dateOfVisit, claimHerdData.herdId, previousClaimsForSpeciesAfterUpdates, request.logger)
     const data = { ...payloadData, amount, claimType: payload.type, ...claimHerdData }
     return setClaim({ ...payload, reference: claimReference, data, statusId, sbi })
   })

@@ -2,7 +2,7 @@ import { config } from '../config/index.js'
 import { applicationStatus } from '../constants/index.js'
 import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count.js'
 
-export const generateClaimStatus = async (visitDateAsString, species, herdId, previousClaimsForSpecies, logger) => {
+export const generateClaimStatus = async (visitDateAsString, herdId, previousClaimsForSpecies, logger) => {
   if (isFeatureAssuranceEnabledAndStartedBeforeVisitDate(visitDateAsString)) {
     return await getClaimStatusBasedOnFeatureAssuranceRules(herdId, previousClaimsForSpecies, logger)
   }
