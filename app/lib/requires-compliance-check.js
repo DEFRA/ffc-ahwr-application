@@ -34,7 +34,7 @@ const isFeatureAssuranceEnabledAndStartedBeforeVisitDate = (visitDateAsString) =
 
 const getClaimStatusBasedOnFeatureAssuranceRules = async (herdId, previousClaimsForSpecies, logger) => {
   // previous claims have been updated to include herd info were neccessary by this point,
-  // so don't need to deferenciate between herdless claims being linked to claim being processed or not.
+  // so don't need to differentiate between unnamed herd claims being linked to the claim being processed or not.
   const hasClaimedForMultipleHerdsForSpecies = previousClaimsForSpecies.some(c => c.data.herdId !== herdId)
 
   if (hasClaimedForMultipleHerdsForSpecies) {
