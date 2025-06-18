@@ -186,7 +186,7 @@ describe('Test generateClaimStatus', () => {
     const visitDate = '2025-06-27'
     const species = 'sheep'
     const herdId = 'fake-herd-id'
-    const previousClaims = [{ typeOfLivestock: 'beef', herdId, applicationReference: 'IAHW-FAK3-FAK3' }]
+    const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId }, applicationReference: 'IAHW-FAK3-FAK3' }]
     const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
@@ -202,7 +202,7 @@ describe('Test generateClaimStatus', () => {
     const visitDate = '2025-06-27'
     const species = 'sheep'
     const herdId = 'fake-herd-id'
-    const previousClaims = [{ typeOfLivestock: 'sheep', herdId, applicationReference: 'IAHW-FAK3-FAK3' }]
+    const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId }, applicationReference: 'IAHW-FAK3-FAK3' }]
     const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
 
     expect(result).toBe(applicationStatus.onHold)
@@ -218,7 +218,7 @@ describe('Test generateClaimStatus', () => {
     const visitDate = '2025-06-27'
     const species = 'sheep'
     const herdId = 'fake-herd-id-2'
-    const previousClaims = [{ typeOfLivestock: 'sheep', herdId: 'fake-herd-id-1', applicationReference: 'IAHW-FAK3-FAK3' }]
+    const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId: 'fake-herd-id-1' }, applicationReference: 'IAHW-FAK3-FAK3' }]
     const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
 
     expect(mockLogger.info).toHaveBeenCalledWith('Agreement \'IAHW-FAK3-FAK3\' had a claim set to inCheck due to feature assurance rules')
@@ -235,18 +235,10 @@ describe('Test generateClaimStatus', () => {
     const visitDate = '2025-06-27'
     const species = 'sheep'
     const herdId = 'fake-herd-id-2'
-    const previousClaims = [{ typeOfLivestock: 'sheep', herdId: 'fake-herd-id-1', applicationReference: 'IAHW-FAK3-FAK3' }, { typeOfLivestock: 'sheep', herdId: 'fake-herd-id-2', applicationReference: 'IAHW-FAK3-FAK3' }]
+    const previousClaims = [{ data: { typeOfLivestock: 'sheep', herdId: 'fake-herd-id-1' }, applicationReference: 'IAHW-FAK3-FAK3' }, { typeOfLivestock: 'sheep', herdId: 'fake-herd-id-2', applicationReference: 'IAHW-FAK3-FAK3' }]
     const result = await generateClaimStatus(visitDate, species, herdId, previousClaims, mockLogger)
 
     expect(mockLogger.info).toHaveBeenCalledWith('Agreement \'IAHW-FAK3-FAK3\' had a claim set to inCheck due to feature assurance rules')
     expect(result).toBe(applicationStatus.inCheck)
   })
-
-  // BH feature on and visit-date golive then do below, otherwise use today’s logic
-  // BH claims filtered by species before below checks
-  // BH no NW|OW claims, makes MH claim, then 20%
-  // TODO BH no NW claim, but OW claim, makes MH claim, then 20%
-  // BH no OW claim, but NW claim, makes MH claim (same-herd=yes), then 20%
-  // BH no OW claim, but NW claim, makes MH claim (same-herd=no), then 100%
-  // BH no OW claim, but MH claim(s), makes another MH claim (select-herd=any), then 100%
 })

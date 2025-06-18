@@ -32,7 +32,7 @@ const buildConfig = () => {
     },
     featureAssurance: {
       enabled: Joi.bool().required(),
-      startDate: Joi.string()
+      startDate: Joi.string().optional()
     }
   })
 
@@ -60,7 +60,7 @@ const buildConfig = () => {
     },
     featureAssurance: {
       enabled: process.env.FEATURE_ASSURANCE_ENABLED === 'true',
-      startDate: process.env.FEATURE_ASSURANCE_START
+      startDate: process.env.FEATURE_ASSURANCE_START || undefined
     }
   }
 
