@@ -29,6 +29,10 @@ const buildConfig = () => {
     },
     storeHistoryInDb: {
       enabled: Joi.bool().required()
+    },
+    featureAssurance: {
+      enabled: Joi.bool().required(),
+      startDate: Joi.string().optional()
     }
   })
 
@@ -53,6 +57,10 @@ const buildConfig = () => {
     },
     storeHistoryInDb: {
       enabled: process.env.STORE_HISTORY_IN_DB_ENABLED === 'true'
+    },
+    featureAssurance: {
+      enabled: process.env.FEATURE_ASSURANCE_ENABLED === 'true',
+      startDate: process.env.FEATURE_ASSURANCE_START || undefined
     }
   }
 
