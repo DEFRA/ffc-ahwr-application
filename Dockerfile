@@ -1,4 +1,4 @@
-ARG PARENT_VERSION=2.3.0-node20.15.0
+ARG PARENT_VERSION=2.8.4-node22.16.0
 ARG PORT=3000
 ARG PORT_DEBUG=9229
 
@@ -28,5 +28,5 @@ EXPOSE ${PORT}
 
 COPY --from=development /home/node/app/ ./app/
 COPY --from=development /home/node/package*.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --omit=dev
 CMD [ "node", "app" ]
