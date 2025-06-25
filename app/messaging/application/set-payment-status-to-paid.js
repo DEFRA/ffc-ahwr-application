@@ -11,14 +11,11 @@ import { v4 as uuid } from 'uuid'
 
 const { messageGeneratorMsgType, messageGeneratorQueue } = config
 
-const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
-  typeOfLivestock === livestockTypes.sheep ? UNNAMED_FLOCK : UNNAMED_HERD
-
 export const setPaymentStatusToPaid = async (message, logger) => {
   try {
     const msgBody = message.body
 
-    if (validateClaimStatusToPaidEvent(msgBody)) {
+    if (validateClaimStatusToPaidEvent(msgBody, logger)) {
       const { claimRef, sbi } = msgBody
       logger.info(`Setting payment status to paid for claim ${claimRef}...`)
       await updateClaimByReference(
@@ -50,16 +47,16 @@ export const setPaymentStatusToPaid = async (message, logger) => {
           claimType,
           typeOfLivestock,
           dateTime: new Date(),
-          herdName: herd?.herdName || getUnnamedHerdValueByTypeOfLivestock(typeOfLivestock)
+          herdName: herd?.herdName || (typeOfLivestock === livestockTypes.sheep ? UNNAMED_FLOCK : UNNAMED_HERD)
         },
         messageGeneratorMsgType,
         messageGeneratorQueue,
         { sessionId: uuid() }
       )
     } else {
-      throw new Error(`Invalid message body in payment status to paid event: ${msgBody}`)
+      throw new Error(`Invalid message body in payment status to paid event: claimRef: ${msgBody.claimRef} sbi: ${msgBody.sbi}`)
     }
   } catch (error) {
-    logger.error('Failed to move claim to paid status:', error)
+    logger.error(`Failed to move claim to paid status: ${error.message}`)
   }
 }

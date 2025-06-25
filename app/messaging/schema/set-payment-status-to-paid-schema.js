@@ -6,11 +6,11 @@ const setPaymentStatusToPaidSchema = joi.object({
   sbi: joi.string().required()
 })
 
-export const validateClaimStatusToPaidEvent = (event) => {
+export const validateClaimStatusToPaidEvent = (event, logger) => {
   const validate = setPaymentStatusToPaidSchema.validate(event)
 
   if (validate.error) {
-    console.log('Claim status to paid validation error:', util.inspect(validate.error, false, null, true))
+    logger.info(`Claim status to paid validation error: ${util.inspect(validate.error, false, null, true)}`)
     return false
   }
 
