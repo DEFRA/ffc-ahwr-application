@@ -1,4 +1,4 @@
-import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
+import { PublishEventBatch } from 'ffc-ahwr-common-library'
 import {
   SEND_SESSION_EVENT,
   raiseApplicationFlagDeletedEvent,
@@ -8,7 +8,7 @@ import {
 import { config } from '../../../../app/config/index.js'
 import { createStatusHistory } from '../../../../app/repositories/status-history-repository.js'
 
-jest.mock('ffc-ahwr-event-publisher', () => {
+jest.mock('ffc-ahwr-common-library', () => {
   return {
     PublishEventBatch: jest.fn().mockImplementation(() => ({
       sendEvents: jest.fn()

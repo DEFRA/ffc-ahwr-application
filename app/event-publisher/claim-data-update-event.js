@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { PublishEvent } from 'ffc-ahwr-event-publisher'
+import { PublishEvent } from 'ffc-ahwr-common-library'
 import { config } from '../config/index.js'
 
 export const claimDataUpdateEvent = async (data, type, updatedBy, updatedAt, sbi) => {

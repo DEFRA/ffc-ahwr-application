@@ -38,10 +38,12 @@ describe('Process Message test', () => {
   })
 
   test('Call processApplicationMessage message validation failed', async () => {
-    const consoleSpy = jest.spyOn(console, 'error')
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
     delete message.body.organisation.email
-    await processApplication(message)
+    await processApplication(message, mockLogger)
     expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
-    expect(consoleSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "confirmCheckDetails" is required.'))
+    expect(mockErrorLogger).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "confirmCheckDetails" is required.')
+    expect(mockErrorLogger).toHaveBeenNthCalledWith(2, 'Failed to process application', expect.any(Error))
   })
 })

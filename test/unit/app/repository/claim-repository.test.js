@@ -58,7 +58,7 @@ jest.mock('../../../../app/event-publisher/claim-data-update-event')
 
 const MOCK_SEND_EVENTS = jest.fn()
 
-jest.mock('ffc-ahwr-event-publisher', () => {
+jest.mock('ffc-ahwr-common-library', () => {
   return {
     PublishEventBatch: jest.fn().mockImplementation(() => {
       return {

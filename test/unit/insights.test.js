@@ -38,11 +38,13 @@ describe('Application Insights', () => {
     const appName = 'test-app'
     process.env.APPINSIGHTS_CLOUDROLE = appName
     process.env.APPLICATIONINSIGHTS_CONNECTION_STRING = 'something'
-
-    setup()
+    const mockInfoLogger = jest.fn()
+    const mockLogger = { info: mockInfoLogger }
+    setup(mockLogger)
 
     expect(setupMock).toHaveBeenCalledTimes(1)
     expect(startMock).toHaveBeenCalledTimes(1)
+    expect(mockInfoLogger).toHaveBeenCalledWith('App Insights Running')
     expect(tags[cloudRoleTag]).toEqual(appName)
   })
 })

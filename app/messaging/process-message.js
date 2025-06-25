@@ -1,26 +1,24 @@
 import { config } from '../config/index.js'
-import { fetchApplication } from './application/fetch-application.js'
-import { fetchClaim } from './application/fetch-claim.js'
 import { processApplicationQueue } from './application/process-application.js'
+import { setPaymentStatusToPaid } from './application/set-payment-status-to-paid.js'
 
-const { applicationRequestMsgType, fetchApplicationRequestMsgType, fetchClaimRequestMsgType } = config
+const { applicationRequestMsgType, moveClaimToPaidMsgType } = config
 
-export const processApplicationMessage = async (message, receiver) => {
+export const processApplicationMessage = async (message, receiver, logger) => {
   try {
     const { applicationProperties: properties } = message
+
     switch (properties.type) {
       case applicationRequestMsgType:
-        await processApplicationQueue(message)
+        await processApplicationQueue(message, logger)
         break
-      case fetchApplicationRequestMsgType:
-        await fetchApplication(message)
-        break
-      case fetchClaimRequestMsgType:
-        await fetchClaim(message)
+      case moveClaimToPaidMsgType:
+        await setPaymentStatusToPaid(message, logger)
         break
     }
+
     await receiver.completeMessage(message)
   } catch (err) {
-    console.error('Unable to process Application request:', err)
+    logger.error('Unable to process Application request:', err)
   }
 }
