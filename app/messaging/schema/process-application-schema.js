@@ -41,11 +41,11 @@ const applicationSchema = joi.object({
   )
 })
 
-export const validateApplication = (event) => {
+export const validateApplication = (event, logger) => {
   const { error } = applicationSchema.validate(event)
 
   if (error) {
-    console.error(`Application validation error - ${error}.`)
+    logger.error(`Application validation error - ${error}.`)
     appInsights.defaultClient.trackException({ exception: error })
     return false
   }

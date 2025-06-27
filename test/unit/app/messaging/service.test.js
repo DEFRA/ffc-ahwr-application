@@ -7,6 +7,8 @@ const mocksubscribe = jest.fn()
 MessageReceiver.prototype.subscribe = mocksubscribe
 
 test('subscribes to messages', async () => {
-  await startMessagingService()
+  const mockInfoLogger = jest.fn()
+  const mockLogger = { child: () => ({ info: mockInfoLogger }), info: mockInfoLogger }
+  await startMessagingService(mockLogger)
   expect(mocksubscribe).toHaveBeenCalledTimes(1)
 })

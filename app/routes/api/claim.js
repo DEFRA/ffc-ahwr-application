@@ -15,7 +15,9 @@ import {
   livestockTypes,
   claimType,
   applicationStatus,
-  livestockToReadableSpecies
+  livestockToReadableSpecies,
+  UNNAMED_FLOCK,
+  UNNAMED_HERD
 } from '../../constants/index.js'
 import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique, addHerdToClaimData } from '../../repositories/claim-repository.js'
 import { getApplication } from '../../repositories/application-repository.js'
@@ -34,9 +36,6 @@ import { emitHerdMIEvents } from '../../lib/emit-herd-MI-events.js'
 const { sequelize } = buildData
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
-
-const UNNAMED_FLOCK = 'Unnamed flock'
-const UNNAMED_HERD = 'Unnamed herd'
 
 const isReview = (payload) => payload.type === claimType.review
 const isFollowUp = (payload) => payload.type === claimType.endemics

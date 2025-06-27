@@ -1,7 +1,7 @@
 import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
-import { PublishEvent } from 'ffc-ahwr-event-publisher'
+import { PublishEvent } from 'ffc-ahwr-common-library'
 
-jest.mock('ffc-ahwr-event-publisher')
+jest.mock('ffc-ahwr-common-library')
 
 describe('Claim Data Update Event', () => {
   afterEach(() => {

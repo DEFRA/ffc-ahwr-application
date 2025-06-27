@@ -128,7 +128,7 @@ export const applicationHandlers = [
     handler: async (request, h) => {
       try {
         request.logger.setBindings({ sbi: request.payload?.sbi })
-        const appProcessed = await processApplicationApi(request.payload)
+        const appProcessed = await processApplicationApi(request.payload, request.logger)
         return h.response(appProcessed).code(HttpStatus.OK)
       } catch (error) {
         request.logger.setBindings({ err: error })

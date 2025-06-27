@@ -75,7 +75,11 @@ describe('process-application-schema', () => {
       type: 'EE'
     }
 
-    expect(validateApplication(application)).toBeFalsy()
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
+
+    expect(validateApplication(application, mockLogger)).toBeFalsy()
+    expect(mockErrorLogger).toHaveBeenCalledWith('Application validation error - ValidationError: "confirmCheckDetails" is required.')
     expect(appInsights.defaultClient.trackException).toHaveBeenCalledTimes(1)
   })
 })

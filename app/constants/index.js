@@ -105,3 +105,6 @@ export const messagingStates = {
   submitted: 'submitted',
   success: 'success'
 }
+
+export const UNNAMED_FLOCK = 'Unnamed flock'
+export const UNNAMED_HERD = 'Unnamed herd'

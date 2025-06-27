@@ -3,9 +3,9 @@ import { startMessagingService, stopMessagingService } from './messaging/service
 import { setup } from './insights.js'
 
 const init = async () => {
-  await startMessagingService()
+  await startMessagingService(server.logger)
   await server.start()
-  setup()
+  setup(server.logger)
 }
 
 process.on('unhandledRejection', async (err) => {

@@ -7,12 +7,12 @@ import appInsights from 'applicationinsights'
 import { createApplicationReference } from '../../lib/create-reference.js'
 import { getBySbi, setApplication } from '../../repositories/application-repository.js'
 
-export const isPreviousApplicationRelevant = (existingApplication) => {
+const isPreviousApplicationRelevant = (existingApplication) => {
   return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
 }
 
-export const processApplicationApi = async (body) => {
-  const response = await processApplication(body)
+export const processApplicationApi = async (body, logger) => {
+  const response = await processApplication(body, logger)
 
   appInsights.defaultClient.trackEvent({
     name: 'process-application-api',
@@ -26,11 +26,11 @@ export const processApplicationApi = async (body) => {
   return response
 }
 
-export const processApplication = async (data) => {
+export const processApplication = async (data, logger) => {
   let existingApplicationReference = null
 
   try {
-    if (!validateApplication(data)) {
+    if (!validateApplication(data, logger)) {
       throw new Error('Application validation error')
     }
 
@@ -61,6 +61,7 @@ export const processApplication = async (data) => {
       statusId: data.offerStatus === 'rejected' ? 7 : 1,
       type: data.type ? data.type : 'VV'
     })
+
     const application = result.dataValues
 
     const response = {
@@ -86,13 +87,13 @@ export const processApplication = async (data) => {
         }
         )
       } catch (error) {
-        console.error('Failed to request application document generation and email', error)
+        logger.error('Failed to request application document generation and email', error)
       }
     }
 
     return response
   } catch (error) {
-    console.error('Failed to process application', error)
+    logger.error('Failed to process application', error)
     appInsights.defaultClient.trackException({ exception: error })
 
     return {
@@ -102,11 +103,12 @@ export const processApplication = async (data) => {
   }
 }
 
-export const processApplicationQueue = async (msg) => {
+export const processApplicationQueue = async (msg, logger) => {
+  logger.info('Processing application...')
   const { sessionId } = msg
   const applicationData = msg.body
 
-  const response = await processApplication(applicationData)
+  const response = await processApplication(applicationData, logger)
 
   await sendMessage(response, config.applicationResponseMsgType, config.applicationResponseQueue, { sessionId })
 

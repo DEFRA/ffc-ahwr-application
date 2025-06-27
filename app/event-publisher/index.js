@@ -1,4 +1,4 @@
-import { PublishEventBatch } from 'ffc-ahwr-event-publisher'
+import { PublishEventBatch } from 'ffc-ahwr-common-library'
 import { config } from '../config/index.js'
 import { randomUUID } from 'node:crypto'
 import { createStatusHistory } from '../repositories/status-history-repository.js'

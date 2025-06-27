@@ -6,8 +6,6 @@ import { processApplication, processApplicationApi, processApplicationQueue } fr
 import { applicationStatus } from '../../../../../app/constants'
 import { sendMessage } from '../../../../../app/messaging/send-message'
 
-const consoleErrorSpy = jest.spyOn(console, 'error')
-
 const MOCK_REFERENCE = 'AHWR-5C1C-DD6Z'
 const MOCK_NW_REFERENCE = 'IAHW-5C1C-DD6Z'
 const MOCK_TEMP_NW_REFERENCE = 'TEMP-5C1C-DD6Z'
@@ -68,7 +66,9 @@ describe(('Store application in database'), () => {
   })
 
   test('successfully submits application', async () => {
-    await processApplication(data)
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
+    await processApplication(data, mockLogger)
     expect(setApplication).toHaveBeenCalledTimes(1)
     expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
       reference: MOCK_REFERENCE,
@@ -80,7 +80,10 @@ describe(('Store application in database'), () => {
   })
 
   test('successfully submits application', async () => {
-    await processApplication(nwData)
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
+
+    await processApplication(nwData, mockLogger)
 
     expect(setApplication).toHaveBeenCalledTimes(1)
     expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
@@ -125,7 +128,10 @@ describe(('Store application in database'), () => {
           statusId: testCase.when.statusId
         })
 
-      await processApplication(data)
+      const mockErrorLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger }
+
+      await processApplication(data, mockLogger)
 
       expect(setApplication).toHaveBeenCalledTimes(1)
       expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
@@ -154,11 +160,14 @@ describe(('Store application in database'), () => {
           type: 'EE'
         })
 
-      await processApplication(data)
+      const mockErrorLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger }
+
+      await processApplication(data, mockLogger)
 
       expect(setApplication).toHaveBeenCalledTimes(0)
       expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect(mockErrorLogger).toHaveBeenCalledWith(
         'Failed to process application',
         new Error(`Recent application already exists: ${JSON.stringify({
           reference: MOCK_NW_REFERENCE,
@@ -182,7 +191,10 @@ describe(('Store application in database'), () => {
           type: 'VV'
         })
 
-      await processApplication(data)
+      const mockErrorLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger }
+
+      await processApplication(data, mockLogger)
 
       expect(setApplication).toHaveBeenCalledTimes(1)
       expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(1)
@@ -194,8 +206,11 @@ describe(('Store application in database'), () => {
       dataValues: { reference: MOCK_REFERENCE }
     })
 
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
+
     data.offerStatus = 'rejected'
-    await processApplication(data)
+    await processApplication(data, mockLogger)
 
     expect(setApplication).toHaveBeenCalledTimes(1)
     expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
@@ -209,19 +224,39 @@ describe(('Store application in database'), () => {
   })
 
   test('Sends failed state on db error and no email is sent', async () => {
-    setApplication.mockResolvedValue(new Error('bust'))
+    const mockApplicationDate = mockMonthsAgo(11)
+    when(getBySbi)
+      .calledWith(
+        data.organisation.sbi
+      )
+      .mockResolvedValue({
+        dataValues: {
+          reference: MOCK_REFERENCE
+        },
+        createdAt: mockApplicationDate,
+        statusId: applicationStatus.readyToPay,
+        type: 'VV'
+      })
 
-    await processApplication(data)
+    setApplication.mockImplementationOnce(() => {
+      throw new Error('bust')
+    })
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
+
+    await processApplication(data, mockLogger)
 
     expect(requestApplicationDocumentGenerateAndEmail).not.toHaveBeenCalled()
+    expect(mockErrorLogger).toHaveBeenCalledWith('Failed to process application', expect.any(Error))
   })
 
   test('Application submission message validation failed', async () => {
-    const consoleSpy = jest.spyOn(console, 'error')
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
     delete data.organisation.email
-    await processApplication(data)
+    await processApplication(data, mockLogger)
     expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
-    expect(consoleSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "organisation.email" is required.'))
+    expect(mockErrorLogger).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "organisation.email" is required.'))
   })
 
   describe('processApplicationApi', () => {
@@ -247,7 +282,9 @@ describe(('Store application in database'), () => {
     }
 
     test('successfully process Application', async () => {
-      const response = await processApplicationApi(testData)
+      const mockErrorLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger }
+      const response = await processApplicationApi(testData, mockLogger)
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith(expect.objectContaining({
         name: 'process-application-api',
@@ -265,11 +302,12 @@ describe(('Store application in database'), () => {
     })
 
     test('fail to process application via API', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error')
-      const response = await processApplicationApi({ some: 'invalid data' })
+      const mockErrorLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger }
+      const response = await processApplicationApi({ some: 'invalid data' }, mockLogger)
 
-      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "confirmCheckDetails" is required.'))
-      expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, 'Failed to process application', expect.anything())
+      expect(mockErrorLogger).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "confirmCheckDetails" is required.'))
+      expect(mockErrorLogger).toHaveBeenNthCalledWith(2, 'Failed to process application', expect.anything())
       expect(response).toEqual(expect.objectContaining({
         applicationReference: null,
         applicationState: 'failed'
@@ -300,16 +338,21 @@ describe(('Store application in database'), () => {
     }
 
     test('fail to send confirmation email', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error')
+      const mockErrorLogger = jest.fn()
+      const mockInfoLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger, info: mockInfoLogger }
       requestApplicationDocumentGenerateAndEmail.mockImplementation(() => { throw new Error() })
 
-      await processApplication(testData)
-      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Failed to request application document generation and email', expect.anything())
+      await processApplication(testData, mockLogger)
+      expect(mockErrorLogger).toHaveBeenNthCalledWith(1, 'Failed to request application document generation and email', expect.anything())
       expect(setApplication).toHaveBeenCalledTimes(1)
     })
 
     test('successfully process Application', async () => {
-      await processApplicationQueue(testData)
+      const mockErrorLogger = jest.fn()
+      const mockInfoLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger, info: mockInfoLogger }
+      await processApplicationQueue(testData, mockLogger)
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith(expect.objectContaining({
         name: 'process-application-queue'
@@ -319,10 +362,14 @@ describe(('Store application in database'), () => {
     })
 
     test('fail to process application via queue', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error')
-      await processApplicationQueue({ some: 'invalid data' })
+      const mockErrorLogger = jest.fn()
+      const mockInfoLogger = jest.fn()
+      const mockLogger = { error: mockErrorLogger, info: mockInfoLogger }
+      await processApplicationQueue({ some: 'invalid data' }, mockLogger)
 
-      expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Failed to process application', expect.anything())
+      expect(mockInfoLogger).toHaveBeenCalledWith('Processing application...')
+      expect(mockErrorLogger).toHaveBeenCalledWith('Failed to process application', expect.any(Error))
+      expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
     })
   })
 })
