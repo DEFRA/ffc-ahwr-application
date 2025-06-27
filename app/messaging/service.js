@@ -6,7 +6,8 @@ import { processApplicationMessage } from './process-message.js'
 let applicationReceiver
 
 export const startMessagingService = async (logger) => {
-  const applicationAction = message => processApplicationMessage(message, applicationReceiver, logger)
+  const childLogger = logger.child({})
+  const applicationAction = message => processApplicationMessage(message, applicationReceiver, childLogger)
   applicationReceiver = new MessageReceiver(config.applicationRequestQueue, applicationAction)
   await applicationReceiver.subscribe()
 
