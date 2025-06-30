@@ -35,12 +35,12 @@ describe('emitHerdMIEvents', () => {
   test('it sends the herd associated with claim event as well as the temporary ID event if the herd version is 1', async () => {
     const sbi = 111222
     const herdData = { id: 'this-is-the-herd-id', version: 1 }
-    const tempHerdId = randomUUID()
+    const herdIdSelected = randomUUID()
     const herdGotUpdated = false
     const claimReference = 'REBC-AA11-33FF'
     const applicationReference = 'IAHW-EE33-44JJ'
 
-    await emitHerdMIEvents({ sbi, herdData, tempHerdId, herdGotUpdated, claimReference, applicationReference })
+    await emitHerdMIEvents({ sbi, herdData, herdIdSelected, herdGotUpdated, claimReference, applicationReference })
 
     expect(raiseHerdEvent).toHaveBeenCalledTimes(2)
     expect(raiseHerdEvent).toHaveBeenCalledWith({
@@ -57,11 +57,35 @@ describe('emitHerdMIEvents', () => {
     expect(raiseHerdEvent).toHaveBeenCalledWith({
       data: {
         herdId: herdData.id,
-        tempHerdId
+        tempHerdId: herdIdSelected
       },
       message: 'Herd temporary ID became herdId',
       sbi,
       type: 'herd-tempIdHerdId'
+    })
+  })
+
+  test('it does not send the temporary ID event if the herd version is 1, but the herdId selected is the same as the herdId returned in the herdData', async () => {
+    const sbi = 111222
+    const herdData = { id: 'this-is-the-herd-id', version: 1 }
+    const herdIdSelected = 'this-is-the-herd-id'
+    const herdGotUpdated = false
+    const claimReference = 'REBC-AA11-33FF'
+    const applicationReference = 'IAHW-EE33-44JJ'
+
+    await emitHerdMIEvents({ sbi, herdData, herdIdSelected, herdGotUpdated, claimReference, applicationReference })
+
+    expect(raiseHerdEvent).toHaveBeenCalledTimes(1)
+    expect(raiseHerdEvent).toHaveBeenCalledWith({
+      data: {
+        applicationReference,
+        herdId: herdData.id,
+        herdVersion: herdData.version,
+        reference: claimReference
+      },
+      message: 'Herd associated with claim',
+      sbi,
+      type: 'claim-herdAssociated'
     })
   })
 

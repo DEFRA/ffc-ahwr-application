@@ -449,7 +449,7 @@ export const claimHandlers = [
         }
 
         if (isMultiHerdsClaim) {
-          await emitHerdMIEvents({ sbi, herdData, tempHerdId: herd.herdId, herdGotUpdated, claimReference, applicationReference })
+          await emitHerdMIEvents({ sbi, herdData, herdIdSelected: herd.herdId, herdGotUpdated, claimReference, applicationReference })
         }
 
         await sendClaimConfirmationEmail(request, claim, application, { sbi, applicationReference, type, typeOfLivestock, dateOfVisit, amount, herdData })
