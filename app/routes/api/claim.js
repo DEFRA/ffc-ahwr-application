@@ -38,6 +38,8 @@ const { sequelize } = buildData
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
+const POSITIVE_SAMPLE_REQ = 6
+const NEGATIVE_SAMPLE_REQ = 30
 const isReview = (payload) => payload.type === claimType.review
 const isFollowUp = (payload) => payload.type === claimType.endemics
 const isPigs = (payload) => payload.data.typeOfLivestock === livestockTypes.pigs
@@ -107,8 +109,7 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
   return validations
 }
 
-export const isClaimDataValid = (payload, agreementFlags) => {
-  console.log('payload', payload)
+const getSpecificValidationsForClaimType = (payload) => {
   const dateOfTesting = { dateOfTesting: joi.date().required() }
   const laboratoryURN = { laboratoryURN: joi.string().required() }
   const numberAnimalsTested = { numberAnimalsTested: getNumberAnimalsTestedValidation(payload) }
@@ -118,7 +119,7 @@ export const isClaimDataValid = (payload, agreementFlags) => {
   const reviewTestResults = { reviewTestResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required() }
   const piHunt = piHuntModel(payload, laboratoryURN, testResults)
   const herdVaccinationStatus = { herdVaccinationStatus: joi.string().valid('vaccinated', 'notVaccinated').required() }
-  const numberOfSamplesTested = { numberOfSamplesTested: joi.number().valid(6, 30).required() }
+  const numberOfSamplesTested = { numberOfSamplesTested: joi.number().valid(POSITIVE_SAMPLE_REQ, NEGATIVE_SAMPLE_REQ).required() }
   const diseaseStatus = { diseaseStatus: joi.string().valid('1', '2', '3', '4') }
   const pigsFollowUpTest = { pigsFollowUpTest: joi.string().valid('pcr', 'elisa') }
   const pigsPcrTestResult = { pigsPcrTestResult: joi.string().when('pigsFollowUpTest', { is: 'pcr', then: joi.string().valid('positive', 'negative').required() }) }
@@ -150,6 +151,10 @@ export const isClaimDataValid = (payload, agreementFlags) => {
     return {}
   }
 
+  return isReview(payload) ? getReviewValidations() : getFollowUpValidations()
+}
+
+export const isClaimDataValid = (payload, agreementFlags) => {
   const dataModel = joi.object({
     amount: joi.string().optional(),
     typeOfLivestock: joi.string().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep).required(),
@@ -157,7 +162,7 @@ export const isClaimDataValid = (payload, agreementFlags) => {
     speciesNumbers: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: joi.string().required(),
     vetRCVSNumber: joi.string().required(),
-    ...(isReview(payload) ? getReviewValidations() : getFollowUpValidations()),
+    ...getSpecificValidationsForClaimType(payload),
     ...(isMultipleHerdsUserJourney(payload.data.dateOfVisit, agreementFlags) && herdSchema)
   })
 
