@@ -37,11 +37,12 @@ services:
       SFD_MESSAGE_QUEUE_ADDRESS: ${SFD_MESSAGE_QUEUE_ADDRESS:-ffc-ahwr-sfd-message}${MESSAGE_QUEUE_SUFFIX}
       MESSAGE_GENERATOR_QUEUE_ADDRESS: ${MESSAGE_GENERATOR_QUEUE_ADDRESS:-ffc-ahwr-message-generator}${MESSAGE_QUEUE_SUFFIX}
       MULTI_HERDS_ENABLED: ${MULTI_HERDS_ENABLED:-true}
+      PIG_UPDATES_ENABLED: ${PIG_UPDATES_ENABLED:-true}
       FEATURE_ASSURANCE_ENABLED: ${FEATURE_ASSURANCE_ENABLED:-true}
       FEATURE_ASSURANCE_START: ${FEATURE_ASSURANCE_START}
 
   ffc-ahwr-application-postgres:
-    image: postgres:11.4-alpine
+    image: postgres:16.8-alpine
     environment:
       POSTGRES_DB: ffc_ahwr_application
       POSTGRES_PASSWORD: ppp

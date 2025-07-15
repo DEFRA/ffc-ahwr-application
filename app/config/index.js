@@ -24,6 +24,9 @@ const buildConfig = () => {
       enabled: Joi.bool().required(),
       releaseDate: Joi.string().required()
     },
+    pigUpdates: {
+      enabled: Joi.bool().required()
+    },
     storeHistoryInDb: {
       enabled: Joi.bool().required()
     },
@@ -48,6 +51,9 @@ const buildConfig = () => {
     multiHerds: {
       enabled: process.env.MULTI_HERDS_ENABLED === 'true',
       releaseDate: process.env.MULTI_HERDS_RELEASE_DATE || '2025-05-01'
+    },
+    pigUpdates: {
+      enabled: process.env.PIG_UPDATES_ENABLED === 'true'
     },
     storeHistoryInDb: {
       enabled: process.env.STORE_HISTORY_IN_DB_ENABLED === 'true'
