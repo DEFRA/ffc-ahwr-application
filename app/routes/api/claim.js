@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import joi from 'joi'
 import { v4 as uuid } from 'uuid'
 import appInsights from 'applicationinsights'
 import { sendMessage } from '../../messaging/send-message.js'
@@ -32,11 +32,14 @@ import { buildData } from '../../data/index.js'
 import { herdSchema } from './schema/herd.schema.js'
 import { arraysAreEqual } from '../../lib/array-utils.js'
 import { emitHerdMIEvents } from '../../lib/emit-herd-MI-events.js'
+import { PIG_GENETIC_SEQUENCING_VALUES } from 'ffc-ahwr-common-library'
 
 const { sequelize } = buildData
 
 const { submitPaymentRequestMsgType, submitRequestQueue, notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
 
+const POSITIVE_SAMPLE_REQ = 6
+const NEGATIVE_SAMPLE_REQ = 30
 const isReview = (payload) => payload.type === claimType.review
 const isFollowUp = (payload) => payload.type === claimType.endemics
 const isPigs = (payload) => payload.data.typeOfLivestock === livestockTypes.pigs
@@ -51,24 +54,24 @@ const getUnnamedHerdValue = (payload) => isSheep(payload) ? UNNAMED_FLOCK : UNNA
 const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) => typeOfLivestock === livestockTypes.sheep ? UNNAMED_FLOCK : UNNAMED_HERD
 
 const getTestResultsValidation = (payload) => (pigsTestResults(payload) || sheepTestResults(payload) || beefDairyTestResults(payload))
-const pigsTestResults = (payload) => isPigs(payload) && Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
-const sheepTestResults = (payload) => (isSheep(payload) && isFollowUp(payload)) && Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.object({ diseaseType: Joi.string(), result: Joi.string() }))) })).required()
-const beefDairyTestResults = (payload) => (isBeef(payload) || isDairy(payload)) && Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
+const pigsTestResults = (payload) => isPigs(payload) && joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
+const sheepTestResults = (payload) => (isSheep(payload) && isFollowUp(payload)) && joi.array().items(joi.object({ diseaseType: joi.string(), result: joi.alternatives().try(joi.string(), joi.array().items(joi.object({ diseaseType: joi.string(), result: joi.string() }))) })).required()
+const beefDairyTestResults = (payload) => (isBeef(payload) || isDairy(payload)) && joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required()
 
 const getNumberAnimalsTestedValidation = (payload) => {
   const threshold = minimumNumberOfAnimalsTested[payload.data.typeOfLivestock][payload.type]
-  return (isPigs(payload) && isFollowUp(payload)) ? Joi.number().valid(threshold) : Joi.number().min(threshold).required()
+  return (isPigs(payload) && isFollowUp(payload)) ? joi.number().valid(threshold) : joi.number().min(threshold).required()
 }
 
 const getBiosecurityValidation = (payload) => pigsBiosecurity(payload) || beefDairyBiosecurity(payload)
-const beefDairyBiosecurity = (payload) => (isBeef || isDairy) && isFollowUp(payload) && Joi.string().valid(biosecurity.yes, biosecurity.no).required()
-const pigsBiosecurity = (payload) => (isPigs(payload) && isFollowUp(payload)) && Joi.alternatives().try(Joi.string().valid(biosecurity.no), Joi.object({ biosecurity: Joi.string().valid(biosecurity.yes), assessmentPercentage: Joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
+const beefDairyBiosecurity = (payload) => (isBeef || isDairy) && isFollowUp(payload) && joi.string().valid(biosecurity.yes, biosecurity.no).required()
+const pigsBiosecurity = (payload) => (isPigs(payload) && isFollowUp(payload)) && joi.alternatives().try(joi.string().valid(biosecurity.no), joi.object({ biosecurity: joi.string().valid(biosecurity.yes), assessmentPercentage: joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required()
 
 const piHuntModel = (payload, laboratoryURN, testResults) => {
   const validations = {}
 
   if (isPositiveReviewTestResult(payload)) {
-    validations.piHunt = Joi.string().valid(piHunt.yes, piHunt.no).required()
+    validations.piHunt = joi.string().valid(piHunt.yes, piHunt.no).required()
     Object.assign(validations, laboratoryURN)
     Object.assign(validations, testResults)
   }
@@ -80,19 +83,19 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
   const validations = {}
 
   if (isPositiveReviewTestResult(payload)) {
-    validations.piHunt = Joi.string().valid(piHunt.yes).required()
+    validations.piHunt = joi.string().valid(piHunt.yes).required()
   } else {
-    validations.piHunt = Joi.string().valid(piHunt.yes, piHunt.no).required()
+    validations.piHunt = joi.string().valid(piHunt.yes, piHunt.no).required()
   }
 
   if (isPiHuntYes(payload)) {
     if (isPositiveReviewTestResult(payload)) {
-      validations.piHuntAllAnimals = Joi.string().valid(piHuntAllAnimals.yes).required()
+      validations.piHuntAllAnimals = joi.string().valid(piHuntAllAnimals.yes).required()
     } else {
-      validations.piHuntRecommended = Joi.string().valid(piHuntRecommended.yes, piHuntRecommended.no).required()
+      validations.piHuntRecommended = joi.string().valid(piHuntRecommended.yes, piHuntRecommended.no).required()
 
       if (isPiHuntRecommendedYes(payload)) {
-        validations.piHuntAllAnimals = Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required()
+        validations.piHuntAllAnimals = joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).required()
       }
     }
 
@@ -106,25 +109,29 @@ const optionalPiHuntModel = (payload, laboratoryURN, testResults, dateOfTesting)
   return validations
 }
 
-const isClaimDataValid = (payload, agreementFlags) => {
-  const dateOfTesting = { dateOfTesting: Joi.date().required() }
-  const laboratoryURN = { laboratoryURN: Joi.string().required() }
+const getSpecificValidationsForClaimType = (payload) => {
+  const dateOfTesting = { dateOfTesting: joi.date().required() }
+  const laboratoryURN = { laboratoryURN: joi.string().required() }
   const numberAnimalsTested = { numberAnimalsTested: getNumberAnimalsTestedValidation(payload) }
   const testResults = { testResults: getTestResultsValidation(payload) }
-  const numberOfOralFluidSamples = { numberOfOralFluidSamples: Joi.number().min(minimumNumberOfOralFluidSamples).required() }
-  const vetVisitsReviewTestResults = { vetVisitsReviewTestResults: Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional() }
-  const reviewTestResults = { reviewTestResults: Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required() }
+  const numberOfOralFluidSamples = { numberOfOralFluidSamples: joi.number().min(minimumNumberOfOralFluidSamples).required() }
+  const vetVisitsReviewTestResults = { vetVisitsReviewTestResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional() }
+  const reviewTestResults = { reviewTestResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required() }
   const piHunt = piHuntModel(payload, laboratoryURN, testResults)
-  const herdVaccinationStatus = { herdVaccinationStatus: Joi.string().valid('vaccinated', 'notVaccinated').required() }
-  const numberOfSamplesTested = { numberOfSamplesTested: Joi.number().valid(6, 30).required() }
-  const diseaseStatus = { diseaseStatus: Joi.string().valid('1', '2', '3', '4').required() }
+  const herdVaccinationStatus = { herdVaccinationStatus: joi.string().valid('vaccinated', 'notVaccinated').required() }
+  const numberOfSamplesTested = { numberOfSamplesTested: joi.number().valid(POSITIVE_SAMPLE_REQ, NEGATIVE_SAMPLE_REQ).required() }
+  const diseaseStatus = { diseaseStatus: joi.string().valid('1', '2', '3', '4') }
+  const pigsFollowUpTest = { pigsFollowUpTest: joi.string().valid('pcr', 'elisa') }
+  const pigsPcrTestResult = { pigsPcrTestResult: joi.string().when('pigsFollowUpTest', { is: 'pcr', then: joi.string().valid('positive', 'negative').required() }) }
+  const pigsElisaTestResult = { pigsElisaTestResult: joi.string().when('pigsFollowUpTest', { is: 'elisa', then: joi.string().valid('positive', 'negative').required() }) }
+  const pigsGeneticSequencing = { pigsGeneticSequencing: joi.string().when('pigsPcrTestResult', { is: 'positive', then: joi.valid(...PIG_GENETIC_SEQUENCING_VALUES.map(x => x.value)).required() }) }
   const biosecurity = { biosecurity: getBiosecurityValidation(payload) }
-  const sheepEndemicsPackage = { sheepEndemicsPackage: Joi.string().required() }
+  const sheepEndemicsPackage = { sheepEndemicsPackage: joi.string().required() }
   const optionalPiHunt = optionalPiHuntModel(payload, laboratoryURN, testResults, dateOfTesting)
 
   const beefFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isVisitDateAfterPIHuntAndDairyGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isVisitDateAfterPIHuntAndDairyGoLive(payload.data.dateOfVisit) && piHunt), ...(isVisitDateAfterPIHuntAndDairyGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
   const dairyFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...(!isVisitDateAfterPIHuntAndDairyGoLive(payload.data.dateOfVisit) && isPositiveReviewTestResult(payload) && dateOfTesting), ...(!isVisitDateAfterPIHuntAndDairyGoLive(payload.data.dateOfVisit) && piHunt), ...(isVisitDateAfterPIHuntAndDairyGoLive(payload.data.dateOfVisit) && optionalPiHunt), ...biosecurity }
-  const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...biosecurity }
+  const pigFollowUpValidations = { ...vetVisitsReviewTestResults, ...reviewTestResults, ...dateOfTesting, ...numberAnimalsTested, ...herdVaccinationStatus, ...laboratoryURN, ...numberOfSamplesTested, ...diseaseStatus, ...pigsFollowUpTest, ...pigsPcrTestResult, ...pigsElisaTestResult, ...pigsGeneticSequencing, ...biosecurity }
   const sheepFollowUpValidations = { ...dateOfTesting, ...numberAnimalsTested, ...sheepEndemicsPackage, ...testResults }
 
   const getReviewValidations = () => {
@@ -136,28 +143,45 @@ const isClaimDataValid = (payload, agreementFlags) => {
     return base
   }
 
-  const dataModel = Joi.object({
-    amount: Joi.string().optional(),
-    typeOfLivestock: Joi.string().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep).required(),
-    dateOfVisit: Joi.date().required(),
-    speciesNumbers: Joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
-    vetsName: Joi.string().required(),
-    vetRCVSNumber: Joi.string().required(),
-    ...(isReview(payload) ? getReviewValidations() : {}),
-    ...((isFollowUp(payload) && isBeef(payload)) && beefFollowUpValidations),
-    ...((isFollowUp(payload) && isDairy(payload)) && dairyFollowUpValidations),
-    ...((isFollowUp(payload) && isPigs(payload)) && pigFollowUpValidations),
-    ...((isFollowUp(payload) && isSheep(payload)) && sheepFollowUpValidations),
+  const getFollowUpValidations = () => {
+    if (isBeef(payload)) { return beefFollowUpValidations }
+    if (isDairy(payload)) { return dairyFollowUpValidations }
+    if (isPigs(payload)) { return pigFollowUpValidations }
+    if (isSheep(payload)) { return sheepFollowUpValidations }
+    return {}
+  }
+
+  return isReview(payload) ? getReviewValidations() : getFollowUpValidations()
+}
+
+export const isClaimDataValid = (payload, agreementFlags) => {
+  const dataModel = joi.object({
+    amount: joi.string().optional(),
+    typeOfLivestock: joi.string().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep).required(),
+    dateOfVisit: joi.date().required(),
+    speciesNumbers: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
+    vetsName: joi.string().required(),
+    vetRCVSNumber: joi.string().required(),
+    ...getSpecificValidationsForClaimType(payload),
     ...(isMultipleHerdsUserJourney(payload.data.dateOfVisit, agreementFlags) && herdSchema)
   })
 
-  const claimModel = Joi.object({
-    applicationReference: Joi.string().required(),
-    reference: Joi.string().required(),
-    type: Joi.string().valid(claimType.review, claimType.endemics).required(),
-    createdBy: Joi.string().required(),
+  let claimModel = joi.object({
+    applicationReference: joi.string().required(),
+    reference: joi.string().required(),
+    type: joi.string().valid(claimType.review, claimType.endemics).required(),
+    createdBy: joi.string().required(),
     data: dataModel
   })
+
+  // Note this, along with all the rest of this validation needs pulling out of here ASAP. but not doing it in this ticket
+  if (isFollowUp(payload) && isPigs(payload)) {
+    if (config.pigUpdates.enabled === false) {
+      claimModel = claimModel.fork(['data.diseaseStatus'], (x) => { return x.required() })
+    } else {
+      claimModel = claimModel.fork(['data.pigsFollowUpTest'], (x) => { return x.required() })
+    }
+  }
 
   return claimModel.validate(payload)
 }
@@ -313,8 +337,8 @@ export const claimHandlers = [
     path: '/api/claim/get-by-reference/{ref}',
     options: {
       validate: {
-        params: Joi.object({
-          ref: Joi.string().valid()
+        params: joi.object({
+          ref: joi.string().valid()
         })
       },
       handler: async (request, h) => {
@@ -332,11 +356,11 @@ export const claimHandlers = [
     path: '/api/claim/get-by-application-reference/{ref}',
     options: {
       validate: {
-        params: Joi.object({
-          ref: Joi.string()
+        params: joi.object({
+          ref: joi.string()
         }),
-        query: Joi.object({
-          typeOfLivestock: Joi.string().optional().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep)
+        query: joi.object({
+          typeOfLivestock: joi.string().optional().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep)
         })
       },
       handler: async (request, h) => {
@@ -352,12 +376,12 @@ export const claimHandlers = [
     path: '/api/claim/search',
     options: {
       validate: {
-        payload: Joi.object({
+        payload: joi.object({
           ...searchPayloadSchema,
-          sort: Joi.object({
-            field: Joi.string().valid().optional().allow(''),
-            direction: Joi.string().valid().optional().allow(''),
-            reference: Joi.string().valid().optional().allow('')
+          sort: joi.object({
+            field: joi.string().valid().optional().allow(''),
+            direction: joi.string().valid().optional().allow(''),
+            reference: joi.string().valid().optional().allow('')
           }).optional()
         }),
         failAction: async (request, h, err) => {
@@ -383,9 +407,9 @@ export const claimHandlers = [
     path: '/api/claim/is-urn-unique',
     options: {
       validate: {
-        payload: Joi.object({
-          sbi: Joi.string().required(),
-          laboratoryURN: Joi.string().required()
+        payload: joi.object({
+          sbi: joi.string().required(),
+          laboratoryURN: joi.string().required()
         })
       },
       handler: async (request, h) => {
@@ -483,13 +507,13 @@ export const claimHandlers = [
     path: '/api/claim/get-amount',
     options: {
       validate: {
-        payload: Joi.object({
-          typeOfLivestock: Joi.string().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep).required(),
-          reviewTestResults: Joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional(),
-          type: Joi.string().valid(claimType.review, claimType.endemics).required(),
-          piHunt: Joi.string().valid(piHunt.yes, piHunt.no).optional(),
-          piHuntAllAnimals: Joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional(),
-          dateOfVisit: Joi.date().required()
+        payload: joi.object({
+          typeOfLivestock: joi.string().valid(livestockTypes.beef, livestockTypes.dairy, livestockTypes.pigs, livestockTypes.sheep).required(),
+          reviewTestResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional(),
+          type: joi.string().valid(claimType.review, claimType.endemics).required(),
+          piHunt: joi.string().valid(piHunt.yes, piHunt.no).optional(),
+          piHuntAllAnimals: joi.string().valid(piHuntAllAnimals.yes, piHuntAllAnimals.no).optional(),
+          dateOfVisit: joi.date().required()
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
@@ -507,11 +531,11 @@ export const claimHandlers = [
     path: '/api/claim/update-by-reference',
     options: {
       validate: {
-        payload: Joi.object({
-          reference: Joi.string().valid().required(),
-          status: Joi.number().required(),
-          user: Joi.string().required(),
-          note: Joi.string()
+        payload: joi.object({
+          reference: joi.string().valid().required(),
+          status: joi.number().required(),
+          user: joi.string().required(),
+          note: joi.string()
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })

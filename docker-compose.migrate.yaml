@@ -37,7 +37,7 @@ services:
       - ./scripts:/scripts
 
   ffc-ahwr-application-postgres:
-    image: postgres:11.4-alpine
+    image: postgres:16.8-alpine
     environment: *common-postgres
     ports:
       - "5432:5432"
