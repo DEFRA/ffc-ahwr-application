@@ -49,6 +49,8 @@ container:
   port: 3000
   eventQueueAddress: ffc-ahwr-event
   serviceUri:
+  documentGeneratorApiUri: http://ffc-ahwr-document-generator.ffc-ahwr-dev/api
+  sfdMessagingProxyApiUri: http://ffc-ahwr-sfd-messaging-proxy.ffc-ahwr-dev/api
   azureStorageConnectionString:
   azureStorageUseConnectionString: true
   azureStorageAccountName:

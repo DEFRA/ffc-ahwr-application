@@ -18,6 +18,8 @@ data:
   NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerEndemicsReviewComplete }}
   NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE: {{ quote .Values.container.notifyTemplateIdFarmerEndemicsFollowupComplete }}
   SERVICE_URI: {{ quote .Values.container.serviceUri }}
+  DOCUMENT_GENERATOR_SERVICE_URI: {{ quote .Values.container.documentGeneratorApiUri }}
+  SFD_MESSAGING_PROXY_SERVICE_URI: {{ quote .Values.container.sfdMessagingProxyApiUri }}
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
   CLAIM_COMPLIANCE_CHECK_RATIO: {{ quote .Values.container.claimComplianceCheckRatio }}
