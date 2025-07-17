@@ -1,4 +1,4 @@
-import HttpStatus from "http-status-codes";
+import HttpStatus from 'http-status-codes'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
 
