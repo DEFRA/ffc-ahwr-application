@@ -1,15 +1,15 @@
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
 
-const { piiRedactRequestMsgType, applicationRequestQueue } = config
+const { redactPiiRequestMsgType, applicationRequestQueue } = config
 
-export const piiRedactRequestHandlers = [
+export const redactPiiRequestHandlers = [
   {
     method: 'POST',
     path: '/api/redact/pii',
     handler: async (request, h) => {
-      request.logger.info('Request for PII redact received')
-      sendMessage({ requestDate: new Date() }, piiRedactRequestMsgType, applicationRequestQueue)
+      request.logger.info('Request for redact PII received')
+      sendMessage({ requestDate: new Date() }, redactPiiRequestMsgType, applicationRequestQueue)
       return h.response().code(202)
     }
   }

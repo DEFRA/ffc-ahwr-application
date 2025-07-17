@@ -1,10 +1,9 @@
 import wreck from "@hapi/wreck";
 import { config } from "../../config/index.js"
-import { reference } from "../../../test/scripts/lib/reference.mjs";
 
 const { documentGeneratorApiUri, sfdMessagingProxyApiUri } = config;
 
-export const processPiiRedactRequest = async (message, logger) => {
+export const processRedactPiiRequest = async (message, logger) => {
   logger.info(`Processing redact PII request, date: ${message.body.requestDate}`)
   try {
     const agreementsToRedact = getAgreementsToRedactWithRedactID() 
@@ -55,7 +54,7 @@ const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
 const applicationStorageAccountTablesRedactPII = (agreementsToRedact, logger) => {
   try {
     // TODO Redact PII all app SA tables.. events, appstatus, monitoring, elig
-    logger.info(`applicatioStorageAccountTablesRedactPI with: ${agreementsToRedact}`);
+    logger.info(`applicatioStorageAccountTablesRedactPII with: ${agreementsToRedact}`);
   } catch (err) {
     logger.setBindings({ err });
     throw err;
