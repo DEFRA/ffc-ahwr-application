@@ -63,7 +63,6 @@ const applicationDatabaseRedactPII = (agreementsToRedact, logger) => {
     // TODO Redact PII all app db tables.. application, claim, claim_update_history, contact_history
     // NOTE wrap app and claim redact in transaction
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
-    throw Error('BH Testing 2!')
   } catch (err) {
     logger.setBindings({ err })
     throw err
