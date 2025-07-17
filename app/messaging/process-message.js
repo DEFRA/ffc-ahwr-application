@@ -17,7 +17,7 @@ export const processApplicationMessage = async (message, receiver, logger) => {
         await setPaymentStatusToPaid(message, logger)
         break
       case redactPiiRequestMsgType:
-        processRedactPiiRequest(message, logger)
+        await processRedactPiiRequest(message, logger)
         break
     }
 

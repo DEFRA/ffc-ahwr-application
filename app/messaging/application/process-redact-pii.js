@@ -4,19 +4,20 @@ import { config } from "../../config/index.js"
 const { documentGeneratorApiUri, sfdMessagingProxyApiUri } = config;
 
 export const processRedactPiiRequest = async (message, logger) => {
-  logger.info(`Processing redact PII request, date: ${message.body.requestDate}`)
+  logger.setBindings({ redactPiiRequested: message.body.requestDate })
+
   try {
     const agreementsToRedact = getAgreementsToRedactWithRedactID() 
 
-    callDocumentGeneratorRedactPII(agreementsToRedact, logger)
-    callSfdMessagingProxyRedactPII(agreementsToRedact, logger)
+    await callDocumentGeneratorRedactPII(agreementsToRedact, logger)
+    await callSfdMessagingProxyRedactPII(agreementsToRedact, logger)
 
-    applicationStorageAccountTablesRedactPII(agreementsToRedact, logger)
-    applicationDatabaseRedactPII(agreementsToRedact, logger)
+    await applicationStorageAccountTablesRedactPII(agreementsToRedact, logger)
+    await applicationDatabaseRedactPII(agreementsToRedact, logger)
 
     logger.info('Successfully processed redact PII request')
-  } catch (error) {
-    logger.error(`Failed to process redact PII request: ${error.message}`)
+  } catch (err) {
+    throw err;
   }
 }
 
@@ -54,7 +55,7 @@ const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
 const applicationStorageAccountTablesRedactPII = (agreementsToRedact, logger) => {
   try {
     // TODO Redact PII all app SA tables.. events, appstatus, monitoring, elig
-    logger.info(`applicatioStorageAccountTablesRedactPII with: ${agreementsToRedact}`);
+    logger.info(`applicatioStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`);
   } catch (err) {
     logger.setBindings({ err });
     throw err;
@@ -65,7 +66,7 @@ const applicationDatabaseRedactPII = (agreementsToRedact, logger) => {
   try {
     // TODO Redact PII all app db tables.. application, claim, claim_update_history, contact_history
     // NOTE wrap app and claim redact in transaction
-    logger.info(`applicationDatabaseRedactPII with: ${agreementsToRedact}`);
+    logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`);
   } catch (err) {
     logger.setBindings({ err });
     throw err;
