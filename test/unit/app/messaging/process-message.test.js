@@ -2,12 +2,14 @@ import { config } from '../../../../app/config'
 import { processApplicationMessage } from '../../../../app/messaging/process-message'
 import { processApplicationQueue } from '../../../../app/messaging/application/process-application'
 import { setPaymentStatusToPaid } from '../../../../app/messaging/application/set-payment-status-to-paid'
+import { processRedactPiiRequest } from '../../../../app/messaging/application/process-redact-pii'
 
 jest.mock('../../../../app/messaging/application/process-application')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../app/messaging/application/set-payment-status-to-paid')
+jest.mock('../../../../app/messaging/application/process-redact-pii')
 
-const { applicationRequestMsgType, moveClaimToPaidMsgType } = config
+const { applicationRequestMsgType, moveClaimToPaidMsgType, redactPiiRequestMsgType } = config
 
 describe('Process Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
@@ -59,6 +61,23 @@ describe('Process Message test', () => {
 
     await processApplicationMessage(message, receiver)
     expect(setPaymentStatusToPaid).toHaveBeenCalledTimes(1)
+    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+  })
+
+  test(`${redactPiiRequestMsgType} message calls processRedactPiiRequest`, async () => {
+    const message = {
+      messageId: '1234567890',
+      body: {
+        requestDate: new Date()
+      },
+      applicationProperties: {
+        type: redactPiiRequestMsgType
+      },
+      sessionId
+    }
+
+    await processApplicationMessage(message, receiver)
+    expect(processRedactPiiRequest).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 })

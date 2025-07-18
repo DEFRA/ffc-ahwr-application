@@ -44,6 +44,8 @@ overridden by build and release pipelines.
 | NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_REVIEW_COMPLETE                                     | Id of email template used to notify farmer for Endemics Review claim being completed             |
 | NOTIFY_TEMPLATE_ID_FARMER_ENDEMICS_FOLLOWUP_COMPLETE                                   | Id of email template used to notify farmer for Endemics Follow-up claim being completed          |
 | SERVICE_URI                                                                            | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
+| DOCUMENT_GENERATOR_SERVICE_URI                                                         | API URI of ffc-ahwr-document-generator service e.g. `http://localhost:3006/api`                   |
+| SFD_MESSAGING_PROXY_SERVICE_URI                                                        | API URI of ffc-ahwr-sfd-messaging-proxy service e.g. `http://localhost:3007/api`                   |
 | CLAIM_COMPLIANCE_CHECK_RATIO                                                           | The ratio in which claims require a compliance check, e.g. 3 means one in every 3 claims         |
 
 ## Running the application
