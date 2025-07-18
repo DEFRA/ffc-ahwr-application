@@ -48,7 +48,7 @@ const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
   }
 }
 
-const applicationStorageAccountTablesRedactPII = (agreementsToRedact, logger) => {
+const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logger) => {
   try {
     // TODO Redact PII all app SA tables.. events, appstatus, monitoring, elig
     logger.info(`applicatioStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
@@ -58,7 +58,7 @@ const applicationStorageAccountTablesRedactPII = (agreementsToRedact, logger) =>
   }
 }
 
-const applicationDatabaseRedactPII = (agreementsToRedact, logger) => {
+const applicationDatabaseRedactPII = async (agreementsToRedact, logger) => {
   try {
     // TODO Redact PII all app db tables.. application, claim, claim_update_history, contact_history
     // NOTE wrap app and claim redact in transaction
