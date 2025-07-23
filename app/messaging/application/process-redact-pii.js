@@ -1,5 +1,13 @@
 import wreck from '@hapi/wreck'
 import { config } from '../../config/index.js'
+import { redactPII as redactApplicationPII } from '../../repositories/application-repository.js'
+import { redactPII as redactClaimPII } from '../../repositories/claim-repository.js'
+import { redactPII as redactContactHistoryPII } from '../../repositories/contact-history-repository.js'
+import { redactPII as redactFlagPII } from '../../repositories/flag-repository.js'
+import { redactPII as redactHerdPII } from '../../repositories/herd-repository.js'
+import { redactPII as redactStatusPII } from '../../azure-storage/application-status-repository.js'
+import { redactPII as redactIneligibilityPII } from '../../azure-storage/application-ineligibility-repository.js'
+import { deleteApplicationEvents } from '../../azure-storage/application-eventstore-repository.js'
 
 const { documentGeneratorApiUri, sfdMessagingProxyApiUri } = config
 
@@ -18,12 +26,22 @@ export const processRedactPiiRequest = async (message, logger) => {
 }
 
 const getAgreementsToRedactWithRedactID = () => {
-  // TODO IMPL
-  const agreementsWithNoPayment = [{ reference: 'FAKE-REF-1', sbi: 'FAKE-SBI-1', redactID: 'FAKE-REDACT-ID-1' }]
+  const agreementsToRedactForRequestedDate = [] // TODO 1067 check in reacted table.. use rows if exist for requestedDate
+  if(agreementsToRedactForRequestedDate && agreementsToRedactForRequestedDate.length > 0) {
+    return agreementsToRedactForRequestedDate
+  }
+
+  // TODO IMPL 1067
+  const agreementsWithNoPayment = [
+    { redactId: 'AHWR-A271-8752-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'AHWR-A271-8752', data: { sbi: '106204591', claims: [{reference: 'AHWR-A271-8752'}] } },
+    { redactId: 'IAHW-AAAA-AAAA-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'IAHW-AAAA-AAAA', data: { sbi: '107597689', claims: [{reference: 'REBC-AAAA-AAA1'},{reference: 'REBC-AAAA-AAA2'}] } }
+  ]
   // TODO IMPL 1070
   const agreementsWithRejectedPayment = []
   // TODO IMPL 1068
   const agreementsWithPayment = []
+
+  // TODO 1067 store in reacted table.. include requestedDate as PK, redactId, type, 
 
   return [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment]
 }
@@ -50,8 +68,14 @@ const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
 
 const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logger) => {
   try {
-    // TODO Redact PII all app SA tables.. events, appstatus, monitoring, elig
     logger.info(`applicatioStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
+    agreementsToRedact.forEach(agreementToRedact => {
+      deleteApplicationEvents(agreementToRedact.data.sbi)
+      redactIneligibilityPII(agreementToRedact.data.sbi)
+      agreementToRedact.data.claims.forEach(claimToRedact => {
+        redactStatusPII(claimToRedact.reference)
+      })
+    })
   } catch (err) {
     logger.setBindings({ err })
     throw err
@@ -60,8 +84,13 @@ const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logg
 
 const applicationDatabaseRedactPII = async (agreementsToRedact, logger) => {
   try {
-    // TODO Redact PII all app db tables.. application, claim, claim_update_history, contact_history
-    // NOTE wrap app and claim redact in transaction
+    agreementsToRedact.forEach(agreementToRedact => {
+      redactHerdPII(agreementToRedact.reference)
+      redactFlagPII(agreementToRedact.reference)
+      redactContactHistoryPII(agreementToRedact.reference)
+      redactClaimPII(agreementToRedact.reference)
+      redactApplicationPII(agreementToRedact.reference)
+    })
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
   } catch (err) {
     logger.setBindings({ err })

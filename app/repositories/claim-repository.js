@@ -426,6 +426,109 @@ export const findAllClaimUpdateHistory = (reference) =>
     where: { reference }
   })
 
+export const redactPII = async (applicationReference) => {
+  // TODO 1067 move to shared lib
+  const REDACT_PII_VALUES = {
+    REDACTED_VETS_NAME: 'REDACTED_VETS_NAME',
+    REDACTED_VET_RCVS_NUMBER: 'REDACTED_VET_RCVS_NUMBER',
+    REDACTED_LABORATORY_URN: 'REDACTED_LABORATORY_URN',
+    REDACTED_NOTE: 'REDACTED_NOTE'
+  }
+
+  const claimData = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.fn(
+      'jsonb_set',
+      Sequelize.col('data'),
+      Sequelize.literal('\'{vetsName}\''),
+      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VETS_NAME}"'`)
+    ),
+    Sequelize.literal('\'{vetRCVSNumber}\''),
+    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}"'`)
+  )
+  await buildData.models.claim.update(
+    { data: claimData },
+    {
+      where: {
+        applicationReference
+      },
+      returning: true
+    }
+  )
+
+  const laboratoryUrnData = Sequelize.fn(
+      'jsonb_set',
+      Sequelize.col('data'),
+      Sequelize.literal('\'{laboratoryURN}\''),
+      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}"'`)
+    )
+  await buildData.models.claim.update(
+    { data: laboratoryUrnData },
+    {
+      where: {
+        applicationReference,
+        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'laboratoryURN'), true)]
+      },
+      returning: true
+    }
+  )  
+
+  // eslint-disable-next-line no-unused-vars
+  // const [_, updates] = await models.claim_update_history.update(
+  await buildData.models.claim_update_history.update(
+    {
+      note: `${REDACT_PII_VALUES.REDACTED_NOTE}`
+    },
+    {
+      where: {
+        applicationReference,
+        note: { [Op.not]: null }
+      },
+      returning: true
+    }
+  )
+
+  await buildData.models.claim_update_history.update(
+    {
+      newValue: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`,
+      oldValue: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`
+    },
+    {
+      where: {
+        applicationReference,
+        updatedProperty: 'vetName'
+      },
+      returning: true
+    }
+  )
+
+  // TODO 1067 add later for claim and claim_update_history
+  // const [updatedRecord] = updates
+  // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
+
+  // const eventData = {
+  //   applicationReference: reference,
+  //   reference,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   note
+  // }
+  // const type = `application-${updatedProperty}`
+  // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
+
+  // await buildData.models.claim_update_history.create({
+  //   applicationReference: reference,
+  //   reference,
+  //   note,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   eventType: type,
+  //   createdBy: user
+  // })
+}
+
 const convertUpdatedPropertyToStandardType = (updatedProperty) => {
   switch (updatedProperty) {
     case 'vetsName':

@@ -285,3 +285,80 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
     createdBy: user
   })
 }
+
+export const redactPII = async (reference) => {
+  // TODO 1067 move to shared lib
+  const REDACT_PII_VALUES = {
+    REDACTED_NAME: 'REDACTED_NAME',
+    REDACTED_EMAIL: 'redacted.email@example.com',
+    REDACTED_ADDRESS: 'REDACTED_ADDRESS',
+    REDACTED_ORG_EMAIL: 'redacted.org.email@example.com',
+    REDACTED_FARMER_NAME: 'REDACTED_FARMER_NAME'
+  }
+
+  // TODO adds field that ok?
+  const data = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.fn(
+      'jsonb_set',
+      Sequelize.fn(
+        'jsonb_set',
+        Sequelize.fn(
+          'jsonb_set',
+          Sequelize.fn(
+            'jsonb_set',
+            Sequelize.col('data'),
+            Sequelize.literal('\'{organisation,name}\''),
+            Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_NAME}"'`)
+          ),
+          Sequelize.literal('\'{organisation,email}\''),
+          Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_EMAIL}"'`)
+        ),
+        Sequelize.literal('\'{organisation,address}\''),
+        Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_ADDRESS}"'`)
+      ),
+      Sequelize.literal('\'{organisation,orgEmail}\''),
+      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_ORG_EMAIL}"'`)
+    ),
+    Sequelize.literal('\'{organisation,farmerName}\''),
+    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_FARMER_NAME}"'`)
+  )
+
+  // eslint-disable-next-line no-unused-vars
+  // const [_, updates] = await models.application.update(
+  await models.application.update(
+    { data },
+    {
+      where: { reference },
+      returning: true
+    }
+  )
+
+  // TODO 1067 redact OW claim data
+
+  // TODO 1067 add later
+  // const [updatedRecord] = updates
+  // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
+
+  // const eventData = {
+  //   applicationReference: reference,
+  //   reference,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   note
+  // }
+  // const type = `application-${updatedProperty}`
+  // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
+
+  // await buildData.models.claim_update_history.create({
+  //   applicationReference: reference,
+  //   reference,
+  //   note,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   eventType: type,
+  //   createdBy: user
+  // })
+}

@@ -26,3 +26,7 @@ export const getApplicationHistory = async (reference) => {
     odata`PartitionKey eq ${reference}`
   )
 }
+
+export const redactPII = async (sbi) => {
+  console.log('BH TODO implement') // notes
+}
