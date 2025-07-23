@@ -1,4 +1,5 @@
 import { queryEntitiesByPartitionKey } from './query-entities.js'
+import { deleteEntitiesByPartitionKey } from './delete-entities.js'
 import { odata } from '@azure/data-tables'
 
 export const getApplicationEvents = async (sbi) => {
@@ -12,4 +13,14 @@ export const getApplicationEvents = async (sbi) => {
 
   if (eventRecords.length === 0) { return null }
   return eventRecords
+}
+
+export const deleteApplicationEvents = async (sbi) => {
+  await deleteEntitiesByPartitionKey(
+    'ahwreventstore',
+    sbi,
+    // The partition key in the eventstore table can be either sbi or sbi_cph
+    // so query where the partition key starts with the sbi
+    odata`PartitionKey ge ${sbi} and PartitionKey lt ${(+sbi + 1).toString()}`
+  )
 }
