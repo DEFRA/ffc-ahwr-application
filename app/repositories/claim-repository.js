@@ -457,11 +457,11 @@ export const redactPII = async (applicationReference) => {
   )
 
   const laboratoryUrnData = Sequelize.fn(
-      'jsonb_set',
-      Sequelize.col('data'),
-      Sequelize.literal('\'{laboratoryURN}\''),
-      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}"'`)
-    )
+    'jsonb_set',
+    Sequelize.col('data'),
+    Sequelize.literal('\'{laboratoryURN}\''),
+    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}"'`)
+  )
   await buildData.models.claim.update(
     { data: laboratoryUrnData },
     {
@@ -471,7 +471,7 @@ export const redactPII = async (applicationReference) => {
       },
       returning: true
     }
-  )  
+  )
 
   // eslint-disable-next-line no-unused-vars
   // const [_, updates] = await models.claim_update_history.update(

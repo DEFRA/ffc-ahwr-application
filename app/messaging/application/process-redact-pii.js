@@ -11,6 +11,7 @@ import { deleteApplicationEvents } from '../../azure-storage/application-eventst
 
 const { documentGeneratorApiUri, sfdMessagingProxyApiUri } = config
 
+// TODO 1067 database updates should update the updatedBy
 export const processRedactPiiRequest = async (message, logger) => {
   logger.setBindings({ redactPiiRequested: message.body.requestDate })
 
@@ -27,21 +28,21 @@ export const processRedactPiiRequest = async (message, logger) => {
 
 const getAgreementsToRedactWithRedactID = () => {
   const agreementsToRedactForRequestedDate = [] // TODO 1067 check in reacted table.. use rows if exist for requestedDate
-  if(agreementsToRedactForRequestedDate && agreementsToRedactForRequestedDate.length > 0) {
+  if (agreementsToRedactForRequestedDate && agreementsToRedactForRequestedDate.length > 0) {
     return agreementsToRedactForRequestedDate
   }
 
   // TODO IMPL 1067
   const agreementsWithNoPayment = [
-    { redactId: 'AHWR-A271-8752-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'AHWR-A271-8752', data: { sbi: '106204591', claims: [{reference: 'AHWR-A271-8752'}] } },
-    { redactId: 'IAHW-AAAA-AAAA-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'IAHW-AAAA-AAAA', data: { sbi: '107597689', claims: [{reference: 'REBC-AAAA-AAA1'},{reference: 'REBC-AAAA-AAA2'}] } }
+    { redactId: 'AHWR-A271-8752-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'AHWR-0000-1111', data: { sbi: '107597689', claims: [{ reference: 'AHWR-0000-1111' }] } },
+    { redactId: 'IAHW-AAAA-AAAA-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'IAHW-AAAA-AAAA', data: { sbi: '107597689', claims: [{ reference: 'REBC-AAAA-AAA1' }, { reference: 'REBC-AAAA-AAA2' }] } }
   ]
   // TODO IMPL 1070
   const agreementsWithRejectedPayment = []
   // TODO IMPL 1068
   const agreementsWithPayment = []
 
-  // TODO 1067 store in reacted table.. include requestedDate as PK, redactId, type, 
+  // TODO 1067 store in reacted table.. include requestedDate as PK, redactId, type,
 
   return [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment]
 }
