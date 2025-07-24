@@ -37,7 +37,7 @@ export const redactPII = async (applicationReference) => {
   await buildData.models.herd.update(
     {
       herdName: `${REDACT_PII_VALUES.REDACTED_HERD_NAME}`,
-      cph: `${REDACT_PII_VALUES.REDACTED_HERD_CPH}`
+      cph: 'REDACTED_CPH' //TODO 1067 `${REDACT_PII_VALUES.REDACTED_HERD_CPH}`
     },
     {
       where: {
