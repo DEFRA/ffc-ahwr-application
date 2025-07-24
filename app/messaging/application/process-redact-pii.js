@@ -34,7 +34,7 @@ const getAgreementsToRedactWithRedactID = () => {
 
   // TODO IMPL 1067
   const agreementsWithNoPayment = [
-    { redactId: 'AHWR-A271-8752-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'AHWR-0000-1111', data: { sbi: '107597689', claims: [{ reference: 'AHWR-0000-1111' }] } },
+    { redactId: 'AHWR-A271-8752-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'AHWR-A271-8752', data: { sbi: '107597689', claims: [{ reference: 'AHWR-0000-1111' }] } },
     { redactId: 'IAHW-AAAA-AAAA-REDACTED-PII', requestedDate: '2025-07-22T10:00:00.00000000Z', type: 'PII', reference: 'IAHW-AAAA-AAAA', data: { sbi: '107597689', claims: [{ reference: 'REBC-AAAA-AAA1' }, { reference: 'REBC-AAAA-AAA2' }] } }
   ]
   // TODO IMPL 1070

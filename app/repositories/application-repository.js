@@ -293,8 +293,61 @@ export const redactPII = async (reference) => {
     REDACTED_EMAIL: 'redacted.email@example.com',
     REDACTED_ADDRESS: 'REDACTED_ADDRESS',
     REDACTED_ORG_EMAIL: 'redacted.org.email@example.com',
-    REDACTED_FARMER_NAME: 'REDACTED_FARMER_NAME'
+    REDACTED_FARMER_NAME: 'REDACTED_FARMER_NAME',
+    REDACTED_URN_RESULT: 'REDACTED_URN_RESULT',
+    REDACTED_VET_RCVS: 'REDACTED_VET_RCVS',
+    REDACTED_VET_NAME: 'REDACTED_VET_NAME'
   }
+
+  // Redact OW claim info
+  const vetRcvs = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.col('data'),
+    Sequelize.literal('\'{vetRcvs}\''),
+    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS}"'`)
+  )
+  await buildData.models.application.update(
+    { data: vetRcvs },
+    {
+      where: {
+        reference,
+        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'vetRcvs'), true)]
+      },
+      returning: true
+    }
+  )
+  const urnResult = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.col('data'),
+    Sequelize.literal('\'{urnResult}\''),
+    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_URN_RESULT}"'`)
+  )
+  await buildData.models.application.update(
+    { data: urnResult },
+    {
+      where: {
+        reference,
+        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'urnResult'), true)]
+      },
+      returning: true
+    }
+  )
+  const vetName = Sequelize.fn(
+    'jsonb_set',
+    Sequelize.col('data'),
+    Sequelize.literal('\'{vetName}\''),
+    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_NAME}"'`)
+  )
+  await buildData.models.application.update(
+    { data: vetName },
+    {
+      where: {
+        reference,
+        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'vetName'), true)]
+      },
+      returning: true
+    }
+  )
 
   // TODO adds field that ok?
   const data = Sequelize.fn(
