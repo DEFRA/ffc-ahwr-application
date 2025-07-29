@@ -286,6 +286,54 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
   })
 }
 
+export const getApplicationsOlderThan = async (years) => {
+  const now = new Date();
+  const cutoffDate = new Date(Date.UTC(
+    now.getUTCFullYear() - years,
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ));
+
+  return models.application
+    .findAll(
+      {
+        where: { 
+          createdAt: {
+            [Op.lt]: cutoffDate
+          }
+        },
+        attributes: ['reference'],
+        order: [['createdAt', 'ASC']]
+      }
+    )
+}
+
+// TODO IMPL 1067
+export const getAgreementsWithNoPaymentOlderThanThreeYears = async () => {
+  // Get all agreements older than 3 years WHERE xxx isn't redacted
+  // Get all claims for each agreement
+  // If agreement has claims at ready-to-pay|paid|rejected? then remove from results
+  const applicationsOlderThanThreeYears = await getApplicationsOlderThan(3)
+
+  const agreementsWithNoPayment = [
+    { reference: "AHWR-A271-8752", data: { sbi: "107597689", claims: [{ reference: "AHWR-0000-1111" }] } }
+  ]
+
+  return agreementsWithNoPayment
+}
+
+// TODO IMPL 1070
+export const getAgreementsWithRejectedPaymentOlderThanThreeYears = async () => {  
+  const agreementsWithRejectedPayment = []
+  return agreementsWithRejectedPayment
+}
+
+// TODO IMPL 1068
+export const getAgreementsWithPaymentOlderThanSevenYears = async () => {  
+  const agreementsWithPayment = []
+  return agreementsWithPayment
+}
+
 export const redactPII = async (reference) => {
   // TODO 1067 move to shared lib
   const REDACT_PII_VALUES = {

@@ -1,6 +1,7 @@
 import { Sequelize, DataTypes } from 'sequelize'
 import { dbConfig } from '../config/db.js'
 import { application } from './models/application.js'
+import { applicationRedact } from './models/application-redact.js'
 import { claim } from './models/claim.js'
 import { contactHistory } from './models/contact-history.js'
 import { holiday } from './models/holiday.js'
@@ -21,6 +22,7 @@ export const buildData = (() => {
   const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
 
   application(sequelize, DataTypes)
+  applicationRedact(sequelize, DataTypes)
   claim(sequelize, DataTypes)
   claimUpdateHistory(sequelize, DataTypes)
   contactHistory(sequelize, DataTypes)
@@ -34,6 +36,7 @@ export const buildData = (() => {
   complianceCheckCount(sequelize, DataTypes)
 
   sequelize.models.application.associate(sequelize.models)
+  sequelize.models.application_redact.associate(sequelize.models)
   sequelize.models.claim.associate(sequelize.models)
   sequelize.models.claim_update_history.associate(sequelize.models)
   sequelize.models.contact_history.associate(sequelize.models)
