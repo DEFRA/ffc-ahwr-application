@@ -1,8 +1,9 @@
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
-import { Op, Sequelize } from 'sequelize'
+import { Op, Sequelize, literal } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+import { getByApplicationReference } from './claim-repository.js'
 
 const { models, sequelize } = buildData
 
@@ -302,25 +303,29 @@ export const getApplicationsOlderThan = async (years) => {
             [Op.lt]: cutoffDate
           }
         },
-        attributes: ['reference'],
+        attributes: ['reference',[literal(`data->'organisation'->>'sbi'`), 'sbi']],
         order: [['createdAt', 'ASC']]
       }
     )
 }
 
-// TODO IMPL 1067
 export const getAgreementsWithNoPaymentOlderThanThreeYears = async () => {
-  // Get all agreements older than 3 years WHERE xxx isn't redacted
-  // Get all claims for each agreement
-  // If agreement has claims at ready-to-pay|paid|rejected? then remove from results
-  const applicationsOlderThanThreeYears = await getApplicationsOlderThan(3)
+  const applicationsOlderThanThreeYears = await getApplicationsOlderThan(3);
 
-  const agreementsWithNoPayment = [
-    { reference: "AHWR-A271-8752", data: { sbi: "107597689", claims: [{ reference: "AHWR-0000-1111" }] } }
-  ]
+  const agreementsWithNoPayment = await Promise.all(applicationsOlderThanThreeYears.map(async (application) => {
+    const appClaims = await getByApplicationReference(application.dataValues.reference);
+
+    // skip if application has paid/rejected claims
+    if (!appClaims.some(c => [1, 2].includes(c.statusId))) {
+      const claims = appClaims.map(c => ({ reference: c.reference }));
+      return { reference: application.dataValues.reference, data: { sbi: application.dataValues.sbi, claims } };
+    }
+    return null;
+
+  }).filter(Boolean)); // remove nulls
 
   return agreementsWithNoPayment
-}
+};
 
 // TODO IMPL 1070
 export const getAgreementsWithRejectedPaymentOlderThanThreeYears = async () => {  

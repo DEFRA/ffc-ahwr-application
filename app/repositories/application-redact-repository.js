@@ -6,8 +6,7 @@ export const getReferencesByRequestedDate = async (requestedDate) => {
   return models.application_redact.findAll({
     where: { 
       requestedDate
-    },
-    attributes: ['reference']
+    }
   })
 }
 

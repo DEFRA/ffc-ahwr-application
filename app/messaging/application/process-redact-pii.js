@@ -27,22 +27,25 @@ export const processRedactPiiRequest = async (message, logger) => {
   await applicationStorageAccountTablesRedactPII(agreementsToRedact, logger)
   await applicationDatabaseRedactPII(agreementsToRedact, logger)
 
-  updateAllAgreements(agreementsToRedact, false, null, 'Y')
+  updateAllAgreements(agreementsToRedact, false, 'documents,messages,storage-accounts,database-tables', 'Y')
   logger.info('Successfully processed redact PII request')
 }
 
 const getAgreementsToRedact = async (redactRequestedDate) => {
-  const existingApplicationRedacts = (await getReferencesByRequestedDate(redactRequestedDate)).map(r => r.dataValues.reference)
-
   const agreementsWithNoPayment = await getAgreementsWithNoPaymentOlderThanThreeYears()
   const agreementsWithRejectedPayment = await getAgreementsWithRejectedPaymentOlderThanThreeYears()
   const agreementsWithPayment = await getAgreementsWithPaymentOlderThanSevenYears()
-
   const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment]
     .map(a => { return { ...a, requestedDate: redactRequestedDate } } )
 
-  const newApplicationRedacts = agreementsToRedact.filter(agreement => !existingApplicationRedacts?.includes(agreement.reference))
-  return Promise.all(newApplicationRedacts.map((agreement) => createApplicationRedact(agreement)))
+  const applicationsForRequestedDate = await getReferencesByRequestedDate(redactRequestedDate)
+
+  const applicationReferences = applicationsForRequestedDate.map(a => a.dataValues.reference)
+  const newApplicationsToRedact = agreementsToRedact.filter(agreement => !applicationReferences?.includes(agreement.reference))
+  const newApplicationRedacts = await Promise.all(newApplicationsToRedact.map((agreement) => createApplicationRedact(agreement)))
+
+  const applicationsNotProcessedForRequestedDate = applicationsForRequestedDate.filter(a => a.dataValues.success === 'N')
+  return [ ...newApplicationRedacts, ...applicationsNotProcessedForRequestedDate ]
 }
 
 const callDocumentGeneratorRedactPII = async (agreementsToRedact, logger) => {
@@ -52,7 +55,7 @@ const callDocumentGeneratorRedactPII = async (agreementsToRedact, logger) => {
     await wreck.post(endpoint, { json: true, payload: { agreementsToRedact: agreementsToRedactPayload } })
   } catch (err) {
     logger.setBindings({ err, endpoint })
-    updateAllAgreements(agreementsToRedact, true, 'documents', 'N')
+    updateAllAgreements(agreementsToRedact, true, '', 'N')
     throw err
   }
 }
@@ -64,7 +67,7 @@ const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
     await wreck.post(endpoint, { json: true, payload: { agreementsToRedact: agreementsToRedactPayload } })
   } catch (err) {
     logger.setBindings({ err, endpoint })
-    updateAllAgreements(agreementsToRedact, true, 'messages', 'N')
+    updateAllAgreements(agreementsToRedact, true, 'documents', 'N')
     throw err
   }
 }
@@ -81,7 +84,7 @@ const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logg
     })
   } catch (err) {
     logger.setBindings({ err })
-    updateAllAgreements(agreementsToRedact, true, 'storage-accounts', 'N')
+    updateAllAgreements(agreementsToRedact, true, 'documents,messages', 'N')
     throw err
   }
 }
@@ -98,14 +101,18 @@ const applicationDatabaseRedactPII = async (agreementsToRedact, logger) => {
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
   } catch (err) {
     logger.setBindings({ err })
-    updateAllAgreements(agreementsToRedact, true, 'database-tables', 'N')
+    updateAllAgreements(agreementsToRedact, true, 'documents,messages,storage-accounts', 'N')
     throw err
   }
 }
 
 const updateAllAgreements = (agreementsToRedact, incrementRetryCount, status, success) => {
+  // only replace status if we got further than previous attempts
+  const statusFromPreviousAttempts = agreementsToRedact[0]?.status ?? ''
+  const statusToStore = (statusFromPreviousAttempts.length > status.length) ? statusFromPreviousAttempts : status
+
   agreementsToRedact.forEach(async (a) => {
     const retryCount = incrementRetryCount ? Number(a.retryCount)+1 : a.retryCount
-    await updateApplicationRedact(a.id, retryCount, status, success)
+    await updateApplicationRedact(a.id, retryCount, statusToStore, success)
   })
 }
