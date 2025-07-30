@@ -23,7 +23,6 @@ const userType = 'newUser'
 describe('sendEmail', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    config.multiHerds.enabled = false
   })
 
   test('sendFarmerConfirmationEmail calls sendMessage via SFD', async () => {

@@ -58,7 +58,6 @@ container:
   azureStorageEndemicsSettingsContainerName: 
   sfdMessageQueueAddress: ffc-ahwr-sfd-message
   messageGeneratorQueueAddress: ffc-ahwr-message-generator
-  multiHerdsEnabled: 'false'
   multiHerdsReleaseDate: '2025-05-01'
   pigUpdatesEnabled: 'false'
   storeHistoryInDbEnabled: 'false'
