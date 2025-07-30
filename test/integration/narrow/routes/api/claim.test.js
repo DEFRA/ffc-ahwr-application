@@ -220,7 +220,6 @@ describe('Post claim test', () => {
     getAmount.mockReturnValue(100)
     isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => { return false })
     isMultipleHerdsUserJourney.mockImplementation(() => { return false })
-    config.multiHerds.enabled = false
     config.pigUpdates.enabled = false
     jest.spyOn(buildData.sequelize, 'transaction').mockImplementation(async (callback) => {
       return await callback()
@@ -942,7 +941,6 @@ describe('Post claim test', () => {
       }
     }
     isMultipleHerdsUserJourney.mockImplementation(() => { return true })
-    config.multiHerds.enabled = true
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {

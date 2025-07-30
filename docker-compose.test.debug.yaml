@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   ffc-ahwr-application:
     command: npm run test:debug

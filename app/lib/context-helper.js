@@ -1,4 +1,3 @@
-import { config } from '../config/index.js'
 import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE, MULTIPLE_HERDS_RELEASE_DATE } from '../constants/index.js'
 
 export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
@@ -11,7 +10,7 @@ export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
 }
 
 export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
-  if (!config.multiHerds.enabled || new Date(dateOfVisit) < MULTIPLE_HERDS_RELEASE_DATE) {
+  if (new Date(dateOfVisit) < MULTIPLE_HERDS_RELEASE_DATE) {
     return false
   }
 
