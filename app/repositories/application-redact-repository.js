@@ -2,10 +2,11 @@ import { buildData } from '../data/index.js'
 
 const { models } = buildData
 
-export const getReferencesByRequestedDate = async (requestedDate) => {
+export const getApplicationsToRedactFor = async (requestedDate) => {
   return models.application_redact.findAll({
     where: { 
-      requestedDate
+      requestedDate,
+      success: 'N'
     }
   })
 }

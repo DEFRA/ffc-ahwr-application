@@ -1,3 +1,4 @@
+import { CLAIM_STATUS } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
@@ -287,7 +288,7 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
   })
 }
 
-export const getApplicationsOlderThan = async (years) => {
+export const getApplicationsToRedactOlderThan = async (years) => {
   const now = new Date();
   const cutoffDate = new Date(Date.UTC(
     now.getUTCFullYear() - years,
@@ -298,7 +299,10 @@ export const getApplicationsOlderThan = async (years) => {
   return models.application
     .findAll(
       {
-        where: { 
+        where: {
+          reference: {
+            [Op.notIn]: Sequelize.literal(`(SELECT reference FROM application_redact)`)
+          },
           createdAt: {
             [Op.lt]: cutoffDate
           }
@@ -309,32 +313,34 @@ export const getApplicationsOlderThan = async (years) => {
     )
 }
 
-export const getAgreementsWithNoPaymentOlderThanThreeYears = async () => {
-  const applicationsOlderThanThreeYears = await getApplicationsOlderThan(3);
+export const getAgreementsToRedactWithNoPaymentOlderThanThreeYears = async () => {
+  const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3);
 
-  const agreementsWithNoPayment = await Promise.all(applicationsOlderThanThreeYears.map(async (application) => {
+  const agreementsToRedactWithNoPayment = await Promise.all(applicationsOlderThanThreeYears.map(async (application) => {
     const appClaims = await getByApplicationReference(application.dataValues.reference);
 
     // skip if application has paid/rejected claims
-    if (!appClaims.some(c => [1, 2].includes(c.statusId))) {
-      const claims = appClaims.map(c => ({ reference: c.reference }));
-      return { reference: application.dataValues.reference, data: { sbi: application.dataValues.sbi, claims } };
+    const { PAID, READY_TO_PAY, REJECTED, WITHDRAWN } = CLAIM_STATUS
+    if (appClaims.some(c => [PAID, READY_TO_PAY, REJECTED, WITHDRAWN].includes(c.statusId))) {
+      return null;
     }
-    return null;
+
+    const claims = appClaims.map(c => ({ reference: c.reference }));
+    return { reference: application.dataValues.reference, data: { sbi: application.dataValues.sbi, claims } };
 
   }).filter(Boolean)); // remove nulls
 
-  return agreementsWithNoPayment
+  return agreementsToRedactWithNoPayment
 };
 
 // TODO IMPL 1070
-export const getAgreementsWithRejectedPaymentOlderThanThreeYears = async () => {  
+export const getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears = async () => {  
   const agreementsWithRejectedPayment = []
   return agreementsWithRejectedPayment
 }
 
 // TODO IMPL 1068
-export const getAgreementsWithPaymentOlderThanSevenYears = async () => {  
+export const getAgreementsToRedactWithPaymentOlderThanSevenYears = async () => {  
   const agreementsWithPayment = []
   return agreementsWithPayment
 }

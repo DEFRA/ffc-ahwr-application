@@ -1,7 +1,7 @@
 import wreck from '@hapi/wreck'
 import { config } from '../../config/index.js'
-import { getReferencesByRequestedDate, createApplicationRedact, updateApplicationRedact } from '../../repositories/application-redact-repository.js'
-import { getAgreementsWithNoPaymentOlderThanThreeYears, getAgreementsWithRejectedPaymentOlderThanThreeYears, getAgreementsWithPaymentOlderThanSevenYears, redactPII as redactApplicationPII } from '../../repositories/application-repository.js'
+import { getApplicationsToRedactFor, createApplicationRedact, updateApplicationRedact } from '../../repositories/application-redact-repository.js'
+import { getAgreementsToRedactWithNoPaymentOlderThanThreeYears, getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears, getAgreementsToRedactWithPaymentOlderThanSevenYears, redactPII as redactApplicationPII } from '../../repositories/application-repository.js'
 import { redactPII as redactClaimPII } from '../../repositories/claim-repository.js'
 import { redactPII as redactContactHistoryPII } from '../../repositories/contact-history-repository.js'
 import { redactPII as redactFlagPII } from '../../repositories/flag-repository.js'
@@ -19,6 +19,7 @@ export const processRedactPiiRequest = async (message, logger) => {
   const agreementsToRedact = await getAgreementsToRedact(message.body.requestedDate)
   if(agreementsToRedact.length == 0) {
     logger.info('No new agreements to redact for this date')
+    return
   }
 
   await callDocumentGeneratorRedactPII(agreementsToRedact, logger)
@@ -31,21 +32,17 @@ export const processRedactPiiRequest = async (message, logger) => {
   logger.info('Successfully processed redact PII request')
 }
 
-const getAgreementsToRedact = async (redactRequestedDate) => {
-  const agreementsWithNoPayment = await getAgreementsWithNoPaymentOlderThanThreeYears()
-  const agreementsWithRejectedPayment = await getAgreementsWithRejectedPaymentOlderThanThreeYears()
-  const agreementsWithPayment = await getAgreementsWithPaymentOlderThanSevenYears()
-  const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment]
-    .map(a => { return { ...a, requestedDate: redactRequestedDate } } )
+const getAgreementsToRedact = async (requestedDate) => {
+  // get applications not yet queued for redaction and store in redact table
+  const agreementsWithNoPayment = await getAgreementsToRedactWithNoPaymentOlderThanThreeYears()
+  const agreementsWithRejectedPayment = await getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears()
+  const agreementsWithPayment = await getAgreementsToRedactWithPaymentOlderThanSevenYears()
 
-  const applicationsForRequestedDate = await getReferencesByRequestedDate(redactRequestedDate)
+  const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment].map(a => { return { ...a, requestedDate: requestedDate } } )
+  await Promise.all(agreementsToRedact.map((agreement) => createApplicationRedact(agreement)))
 
-  const applicationReferences = applicationsForRequestedDate.map(a => a.dataValues.reference)
-  const newApplicationsToRedact = agreementsToRedact.filter(agreement => !applicationReferences?.includes(agreement.reference))
-  const newApplicationRedacts = await Promise.all(newApplicationsToRedact.map((agreement) => createApplicationRedact(agreement)))
-
-  const applicationsNotProcessedForRequestedDate = applicationsForRequestedDate.filter(a => a.dataValues.success === 'N')
-  return [ ...newApplicationRedacts, ...applicationsNotProcessedForRequestedDate ]
+  // get all (old/new) applications to redact
+  return await getApplicationsToRedactFor(requestedDate)
 }
 
 const callDocumentGeneratorRedactPII = async (agreementsToRedact, logger) => {
