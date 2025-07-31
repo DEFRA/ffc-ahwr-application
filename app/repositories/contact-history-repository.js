@@ -1,3 +1,4 @@
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { Sequelize } from 'sequelize'
 
@@ -19,11 +20,7 @@ export const set = async (data) => {
 }
 
 export const redactPII = async (applicationReference) => {
-  // TODO 1067 move to shared lib
-  const REDACT_PII_VALUES = {
-    REDACTED_MULTI_TYPE_VALUE: 'REDACTED_MULTI_TYPE_VALUE' // TODO 1067 correct?
-  }
-
+  // TODO 1067 update to figure out what is updated.. name, email, etc
   const data = Sequelize.fn(
     'jsonb_set',
     Sequelize.fn(
@@ -35,7 +32,11 @@ export const redactPII = async (applicationReference) => {
     Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_MULTI_TYPE_VALUE}"'`)
   )
   await buildData.models.contact_history.update(
-    { data },
+    {
+      data,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
     {
       where: {
         applicationReference
@@ -44,7 +45,7 @@ export const redactPII = async (applicationReference) => {
     }
   )
 
-  // TODO 1067 add later for claim and claim_update_history
+  // TODO 1067 send event? add history row?
   // const [updatedRecord] = updates
   // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
 

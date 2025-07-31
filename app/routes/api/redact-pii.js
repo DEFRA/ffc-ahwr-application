@@ -11,8 +11,8 @@ export const redactPiiRequestHandlers = [
     handler: async (request, h) => {
       request.logger.info('Request for redact PII received')
 
-      const now = new Date();
-      const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const now = new Date()
+      const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
       sendMessage({ requestedDate: utcMidnight }, redactPiiRequestMsgType, applicationRequestQueue)
 
       return h.response().code(HttpStatus.ACCEPTED)

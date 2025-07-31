@@ -18,7 +18,7 @@ export const updateEntitiesByPartitionKey = async (
     for await (const entity of entities) {
       let replacements
 
-      // TODO 1067 improve
+      // TODO 1067 improve, Ross may have already done this
       if (entityReplacements?.Payload) {
         // check that all payload properties exist, if not don't update
         let payloadReplacements = { Payload: JSON.stringify({ ...JSON.parse(`${entity.Payload}`) }) }

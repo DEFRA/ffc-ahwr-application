@@ -1,4 +1,4 @@
-import { CLAIM_STATUS } from 'ffc-ahwr-common-library'
+import { CLAIM_STATUS, REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
@@ -289,75 +289,62 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
 }
 
 export const getApplicationsToRedactOlderThan = async (years) => {
-  const now = new Date();
+  const now = new Date()
   const cutoffDate = new Date(Date.UTC(
     now.getUTCFullYear() - years,
     now.getUTCMonth(),
     now.getUTCDate()
-  ));
+  ))
 
   return models.application
     .findAll(
       {
         where: {
           reference: {
-            [Op.notIn]: Sequelize.literal(`(SELECT reference FROM application_redact)`)
+            [Op.notIn]: Sequelize.literal('(SELECT reference FROM application_redact)')
           },
           createdAt: {
             [Op.lt]: cutoffDate
           }
         },
-        attributes: ['reference',[literal(`data->'organisation'->>'sbi'`), 'sbi']],
+        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
         order: [['createdAt', 'ASC']]
       }
     )
 }
 
 export const getAgreementsToRedactWithNoPaymentOlderThanThreeYears = async () => {
-  const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3);
+  const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3)
 
   const agreementsToRedactWithNoPayment = await Promise.all(applicationsOlderThanThreeYears.map(async (application) => {
-    const appClaims = await getByApplicationReference(application.dataValues.reference);
+    const appClaims = await getByApplicationReference(application.dataValues.reference)
 
     // skip if application has paid/rejected claims
     const { PAID, READY_TO_PAY, REJECTED, WITHDRAWN } = CLAIM_STATUS
     if (appClaims.some(c => [PAID, READY_TO_PAY, REJECTED, WITHDRAWN].includes(c.statusId))) {
-      return null;
+      return null
     }
 
-    const claims = appClaims.map(c => ({ reference: c.reference }));
-    return { reference: application.dataValues.reference, data: { sbi: application.dataValues.sbi, claims } };
-
-  }).filter(Boolean)); // remove nulls
+    const claims = appClaims.map(c => ({ reference: c.reference }))
+    return { reference: application.dataValues.reference, data: { sbi: application.dataValues.sbi, claims } }
+  }).filter(Boolean)) // remove nulls
 
   return agreementsToRedactWithNoPayment
-};
+}
 
-// TODO IMPL 1070
-export const getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears = async () => {  
+// TODO 1070 IMPL
+export const getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears = async () => {
   const agreementsWithRejectedPayment = []
   return agreementsWithRejectedPayment
 }
 
-// TODO IMPL 1068
-export const getAgreementsToRedactWithPaymentOlderThanSevenYears = async () => {  
+// TODO 1068 IMPL
+export const getAgreementsToRedactWithPaymentOlderThanSevenYears = async () => {
   const agreementsWithPayment = []
   return agreementsWithPayment
 }
 
 export const redactPII = async (reference) => {
-  // TODO 1067 move to shared lib
-  const REDACT_PII_VALUES = {
-    REDACTED_NAME: 'REDACTED_NAME',
-    REDACTED_EMAIL: 'redacted.email@example.com',
-    REDACTED_ADDRESS: 'REDACTED_ADDRESS',
-    REDACTED_ORG_EMAIL: 'redacted.org.email@example.com',
-    REDACTED_FARMER_NAME: 'REDACTED_FARMER_NAME',
-    REDACTED_URN_RESULT: 'REDACTED_URN_RESULT',
-    REDACTED_VET_RCVS: 'REDACTED_VET_RCVS',
-    REDACTED_VET_NAME: 'REDACTED_VET_NAME'
-  }
-
   // Redact OW claim info
   const vetRcvs = Sequelize.fn(
     'jsonb_set',
@@ -366,7 +353,11 @@ export const redactPII = async (reference) => {
     Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS}"'`)
   )
   await buildData.models.application.update(
-    { data: vetRcvs },
+    {
+      data: vetRcvs,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
     {
       where: {
         reference,
@@ -382,7 +373,11 @@ export const redactPII = async (reference) => {
     Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_URN_RESULT}"'`)
   )
   await buildData.models.application.update(
-    { data: urnResult },
+    {
+      data: urnResult,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
     {
       where: {
         reference,
@@ -398,7 +393,11 @@ export const redactPII = async (reference) => {
     Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_NAME}"'`)
   )
   await buildData.models.application.update(
-    { data: vetName },
+    {
+      data: vetName,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
     {
       where: {
         reference,
@@ -408,7 +407,7 @@ export const redactPII = async (reference) => {
     }
   )
 
-  // TODO adds field that ok?
+  // TODO reuse Ross's approach
   const data = Sequelize.fn(
     'jsonb_set',
     Sequelize.fn(
@@ -439,16 +438,18 @@ export const redactPII = async (reference) => {
   // eslint-disable-next-line no-unused-vars
   // const [_, updates] = await models.application.update(
   await models.application.update(
-    { data },
+    {
+      data,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
     {
       where: { reference },
       returning: true
     }
   )
 
-  // TODO 1067 redact OW claim data
-
-  // TODO 1067 add later
+  // TODO 1067 send event? add history row?
   // const [updatedRecord] = updates
   // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
 

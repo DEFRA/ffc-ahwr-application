@@ -1,3 +1,4 @@
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseClaimEvents, raiseHerdEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
@@ -427,14 +428,6 @@ export const findAllClaimUpdateHistory = (reference) =>
   })
 
 export const redactPII = async (applicationReference) => {
-  // TODO 1067 move to shared lib
-  const REDACT_PII_VALUES = {
-    REDACTED_VETS_NAME: 'REDACTED_VETS_NAME',
-    REDACTED_VET_RCVS_NUMBER: 'REDACTED_VET_RCVS_NUMBER',
-    REDACTED_LABORATORY_URN: 'REDACTED_LABORATORY_URN',
-    REDACTED_NOTE: 'REDACTED_NOTE'
-  }
-
   const claimData = Sequelize.fn(
     'jsonb_set',
     Sequelize.fn(
@@ -447,7 +440,11 @@ export const redactPII = async (applicationReference) => {
     Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}"'`)
   )
   await buildData.models.claim.update(
-    { data: claimData },
+    {
+      data: claimData,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
     {
       where: {
         applicationReference
@@ -463,7 +460,11 @@ export const redactPII = async (applicationReference) => {
     Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}"'`)
   )
   await buildData.models.claim.update(
-    { data: laboratoryUrnData },
+    {
+      data: laboratoryUrnData,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
     {
       where: {
         applicationReference,
@@ -472,6 +473,39 @@ export const redactPII = async (applicationReference) => {
       returning: true
     }
   )
+
+  // TODO 1067 test!
+  // redact OW claim data
+  if (applicationReference.startsWith('AHWR-')) {
+    const owClaimData = Sequelize.fn(
+      'jsonb_set',
+      Sequelize.fn(
+        'jsonb_set',
+        Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{vetName}\''),
+          Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VETS_NAME}"'`)
+        ),
+        Sequelize.literal('\'{vetRcvs}\''),
+        Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}"'`)),
+      Sequelize.literal('\'{urnResult}\''),
+      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}"'`)
+    )
+    await buildData.models.application.update(
+      {
+        data: owClaimData,
+        updatedBy: 'admin',
+        updatedAt: Date.now()
+      },
+      {
+        where: {
+          reference: applicationReference
+        },
+        returning: true
+      }
+    )
+  }
 
   // eslint-disable-next-line no-unused-vars
   // const [_, updates] = await models.claim_update_history.update(
@@ -502,7 +536,7 @@ export const redactPII = async (applicationReference) => {
     }
   )
 
-  // TODO 1067 add later for claim and claim_update_history
+  // TODO 1067 send event? add history row?
   // const [updatedRecord] = updates
   // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
 
