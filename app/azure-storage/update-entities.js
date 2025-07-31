@@ -1,5 +1,20 @@
 import { createTableClient } from './create-table-client.js'
 
+const redactFields = (target, redactedValueByField) => {
+  const recurse = (obj) => {
+    for (const [key, value] of Object.entries(obj)) {
+      if (key in redactedValueByField) {
+        obj[key] = redactedValueByField[key]
+      } else if (value && typeof value === 'object') {
+        recurse(value)
+      }
+    }
+  }
+
+  recurse(target)
+  return target
+}
+
 export const updateEntitiesByPartitionKey = async (
   tableName,
   partitionKey,
@@ -18,41 +33,32 @@ export const updateEntitiesByPartitionKey = async (
     for await (const entity of entities) {
       let replacements
 
-      // TODO 1067 improve, Ross may have already done this
       if (entityReplacements?.Payload) {
-        // check that all payload properties exist, if not don't update
-        let payloadReplacements = { Payload: JSON.stringify({ ...JSON.parse(`${entity.Payload}`) }) }
-        const existingPayloadKeys = Object.keys(JSON.parse(`${entity.Payload}`))
-        const payloadKeysToUpdate = Object.keys(entityReplacements.Payload)
+        const payload = JSON.parse(`${entity.Payload}`)
+        const redactedPayload = redactFields(payload, entityReplacements.Payload)
 
-        if (payloadKeysToUpdate.every(key => existingPayloadKeys.includes(key))) {
-          payloadReplacements = { Payload: JSON.stringify({ ...JSON.parse(`${entity.Payload}`), ...entityReplacements.Payload }) }
-        }
-
-        replacements = { ...entityReplacements, ...payloadReplacements }
+        replacements = { ...entityReplacements, Payload: JSON.stringify(redactedPayload) }
       } else {
         replacements = entityReplacements
       }
 
       // only update if something to update
-      if (replacements) {
-        const entityUpdates = {
-          partitionKey: entity.partitionKey,
-          rowKey: entity.rowKey,
-          ...replacements
-        }
-
-        updates.push(
-          tableClient
-            .updateEntity(entityUpdates, 'Merge')
-            .then(() =>
-              console.log(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
-            )
-            .catch((err) =>
-              console.error(`Failed to update entity ${entity.rowKey}:`, err)
-            )
-        )
+      const entityUpdates = {
+        partitionKey: entity.partitionKey,
+        rowKey: entity.rowKey,
+        ...replacements
       }
+
+      updates.push(
+        tableClient
+          .updateEntity(entityUpdates, 'Merge')
+          .then(() =>
+            console.log(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
+          )
+          .catch((err) =>
+            console.error(`Failed to update entity ${entity.rowKey}:`, err)
+          )
+      )
     }
 
     await Promise.all(updates)
