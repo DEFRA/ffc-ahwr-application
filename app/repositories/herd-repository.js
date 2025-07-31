@@ -1,3 +1,4 @@
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 
 const { models } = buildData
@@ -26,18 +27,14 @@ export const getHerdsByAppRefAndSpecies = async (applicationReference, species) 
 }
 
 export const redactPII = async (applicationReference) => {
-  // TODO 1067 move to shared lib
-  const REDACT_PII_VALUES = {
-    REDACTED_HERD_NAME: 'REDACTED_HERD_NAME',
-    REDACTED_HERD_CPH: 'REDACTED_HERD_CPH'
-  }
-
   // eslint-disable-next-line no-unused-vars
   // const [_, updates] = await models.claim_update_history.update(
   await buildData.models.herd.update(
     {
       herdName: `${REDACT_PII_VALUES.REDACTED_HERD_NAME}`,
-      cph: 'REDACTED_CPH' //TODO 1067 `${REDACT_PII_VALUES.REDACTED_HERD_CPH}`
+      cph: `${REDACT_PII_VALUES.REDACTED_CPH}`,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
     },
     {
       where: {
@@ -47,7 +44,7 @@ export const redactPII = async (applicationReference) => {
     }
   )
 
-  // TODO 1067 add later for claim and claim_update_history
+  // TODO 1067 send event? add history row?
   // const [updatedRecord] = updates
   // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
 

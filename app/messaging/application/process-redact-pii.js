@@ -12,12 +12,11 @@ import { deleteApplicationEvents } from '../../azure-storage/application-eventst
 
 const { documentGeneratorApiUri, sfdMessagingProxyApiUri } = config
 
-// TODO 1067 database updates should update the updatedBy
 export const processRedactPiiRequest = async (message, logger) => {
   logger.setBindings({ redactRequestedDate: message.body.requestedDate })
 
   const agreementsToRedact = await getAgreementsToRedact(message.body.requestedDate)
-  if(agreementsToRedact.length == 0) {
+  if (agreementsToRedact.length === 0) {
     logger.info('No new agreements to redact for this date')
     return
   }
@@ -28,7 +27,7 @@ export const processRedactPiiRequest = async (message, logger) => {
   await applicationStorageAccountTablesRedactPII(agreementsToRedact, logger)
   await applicationDatabaseRedactPII(agreementsToRedact, logger)
 
-  updateAllAgreements(agreementsToRedact, false, 'documents,messages,storage-accounts,database-tables', 'Y')
+  await updateAllAgreements(agreementsToRedact, false, 'documents,messages,storage-accounts,database-tables', 'Y')
   logger.info('Successfully processed redact PII request')
 }
 
@@ -38,7 +37,7 @@ const getAgreementsToRedact = async (requestedDate) => {
   const agreementsWithRejectedPayment = await getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears()
   const agreementsWithPayment = await getAgreementsToRedactWithPaymentOlderThanSevenYears()
 
-  const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment].map(a => { return { ...a, requestedDate: requestedDate } } )
+  const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment].map(a => { return { ...a, requestedDate } })
   await Promise.all(agreementsToRedact.map((agreement) => createApplicationRedact(agreement)))
 
   // get all (old/new) applications to redact
@@ -47,24 +46,24 @@ const getAgreementsToRedact = async (requestedDate) => {
 
 const callDocumentGeneratorRedactPII = async (agreementsToRedact, logger) => {
   const endpoint = `${documentGeneratorApiUri}/redact/pii`
-  const agreementsToRedactPayload = agreementsToRedact.map(({reference, data}) => { return { reference, sbi: data.sbi } })
+  const agreementsToRedactPayload = agreementsToRedact.map(({ reference, data }) => { return { reference, sbi: data.sbi } })
   try {
     await wreck.post(endpoint, { json: true, payload: { agreementsToRedact: agreementsToRedactPayload } })
   } catch (err) {
     logger.setBindings({ err, endpoint })
-    updateAllAgreements(agreementsToRedact, true, '', 'N')
+    await updateAllAgreements(agreementsToRedact, true, '', 'N')
     throw err
   }
 }
 
 const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
   const endpoint = `${sfdMessagingProxyApiUri}/redact/pii`
-  const agreementsToRedactPayload = agreementsToRedact.map(({reference}) => { return { reference } })
+  const agreementsToRedactPayload = agreementsToRedact.map(({ reference }) => { return { reference } })
   try {
     await wreck.post(endpoint, { json: true, payload: { agreementsToRedact: agreementsToRedactPayload } })
   } catch (err) {
     logger.setBindings({ err, endpoint })
-    updateAllAgreements(agreementsToRedact, true, 'documents', 'N')
+    await updateAllAgreements(agreementsToRedact, true, 'documents', 'N')
     throw err
   }
 }
@@ -81,35 +80,35 @@ const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logg
     })
   } catch (err) {
     logger.setBindings({ err })
-    updateAllAgreements(agreementsToRedact, true, 'documents,messages', 'N')
+    await updateAllAgreements(agreementsToRedact, true, 'documents,messages', 'N')
     throw err
   }
 }
 
 const applicationDatabaseRedactPII = async (agreementsToRedact, logger) => {
   try {
-    agreementsToRedact.forEach(agreementToRedact => {
-      redactHerdPII(agreementToRedact.reference)
-      redactFlagPII(agreementToRedact.reference)
-      redactContactHistoryPII(agreementToRedact.reference)
-      redactClaimPII(agreementToRedact.reference)
-      redactApplicationPII(agreementToRedact.reference)
+    agreementsToRedact.map(async (agreement) => {
+      await redactHerdPII(agreement.reference)
+      await redactFlagPII(agreement.reference)
+      await redactContactHistoryPII(agreement.reference)
+      await redactClaimPII(agreement.reference)
+      await redactApplicationPII(agreement.reference)
     })
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
   } catch (err) {
     logger.setBindings({ err })
-    updateAllAgreements(agreementsToRedact, true, 'documents,messages,storage-accounts', 'N')
+    await updateAllAgreements(agreementsToRedact, true, 'documents,messages,storage-accounts', 'N')
     throw err
   }
 }
 
-const updateAllAgreements = (agreementsToRedact, incrementRetryCount, status, success) => {
+const updateAllAgreements = async (agreementsToRedact, incrementRetryCount, status, success) => {
   // only replace status if we got further than previous attempts
   const statusFromPreviousAttempts = agreementsToRedact[0]?.status ?? ''
   const statusToStore = (statusFromPreviousAttempts.length > status.length) ? statusFromPreviousAttempts : status
 
-  agreementsToRedact.forEach(async (a) => {
-    const retryCount = incrementRetryCount ? Number(a.retryCount)+1 : a.retryCount
-    await updateApplicationRedact(a.id, retryCount, statusToStore, success)
-  })
+  await Promise.all(agreementsToRedact.map((a) => {
+    const retryCount = incrementRetryCount ? Number(a.retryCount) + 1 : a.retryCount
+    return updateApplicationRedact(a.id, retryCount, statusToStore, success)
+  }))
 }

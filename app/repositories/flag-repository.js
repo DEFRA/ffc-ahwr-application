@@ -1,3 +1,4 @@
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { Op } from 'sequelize'
 
@@ -37,11 +38,7 @@ export const getFlagsForApplicationIncludingDeleted = async (applicationReferenc
 }
 
 export const redactPII = async (applicationReference) => {
-  // TODO 1067 move to shared lib
-  const REDACT_PII_VALUES = {
-    REDACTED_NOTE: 'REDACTED_NOTE'
-  }
-
+  // TODO 1067 no updatedBy/At, update deletedBy/At instead?
   // eslint-disable-next-line no-unused-vars
   // const [_, updates] = await models.claim_update_history.update(
   await buildData.models.flag.update(
@@ -57,7 +54,7 @@ export const redactPII = async (applicationReference) => {
     }
   )
 
-  // TODO 1067 add later for claim and claim_update_history
+  // TODO 1067 send event? add history row?
   // const [updatedRecord] = updates
   // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
 
