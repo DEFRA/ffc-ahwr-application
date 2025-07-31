@@ -8,7 +8,7 @@ import { redactPII as redactFlagPII } from '../../repositories/flag-repository.j
 import { redactPII as redactHerdPII } from '../../repositories/herd-repository.js'
 import { redactPII as redactStatusPII } from '../../azure-storage/application-status-repository.js'
 import { redactPII as redactIneligibilityPII } from '../../azure-storage/application-ineligibility-repository.js'
-import { deleteApplicationEvents } from '../../azure-storage/application-eventstore-repository.js'
+import { redactPII as redactApplicationEventPII } from '../../azure-storage/application-eventstore-repository.js'
 
 const { documentGeneratorApiUri, sfdMessagingProxyApiUri } = config
 
@@ -72,7 +72,7 @@ const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logg
   try {
     logger.info(`applicatioStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
     agreementsToRedact.forEach(agreementToRedact => {
-      deleteApplicationEvents(agreementToRedact.data.sbi)
+      redactApplicationEventPII(agreementToRedact.data.sbi)
       redactIneligibilityPII(agreementToRedact.data.sbi)
       agreementToRedact.data.claims.forEach(claimToRedact => {
         redactStatusPII(claimToRedact.reference)
