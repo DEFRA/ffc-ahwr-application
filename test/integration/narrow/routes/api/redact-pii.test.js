@@ -26,7 +26,7 @@ describe('redact-pii', () => {
       const res = await server.inject({ method: 'POST', url: '/api/redact/pii', payload: {} })
 
       expect(res.statusCode).toBe(HttpStatus.ACCEPTED)
-      expect(sendMessage).toHaveBeenCalledWith({ requestDate: expect.any(Date) }, 'mock.redact.pii.request', 'mock.queue')
+      expect(sendMessage).toHaveBeenCalledWith({ requestedDate: expect.any(Date) }, 'mock.redact.pii.request', 'mock.queue')
     })
   })
 })

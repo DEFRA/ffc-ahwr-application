@@ -36,9 +36,9 @@ describe('Application Event Store Repository test', () => {
 
   describe('redactPII', () => {
     test('should call updateEntitiesByPartitionKey with the correct parameters', async () => {
-      await redactPII('123456789');
+      await redactPII('123456789')
 
-      expect(updateEntitiesByPartitionKey).toHaveBeenCalledTimes(1);
+      expect(updateEntitiesByPartitionKey).toHaveBeenCalledTimes(1)
       expect(updateEntitiesByPartitionKey).toHaveBeenCalledWith(
         'ahwreventstore',
         '123456789',
@@ -75,7 +75,6 @@ describe('Application Event Store Repository test', () => {
           }
         }
       )
-
-    });
+    })
   })
 })

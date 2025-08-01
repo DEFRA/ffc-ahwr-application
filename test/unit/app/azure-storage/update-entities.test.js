@@ -46,7 +46,6 @@ describe('updateEntitiesByPartitionKey', () => {
           raisedOn: '2025-02-14T10:31:02.201Z'
         })
       }
-      ,
       yield {
         rowKey: 'row-2',
         partitionKey: '107292794',
