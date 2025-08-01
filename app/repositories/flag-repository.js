@@ -38,7 +38,6 @@ export const getFlagsForApplicationIncludingDeleted = async (applicationReferenc
 }
 
 export const redactPII = async (applicationReference) => {
-  // TODO 1067 no updatedBy/At, update deletedBy/At instead?
   // eslint-disable-next-line no-unused-vars
   // const [_, updates] = await models.claim_update_history.update(
   await buildData.models.flag.update(

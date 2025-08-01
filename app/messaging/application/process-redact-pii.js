@@ -71,13 +71,16 @@ const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
 const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logger) => {
   try {
     logger.info(`applicatioStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
-    agreementsToRedact.forEach(agreementToRedact => {
-      redactApplicationEventPII(agreementToRedact.data.sbi)
-      redactIneligibilityPII(agreementToRedact.data.sbi)
-      agreementToRedact.data.claims.forEach(claimToRedact => {
-        redactStatusPII(claimToRedact.reference)
+    await Promise.all(
+      agreementsToRedact.map(async ({ data }) => {
+        const { sbi, claims } = data
+        await redactApplicationEventPII(sbi)
+        await redactIneligibilityPII(sbi)
+        await Promise.all(
+          claims.map(({ reference }) => redactStatusPII(reference))
+        )
       })
-    })
+    )
   } catch (err) {
     logger.setBindings({ err })
     await updateAllAgreements(agreementsToRedact, true, 'documents,messages', 'N')
@@ -87,13 +90,15 @@ const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logg
 
 const applicationDatabaseRedactPII = async (agreementsToRedact, logger) => {
   try {
-    agreementsToRedact.map(async (agreement) => {
-      await redactHerdPII(agreement.reference)
-      await redactFlagPII(agreement.reference)
-      await redactContactHistoryPII(agreement.reference)
-      await redactClaimPII(agreement.reference)
-      await redactApplicationPII(agreement.reference)
-    })
+    await Promise.all(
+      agreementsToRedact.map(async (agreement) => {
+        await redactHerdPII(agreement.reference)
+        await redactFlagPII(agreement.reference)
+        await redactContactHistoryPII(agreement.reference)
+        await redactClaimPII(agreement.reference)
+        await redactApplicationPII(agreement.reference)
+      })
+    )
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
   } catch (err) {
     logger.setBindings({ err })

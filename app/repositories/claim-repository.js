@@ -1,4 +1,4 @@
-import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { REDACT_PII_VALUES, APPLICATION_REFERENCE_PREFIX_OLD_WORLD } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseClaimEvents, raiseHerdEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
@@ -474,9 +474,8 @@ export const redactPII = async (applicationReference) => {
     }
   )
 
-  // TODO 1067 test!
   // redact OW claim data
-  if (applicationReference.startsWith('AHWR-')) {
+  if (applicationReference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
     const owClaimData = Sequelize.fn(
       'jsonb_set',
       Sequelize.fn(

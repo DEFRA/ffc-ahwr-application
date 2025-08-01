@@ -20,7 +20,7 @@ export const set = async (data) => {
 }
 
 export const redactPII = async (applicationReference) => {
-  // TODO 1067 update to figure out what is updated.. name, email, etc
+  // TODO 1067 ?update to figure out what is updated.. name, email, etc
   const data = Sequelize.fn(
     'jsonb_set',
     Sequelize.fn(
