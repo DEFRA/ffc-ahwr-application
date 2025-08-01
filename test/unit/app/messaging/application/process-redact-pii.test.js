@@ -18,8 +18,8 @@ describe('processRedactPiiRequest', () => {
   })
 
   it('should complete successfully', async () => {
-    const requestDate = new Date()
-    const message = { body: { requestDate } }
+    const requestedDate = new Date()
+    const message = { body: { requestDate: requestedDate } }
 
     const mockLogger = createLogger()
 
@@ -32,8 +32,8 @@ describe('processRedactPiiRequest', () => {
   })
 
   it('should stop processing if fails comms with document generator', async () => {
-    const requestDate = new Date()
-    const message = { body: { requestDate } }
+    const requestedDate = new Date()
+    const message = { body: { requestDate: requestedDate } }
 
     const mockLogger = createLogger()
     wreck.post = jest.fn().mockRejectedValueOnce('fake-docgen-comms-error')
@@ -46,8 +46,8 @@ describe('processRedactPiiRequest', () => {
   })
 
   it('should stop processing if fails comms with sfd messaging proxy', async () => {
-    const requestDate = new Date()
-    const message = { body: { requestDate } }
+    const requestedDate = new Date()
+    const message = { body: { requestedDate } }
 
     const wreckResponse = {
       payload: {},

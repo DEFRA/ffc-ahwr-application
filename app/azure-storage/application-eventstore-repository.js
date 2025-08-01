@@ -21,7 +21,7 @@ export const redactPII = async (sbi) => {
     ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
     Payload: {
       cph: REDACT_PII_VALUES.CPH,
-      exception: REDACT_PII_VALUES.EXCEPTION,
+      exception: REDACT_PII_VALUES.REDACTED_EXCEPTION,
       farmerName: REDACT_PII_VALUES.REDACTED_FARMER_NAME,
       organisationName: REDACT_PII_VALUES.REDACTED_ORGANISATION_NAME,
       orgEmail: REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
