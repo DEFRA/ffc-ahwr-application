@@ -1,8 +1,10 @@
+import { CLAIM_STATUS, REDACT_PII_VALUES, APPLICATION_REFERENCE_PREFIX_OLD_WORLD } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
-import { Op, Sequelize } from 'sequelize'
+import { Op, Sequelize, literal } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+import { getByApplicationReference } from './claim-repository.js'
 
 const { models, sequelize } = buildData
 
@@ -284,4 +286,146 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
     eventType: type,
     createdBy: user
   })
+}
+
+export const getApplicationsToRedactOlderThan = async (years) => {
+  const now = new Date()
+  const cutoffDate = new Date(Date.UTC(
+    now.getUTCFullYear() - years,
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ))
+
+  return models.application
+    .findAll(
+      {
+        where: {
+          reference: {
+            [Op.notIn]: Sequelize.literal('(SELECT reference FROM application_redact)')
+          },
+          createdAt: {
+            [Op.lt]: cutoffDate
+          }
+        },
+        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
+        order: [['createdAt', 'ASC']]
+      }
+    )
+}
+
+export const getAgreementsToRedactWithNoPaymentOlderThanThreeYears = async () => {
+  const claimStatusPaidAndRejected = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY, CLAIM_STATUS.REJECTED, CLAIM_STATUS.WITHDRAWN]
+  const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3)
+
+  const agreementsToRedactWithNoPayment = await Promise.all(applicationsOlderThanThreeYears.map(async (application) => {
+    if (application.dataValues.reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
+      return owApplicationRedactDataIfNoPaymentClaimElseNull(application, claimStatusPaidAndRejected)
+    } else {
+      return await nwApplicationRedactDataIfNoPaymentClaimsElseNull(application, claimStatusPaidAndRejected)
+    }
+  }).filter(Boolean)) // remove nulls
+
+  return agreementsToRedactWithNoPayment
+}
+
+const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication, claimStatusPaidAndRejected) => {
+  // skip if application has paid/rejected claims
+  return (claimStatusPaidAndRejected.includes(oldWorldApplication.dataValues.statusId)) ? null : { reference: oldWorldApplication.dataValues.reference, data: { sbi: oldWorldApplication.dataValues.sbi, claims: [{ reference: oldWorldApplication.dataValues.reference }] } }
+}
+
+const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication, claimStatusPaidAndRejected) => {
+  const appClaims = await getByApplicationReference(newWorldApplication.dataValues.reference)
+
+  // skip if application has paid/rejected claims
+  if (appClaims.some(c => claimStatusPaidAndRejected.includes(c.statusId))) {
+    return null
+  }
+
+  const claims = appClaims.map(c => ({ reference: c.reference }))
+  return { reference: newWorldApplication.dataValues.reference, data: { sbi: newWorldApplication.dataValues.sbi, claims } }
+}
+
+// TODO 1070 IMPL
+export const getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears = async () => {
+  const agreementsWithRejectedPayment = []
+  return agreementsWithRejectedPayment
+}
+
+// TODO 1068 IMPL
+export const getAgreementsToRedactWithPaymentOlderThanSevenYears = async () => {
+  const agreementsWithPayment = []
+  return agreementsWithPayment
+}
+
+export const redactPII = async (agreementReference, logger) => {
+  const redactedValueByJSONPath = {
+    'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
+    'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
+    'organisation,orgEmail': REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
+    'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
+    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
+  }
+
+  let totalUpdates = 0
+
+  for (const [jsonPath, redactedValue] of Object.entries(redactedValueByJSONPath)) {
+    const jsonPathSql = jsonPath.split(',').map(key => `->'${key}'`).join('')
+
+    const [affectedCount] = await models.application.update(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal(`'{${jsonPath}}'`),
+          Sequelize.literal(`'"${redactedValue}"'`),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: agreementReference,
+          [Op.and]: Sequelize.literal(`data${jsonPathSql} IS NOT NULL`)
+        }
+      }
+    )
+
+    totalUpdates += affectedCount
+    logger.info(
+      `Redacted field '${jsonPath}' in ${affectedCount} record(s) for agreementReference: ${agreementReference}`
+    )
+  }
+
+  if (totalUpdates > 0) {
+    logger.info(`Total redacted fields across records: ${totalUpdates} for agreementReference: ${agreementReference}`)
+  } else {
+    logger.info(`No records updated for agreementReference: ${agreementReference}`)
+  }
+
+  // TODO 1067 send event? add history row?
+  // const [updatedRecord] = updates
+  // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
+
+  // const eventData = {
+  //   applicationReference: reference,
+  //   reference,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   note
+  // }
+  // const type = `application-${updatedProperty}`
+  // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
+
+  // await buildData.models.claim_update_history.create({
+  //   applicationReference: reference,
+  //   reference,
+  //   note,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   eventType: type,
+  //   createdBy: user
+  // })
 }
