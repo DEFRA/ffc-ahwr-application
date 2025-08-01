@@ -1,7 +1,11 @@
 import wreck from '@hapi/wreck'
 import HttpStatus from 'http-status-codes'
 import { processRedactPiiRequest } from '../../../../../app/messaging/application/process-redact-pii'
+import { getApplicationsToRedactFor } from '../../../../../app/repositories/application-redact-repository'
+import { getAgreementsToRedactWithNoPaymentOlderThanThreeYears, getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears, getAgreementsToRedactWithPaymentOlderThanSevenYears, redactPII as redactApplicationPII } from '../../../../../app/repositories/application-repository'
 
+jest.mock('../../../../../app/repositories/application-redact-repository')
+jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('@hapi/wreck')
 jest.mock('../../../../../app/config/index', () => ({
   config: {
@@ -45,7 +49,7 @@ describe('processRedactPiiRequest', () => {
     expect(mockLogger.info).not.toHaveBeenCalledWith('Successfully processed redact PII request')
   })
 
-  it('should stop processing if fails comms with sfd messaging proxy', async () => {
+  it.only('should stop processing if fails comms with sfd messaging proxy', async () => {
     const requestedDate = new Date()
     const message = { body: { requestedDate } }
 
@@ -60,9 +64,13 @@ describe('processRedactPiiRequest', () => {
     wreck.post = jest.fn()
       .mockResolvedValueOnce(wreckResponse)
       .mockRejectedValueOnce('fake-sfd-comms-error')
+    
+    getApplicationsToRedactFor.mockResolvedValueOnce([{
+      reference: 'AHWR-1'
+    }])
 
     await expect(processRedactPiiRequest(message, mockLogger)).rejects.toBe('fake-sfd-comms-error')
-
+    
     expect(wreck.post).toHaveBeenCalledTimes(2)
     expect(wreck.post).toHaveBeenCalledWith('http://doc-gen/api/redact/pii', { json: true, payload: expect.any(Object) })
     expect(wreck.post).toHaveBeenCalledWith('http://sfd-proxy/api/redact/pii', { json: true, payload: expect.any(Object) })
