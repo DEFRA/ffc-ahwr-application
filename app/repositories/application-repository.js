@@ -1,4 +1,4 @@
-import { CLAIM_STATUS, REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { CLAIM_STATUS, REDACT_PII_VALUES, APPLICATION_REFERENCE_PREFIX_OLD_WORLD } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
@@ -314,22 +314,35 @@ export const getApplicationsToRedactOlderThan = async (years) => {
 }
 
 export const getAgreementsToRedactWithNoPaymentOlderThanThreeYears = async () => {
+  const claimStatusPaidAndRejected = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY, CLAIM_STATUS.REJECTED, CLAIM_STATUS.WITHDRAWN]
   const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3)
 
   const agreementsToRedactWithNoPayment = await Promise.all(applicationsOlderThanThreeYears.map(async (application) => {
-    const appClaims = await getByApplicationReference(application.dataValues.reference)
-
-    // skip if application has paid/rejected claims
-    const { PAID, READY_TO_PAY, REJECTED, WITHDRAWN } = CLAIM_STATUS
-    if (appClaims.some(c => [PAID, READY_TO_PAY, REJECTED, WITHDRAWN].includes(c.statusId))) {
-      return null
+    if (application.dataValues.reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
+      return owApplicationRedactDataIfNoPaymentClaimElseNull(application, claimStatusPaidAndRejected)
+    } else {
+      return await nwApplicationRedactDataIfNoPaymentClaimsElseNull(application, claimStatusPaidAndRejected)
     }
-
-    const claims = appClaims.map(c => ({ reference: c.reference }))
-    return { reference: application.dataValues.reference, data: { sbi: application.dataValues.sbi, claims } }
   }).filter(Boolean)) // remove nulls
 
   return agreementsToRedactWithNoPayment
+}
+
+const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication, claimStatusPaidAndRejected) => {
+  // skip if application has paid/rejected claims
+  return (claimStatusPaidAndRejected.includes(oldWorldApplication.dataValues.statusId)) ? null : { reference: oldWorldApplication.dataValues.reference, data: { sbi: oldWorldApplication.dataValues.sbi, claims: [{ reference: oldWorldApplication.dataValues.reference }] } }
+}
+
+const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication, claimStatusPaidAndRejected) => {
+  const appClaims = await getByApplicationReference(newWorldApplication.dataValues.reference)
+
+  // skip if application has paid/rejected claims
+  if (appClaims.some(c => claimStatusPaidAndRejected.includes(c.statusId))) {
+    return null
+  }
+
+  const claims = appClaims.map(c => ({ reference: c.reference }))
+  return { reference: newWorldApplication.dataValues.reference, data: { sbi: newWorldApplication.dataValues.sbi, claims } }
 }
 
 // TODO 1070 IMPL
@@ -345,68 +358,6 @@ export const getAgreementsToRedactWithPaymentOlderThanSevenYears = async () => {
 }
 
 export const redactPII = async (reference) => {
-  // Redact OW claim info
-  const vetRcvs = Sequelize.fn(
-    'jsonb_set',
-    Sequelize.col('data'),
-    Sequelize.literal('\'{vetRcvs}\''),
-    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS}"'`)
-  )
-  await buildData.models.application.update(
-    {
-      data: vetRcvs,
-      updatedBy: 'admin',
-      updatedAt: Date.now()
-    },
-    {
-      where: {
-        reference,
-        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'vetRcvs'), true)]
-      },
-      returning: true
-    }
-  )
-  const urnResult = Sequelize.fn(
-    'jsonb_set',
-    Sequelize.col('data'),
-    Sequelize.literal('\'{urnResult}\''),
-    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_URN_RESULT}"'`)
-  )
-  await buildData.models.application.update(
-    {
-      data: urnResult,
-      updatedBy: 'admin',
-      updatedAt: Date.now()
-    },
-    {
-      where: {
-        reference,
-        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'urnResult'), true)]
-      },
-      returning: true
-    }
-  )
-  const vetName = Sequelize.fn(
-    'jsonb_set',
-    Sequelize.col('data'),
-    Sequelize.literal('\'{vetName}\''),
-    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_NAME}"'`)
-  )
-  await buildData.models.application.update(
-    {
-      data: vetName,
-      updatedBy: 'admin',
-      updatedAt: Date.now()
-    },
-    {
-      where: {
-        reference,
-        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'vetName'), true)]
-      },
-      returning: true
-    }
-  )
-
   // TODO reuse Ross's approach
   const data = Sequelize.fn(
     'jsonb_set',
