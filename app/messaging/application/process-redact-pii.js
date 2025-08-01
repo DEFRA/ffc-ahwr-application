@@ -41,7 +41,7 @@ const getAgreementsToRedact = async (requestedDate) => {
   await Promise.all(agreementsToRedact.map((agreement) => createApplicationRedact(agreement)))
 
   // get all (old/new) applications to redact
-  return await getApplicationsToRedactFor(requestedDate)
+  return getApplicationsToRedactFor(requestedDate)
 }
 
 const callDocumentGeneratorRedactPII = async (agreementsToRedact, logger) => {
@@ -94,9 +94,9 @@ const applicationDatabaseRedactPII = async (agreementsToRedact, logger) => {
       agreementsToRedact.map(async (agreement) => {
         await redactHerdPII(agreement.reference)
         await redactFlagPII(agreement.reference)
-        await redactContactHistoryPII(agreement.reference)
+        await redactContactHistoryPII(agreement.reference, logger)
         await redactClaimPII(agreement.reference)
-        await redactApplicationPII(agreement.reference)
+        await redactApplicationPII(agreement.reference, logger)
       })
     )
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)

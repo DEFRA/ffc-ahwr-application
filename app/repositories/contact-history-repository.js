@@ -19,7 +19,7 @@ export const set = async (data) => {
   return result
 }
 
-export const redactPII = async (applicationReference) => {
+export const redactPII = async (applicationReference, logger) => {
   // TODO 1067 ?update to figure out what is updated.. name, email, etc
   const data = Sequelize.fn(
     'jsonb_set',
@@ -31,7 +31,7 @@ export const redactPII = async (applicationReference) => {
     Sequelize.literal('\'{oldValue}\''),
     Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_MULTI_TYPE_VALUE}"'`)
   )
-  await buildData.models.contact_history.update(
+  const [, updatedRows] = await buildData.models.contact_history.update(
     {
       data,
       updatedBy: 'admin',
@@ -44,6 +44,13 @@ export const redactPII = async (applicationReference) => {
       returning: true
     }
   )
+
+  updatedRows.forEach(row => {
+    const appRef = row.dataValues.applicationReference
+    const fieldValue = row.dataValues.data?.field
+
+    logger.info(`Redacted ${fieldValue} in ${appRef}`)
+  })
 
   // TODO 1067 send event? add history row?
   // const [updatedRecord] = updates

@@ -357,48 +357,51 @@ export const getAgreementsToRedactWithPaymentOlderThanSevenYears = async () => {
   return agreementsWithPayment
 }
 
-export const redactPII = async (reference) => {
-  // TODO reuse Ross's approach
-  const data = Sequelize.fn(
-    'jsonb_set',
-    Sequelize.fn(
-      'jsonb_set',
-      Sequelize.fn(
-        'jsonb_set',
-        Sequelize.fn(
-          'jsonb_set',
-          Sequelize.fn(
-            'jsonb_set',
-            Sequelize.col('data'),
-            Sequelize.literal('\'{organisation,name}\''),
-            Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_NAME}"'`)
-          ),
-          Sequelize.literal('\'{organisation,email}\''),
-          Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_EMAIL}"'`)
-        ),
-        Sequelize.literal('\'{organisation,address}\''),
-        Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_ADDRESS}"'`)
-      ),
-      Sequelize.literal('\'{organisation,orgEmail}\''),
-      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_ORG_EMAIL}"'`)
-    ),
-    Sequelize.literal('\'{organisation,farmerName}\''),
-    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_FARMER_NAME}"'`)
-  )
+export const redactPII = async (agreementReference, logger) => {
+  const redactedValueByJSONPath = {
+    'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
+    'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
+    'organisation,orgEmail': REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
+    'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
+    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  // const [_, updates] = await models.application.update(
-  await models.application.update(
-    {
-      data,
-      updatedBy: 'admin',
-      updatedAt: Date.now()
-    },
-    {
-      where: { reference },
-      returning: true
-    }
-  )
+  let totalUpdates = 0
+
+  for (const [jsonPath, redactedValue] of Object.entries(redactedValueByJSONPath)) {
+    const jsonPathSql = jsonPath.split(',').map(key => `->'${key}'`).join('')
+
+    const [affectedCount] = await models.application.update(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal(`'{${jsonPath}}'`),
+          Sequelize.literal(`'"${redactedValue}"'`),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: agreementReference,
+          [Op.and]: Sequelize.literal(`data${jsonPathSql} IS NOT NULL`)
+        }
+      }
+    )
+
+    totalUpdates += affectedCount
+    logger.info(
+      `Redacted field '${jsonPath}' in ${affectedCount} record(s) for agreementReference: ${agreementReference}`
+    )
+  }
+
+  if (totalUpdates > 0) {
+    logger.info(`Total redacted fields across records: ${totalUpdates} for agreementReference: ${agreementReference}`)
+  } else {
+    logger.info(`No records updated for agreementReference: ${agreementReference}`)
+  }
 
   // TODO 1067 send event? add history row?
   // const [updatedRecord] = updates
