@@ -1,7 +1,7 @@
 import wreck from '@hapi/wreck'
 import { config } from '../../config/index.js'
 import { getApplicationsToRedactFor, createApplicationRedact, updateApplicationRedact } from '../../repositories/application-redact-repository.js'
-import { getAgreementsToRedactWithNoPaymentOlderThanThreeYears, getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears, getAgreementsToRedactWithPaymentOlderThanSevenYears, redactPII as redactApplicationPII } from '../../repositories/application-repository.js'
+import { getApplicationsToRedactWithNoPaymentOlderThanThreeYears, getApplicationsToRedactWithRejectedPaymentOlderThanThreeYears, getApplicationsToRedactWithPaymentOlderThanSevenYears, redactPII as redactApplicationPII } from '../../repositories/application-repository.js'
 import { redactPII as redactClaimPII } from '../../repositories/claim-repository.js'
 import { redactPII as redactContactHistoryPII } from '../../repositories/contact-history-repository.js'
 import { redactPII as redactFlagPII } from '../../repositories/flag-repository.js'
@@ -15,7 +15,7 @@ const { documentGeneratorApiUri, sfdMessagingProxyApiUri } = config
 export const processRedactPiiRequest = async (message, logger) => {
   logger.setBindings({ redactRequestedDate: message.body.requestedDate })
 
-  const agreementsToRedact = await getAgreementsToRedact(message.body.requestedDate)
+  const agreementsToRedact = await getApplicationsToRedact(message.body.requestedDate)
   if (agreementsToRedact.length === 0) {
     logger.info('No new agreements to redact for this date')
     return
@@ -27,15 +27,18 @@ export const processRedactPiiRequest = async (message, logger) => {
   await applicationStorageAccountTablesRedactPII(agreementsToRedact, logger)
   await applicationDatabaseRedactPII(agreementsToRedact, logger)
 
-  await updateAllAgreements(agreementsToRedact, false, 'documents,messages,storage-accounts,database-tables', 'Y')
+  await sendApplicationRedactedEvents(agreementsToRedact, logger)
+  await insertApplicationRedactedHistory(agreementsToRedact, logger)
+
+  await updateApplicationRedactRecords(agreementsToRedact, false, 'documents,messages,storage-accounts,database-tables,redacted-events,redacted-history', 'Y')
   logger.info('Successfully processed redact PII request')
 }
 
-const getAgreementsToRedact = async (requestedDate) => {
+const getApplicationsToRedact = async (requestedDate) => {
   // get applications not yet queued for redaction and store in redact table
-  const agreementsWithNoPayment = await getAgreementsToRedactWithNoPaymentOlderThanThreeYears()
-  const agreementsWithRejectedPayment = await getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears()
-  const agreementsWithPayment = await getAgreementsToRedactWithPaymentOlderThanSevenYears()
+  const agreementsWithNoPayment = await getApplicationsToRedactWithNoPaymentOlderThanThreeYears()
+  const agreementsWithRejectedPayment = await getApplicationsToRedactWithRejectedPaymentOlderThanThreeYears()
+  const agreementsWithPayment = await getApplicationsToRedactWithPaymentOlderThanSevenYears()
 
   const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithRejectedPayment, ...agreementsWithPayment].map(a => { return { ...a, requestedDate } })
   await Promise.all(agreementsToRedact.map((agreement) => createApplicationRedact(agreement)))
@@ -51,7 +54,7 @@ const callDocumentGeneratorRedactPII = async (agreementsToRedact, logger) => {
     await wreck.post(endpoint, { json: true, payload: { agreementsToRedact: agreementsToRedactPayload } })
   } catch (err) {
     logger.setBindings({ err, endpoint })
-    await updateAllAgreements(agreementsToRedact, true, '', 'N')
+    await updateApplicationRedactRecords(agreementsToRedact, true, '', 'N')
     throw err
   }
 }
@@ -63,7 +66,7 @@ const callSfdMessagingProxyRedactPII = async (agreementsToRedact, logger) => {
     await wreck.post(endpoint, { json: true, payload: { agreementsToRedact: agreementsToRedactPayload } })
   } catch (err) {
     logger.setBindings({ err, endpoint })
-    await updateAllAgreements(agreementsToRedact, true, 'documents', 'N')
+    await updateApplicationRedactRecords(agreementsToRedact, true, 'documents', 'N')
     throw err
   }
 }
@@ -83,7 +86,7 @@ const applicationStorageAccountTablesRedactPII = async (agreementsToRedact, logg
     )
   } catch (err) {
     logger.setBindings({ err })
-    await updateAllAgreements(agreementsToRedact, true, 'documents,messages', 'N')
+    await updateApplicationRedactRecords(agreementsToRedact, true, 'documents,messages', 'N')
     throw err
   }
 }
@@ -102,12 +105,65 @@ const applicationDatabaseRedactPII = async (agreementsToRedact, logger) => {
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
   } catch (err) {
     logger.setBindings({ err })
-    await updateAllAgreements(agreementsToRedact, true, 'documents,messages,storage-accounts', 'N')
+    await updateApplicationRedactRecords(agreementsToRedact, true, 'documents,messages,storage-accounts', 'N')
     throw err
   }
 }
 
-const updateAllAgreements = async (agreementsToRedact, incrementRetryCount, status, success) => {
+const sendApplicationRedactedEvents = async (agreementsToRedact, logger) => {
+  try {
+    await Promise.all(
+      agreementsToRedact.map(async (agreement) => {
+        logger.info('TODO TEMP LOG!!')
+        // const [updatedRecord] = updates
+        // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
+
+        // const eventData = {
+        //   applicationReference: reference,
+        //   reference,
+        //   updatedProperty,
+        //   newValue,
+        //   oldValue,
+        //   note
+        // }
+        // const type = `application-${updatedProperty}`
+        // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
+      })
+    )
+    logger.info(`sendApplicationRedactedEvents with: ${JSON.stringify(agreementsToRedact)}`)
+  } catch (err) {
+    logger.setBindings({ err })
+    await updateApplicationRedactRecords(agreementsToRedact, true, 'documents,messages,storage-accounts,database-tables', 'N')
+    throw err
+  }
+}
+
+const insertApplicationRedactedHistory = async (agreementsToRedact, logger) => {
+  try {
+    await Promise.all(
+      agreementsToRedact.map(async (agreement) => {
+        logger.info('TODO TEMP LOG!!')
+        // await buildData.models.claim_update_history.create({
+        //   applicationReference: reference,
+        //   reference,
+        //   note,
+        //   updatedProperty,
+        //   newValue,
+        //   oldValue,
+        //   eventType: type,
+        //   createdBy: user
+        // })
+      })
+    )
+    logger.info(`insertApplicationRedactedHistory with: ${JSON.stringify(agreementsToRedact)}`)
+  } catch (err) {
+    logger.setBindings({ err })
+    await updateApplicationRedactRecords(agreementsToRedact, true, 'documents,messages,storage-accounts,database-tables,redacted-events', 'N')
+    throw err
+  }
+}
+
+const updateApplicationRedactRecords = async (agreementsToRedact, incrementRetryCount, status, success) => {
   // only replace status if we got further than previous attempts
   const statusFromPreviousAttempts = agreementsToRedact[0]?.status ?? ''
   const statusToStore = (statusFromPreviousAttempts.length > status.length) ? statusFromPreviousAttempts : status

@@ -313,7 +313,7 @@ export const getApplicationsToRedactOlderThan = async (years) => {
     )
 }
 
-export const getAgreementsToRedactWithNoPaymentOlderThanThreeYears = async () => {
+export const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
   const claimStatusPaidAndRejected = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY, CLAIM_STATUS.REJECTED, CLAIM_STATUS.WITHDRAWN]
   const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3)
 
@@ -346,13 +346,13 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplicat
 }
 
 // TODO 1070 IMPL
-export const getAgreementsToRedactWithRejectedPaymentOlderThanThreeYears = async () => {
+export const getApplicationsToRedactWithRejectedPaymentOlderThanThreeYears = async () => {
   const agreementsWithRejectedPayment = []
   return agreementsWithRejectedPayment
 }
 
 // TODO 1068 IMPL
-export const getAgreementsToRedactWithPaymentOlderThanSevenYears = async () => {
+export const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
   const agreementsWithPayment = []
   return agreementsWithPayment
 }
@@ -402,30 +402,4 @@ export const redactPII = async (agreementReference, logger) => {
   } else {
     logger.info(`No records updated for agreementReference: ${agreementReference}`)
   }
-
-  // TODO 1067 send event? add history row?
-  // const [updatedRecord] = updates
-  // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
-
-  // const eventData = {
-  //   applicationReference: reference,
-  //   reference,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   note
-  // }
-  // const type = `application-${updatedProperty}`
-  // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
-
-  // await buildData.models.claim_update_history.create({
-  //   applicationReference: reference,
-  //   reference,
-  //   note,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   eventType: type,
-  //   createdBy: user
-  // })
 }

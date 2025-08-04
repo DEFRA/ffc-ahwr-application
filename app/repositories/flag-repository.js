@@ -38,8 +38,6 @@ export const getFlagsForApplicationIncludingDeleted = async (applicationReferenc
 }
 
 export const redactPII = async (applicationReference) => {
-  // eslint-disable-next-line no-unused-vars
-  // const [_, updates] = await models.claim_update_history.update(
   await buildData.models.flag.update(
     {
       note: `${REDACT_PII_VALUES.REDACTED_NOTE}`
@@ -52,30 +50,4 @@ export const redactPII = async (applicationReference) => {
       returning: true
     }
   )
-
-  // TODO 1067 send event? add history row?
-  // const [updatedRecord] = updates
-  // const { updatedAt, data: { organisation: { sbi } } } = updatedRecord.dataValues
-
-  // const eventData = {
-  //   applicationReference: reference,
-  //   reference,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   note
-  // }
-  // const type = `application-${updatedProperty}`
-  // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
-
-  // await buildData.models.claim_update_history.create({
-  //   applicationReference: reference,
-  //   reference,
-  //   note,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   eventType: type,
-  //   createdBy: user
-  // })
 }
