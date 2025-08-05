@@ -32,7 +32,12 @@ export const processRedactPiiRequest = async (message, logger) => {
   // TODO test works
   const redactProgress = getProgressStatusFromPreviousAttempts(applicationsToRedactAlreadyStored) ?? []
 
-  const applicationsToRedact = (redactProgress.includes(GOT_APPLICATIONS_TO_REDACT)) ? applicationsToRedactAlreadyStored : await getApplicationsToRedact(message.body.requestedDate)
+  let applicationsToRedact = applicationsToRedactAlreadyStored
+  if(!redactProgress.includes(GOT_APPLICATIONS_TO_REDACT)) {
+    applicationsToRedact = await getApplicationsToRedact(message.body.requestedDate)
+    redactProgress.push(GOT_APPLICATIONS_TO_REDACT)
+  }
+
   if (applicationsToRedact.length === 0) {
     logger.info('No new applications to redact for this date')
     return
@@ -75,7 +80,7 @@ const getApplicationsToRedact = async (requestedDate) => {
 }
 
 const getProgressStatusFromPreviousAttempts = (agreementsToRedact) => {
-  return agreementsToRedact.length === 0 ? [] : agreementsToRedact[0].status.split(',')
+  return agreementsToRedact.length === 0 ? [] : agreementsToRedact[0].status?.split(',') ?? []
 }
 
 const callDocumentGeneratorRedactPII = async (agreementsToRedact, redactProgress, logger) => {
