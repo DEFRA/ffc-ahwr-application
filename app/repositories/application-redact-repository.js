@@ -2,7 +2,7 @@ import { buildData } from '../data/index.js'
 
 const { models } = buildData
 
-export const getApplicationsToRedactFor = async (requestedDate) => {
+export const getFailedApplicationRedact = async (requestedDate) => {
   return models.application_redact.findAll({
     where: {
       requestedDate,
@@ -22,6 +22,9 @@ export const updateApplicationRedact = async (id, retryCount, status, success) =
       status,
       success
     },
-    { where: { id } }
+    {
+      where: { id },
+      returning: true
+    }
   )
 }

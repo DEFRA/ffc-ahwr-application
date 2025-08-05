@@ -1,0 +1,104 @@
+import { raiseApplicationFlaggedEvent } from '../../../../app/event-publisher'
+import { create } from '../../../../app/redact-pii/create-redact-pii-flag'
+import { updateApplicationRedactRecords } from '../../../../app/redact-pii/update-application-redact-records'
+import { createFlagForRedactPII } from '../../../../app/repositories/flag-repository'
+
+jest.mock('../../../../app/event-publisher')
+jest.mock('../../../../app/repositories/flag-repository')
+jest.mock('../../../../app/redact-pii/update-application-redact-records')
+
+describe('create', () => {
+  let mockLogger
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+
+    mockLogger = {
+      info: jest.fn(),
+      setBindings: jest.fn()
+    }
+  })
+
+  const agreementsToRedact = [
+    {
+      reference: 'AHWR-123',
+      data: { sbi: 'SBI-001' }
+    },
+    {
+      reference: 'AHWR-456',
+      data: { sbi: 'SBI-002' }
+    }
+  ]
+
+  it('should create flags and raise events for each agreement', async () => {
+    createFlagForRedactPII.mockResolvedValueOnce({
+      id: 'FLAG-1',
+      note: 'Application PII redacted',
+      appliesToMh: false,
+      createdBy: 'admin',
+      createdAt: '2025-08-05T12:00:00Z'
+    })
+    createFlagForRedactPII.mockResolvedValueOnce({
+      id: 'FLAG-2',
+      note: 'Application PII redacted',
+      appliesToMh: false,
+      createdBy: 'admin',
+      createdAt: '2025-08-05T12:00:01Z'
+    })
+    raiseApplicationFlaggedEvent.mockResolvedValue()
+
+    await create(agreementsToRedact, [], mockLogger)
+
+    expect(createFlagForRedactPII).toHaveBeenCalledTimes(2)
+    expect(createFlagForRedactPII).toHaveBeenCalledWith({
+      applicationReference: 'AHWR-123',
+      sbi: 'SBI-001',
+      note: 'Application PII redacted',
+      createdBy: 'admin',
+      appliesToMh: false
+    })
+    expect(createFlagForRedactPII).toHaveBeenCalledWith({
+      applicationReference: 'AHWR-456',
+      sbi: 'SBI-002',
+      note: 'Application PII redacted',
+      createdBy: 'admin',
+      appliesToMh: false
+    })
+
+    expect(raiseApplicationFlaggedEvent).toHaveBeenCalledTimes(2)
+    expect(raiseApplicationFlaggedEvent).toHaveBeenCalledWith({
+      application: { id: 'AHWR-123' },
+      message: 'Application flagged',
+      flag: { id: 'FLAG-1', note: 'Application PII redacted', appliesToMh: false },
+      raisedBy: 'admin',
+      raisedOn: '2025-08-05T12:00:00Z'
+    }, 'SBI-001')
+    expect(raiseApplicationFlaggedEvent).toHaveBeenCalledWith({
+      application: { id: 'AHWR-456' },
+      message: 'Application flagged',
+      flag: { id: 'FLAG-2', note: 'Application PII redacted', appliesToMh: false },
+      raisedBy: 'admin',
+      raisedOn: '2025-08-05T12:00:01Z'
+    }, 'SBI-002')
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `addFlagForRedactPII with: ${JSON.stringify(agreementsToRedact)}`
+    )
+  })
+
+  it('should handle errors, update redact records, and rethrow error', async () => {
+    const createFlagError = new Error('Failed to create flag')
+    createFlagForRedactPII.mockRejectedValue(createFlagError)
+
+    await expect(create(agreementsToRedact, { progress: 50 }, mockLogger))
+      .rejects.toThrow('Failed to create flag')
+
+    expect(updateApplicationRedactRecords).toHaveBeenCalledWith(
+      agreementsToRedact,
+      true,
+      { progress: 50 },
+      'N'
+    )
+    expect(mockLogger.setBindings).toHaveBeenCalledWith({ err: createFlagError })
+  })
+})

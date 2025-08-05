@@ -1,78 +1,73 @@
-import wreck from '@hapi/wreck'
-import HttpStatus from 'http-status-codes'
-import { processRedactPiiRequest } from '../../../../../app/messaging/application/process-redact-pii'
-import { getApplicationsToRedactFor } from '../../../../../app/repositories/application-redact-repository'
+import { redactPII as redactDocumentGeneratorPII } from '../../../../../app/redact-pii/redact-pii-document-generator.js'
+import { redactPII as redactSFDMessagingProxyPII } from '../../../../../app/redact-pii/redact-pii-sfd-messaging-proxy.js'
+import { redactPII as redactApplicationStorageAccountTablesPII } from '../../../../../app/redact-pii/redact-pii-application-storage-account-tables.js'
+import { redactPII as redactApplicationDatabasePII } from '../../../../../app/redact-pii/redact-pii-application-database.js'
+import { updateApplicationRedactRecords } from '../../../../../app/redact-pii/update-application-redact-records.js'
+import { create as createRedactPIIFlag } from '../../../../../app/redact-pii/create-redact-pii-flag.js'
+import { getApplicationsToRedact } from '../../../../../app/redact-pii/get-applications-to-redact.js'
+import { processRedactPiiRequest } from '../../../../../app/messaging/application/process-redact-pii.js'
 
-jest.mock('../../../../../app/repositories/application-redact-repository')
-jest.mock('../../../../../app/repositories/application-repository')
-jest.mock('@hapi/wreck')
-jest.mock('../../../../../app/config/index', () => ({
-  config: {
-    documentGeneratorApiUri: 'http://doc-gen/api',
-    sfdMessagingProxyApiUri: 'http://sfd-proxy/api'
-  }
-}))
-
-const createLogger = () => ({ error: jest.fn(), info: jest.fn(), setBindings: jest.fn() })
+jest.mock('../../../../../app/redact-pii/redact-pii-document-generator.js')
+jest.mock('../../../../../app/redact-pii/redact-pii-sfd-messaging-proxy.js')
+jest.mock('../../../../../app/redact-pii/redact-pii-application-storage-account-tables.js')
+jest.mock('../../../../../app/redact-pii/redact-pii-application-database.js')
+jest.mock('../../../../../app/redact-pii/update-application-redact-records.js')
+jest.mock('../../../../../app/redact-pii/create-redact-pii-flag.js')
+jest.mock('../../../../../app/redact-pii/get-applications-to-redact.js')
 
 describe('processRedactPiiRequest', () => {
-  afterEach(() => {
+  const mockLogger = {
+    setBindings: jest.fn(),
+    info: jest.fn()
+  }
+  const message = {
+    body: {
+      requestedDate: '2025-08-05'
+    }
+  }
+
+  beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should complete successfully', async () => {
-    const requestedDate = new Date()
-    const message = { body: { requestDate: requestedDate } }
-
-    const mockLogger = createLogger()
+  it('should log and exit when there are no applications to redact', async () => {
+    getApplicationsToRedact.mockResolvedValueOnce({ applicationsToRedact: [], status: [] })
 
     await processRedactPiiRequest(message, mockLogger)
 
-    expect(wreck.post).toHaveBeenCalledTimes(2)
-    expect(wreck.post).toHaveBeenCalledWith('http://doc-gen/api/redact/pii', { json: true, payload: expect.any(Object) })
-    expect(wreck.post).toHaveBeenCalledWith('http://sfd-proxy/api/redact/pii', { json: true, payload: expect.any(Object) })
+    expect(mockLogger.info).toHaveBeenCalledWith('No new applications to redact for this date')
+    expect(redactDocumentGeneratorPII).not.toHaveBeenCalled()
+    expect(updateApplicationRedactRecords).not.toHaveBeenCalled()
+  })
+
+  it('should call all redact functions and update records when no previous failed attempts', async () => {
+    const apps = [{ id: 1 }]
+    getApplicationsToRedact.mockResolvedValueOnce({ applicationsToRedact: apps, status: ['applications-to-redact'] })
+
+    await processRedactPiiRequest(message, mockLogger)
+
+    expect(redactDocumentGeneratorPII).toHaveBeenCalledWith(apps, ['applications-to-redact'], mockLogger)
+    expect(redactSFDMessagingProxyPII).toHaveBeenCalledWith(apps, ['applications-to-redact', 'documents'], mockLogger)
+    expect(redactApplicationStorageAccountTablesPII).toHaveBeenCalledWith(apps, ['applications-to-redact', 'documents', 'messages'], mockLogger)
+    expect(redactApplicationDatabasePII).toHaveBeenCalledWith(apps, ['applications-to-redact', 'documents', 'messages', 'storage-accounts'], mockLogger)
+    expect(createRedactPIIFlag).toHaveBeenCalledWith(apps, ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables'], mockLogger)
+
+    expect(updateApplicationRedactRecords).toHaveBeenCalledWith(apps, false, ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables', 'redacted-flag'], 'Y')
     expect(mockLogger.info).toHaveBeenCalledWith('Successfully processed redact PII request')
   })
 
-  it('should stop processing if fails comms with document generator', async () => {
-    const requestedDate = new Date()
-    const message = { body: { requestDate: requestedDate } }
+  it('should skip steps already in status', async () => {
+    const apps = [{ id: 2 }]
+    const status = ['documents', 'messages', 'storage-accounts', 'database-tables']
+    getApplicationsToRedact.mockResolvedValue({ applicationsToRedact: apps, status })
 
-    const mockLogger = createLogger()
-    wreck.post = jest.fn().mockRejectedValueOnce('fake-docgen-comms-error')
+    await processRedactPiiRequest(message, mockLogger)
 
-    await expect(processRedactPiiRequest(message, mockLogger)).rejects.toBe('fake-docgen-comms-error')
-
-    expect(wreck.post).toHaveBeenCalledTimes(1)
-    expect(wreck.post).toHaveBeenCalledWith('http://doc-gen/api/redact/pii', { json: true, payload: expect.any(Object) })
-    expect(mockLogger.info).not.toHaveBeenCalledWith('Successfully processed redact PII request')
-  })
-
-  it.only('should stop processing if fails comms with sfd messaging proxy', async () => {
-    const requestedDate = new Date()
-    const message = { body: { requestedDate } }
-
-    const wreckResponse = {
-      payload: {},
-      res: {
-        statusCode: HttpStatus.OK
-      },
-      json: true
-    }
-    const mockLogger = createLogger()
-    wreck.post = jest.fn()
-      .mockResolvedValueOnce(wreckResponse)
-      .mockRejectedValueOnce('fake-sfd-comms-error')
-
-    getApplicationsToRedactFor.mockResolvedValueOnce([{
-      reference: 'AHWR-1'
-    }])
-
-    await expect(processRedactPiiRequest(message, mockLogger)).rejects.toBe('fake-sfd-comms-error')
-
-    expect(wreck.post).toHaveBeenCalledTimes(2)
-    expect(wreck.post).toHaveBeenCalledWith('http://doc-gen/api/redact/pii', { json: true, payload: expect.any(Object) })
-    expect(wreck.post).toHaveBeenCalledWith('http://sfd-proxy/api/redact/pii', { json: true, payload: expect.any(Object) })
-    expect(mockLogger.info).not.toHaveBeenCalledWith('Successfully processed redact PII request')
+    expect(redactDocumentGeneratorPII).not.toHaveBeenCalled()
+    expect(redactSFDMessagingProxyPII).not.toHaveBeenCalled()
+    expect(redactApplicationStorageAccountTablesPII).not.toHaveBeenCalled()
+    expect(redactApplicationDatabasePII).not.toHaveBeenCalled()
+    expect(createRedactPIIFlag).toHaveBeenCalled()
+    expect(updateApplicationRedactRecords).toHaveBeenCalledWith(apps, false, [], 'Y')
   })
 })

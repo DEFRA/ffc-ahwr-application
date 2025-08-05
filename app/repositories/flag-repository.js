@@ -54,8 +54,8 @@ export const redactPII = async (applicationReference) => {
 
 export const createFlagForRedactPII = async (data) => {
   const existingAppliesToMhFlag = await getFlagByAppRef(data.applicationReference, false)
-  if(existingAppliesToMhFlag) {
-    await deleteFlag(existingAppliesToMhFlag.dataValues.id, 'admin', `Deleted to allow 'Redact PII' flag to be added, only one flag with appliesToMh=false allowed.`)
+  if (existingAppliesToMhFlag) {
+    await deleteFlag(existingAppliesToMhFlag.dataValues.id, 'admin', 'Deleted to allow \'Redact PII\' flag to be added, only one flag with appliesToMh=false allowed.')
   }
 
   return await createFlag(data)
