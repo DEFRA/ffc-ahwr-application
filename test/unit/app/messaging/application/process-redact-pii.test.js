@@ -58,7 +58,7 @@ describe('processRedactPiiRequest', () => {
 
   it('should skip steps already in status', async () => {
     const apps = [{ id: 2 }]
-    const status = ['documents', 'messages', 'storage-accounts', 'database-tables']
+    const status = ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables']
     getApplicationsToRedact.mockResolvedValue({ applicationsToRedact: apps, status })
 
     await processRedactPiiRequest(message, mockLogger)
@@ -68,6 +68,6 @@ describe('processRedactPiiRequest', () => {
     expect(redactApplicationStorageAccountTablesPII).not.toHaveBeenCalled()
     expect(redactApplicationDatabasePII).not.toHaveBeenCalled()
     expect(createRedactPIIFlag).toHaveBeenCalled()
-    expect(updateApplicationRedactRecords).toHaveBeenCalledWith(apps, false, [], 'Y')
+    expect(updateApplicationRedactRecords).toHaveBeenCalledWith(apps, false, ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables', 'redacted-flag'], 'Y')
   })
 })

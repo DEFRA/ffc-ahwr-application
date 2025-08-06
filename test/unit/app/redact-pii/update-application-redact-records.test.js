@@ -3,6 +3,12 @@ import { updateApplicationRedact } from '../../../../app/repositories/applicatio
 
 jest.mock('../../../../app/repositories/application-redact-repository')
 
+jest.mock('../../../../app/data/index.js', () => ({
+  buildData: {
+    sequelize: { transaction: jest.fn(async (callback) => callback()) }
+  }
+}))
+
 describe('update-application-redact-records redactPII', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -39,7 +45,7 @@ describe('update-application-redact-records redactPII', () => {
   })
 
   it('should return when no applications to redact', async () => {
-    await updateApplicationRedactRecords([], true, 'applications-to-redact,documents', true)
+    await updateApplicationRedactRecords([], true, ['applications-to-redact', 'documents'], true)
 
     expect(updateApplicationRedact).not.toHaveBeenCalled()
   })
