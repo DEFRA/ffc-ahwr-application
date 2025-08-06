@@ -1,3 +1,4 @@
+import { REDACT_PII_PROGRESS_STATUS } from 'ffc-ahwr-common-library'
 import { redactPII as redactDocumentGeneratorPII } from '../../redact-pii/redact-pii-document-generator.js'
 import { redactPII as redactSFDMessagingProxyPII } from '../../redact-pii/redact-pii-sfd-messaging-proxy.js'
 import { redactPII as redactApplicationStorageAccountTablesPII } from '../../redact-pii/redact-pii-application-storage-account-tables.js'
@@ -6,15 +7,6 @@ import { updateApplicationRedactRecords } from '../../redact-pii/update-applicat
 import { create as createRedactPIIFlag } from '../../redact-pii/create-redact-pii-flag.js'
 import { getApplicationsToRedact } from '../../redact-pii/get-applications-to-redact.js'
 
-// TODO move to common-library
-const REDACT_PII_PROGRESS_STATUS = {
-  GOT_APPLICATIONS_TO_REDACT: 'applications-to-redact',
-  DOCUMENT_GENERATOR_REDACTED: 'documents',
-  SFD_MESSAGE_PROXY_REDACTED: 'messages',
-  APPLICATION_STORAGE_REDACTED: 'storage-accounts',
-  APPLICATION_DATABASE_REDACTED: 'database-tables',
-  APPLICATION_REDACT_FLAG_ADDED: 'redacted-flag'
-}
 const { DOCUMENT_GENERATOR_REDACTED, SFD_MESSAGE_PROXY_REDACTED, APPLICATION_STORAGE_REDACTED, APPLICATION_DATABASE_REDACTED, APPLICATION_REDACT_FLAG_ADDED } = REDACT_PII_PROGRESS_STATUS
 
 export const processRedactPiiRequest = async (message, logger) => {
