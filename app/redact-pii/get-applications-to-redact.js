@@ -14,7 +14,6 @@ const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
 
 export const getApplicationsToRedact = async (requestedDate) => {
   const failedApplicationRedact = await getFailedApplicationRedact(requestedDate)
-  // TODO test works
   const status = getStatus(failedApplicationRedact) ?? []
 
   let applicationsToRedact = failedApplicationRedact

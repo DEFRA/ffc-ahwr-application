@@ -21,17 +21,16 @@ export const processRedactPiiRequest = async (message, logger) => {
   const redactRequestedDate = message.body.requestedDate
   logger.setBindings({ redactRequestedDate })
 
-  const { applicationsToRedact, status } = await getApplicationsToRedact()
+  const { applicationsToRedact, status } = await getApplicationsToRedact(redactRequestedDate)
 
   if (applicationsToRedact.length === 0) {
     logger.info('No new applications to redact for this date')
     return
   }
 
-  console.log({ status })
+  logger.info(`Processing starting from status: ${status.join()}`)
 
   if (!status.includes(DOCUMENT_GENERATOR_REDACTED)) {
-    console.log({ status2: status })
     await redactDocumentGeneratorPII(applicationsToRedact, status, logger)
     status.push(DOCUMENT_GENERATOR_REDACTED)
   }

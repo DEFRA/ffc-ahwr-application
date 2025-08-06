@@ -16,7 +16,7 @@ export const getApplicationEvents = async (sbi) => {
   return eventRecords
 }
 
-export const redactPII = async (sbi) => {
+export const redactPII = async (sbi, logger) => {
   const propertiesToMerge = {
     ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
     Payload: {
@@ -53,6 +53,7 @@ export const redactPII = async (sbi) => {
     'ahwreventstore',
     sbi,
     odata`PartitionKey eq '${sbi}'`,
-    propertiesToMerge
+    propertiesToMerge,
+    logger
   )
 }

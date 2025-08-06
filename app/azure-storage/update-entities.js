@@ -19,7 +19,8 @@ export const updateEntitiesByPartitionKey = async (
   tableName,
   partitionKey,
   queryFilter,
-  entityReplacements
+  entityReplacements,
+  logger
 ) => {
   const tableClient = createTableClient(tableName)
   const filter = queryFilter || `PartitionKey eq '${partitionKey}'`
@@ -53,18 +54,18 @@ export const updateEntitiesByPartitionKey = async (
         tableClient
           .updateEntity(entityUpdates, 'Merge')
           .then(() =>
-            console.log(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
+            logger.info(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
           )
           .catch((err) =>
-            console.error(`Failed to update entity ${entity.rowKey}:`, err)
+            logger.error(`Failed to update entity ${entity.rowKey}:`, err)
           )
       )
     }
 
     await Promise.all(updates)
-    console.log(`Finished updating entities with PartitionKey = '${partitionKey}'`)
+    logger.info(`Finished updating entities with PartitionKey = '${partitionKey}'`)
   } catch (error) {
-    console.error('Error during update:', error)
+    logger.error('Error during update:', error)
     throw error
   }
 }

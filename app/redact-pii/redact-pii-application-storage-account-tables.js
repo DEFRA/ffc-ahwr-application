@@ -9,10 +9,10 @@ export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
     await Promise.all(
       agreementsToRedact.map(async ({ data }) => {
         const { sbi, claims } = data
-        await redactApplicationEventPII(sbi)
-        await redactIneligibilityPII(sbi)
+        await redactApplicationEventPII(sbi, logger)
+        await redactIneligibilityPII(sbi, logger)
         await Promise.all(
-          claims.map(({ reference }) => redactStatusPII(reference))
+          claims.map(({ reference }) => redactStatusPII(reference, logger))
         )
       })
     )

@@ -29,13 +29,14 @@ export const getApplicationHistory = async (reference) => {
   )
 }
 
-export const redactPII = async (reference) => {
+export const redactPII = async (reference, logger) => {
   const propertiesToMerge = { Payload: { note: REDACT_PII_VALUES.REDACTED_NOTE } }
 
   await updateEntitiesByPartitionKey(
     'ffcahwrapplicationstatus',
     reference,
     odata`PartitionKey eq '${reference}'`,
-    propertiesToMerge
+    propertiesToMerge,
+    logger
   )
 }

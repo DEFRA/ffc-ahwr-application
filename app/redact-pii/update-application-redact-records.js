@@ -1,4 +1,4 @@
-import { updateApplicationRedact } from '../repositories/application-redact-repository'
+import { updateApplicationRedact } from '../repositories/application-redact-repository.js'
 
 export const updateApplicationRedactRecords = async (applicationsToRedact, incrementRetryCount, status, success) => {
   await Promise.all(applicationsToRedact.map((a) => {

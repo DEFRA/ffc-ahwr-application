@@ -1,6 +1,6 @@
-import { raiseApplicationFlaggedEvent } from '../event-publisher'
-import { createFlagForRedactPII } from '../repositories/flag-repository'
-import { updateApplicationRedactRecords } from './update-application-redact-records'
+import { raiseApplicationFlaggedEvent } from '../event-publisher/index.js'
+import { createFlagForRedactPII } from '../repositories/flag-repository.js'
+import { updateApplicationRedactRecords } from './update-application-redact-records.js'
 
 export const create = async (applicationsToRedact, redactProgress, logger) => {
   try {
