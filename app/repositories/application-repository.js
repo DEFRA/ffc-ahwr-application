@@ -126,22 +126,22 @@ const buildSearchQuery = (searchText, searchType, filter) => {
         break
       case 'status':
         query.include[0] =
-          {
-            model: models.status,
-            attributes: ['status'],
-            where: { status: { [Op.iLike]: `%${searchText}%` } }
-          }
+        {
+          model: models.status,
+          attributes: ['status'],
+          where: { status: { [Op.iLike]: `%${searchText}%` } }
+        }
         break
     }
   }
 
   if (filter && filter.length > 0) {
     query.include[0] =
-      {
-        model: models.status,
-        attributes: ['status'],
-        where: { status: filter }
-      }
+    {
+      model: models.status,
+      attributes: ['status'],
+      where: { status: filter }
+    }
   }
 
   return query
@@ -317,20 +317,26 @@ export const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () 
   const claimStatusPaidAndRejected = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY, CLAIM_STATUS.REJECTED, CLAIM_STATUS.WITHDRAWN]
   const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3)
 
-  const agreementsToRedactWithNoPayment = await Promise.all(applicationsOlderThanThreeYears.map(async (application) => {
-    if (application.dataValues.reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
-      return owApplicationRedactDataIfNoPaymentClaimElseNull(application, claimStatusPaidAndRejected)
-    } else {
-      return await nwApplicationRedactDataIfNoPaymentClaimsElseNull(application, claimStatusPaidAndRejected)
-    }
-  }).filter(Boolean)) // remove nulls
+  const agreementsToRedactWithNoPayment = await Promise.all(
+    applicationsOlderThanThreeYears
+      .map(async (application) => {
+        if (application.dataValues.reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
+          return owApplicationRedactDataIfNoPaymentClaimElseNull(application, claimStatusPaidAndRejected)
+        } else {
+          return await nwApplicationRedactDataIfNoPaymentClaimsElseNull(application, claimStatusPaidAndRejected)
+        }
+      })
+      .filter(Boolean) // remove nulls
+  )
 
   return agreementsToRedactWithNoPayment
 }
 
 const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication, claimStatusPaidAndRejected) => {
   // skip if application has paid/rejected claims
-  return (claimStatusPaidAndRejected.includes(oldWorldApplication.dataValues.statusId)) ? null : { reference: oldWorldApplication.dataValues.reference, data: { sbi: oldWorldApplication.dataValues.sbi, claims: [{ reference: oldWorldApplication.dataValues.reference }] } }
+  return claimStatusPaidAndRejected.includes(oldWorldApplication.dataValues.statusId)
+    ? null
+    : { reference: oldWorldApplication.dataValues.reference, data: { sbi: oldWorldApplication.dataValues.sbi, claims: [{ reference: oldWorldApplication.dataValues.reference }] } }
 }
 
 const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication, claimStatusPaidAndRejected) => {

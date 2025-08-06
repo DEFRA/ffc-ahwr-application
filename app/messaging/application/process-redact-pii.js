@@ -26,6 +26,7 @@ export const processRedactPiiRequest = async (message, logger) => {
     await redactDocumentGeneratorPII(applicationsToRedact, [...status], logger)
     status.push(DOCUMENT_GENERATOR_REDACTED)
   }
+
   if (!status.includes(SFD_MESSAGE_PROXY_REDACTED)) {
     await redactSFDMessagingProxyPII(applicationsToRedact, [...status], logger)
     status.push(SFD_MESSAGE_PROXY_REDACTED)
@@ -35,6 +36,7 @@ export const processRedactPiiRequest = async (message, logger) => {
     await redactApplicationStorageAccountTablesPII(applicationsToRedact, [...status], logger)
     status.push(APPLICATION_STORAGE_REDACTED)
   }
+
   if (!status.includes(APPLICATION_DATABASE_REDACTED)) {
     await redactApplicationDatabasePII(applicationsToRedact, [...status], logger)
     status.push(APPLICATION_DATABASE_REDACTED)

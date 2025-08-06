@@ -1,22 +1,13 @@
+import { REDACT_PII_PROGRESS_STATUS } from 'ffc-ahwr-common-library'
 import { getFailedApplicationRedact, createApplicationRedact } from '../repositories/application-redact-repository.js'
 import { getApplicationsToRedactWithNoPaymentOlderThanThreeYears, getApplicationsToRedactWithRejectedPaymentOlderThanThreeYears, getApplicationsToRedactWithPaymentOlderThanSevenYears } from '../repositories/application-repository.js'
 
-// TODO move to common-library
-const REDACT_PII_PROGRESS_STATUS = {
-  GOT_APPLICATIONS_TO_REDACT: 'applications-to-redact',
-  DOCUMENT_GENERATOR_REDACTED: 'documents',
-  SFD_MESSAGE_PROXY_REDACTED: 'messages',
-  APPLICATION_STORAGE_REDACTED: 'storage-accounts',
-  APPLICATION_DATABASE_REDACTED: 'database-tables',
-  APPLICATION_REDACT_FLAG_ADDED: 'redacted-flag'
-}
 const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
 
 export const getApplicationsToRedact = async (requestedDate) => {
-  const failedApplicationRedact = await getFailedApplicationRedact(requestedDate)
-  const status = getStatus(failedApplicationRedact) ?? []
+  let applicationsToRedact = await getFailedApplicationRedact(requestedDate)
+  const status = getStatus(applicationsToRedact) ?? []
 
-  let applicationsToRedact = failedApplicationRedact
   if (!status.includes(GOT_APPLICATIONS_TO_REDACT)) {
     applicationsToRedact = await updateApplicationsToRedact(requestedDate)
     status.push(GOT_APPLICATIONS_TO_REDACT)
