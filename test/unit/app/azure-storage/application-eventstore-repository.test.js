@@ -24,6 +24,7 @@ describe('Application Event Store Repository test', () => {
       expect(queryEntitiesByPartitionKey).toHaveBeenCalledTimes(1)
       expect(result.length).toBe(2)
     })
+
     test('getApplicationEvents - application events not found', async () => {
       queryEntitiesByPartitionKey.mockResolvedValue([])
 
@@ -36,7 +37,9 @@ describe('Application Event Store Repository test', () => {
 
   describe('redactPII', () => {
     test('should call updateEntitiesByPartitionKey with the correct parameters', async () => {
-      await redactPII('123456789')
+      const mockLogger = jest.fn()
+
+      await redactPII('123456789', mockLogger)
 
       expect(updateEntitiesByPartitionKey).toHaveBeenCalledTimes(1)
       expect(updateEntitiesByPartitionKey).toHaveBeenCalledWith(
@@ -73,7 +76,8 @@ describe('Application Event Store Repository test', () => {
             raisedBy: REDACT_PII_VALUES.REDACTED_RAISED_BY,
             message: REDACT_PII_VALUES.REDACTED_MESSAGE
           }
-        }
+        },
+        mockLogger
       )
     })
   })

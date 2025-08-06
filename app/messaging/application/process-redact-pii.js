@@ -23,28 +23,28 @@ export const processRedactPiiRequest = async (message, logger) => {
   logger.info(`Processing starting from status: ${status.join()}`)
 
   if (!status.includes(DOCUMENT_GENERATOR_REDACTED)) {
-    await redactDocumentGeneratorPII(applicationsToRedact, status, logger)
+    await redactDocumentGeneratorPII(applicationsToRedact, [...status], logger)
     status.push(DOCUMENT_GENERATOR_REDACTED)
   }
   if (!status.includes(SFD_MESSAGE_PROXY_REDACTED)) {
-    await redactSFDMessagingProxyPII(applicationsToRedact, status, logger)
+    await redactSFDMessagingProxyPII(applicationsToRedact, [...status], logger)
     status.push(SFD_MESSAGE_PROXY_REDACTED)
   }
 
   if (!status.includes(APPLICATION_STORAGE_REDACTED)) {
-    await redactApplicationStorageAccountTablesPII(applicationsToRedact, status, logger)
+    await redactApplicationStorageAccountTablesPII(applicationsToRedact, [...status], logger)
     status.push(APPLICATION_STORAGE_REDACTED)
   }
   if (!status.includes(APPLICATION_DATABASE_REDACTED)) {
-    await redactApplicationDatabasePII(applicationsToRedact, status, logger)
+    await redactApplicationDatabasePII(applicationsToRedact, [...status], logger)
     status.push(APPLICATION_DATABASE_REDACTED)
   }
 
   if (!status.includes(APPLICATION_REDACT_FLAG_ADDED)) {
-    await createRedactPIIFlag(applicationsToRedact, status, logger)
+    await createRedactPIIFlag(applicationsToRedact, [...status], logger)
     status.push(APPLICATION_REDACT_FLAG_ADDED)
   }
 
-  await updateApplicationRedactRecords(applicationsToRedact, false, status, 'Y')
+  await updateApplicationRedactRecords(applicationsToRedact, false, [...status], 'Y')
   logger.info('Successfully processed redact PII request')
 }

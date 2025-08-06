@@ -45,17 +45,17 @@ describe('redactPII', () => {
     await redactPII(agreementsToRedact, ['applications-to-redact', 'documents'], mockLogger)
 
     expect(redactApplicationEventPII).toHaveBeenCalledTimes(2)
-    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI123')
-    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI456')
+    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI123', mockLogger)
+    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI456', mockLogger)
 
     expect(redactIneligibilityPII).toHaveBeenCalledTimes(2)
-    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI123')
-    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI456')
+    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI123', mockLogger)
+    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI456', mockLogger)
 
     expect(redactStatusPII).toHaveBeenCalledTimes(3)
-    expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-1')
-    expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-2')
-    expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-3')
+    expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-1', mockLogger)
+    expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-2', mockLogger)
+    expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-3', mockLogger)
 
     expect(updateApplicationRedactRecords).not.toHaveBeenCalled()
   })

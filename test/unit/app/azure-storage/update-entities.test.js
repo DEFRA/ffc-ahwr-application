@@ -1,3 +1,4 @@
+import { logger } from '@azure/identity'
 import { createTableClient } from '../../../../app/azure-storage/create-table-client'
 import { updateEntitiesByPartitionKey } from '../../../../app/azure-storage/update-entities'
 
@@ -13,6 +14,11 @@ const tableName = 'myTable'
 const partitionKey = '123456'
 
 describe('updateEntitiesByPartitionKey', () => {
+  const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn()
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
     createTableClient.mockReturnValue(tableClientMock)
@@ -97,7 +103,7 @@ describe('updateEntitiesByPartitionKey', () => {
       }
     }
 
-    await updateEntitiesByPartitionKey(tableName, partitionKey, "PartitionKey eq '12345'", replacements)
+    await updateEntitiesByPartitionKey(tableName, partitionKey, "PartitionKey eq '12345'", replacements, mockLogger)
 
     expect(tableClientMock.updateEntity).toHaveBeenCalledWith(
       {
@@ -153,7 +159,7 @@ describe('updateEntitiesByPartitionKey', () => {
 
     await updateEntitiesByPartitionKey(tableName, partitionKey, "PartitionKey eq '99999'", {
       ChangedBy: 'REDACTED_CHANGED_BY'
-    })
+    }, logger)
 
     expect(tableClientMock.updateEntity).not.toHaveBeenCalled()
   })
@@ -163,7 +169,7 @@ describe('updateEntitiesByPartitionKey', () => {
       yield { partitionKey: 'pk1', rowKey: 'row-2', ChangedBy: 'johndoe', Payload: '{"some":"data"}' }
     })())
 
-    await updateEntitiesByPartitionKey(tableName, partitionKey, null, { ChangedBy: 'REDACTED_CHANGED_BY' })
+    await updateEntitiesByPartitionKey(tableName, partitionKey, null, { ChangedBy: 'REDACTED_CHANGED_BY' }, mockLogger)
 
     expect(tableClientMock.updateEntity).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -178,7 +184,7 @@ describe('updateEntitiesByPartitionKey', () => {
   test('should throw error when listEntities fails', async () => {
     tableClientMock.listEntities.mockImplementation(() => { throw new Error('Storage failure') })
 
-    await expect(updateEntitiesByPartitionKey(tableName, partitionKey, null, { ChangedBy: 'X' }))
+    await expect(updateEntitiesByPartitionKey(tableName, partitionKey, null, { ChangedBy: 'X' }, mockLogger))
       .rejects
       .toThrow('Storage failure')
   })
