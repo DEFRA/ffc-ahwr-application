@@ -61,7 +61,7 @@ const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication, cl
   // skip if application has paid
   return claimStatusPaid.includes(oldWorldApplication.statusId) 
   ? null
-  : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.sbi, claims: [{ reference: oldWorldApplication.dataValues.reference }] } }
+  : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
 }
 
 const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication, claimStatusPaid) => {
