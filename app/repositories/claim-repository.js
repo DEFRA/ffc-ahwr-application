@@ -456,35 +456,8 @@ export const redactPII = async (applicationReference, logger) => {
     logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
   }
 
-  // redact OW claim data
   if (applicationReference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
-    const redactedValueByOWField = {
-      vetName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
-      vetRcvs: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
-      urnResult: REDACT_PII_VALUES.REDACTED_LABORATORY_URN
-    }
-
-    for (const [field, redactedValue] of Object.entries(redactedValueByOWField)) {
-      const [affectedCount] = await models.application.update(
-        {
-          data: Sequelize.fn(
-            'jsonb_set',
-            Sequelize.col('data'),
-            Sequelize.literal(`'{${field}}'`),
-            Sequelize.literal(`'"${redactedValue}"'`)
-          ),
-          updatedBy: 'admin',
-          updatedAt: Date.now()
-        },
-        {
-          where: {
-            reference: applicationReference,
-            [Op.and]: Sequelize.literal(`data->>'${field}' IS NOT NULL`)
-          }
-        }
-      )
-      logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
-    }
+    await redactOWClaimData()
   }
 
   await buildData.models.claim_update_history.update(
@@ -511,6 +484,36 @@ export const redactPII = async (applicationReference, logger) => {
       }
     }
   )
+}
+
+const redactOWClaimData = async (applicationReference, logger) => {
+  const redactedValueByOWField = {
+    vetName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
+    vetRcvs: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
+    urnResult: REDACT_PII_VALUES.REDACTED_LABORATORY_URN
+  }
+
+  for (const [field, redactedValue] of Object.entries(redactedValueByOWField)) {
+    const [affectedCount] = await models.application.update(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal(`'{${field}}'`),
+          Sequelize.literal(`'"${redactedValue}"'`)
+        ),
+        updatedBy: 'admin',
+        updatedAt: Date.now()
+      },
+      {
+        where: {
+          reference: applicationReference,
+          [Op.and]: Sequelize.literal(`data->>'${field}' IS NOT NULL`)
+        }
+      }
+    )
+    logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
+  }
 }
 
 const convertUpdatedPropertyToStandardType = (updatedProperty) => {

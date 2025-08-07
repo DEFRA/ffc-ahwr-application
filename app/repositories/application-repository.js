@@ -313,55 +313,6 @@ export const getApplicationsToRedactOlderThan = async (years) => {
     )
 }
 
-export const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
-  const claimStatusPaidAndRejected = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY, CLAIM_STATUS.REJECTED, CLAIM_STATUS.WITHDRAWN]
-  const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(3)
-
-  const agreementsToRedactWithNoPayment = await Promise.all(
-    applicationsOlderThanThreeYears
-      .map(async (application) => {
-        if (application.dataValues.reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
-          return owApplicationRedactDataIfNoPaymentClaimElseNull(application, claimStatusPaidAndRejected)
-        } else {
-          return await nwApplicationRedactDataIfNoPaymentClaimsElseNull(application, claimStatusPaidAndRejected)
-        }
-      })
-      .filter(Boolean) // remove nulls
-  )
-
-  return agreementsToRedactWithNoPayment
-}
-
-const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication, claimStatusPaidAndRejected) => {
-  // skip if application has paid/rejected claims
-  return claimStatusPaidAndRejected.includes(oldWorldApplication.dataValues.statusId)
-    ? null
-    : { reference: oldWorldApplication.dataValues.reference, data: { sbi: oldWorldApplication.dataValues.sbi, claims: [{ reference: oldWorldApplication.dataValues.reference }] } }
-}
-
-const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication, claimStatusPaidAndRejected) => {
-  const appClaims = await getByApplicationReference(newWorldApplication.dataValues.reference)
-
-  // skip if application has paid/rejected claims
-  if (appClaims.some(c => claimStatusPaidAndRejected.includes(c.statusId))) {
-    return null
-  }
-
-  const claims = appClaims.map(c => ({ reference: c.reference }))
-  return { reference: newWorldApplication.dataValues.reference, data: { sbi: newWorldApplication.dataValues.sbi, claims } }
-}
-
-// TODO 1070 IMPL
-export const getApplicationsToRedactWithRejectedPaymentOlderThanThreeYears = async () => {
-  const agreementsWithRejectedPayment = []
-  return agreementsWithRejectedPayment
-}
-
-// TODO 1068 IMPL
-export const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
-  const agreementsWithPayment = []
-  return agreementsWithPayment
-}
 
 export const redactPII = async (agreementReference, logger) => {
   const redactedValueByJSONPath = {

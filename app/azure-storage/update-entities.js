@@ -5,7 +5,7 @@ const redactFields = (target, redactedValueByField) => {
     for (const [key, value] of Object.entries(obj)) {
       if (key in redactedValueByField) {
         obj[key] = redactedValueByField[key]
-      } else if (value && typeof value === 'object') {
+      } else if (value && typeof value === 'object') { // NOSONAR
         recurse(value)
       }
     }
@@ -32,14 +32,14 @@ export const updateEntitiesByPartitionKey = async (
 
     const updates = []
     for await (const entity of entities) {
-      let replacements = { ...entityReplacements }
+      const replacements = { ...entityReplacements }
 
       if (entityReplacements?.Payload) {
         const payload = JSON.parse(`${entity.Payload}`)
         const redactedPayload = redactFields(payload, replacements.Payload)
-        replacements.Payload = JSON.stringify(redactedPayload) 
+        replacements.Payload = JSON.stringify(redactedPayload)
       }
-    
+
       // only update if something to update
       const entityUpdates = {
         partitionKey: entity.partitionKey,

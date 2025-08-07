@@ -56,7 +56,7 @@ describe('application-redact-repository', () => {
   describe('updateApplicationRedact', () => {
     it('should update an application redact by id and return updated rows', async () => {
       const mockId = 3
-      const mockData = { retryCount: 2, status: 'COMPLETED', success: 'Y' }
+      const mockData = { retryCount: 2, status: [], success: 'N' }
       const mockUpdatedRecord = { id: mockId, ...mockData }
       const mockResponse = [1, [mockUpdatedRecord]]
 

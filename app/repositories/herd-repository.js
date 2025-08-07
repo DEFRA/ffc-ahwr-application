@@ -37,8 +37,7 @@ export const redactPII = async (applicationReference) => {
     {
       where: {
         applicationReference
-      },
-      returning: true
+      }
     }
   )
 }

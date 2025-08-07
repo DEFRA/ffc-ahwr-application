@@ -1386,34 +1386,34 @@ describe('Claim repository test', () => {
 
   describe('redactPII', () => {
     const { update } = buildData.models.claim
-     const mockLogger = {
+    const mockLogger = {
       info: jest.fn()
     }
-    
+
     beforeEach(() => {
       jest.clearAllMocks()
     })
 
     it('should redact claim data and log updates (non-OW reference)', async () => {
       const applicationReference = 'NON-OW-1234'
-  
+
       update.mockResolvedValueOnce()
-            .mockResolvedValueOnce([1])
-            .mockResolvedValueOnce([2])
-            .mockResolvedValueOnce([0])
-  
+        .mockResolvedValueOnce([1])
+        .mockResolvedValueOnce([2])
+        .mockResolvedValueOnce([0])
+
       await redactPII(applicationReference, mockLogger)
-  
+
       expect(update).toHaveBeenCalledTimes(3)
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining("Redacted field 'vetsName'")
       )
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
     })
-  
+
     it('should redact claim and application data and log updates (OW reference)', async () => {
       const applicationReference = 'OW-5678'
-  
+
       update
         .mockResolvedValueOnce([1])
         .mockResolvedValueOnce([1])
@@ -1421,9 +1421,9 @@ describe('Claim repository test', () => {
         .mockResolvedValueOnce([1])
         .mockResolvedValueOnce([1])
         .mockResolvedValueOnce([1])
-  
+
       await redactPII(applicationReference, mockLogger)
-  
+
       expect(update).toHaveBeenCalledTimes(6)
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining("Redacted field 'vetName'")
