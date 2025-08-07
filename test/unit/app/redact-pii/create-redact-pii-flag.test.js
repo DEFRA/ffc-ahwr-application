@@ -47,7 +47,7 @@ describe('create', () => {
     })
     raiseApplicationFlaggedEvent.mockResolvedValue()
 
-    await create(agreementsToRedact, [], mockLogger)
+    await create(agreementsToRedact, ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables'], mockLogger)
 
     expect(createFlagForRedactPII).toHaveBeenCalledTimes(2)
     expect(createFlagForRedactPII).toHaveBeenCalledWith({
@@ -90,13 +90,13 @@ describe('create', () => {
     const createFlagError = new Error('Failed to create flag')
     createFlagForRedactPII.mockRejectedValue(createFlagError)
 
-    await expect(create(agreementsToRedact, { progress: 50 }, mockLogger))
+    await expect(create(agreementsToRedact, ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables'], mockLogger))
       .rejects.toThrow('Failed to create flag')
 
     expect(updateApplicationRedactRecords).toHaveBeenCalledWith(
       agreementsToRedact,
       true,
-      { progress: 50 },
+      ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables'],
       'N'
     )
     expect(mockLogger.setBindings).toHaveBeenCalledWith({ err: createFlagError })

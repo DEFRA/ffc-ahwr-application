@@ -22,7 +22,7 @@ describe('processRedactPiiRequest', () => {
   }
   const message = {
     body: {
-      requestedDate: '2025-08-05'
+      requestedDate: '2025-08-05T00:00:00.000Z'
     }
   }
 

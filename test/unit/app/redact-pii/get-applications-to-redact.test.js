@@ -29,9 +29,7 @@ describe('get-applications-to-redact', () => {
   })
 
   it('should update applications to redact and return new applications when previous attempt failed to update applications', async () => {
-    getFailedApplicationRedact.mockResolvedValue([
-      { id: 1 }
-    ])
+    getFailedApplicationRedact.mockResolvedValue()
     getApplicationsToRedactWithNoPaymentOlderThanThreeYears.mockResolvedValue([{ id: 10 }])
     getApplicationsToRedactWithRejectedPaymentOlderThanThreeYears.mockResolvedValue([{ id: 11 }])
     getApplicationsToRedactWithPaymentOlderThanSevenYears.mockResolvedValue([{ id: 12 }])

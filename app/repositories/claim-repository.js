@@ -427,83 +427,64 @@ export const findAllClaimUpdateHistory = (reference) =>
     where: { reference }
   })
 
-export const redactPII = async (applicationReference) => {
-  const claimData = Sequelize.fn(
-    'jsonb_set',
-    Sequelize.fn(
-      'jsonb_set',
-      Sequelize.col('data'),
-      Sequelize.literal('\'{vetsName}\''),
-      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VETS_NAME}"'`)
-    ),
-    Sequelize.literal('\'{vetRCVSNumber}\''),
-    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}"'`)
-  )
-  await buildData.models.claim.update(
-    {
-      data: claimData,
-      updatedBy: 'admin',
-      updatedAt: Date.now()
-    },
-    {
-      where: {
-        applicationReference
-      },
-      returning: true
-    }
-  )
+export const redactPII = async (applicationReference, logger) => {
+  const redactedValueByField = {
+    vetsName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
+    vetRCVSNumber: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
+    laboratoryURN: REDACT_PII_VALUES.REDACTED_LABORATORY_URN
+  }
 
-  const laboratoryUrnData = Sequelize.fn(
-    'jsonb_set',
-    Sequelize.col('data'),
-    Sequelize.literal('\'{laboratoryURN}\''),
-    Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}"'`)
-  )
-  await buildData.models.claim.update(
-    {
-      data: laboratoryUrnData,
-      updatedBy: 'admin',
-      updatedAt: Date.now()
-    },
-    {
-      where: {
-        applicationReference,
-        [Op.and]: [Sequelize.where(Sequelize.fn('jsonb_exists', Sequelize.col('data'), 'laboratoryURN'), true)]
-      },
-      returning: true
-    }
-  )
-
-  // redact OW claim data
-  if (applicationReference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
-    const owClaimData = Sequelize.fn(
-      'jsonb_set',
-      Sequelize.fn(
-        'jsonb_set',
-        Sequelize.fn(
+  for (const [field, redactedValue] of Object.entries(redactedValueByField)) {
+    const [affectedCount] = await models.claim.update(
+      {
+        data: Sequelize.fn(
           'jsonb_set',
           Sequelize.col('data'),
-          Sequelize.literal('\'{vetName}\''),
-          Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VETS_NAME}"'`)
+          Sequelize.literal(`'{${field}}'`),
+          Sequelize.literal(`'"${redactedValue}"'`)
         ),
-        Sequelize.literal('\'{vetRcvs}\''),
-        Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}"'`)),
-      Sequelize.literal('\'{urnResult}\''),
-      Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}"'`)
-    )
-    await buildData.models.application.update(
-      {
-        data: owClaimData,
         updatedBy: 'admin',
         updatedAt: Date.now()
       },
       {
         where: {
-          reference: applicationReference
-        },
-        returning: true
+          reference: applicationReference,
+          [Op.and]: Sequelize.literal(`data->>'${field}' IS NOT NULL`)
+        }
       }
     )
+    logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
+  }
+
+  // redact OW claim data
+  if (applicationReference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
+    const redactedValueByOWField = {
+      vetName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
+      vetRcvs: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
+      urnResult: REDACT_PII_VALUES.REDACTED_LABORATORY_URN
+    }
+
+    for (const [field, redactedValue] of Object.entries(redactedValueByOWField)) {
+      const [affectedCount] = await models.application.update(
+        {
+          data: Sequelize.fn(
+            'jsonb_set',
+            Sequelize.col('data'),
+            Sequelize.literal(`'{${field}}'`),
+            Sequelize.literal(`'"${redactedValue}"'`)
+          ),
+          updatedBy: 'admin',
+          updatedAt: Date.now()
+        },
+        {
+          where: {
+            reference: applicationReference,
+            [Op.and]: Sequelize.literal(`data->>'${field}' IS NOT NULL`)
+          }
+        }
+      )
+      logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
+    }
   }
 
   await buildData.models.claim_update_history.update(
@@ -514,8 +495,7 @@ export const redactPII = async (applicationReference) => {
       where: {
         applicationReference,
         note: { [Op.not]: null }
-      },
-      returning: true
+      }
     }
   )
 
@@ -528,8 +508,7 @@ export const redactPII = async (applicationReference) => {
       where: {
         applicationReference,
         updatedProperty: 'vetName'
-      },
-      returning: true
+      }
     }
   )
 }

@@ -32,17 +32,14 @@ export const updateEntitiesByPartitionKey = async (
 
     const updates = []
     for await (const entity of entities) {
-      let replacements
+      let replacements = { ...entityReplacements }
 
       if (entityReplacements?.Payload) {
         const payload = JSON.parse(`${entity.Payload}`)
-        const redactedPayload = redactFields(payload, entityReplacements.Payload)
-
-        replacements = { ...entityReplacements, Payload: JSON.stringify(redactedPayload) }
-      } else {
-        replacements = entityReplacements
+        const redactedPayload = redactFields(payload, replacements.Payload)
+        replacements.Payload = JSON.stringify(redactedPayload) 
       }
-
+    
       // only update if something to update
       const entityUpdates = {
         partitionKey: entity.partitionKey,
