@@ -34,11 +34,13 @@ jest.mock('../../../../app/data', () => {
           count: jest.fn()
         },
         application: {
-          findAll: jest.fn()
+          findAll: jest.fn(),
+          update: jest.fn()
         },
         claim_update_history: {
           findAll: jest.fn(),
-          create: jest.fn()
+          create: jest.fn(),
+          update: jest.fn()
         },
         status: 'mock-status',
         flag: 'mock-flag',
@@ -1385,7 +1387,6 @@ describe('Claim repository test', () => {
   })
 
   describe('redactPII', () => {
-    const { update } = buildData.models.claim
     const mockLogger = {
       info: jest.fn()
     }
@@ -1394,40 +1395,56 @@ describe('Claim repository test', () => {
       jest.clearAllMocks()
     })
 
-    it.skip('should redact claim data and log updates (non-OW reference)', async () => {
-      const applicationReference = 'NON-OW-1234'
+    it('should redact claim data and claim update history when new world application', async () => {
+      const applicationReference = 'IAHW-1234'
 
-      update.mockResolvedValueOnce()
-        .mockResolvedValueOnce([1])
-        .mockResolvedValueOnce([2])
-        .mockResolvedValueOnce([0])
+      buildData.models.claim.update.mockResolvedValue([1])
+      buildData.models.claim_update_history.update.mockResolvedValue([1])
 
       await redactPII(applicationReference, mockLogger)
 
-      expect(update).toHaveBeenCalledTimes(3)
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Redacted field 'vetsName'")
-      )
+      expect(buildData.models.claim.update).toHaveBeenCalledTimes(3)
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetsName' in 1 message(s) for applicationReference: IAHW-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetRCVSNumber' in 1 message(s) for applicationReference: IAHW-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'laboratoryURN' in 1 message(s) for applicationReference: IAHW-1234")
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
+      expect(buildData.models.claim_update_history.update).toHaveBeenCalledWith(
+        {
+          note: 'REDACTED_NOTE'
+        },
+        {
+          where: {
+            applicationReference,
+            note: { [Op.not]: null }
+          }
+        }
+      )
+      expect(buildData.models.claim_update_history.update).toHaveBeenCalledWith(
+        {
+          newValue: 'REDACTED_VETS_NAME',
+          oldValue: 'REDACTED_VETS_NAME'
+        },
+        {
+          where: {
+            applicationReference,
+            updatedProperty: 'vetName'
+          }
+        }
+      )
     })
 
-    it.skip('should redact claim and application data and log updates (OW reference)', async () => {
-      const applicationReference = 'OW-5678'
-
-      update
-        .mockResolvedValueOnce([1])
-        .mockResolvedValueOnce([1])
-        .mockResolvedValueOnce([1])
-        .mockResolvedValueOnce([1])
-        .mockResolvedValueOnce([1])
-        .mockResolvedValueOnce([1])
+    it('should redact old world claim data and claim update history when old world application', async () => {
+      const applicationReference = 'AHWR-1234'
+      buildData.models.claim.update.mockResolvedValue([1])
+      buildData.models.application.update.mockResolvedValue([1])
 
       await redactPII(applicationReference, mockLogger)
 
-      expect(update).toHaveBeenCalledTimes(6)
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Redacted field 'vetName'")
-      )
+      expect(buildData.models.claim.update).toHaveBeenCalledTimes(3)
+      expect(buildData.models.application.update).toHaveBeenCalledTimes(3)
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetsName' in 1 message(s) for applicationReference: AHWR-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetRCVSNumber' in 1 message(s) for applicationReference: AHWR-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'laboratoryURN' in 1 message(s) for applicationReference: AHWR-1234")
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
     })
   })
