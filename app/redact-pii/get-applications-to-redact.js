@@ -8,6 +8,7 @@ const { sequelize } = buildData
 const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
 
 const THREE_YEARS = 3
+const CLAIM_STATUS_PAID = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY]
 
 export const getApplicationsToRedact = async (requestedDate) => {
   let applicationsToRedact = await getFailedApplicationRedact(requestedDate)
@@ -39,39 +40,40 @@ const getStatus = (agreementsToRedact) => {
 }
 
 const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
-  const claimStatusPaid = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY]
   const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(THREE_YEARS)
 
-  const agreementsToRedactWithNoPayment = await Promise.all(
-    applicationsOlderThanThreeYears
-      .map(async (application) => {
+  const agreementsToRedactWithNoPayment = (
+    await Promise.all(
+      applicationsOlderThanThreeYears.map(async (application) => {
         if (application.reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
-          return owApplicationRedactDataIfNoPaymentClaimElseNull(application, claimStatusPaid)
+          return owApplicationRedactDataIfNoPaymentClaimElseNull(application)
         } else {
-          return await nwApplicationRedactDataIfNoPaymentClaimsElseNull(application, claimStatusPaid)
+          return nwApplicationRedactDataIfNoPaymentClaimsElseNull(application)
         }
       })
-      .filter(Boolean) // remove nulls
-  )
+    )
+  ).filter(Boolean) // remove nulls
 
   return agreementsToRedactWithNoPayment
 }
 
-const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication, claimStatusPaid) => {
+const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) => {
   // skip if application has paid
-  return claimStatusPaid.includes(oldWorldApplication.statusId) 
-  ? null
-  : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
+  return CLAIM_STATUS_PAID.includes(oldWorldApplication.statusId)
+    ? null
+    : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
 }
 
-const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication, claimStatusPaid) => {
+const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication) => {
   const appClaims = await getByApplicationReference(newWorldApplication.reference)
-
+  console.log({
+    reference: newWorldApplication.reference,
+    appClaims
+  })
   // skip if application has paid
-  if (appClaims.some(c => claimStatusPaid.includes(c.statusId))) {
+  if (appClaims.some(c => CLAIM_STATUS_PAID.includes(c.statusId))) {
     return null
   }
-
   const claims = appClaims.map(c => ({ reference: c.reference }))
   return { reference: newWorldApplication.reference, data: { sbi: newWorldApplication.sbi, claims } }
 }
