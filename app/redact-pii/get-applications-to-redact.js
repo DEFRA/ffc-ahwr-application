@@ -13,7 +13,7 @@ const CLAIM_STATUS_PAID = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY]
 export const getApplicationsToRedact = async (requestedDate) => {
   let applicationsToRedact = await getFailedApplicationRedact(requestedDate)
 
-  if (!applicationsToRedact || applicationsToRedact.length == 0) {
+  if (!applicationsToRedact || applicationsToRedact.length === 0) {
     applicationsToRedact = await createApplicationsToRedact(requestedDate)
   }
 
