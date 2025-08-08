@@ -45,8 +45,8 @@ export const redactPII = async (applicationReference, logger) => {
   )
 
   updatedRows.forEach(row => {
-    const appRef = row.dataValues.applicationReference
-    const fieldValue = row.dataValues.data?.field
+    const appRef = row.applicationReference
+    const fieldValue = row.data?.field
 
     logger.info(`Redacted ${fieldValue} in ${appRef}`)
   })

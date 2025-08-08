@@ -88,7 +88,7 @@ describe('Flag Repository tests', () => {
     expect(models.flag.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'IAHW-1234-ABCD' } })
   })
 
-  test('redactPII, should redact herd PII', async () => {
+  test('redactPII, should redact flag PII', async () => {
     await redactPII('IAHW-FAK3-FAK3')
 
     expect(buildData.models.flag.update).toHaveBeenCalledWith({
