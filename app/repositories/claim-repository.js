@@ -429,9 +429,9 @@ export const findAllClaimUpdateHistory = (reference) =>
 
 export const redactPII = async (applicationReference, logger) => {
   const redactedValueByField = {
-    vetsName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
-    vetRCVSNumber: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
-    laboratoryURN: REDACT_PII_VALUES.REDACTED_LABORATORY_URN
+    vetsName: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`,
+    vetRCVSNumber: `${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}`,
+    laboratoryURN: `${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}`
   }
 
   for (const [field, redactedValue] of Object.entries(redactedValueByField)) {

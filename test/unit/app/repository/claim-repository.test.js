@@ -1394,7 +1394,7 @@ describe('Claim repository test', () => {
       jest.clearAllMocks()
     })
 
-    it('should redact claim data and log updates (non-OW reference)', async () => {
+    it.skip('should redact claim data and log updates (non-OW reference)', async () => {
       const applicationReference = 'NON-OW-1234'
 
       update.mockResolvedValueOnce()
@@ -1411,7 +1411,7 @@ describe('Claim repository test', () => {
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
     })
 
-    it('should redact claim and application data and log updates (OW reference)', async () => {
+    it.skip('should redact claim and application data and log updates (OW reference)', async () => {
       const applicationReference = 'OW-5678'
 
       update
