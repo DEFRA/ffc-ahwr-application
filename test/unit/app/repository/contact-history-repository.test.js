@@ -1,5 +1,5 @@
 import { when, resetAllWhenMocks } from 'jest-when'
-import { getAllByApplicationReference, set } from '../../../../app/repositories/contact-history-repository'
+import { getAllByApplicationReference, set, redactPII } from '../../../../app/repositories/contact-history-repository'
 import { buildData } from '../../../../app/data'
 
 jest.mock('../../../../app/data', () => {
@@ -8,7 +8,8 @@ jest.mock('../../../../app/data', () => {
       models: {
         contact_history: {
           findAll: jest.fn(),
-          create: jest.fn()
+          create: jest.fn(),
+          update: jest.fn()
         }
       }
     }
@@ -230,5 +231,27 @@ describe('Contact history Repository test', () => {
     expect(buildData.models.contact_history.findAll).toHaveBeenCalledTimes(1)
     expect(new Date(result[0].createdAt)).toEqual(new Date('2024-04-14T20:00:46.045Z'))
     expect(new Date(result[1].createdAt)).toEqual(new Date('2024-04-12T14:54:55.893Z'))
+  })
+
+  test('redactPII, should redact contact details PII', async () => {
+    const mockLogger = { info: jest.fn() }
+    buildData.models.contact_history.update.mockResolvedValue([2, [{ applicationReference: 'IAHW-FAK3-FAK3', data: { field: 'foo' } }, { applicationReference: 'IAHW-FAK3-FAK3', data: { field: 'bar' } }]])
+
+    await redactPII('IAHW-FAK3-FAK3', mockLogger)
+
+    expect(buildData.models.contact_history.update).toHaveBeenCalledWith({
+      data: expect.any(Object),
+      updatedBy: 'admin',
+      updatedAt: expect.any(Number)
+    },
+    {
+      where: {
+        applicationReference: 'IAHW-FAK3-FAK3'
+      },
+      returning: true
+    })
+    expect(mockLogger.info).toHaveBeenCalledTimes(2)
+    expect(mockLogger.info).toHaveBeenCalledWith('Redacted foo in IAHW-FAK3-FAK3')
+    expect(mockLogger.info).toHaveBeenCalledWith('Redacted bar in IAHW-FAK3-FAK3')
   })
 })

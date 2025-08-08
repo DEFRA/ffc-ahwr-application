@@ -9,7 +9,8 @@ import {
   setClaim,
   updateClaimByReference,
   updateClaimData,
-  addHerdToClaimData
+  addHerdToClaimData,
+  redactPII
 } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
@@ -33,11 +34,13 @@ jest.mock('../../../../app/data', () => {
           count: jest.fn()
         },
         application: {
-          findAll: jest.fn()
+          findAll: jest.fn(),
+          update: jest.fn()
         },
         claim_update_history: {
           findAll: jest.fn(),
-          create: jest.fn()
+          create: jest.fn(),
+          update: jest.fn()
         },
         status: 'mock-status',
         flag: 'mock-flag',
@@ -60,6 +63,7 @@ const MOCK_SEND_EVENTS = jest.fn()
 
 jest.mock('ffc-ahwr-common-library', () => {
   return {
+    ...jest.requireActual('ffc-ahwr-common-library'),
     PublishEventBatch: jest.fn().mockImplementation(() => {
       return {
         sendEvents: MOCK_SEND_EVENTS
@@ -138,7 +142,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -180,7 +184,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -222,7 +226,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -264,7 +268,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -306,7 +310,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -348,7 +352,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() }, where: { 'data.organisation.sbi': search.text } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() }, where: { 'data.organisation.sbi': search.text } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -1326,7 +1330,8 @@ describe('Claim repository test', () => {
         {
           attributes: ['data'],
           model: {
-            findAll: expect.any(Function)
+            findAll: expect.any(Function),
+            update: expect.anything()
           }
         },
         {
@@ -1381,5 +1386,68 @@ describe('Claim repository test', () => {
       where: { reference: 'some-claim' }
     })
     expect(result).toEqual(aClaimHistory)
+  })
+
+  describe('redactPII', () => {
+    const mockLogger = {
+      info: jest.fn()
+    }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should redact claim data and claim update history when new world application', async () => {
+      const applicationReference = 'IAHW-1234'
+
+      buildData.models.claim.update.mockResolvedValue([1])
+      buildData.models.claim_update_history.update.mockResolvedValue([1])
+
+      await redactPII(applicationReference, mockLogger)
+
+      expect(buildData.models.claim.update).toHaveBeenCalledTimes(3)
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetsName' in 1 message(s) for applicationReference: IAHW-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetRCVSNumber' in 1 message(s) for applicationReference: IAHW-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'laboratoryURN' in 1 message(s) for applicationReference: IAHW-1234")
+      expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
+      expect(buildData.models.claim_update_history.update).toHaveBeenCalledWith(
+        {
+          note: 'REDACTED_NOTE'
+        },
+        {
+          where: {
+            applicationReference,
+            note: { [Op.not]: null }
+          }
+        }
+      )
+      expect(buildData.models.claim_update_history.update).toHaveBeenCalledWith(
+        {
+          newValue: 'REDACTED_VETS_NAME',
+          oldValue: 'REDACTED_VETS_NAME'
+        },
+        {
+          where: {
+            applicationReference,
+            updatedProperty: 'vetName'
+          }
+        }
+      )
+    })
+
+    it('should redact old world claim data and claim update history when old world application', async () => {
+      const applicationReference = 'AHWR-1234'
+      buildData.models.claim.update.mockResolvedValue([1])
+      buildData.models.application.update.mockResolvedValue([1])
+
+      await redactPII(applicationReference, mockLogger)
+
+      expect(buildData.models.claim.update).toHaveBeenCalledTimes(3)
+      expect(buildData.models.application.update).toHaveBeenCalledTimes(3)
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetsName' in 1 message(s) for applicationReference: AHWR-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetRCVSNumber' in 1 message(s) for applicationReference: AHWR-1234")
+      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'laboratoryURN' in 1 message(s) for applicationReference: AHWR-1234")
+      expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
+    })
   })
 })

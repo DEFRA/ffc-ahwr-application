@@ -1,4 +1,5 @@
-import { createHerd, getHerdById, getHerdsByAppRefAndSpecies, updateIsCurrentHerd } from '../../../../app/repositories/herd-repository'
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { createHerd, getHerdById, getHerdsByAppRefAndSpecies, updateIsCurrentHerd, redactPII } from '../../../../app/repositories/herd-repository'
 import { buildData } from '../../../../app/data/index.js'
 
 const { models } = buildData
@@ -186,6 +187,24 @@ describe('herdService', () => {
 
       expect(buildData.models.herd.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'AHWR-0AD3-3322', isCurrent: true } })
       expect(result).toEqual(mockResult)
+    })
+  })
+
+  describe('redactPII', () => {
+    it('should redact herd PII', async () => {
+      await redactPII('IAHW-FAK3-FAK3')
+
+      expect(buildData.models.herd.update).toHaveBeenCalledWith({
+        herdName: `${REDACT_PII_VALUES.REDACTED_HERD_NAME}`,
+        cph: `${REDACT_PII_VALUES.REDACTED_CPH}`,
+        updatedBy: 'admin',
+        updatedAt: expect.any(Number)
+      },
+      {
+        where: {
+          applicationReference: 'IAHW-FAK3-FAK3'
+        }
+      })
     })
   })
 })
