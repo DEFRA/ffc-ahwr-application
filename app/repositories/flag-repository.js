@@ -46,7 +46,7 @@ export const redactPII = async (applicationReference) => {
       where: {
         applicationReference,
         note: { [Op.not]: null }
-      },
+      }
     }
   )
 }

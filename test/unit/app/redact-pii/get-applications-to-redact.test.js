@@ -34,7 +34,7 @@ describe('get-applications-to-redact', () => {
           }
         },
         updatedBy: 'admin'
-      }, 
+      },
       {
         id: '380c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
         reference: 'IAHW-8C72-8871',
@@ -77,14 +77,14 @@ describe('get-applications-to-redact', () => {
     expect(result).toEqual({
       applicationsToRedact: [
         { reference: 'IAHW-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'REBC-1' }] } },
-        { reference: 'IAHW-8C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'REBC-1' }]  } },
-        { reference: 'IAHW-9C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'REBC-1' }]  } }
+        { reference: 'IAHW-8C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'REBC-1' }] } },
+        { reference: 'IAHW-9C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'REBC-1' }] } }
       ],
       status: ['applications-to-redact']
     })
   })
 
-  //TODO
+  // TODO
   // it('should return failed applications when GOT_APPLICATIONS_TO_REDACT is already in status', async () => {
   //   const failedApplications = [
   //     { id: 1, status: 'applications-to-redact,documents' }

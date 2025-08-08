@@ -59,9 +59,9 @@ const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
 
 const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication, claimStatusPaid) => {
   // skip if application has paid
-  return claimStatusPaid.includes(oldWorldApplication.statusId) 
-  ? null
-  : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
+  return claimStatusPaid.includes(oldWorldApplication.statusId)
+    ? null
+    : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
 }
 
 const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication, claimStatusPaid) => {

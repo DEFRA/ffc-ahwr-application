@@ -50,7 +50,7 @@ describe('redact-pii-application-database', () => {
       expect(redactHerdPII).toHaveBeenCalledWith(reference)
       expect(redactFlagPII).toHaveBeenCalledWith(reference)
       expect(redactContactHistoryPII).toHaveBeenCalledWith(reference, mockLogger)
-      expect(redactClaimPII).toHaveBeenCalledWith(reference)
+      expect(redactClaimPII).toHaveBeenCalledWith(reference, mockLogger)
       expect(redactApplicationPII).toHaveBeenCalledWith(reference, mockLogger)
     })
 

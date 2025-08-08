@@ -50,5 +50,5 @@ describe('update-application-redact-records redactPII', () => {
     expect(updateApplicationRedact).not.toHaveBeenCalled()
   })
 
-  //TODO throws error
+  // TODO throws error
 })

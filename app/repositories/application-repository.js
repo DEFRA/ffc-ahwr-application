@@ -1,10 +1,9 @@
-import { CLAIM_STATUS, REDACT_PII_VALUES, APPLICATION_REFERENCE_PREFIX_OLD_WORLD } from 'ffc-ahwr-common-library'
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
-import { getByApplicationReference } from './claim-repository.js'
 
 const { models, sequelize } = buildData
 
@@ -312,7 +311,6 @@ export const getApplicationsToRedactOlderThan = async (years) => {
       }
     )
 }
-
 
 export const redactPII = async (agreementReference, logger) => {
   const redactedValueByJSONPath = {
