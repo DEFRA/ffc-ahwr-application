@@ -13,7 +13,7 @@ const CLAIM_STATUS_PAID = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY]
 export const getApplicationsToRedact = async (requestedDate) => {
   let applicationsToRedact = await getFailedApplicationRedact(requestedDate)
 
-  if (!applicationsToRedact) {
+  if (!applicationsToRedact || applicationsToRedact.length == 0) {
     applicationsToRedact = await createApplicationsToRedact(requestedDate)
   }
 
@@ -61,7 +61,7 @@ const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) =>
   // skip if application has paid
   return CLAIM_STATUS_PAID.includes(oldWorldApplication.statusId)
     ? null
-    : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
+    : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.dataValues.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
 }
 
 const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication) => {
@@ -72,7 +72,7 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplicat
     return null
   }
   const claims = appClaims.map(c => ({ reference: c.reference }))
-  return { reference: newWorldApplication.reference, data: { sbi: newWorldApplication.sbi, claims } }
+  return { reference: newWorldApplication.reference, data: { sbi: newWorldApplication.dataValues.sbi, claims } }
 }
 
 // TODO 1068 IMPL
