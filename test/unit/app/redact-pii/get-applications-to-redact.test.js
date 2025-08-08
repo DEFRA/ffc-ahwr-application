@@ -124,7 +124,7 @@ describe('get-applications-to-redact', () => {
     })
   })
 
-  it.only('should skip paid old world and new world applications', async () => {
+  it.only('should return non-paid old world and new world applications to redact', async () => {
     getFailedApplicationRedact.mockResolvedValue()
     getApplicationsToRedactOlderThan.mockResolvedValue([
       {
