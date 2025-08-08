@@ -1,4 +1,4 @@
-import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library/app/constants.js'
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
