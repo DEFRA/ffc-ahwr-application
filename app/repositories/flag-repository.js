@@ -40,7 +40,9 @@ export const getFlagsForApplicationIncludingDeleted = async (applicationReferenc
 export const redactPII = async (applicationReference) => {
   await buildData.models.flag.update(
     {
-      note: `${REDACT_PII_VALUES.REDACTED_NOTE}`
+      note: `${REDACT_PII_VALUES.REDACTED_NOTE}`,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
     },
     {
       where: {
