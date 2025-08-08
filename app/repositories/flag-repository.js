@@ -59,5 +59,5 @@ export const createFlagForRedactPII = async (data) => {
     await deleteFlag(existingAppliesToMhFlag.id, 'admin', 'Deleted to allow \'Redact PII\' flag to be added, only one flag with appliesToMh=false allowed.')
   }
 
-  return await createFlag(data)
+  return createFlag(data)
 }

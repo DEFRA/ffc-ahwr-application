@@ -1,4 +1,4 @@
-import { REDACT_PII_VALUES, APPLICATION_REFERENCE_PREFIX_OLD_WORLD } from 'ffc-ahwr-common-library/app/constants.js'
+import { REDACT_PII_VALUES, APPLICATION_REFERENCE_PREFIX_OLD_WORLD } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseClaimEvents, raiseHerdEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'

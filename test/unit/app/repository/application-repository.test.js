@@ -33,6 +33,7 @@ const MOCK_SEND_EVENTS = jest.fn()
 
 jest.mock('ffc-ahwr-common-library', () => {
   return {
+    ...jest.requireActual('ffc-ahwr-common-library'),
     PublishEventBatch: jest.fn().mockImplementation(() => {
       return {
         sendEvents: MOCK_SEND_EVENTS
