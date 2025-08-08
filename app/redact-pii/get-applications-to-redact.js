@@ -66,10 +66,7 @@ const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) =>
 
 const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication) => {
   const appClaims = await getByApplicationReference(newWorldApplication.reference)
-  console.log({
-    reference: newWorldApplication.reference,
-    appClaims
-  })
+
   // skip if application has paid
   if (appClaims.some(c => CLAIM_STATUS_PAID.includes(c.statusId))) {
     return null
