@@ -141,7 +141,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -183,7 +183,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -225,7 +225,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -267,7 +267,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -309,7 +309,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -351,7 +351,7 @@ describe('Claim repository: Search Claim', () => {
     expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
       include: [
         { attributes: ['status'], model: 'mock-status' },
-        { attributes: ['data'], model: { findAll: expect.anything() }, where: { 'data.organisation.sbi': search.text } },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() }, where: { 'data.organisation.sbi': search.text } },
         {
           as: 'flags',
           attributes: ['appliesToMh'],
@@ -1329,7 +1329,8 @@ describe('Claim repository test', () => {
         {
           attributes: ['data'],
           model: {
-            findAll: expect.any(Function)
+            findAll: expect.any(Function),
+            update: expect.anything()
           }
         },
         {
