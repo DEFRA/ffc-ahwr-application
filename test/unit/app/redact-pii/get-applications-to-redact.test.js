@@ -128,26 +128,22 @@ describe('get-applications-to-redact', () => {
     getFailedApplicationRedact.mockResolvedValue()
     getApplicationsToRedactOlderThan.mockResolvedValue([
       {
-        id: '280c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
         reference: 'AHWR-7C72-8871',
         statusId: 3,
-        sbi: '123456789'
+        dataValues: { sbi: '123456789', reference: 'AHWR-7C72-8871' }
       },
       {
-        id: '380c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
         reference: 'AHWR-8C72-8872',
         statusId: 9,
-        sbi: '223456789'
+        dataValues: { sbi: '223456789', reference: 'AHWR-8C72-8872' }
       },
       {
-        id: '180c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
         reference: 'IAHW-9C72-8873',
-        sbi: '323456789'
+        dataValues: { sbi: '323456789', reference: 'IAHW-9C72-8873' }
       },
       {
-        id: '580c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
         reference: 'IAHW-9C72-8874',
-        sbi: '423456789'
+        dataValues: { sbi: '423456789', reference: 'IAHW-9C72-8874' }
       }
     ])
     createApplicationRedact.mockImplementation(app => Promise.resolve({ ...app }))
