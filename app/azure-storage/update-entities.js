@@ -1,6 +1,8 @@
 import pLimit from 'p-limit'
 import { createTableClient } from './create-table-client.js'
 
+const UPDATE_ENTITY_CONCURRENCY_LIMT = 20
+
 const redactFields = (target, redactedValueByField) => {
   const recurse = (obj) => {
     for (const [key, value] of Object.entries(obj)) {
@@ -25,7 +27,7 @@ export const updateEntitiesByPartitionKey = async (
 ) => {
   const tableClient = createTableClient(tableName)
   const filter = queryFilter || `PartitionKey eq '${partitionKey}'`
-  const limit = pLimit(20)
+  const limit = pLimit(UPDATE_ENTITY_CONCURRENCY_LIMT)
 
   try {
     const entities = tableClient.listEntities({
