@@ -1,4 +1,6 @@
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
+import { Op } from 'sequelize'
 
 const { models } = buildData
 
@@ -33,4 +35,29 @@ export const getAllFlags = async () => {
 
 export const getFlagsForApplicationIncludingDeleted = async (applicationReference) => {
   return models.flag.findAll({ where: { applicationReference } })
+}
+
+export const redactPII = async (applicationReference) => {
+  await buildData.models.flag.update(
+    {
+      note: `${REDACT_PII_VALUES.REDACTED_NOTE}`,
+      updatedBy: 'admin',
+      updatedAt: Date.now()
+    },
+    {
+      where: {
+        applicationReference,
+        note: { [Op.not]: null }
+      }
+    }
+  )
+}
+
+export const createFlagForRedactPII = async (data) => {
+  const existingAppliesToMhFlag = await getFlagByAppRef(data.applicationReference, false)
+  if (existingAppliesToMhFlag) {
+    await deleteFlag(existingAppliesToMhFlag.id, 'admin', 'Deleted to allow \'Redact PII\' flag to be added, only one flag with appliesToMh=false allowed.')
+  }
+
+  return createFlag(data)
 }

@@ -1,5 +1,6 @@
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../../../../app/data'
-import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagsForApplication, getFlagsForApplicationIncludingDeleted } from '../../../../app/repositories/flag-repository'
+import { createFlag, deleteFlag, getAllFlags, getFlagByAppRef, getFlagsForApplication, getFlagsForApplicationIncludingDeleted, redactPII, createFlagForRedactPII } from '../../../../app/repositories/flag-repository'
 
 const { models } = buildData
 
@@ -85,5 +86,68 @@ describe('Flag Repository tests', () => {
     await getFlagsForApplicationIncludingDeleted('IAHW-1234-ABCD')
 
     expect(models.flag.findAll).toHaveBeenCalledWith({ where: { applicationReference: 'IAHW-1234-ABCD' } })
+  })
+
+  test('redactPII, should redact flag PII', async () => {
+    await redactPII('IAHW-FAK3-FAK3')
+
+    expect(buildData.models.flag.update).toHaveBeenCalledWith({
+      note: `${REDACT_PII_VALUES.REDACTED_NOTE}`,
+      updatedBy: 'admin',
+      updatedAt: expect.any(Number)
+    },
+    {
+      where: {
+        applicationReference: 'IAHW-FAK3-FAK3',
+        note: expect.any(Object)
+      }
+    })
+  })
+
+  test('createFlagForRedactPII, should only create flag when no appliesToMh=false flag', async () => {
+    models.flag.findOne = jest.fn().mockResolvedValueOnce({})
+    const data = {
+      applicationReference: 'IAHW-FAK3-FAK3',
+      sbi: '12345678',
+      note: 'Application PII redacted',
+      createdBy: 'admin',
+      appliesToMh: false
+    }
+
+    await createFlagForRedactPII(data)
+
+    expect(models.flag.findOne).toHaveBeenCalledWith({
+      where: { applicationReference: data.applicationReference, deletedAt: null, deletedBy: null, appliesToMh: false }
+    })
+    expect(models.flag.create).toHaveBeenCalledWith(data)
+  })
+
+  test('createFlagForRedactPII, should delete existing flag and create a new one when there is appliesToMh=false flag', async () => {
+    models.flag.findOne = jest.fn().mockResolvedValueOnce({
+      id: 'fake-id-1',
+      applicationReference: 'IAHW-FAK3-FAK3',
+      sbi: '12345678',
+      note: 'Fake existing flag to be deleted',
+      createdBy: 'admin',
+      appliesToMh: false
+    })
+    const data = {
+      applicationReference: 'IAHW-FAK3-FAK3',
+      sbi: '12345678',
+      note: 'Application PII redacted',
+      createdBy: 'admin',
+      appliesToMh: false
+    }
+
+    await createFlagForRedactPII(data)
+
+    expect(models.flag.findOne).toHaveBeenCalledWith({
+      where: { applicationReference: data.applicationReference, deletedAt: null, deletedBy: null, appliesToMh: false }
+    })
+    expect(models.flag.update).toHaveBeenCalledWith(
+      { deletedAt: expect.any(Date), deletedBy: 'admin', deletedNote: 'Deleted to allow \'Redact PII\' flag to be added, only one flag with appliesToMh=false allowed.' },
+      { where: { id: 'fake-id-1' }, returning: true }
+    )
+    expect(models.flag.create).toHaveBeenCalledWith(data)
   })
 })

@@ -6,6 +6,7 @@ import {
   getByEmail,
   getBySbi,
   getLatestApplicationsBySbi,
+  redactPII,
   searchApplications,
   setApplication,
   updateApplicationByReference, updateApplicationData
@@ -32,6 +33,7 @@ const MOCK_SEND_EVENTS = jest.fn()
 
 jest.mock('ffc-ahwr-common-library', () => {
   return {
+    ...jest.requireActual('ffc-ahwr-common-library'),
     PublishEventBatch: jest.fn().mockImplementation(() => {
       return {
         sendEvents: MOCK_SEND_EVENTS
@@ -1462,5 +1464,128 @@ describe('evalSortField function', () => {
   test('returns default sort for unrecognized field', () => {
     const result = evalSortField({ field: 'unknownField', direction: 'ASC' })
     expect(result).toEqual(['createdAt', 'ASC'])
+  })
+})
+
+describe('redactPII', () => {
+  const mockLogger = {
+    info: jest.fn()
+  }
+
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
+  test('should update fields to redacted values for agreement', async () => {
+    models.application.update.mockResolvedValue([10], mockLogger)
+
+    await redactPII('IAWR-1234', mockLogger)
+
+    expect(models.application.update).toHaveBeenCalledWith(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{organisation,name}\''),
+          Sequelize.literal('\'"REDACTED_NAME"\''),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: 'IAWR-1234',
+          [Op.and]: Sequelize.literal('data->\'organisation\'->\'name\' IS NOT NULL')
+        }
+      }
+    )
+    expect(models.application.update).toHaveBeenCalledWith(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{organisation,email}\''),
+          Sequelize.literal('\'"redacted.email@example.com"\''),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: 'IAWR-1234',
+          [Op.and]: Sequelize.literal('data->\'organisation\'->\'email\' IS NOT NULL')
+        }
+      }
+    )
+    expect(models.application.update).toHaveBeenCalledWith(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{organisation,orgEmail}\''),
+          Sequelize.literal('\'"redacted.org.email@example.com"\''),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: 'IAWR-1234',
+          [Op.and]: Sequelize.literal('data->\'organisation\'->\'orgEmail\' IS NOT NULL')
+        }
+      }
+    )
+    expect(models.application.update).toHaveBeenCalledWith(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{organisation,farmerName}\''),
+          Sequelize.literal('\'"REDACTED_FARMER_NAME"\''),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: 'IAWR-1234',
+          [Op.and]: Sequelize.literal('data->\'organisation\'->\'farmerName\' IS NOT NULL')
+        }
+      }
+    )
+    expect(models.application.update).toHaveBeenCalledWith(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{organisation,address}\''),
+          Sequelize.literal('\'"REDACTED_ADDRESS"\''),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: 'IAWR-1234',
+          [Op.and]: Sequelize.literal('data->\'organisation\'->\'address\' IS NOT NULL')
+        }
+      }
+    )
+  })
+
+  test('should log no updates when updating agreement with null fields', async () => {
+    models.application.update.mockResolvedValue([0], mockLogger)
+
+    await redactPII('IAWR-1234', mockLogger)
+
+    expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,name' in 0 record(s) for agreementReference: IAWR-1234")
+    expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,email' in 0 record(s) for agreementReference: IAWR-1234")
+    expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,orgEmail' in 0 record(s) for agreementReference: IAWR-1234")
+    expect(mockLogger.info).toHaveBeenCalledWith('No records updated for agreementReference: IAWR-1234')
   })
 })

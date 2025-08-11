@@ -1,6 +1,7 @@
+import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
-import { Op, Sequelize } from 'sequelize'
+import { Op, Sequelize, literal } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 
@@ -124,22 +125,22 @@ const buildSearchQuery = (searchText, searchType, filter) => {
         break
       case 'status':
         query.include[0] =
-          {
-            model: models.status,
-            attributes: ['status'],
-            where: { status: { [Op.iLike]: `%${searchText}%` } }
-          }
+        {
+          model: models.status,
+          attributes: ['status'],
+          where: { status: { [Op.iLike]: `%${searchText}%` } }
+        }
         break
     }
   }
 
   if (filter && filter.length > 0) {
     query.include[0] =
-      {
-        model: models.status,
-        attributes: ['status'],
-        where: { status: filter }
-      }
+    {
+      model: models.status,
+      attributes: ['status'],
+      where: { status: filter }
+    }
   }
 
   return query
@@ -284,4 +285,76 @@ export const updateApplicationData = async (reference, updatedProperty, newValue
     eventType: type,
     createdBy: user
   })
+}
+
+export const getApplicationsToRedactOlderThan = async (years) => {
+  const now = new Date()
+  const cutoffDate = new Date(Date.UTC(
+    now.getUTCFullYear() - years,
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ))
+
+  return models.application
+    .findAll(
+      {
+        where: {
+          reference: {
+            [Op.notIn]: Sequelize.literal('(SELECT reference FROM application_redact)')
+          },
+          createdAt: {
+            [Op.lt]: cutoffDate
+          }
+        },
+        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
+        order: [['createdAt', 'ASC']]
+      }
+    )
+}
+
+export const redactPII = async (agreementReference, logger) => {
+  const redactedValueByJSONPath = {
+    'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
+    'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
+    'organisation,orgEmail': REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
+    'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
+    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
+  }
+
+  let totalUpdates = 0
+
+  for (const [jsonPath, redactedValue] of Object.entries(redactedValueByJSONPath)) {
+    const jsonPathSql = jsonPath.split(',').map(key => `->'${key}'`).join('')
+
+    const [affectedCount] = await models.application.update(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal(`'{${jsonPath}}'`),
+          Sequelize.literal(`'"${redactedValue}"'`),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: agreementReference,
+          [Op.and]: Sequelize.literal(`data${jsonPathSql} IS NOT NULL`)
+        }
+      }
+    )
+
+    totalUpdates += affectedCount
+    logger.info(
+      `Redacted field '${jsonPath}' in ${affectedCount} record(s) for agreementReference: ${agreementReference}`
+    )
+  }
+
+  if (totalUpdates > 0) {
+    logger.info(`Total redacted fields across records: ${totalUpdates} for agreementReference: ${agreementReference}`)
+  } else {
+    logger.info(`No records updated for agreementReference: ${agreementReference}`)
+  }
 }

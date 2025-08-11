@@ -1,3 +1,4 @@
+import { REDACT_PII_VALUES, APPLICATION_REFERENCE_PREFIX_OLD_WORLD } from 'ffc-ahwr-common-library'
 import { buildData } from '../data/index.js'
 import { raiseClaimEvents, raiseHerdEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
@@ -425,6 +426,95 @@ export const findAllClaimUpdateHistory = (reference) =>
   buildData.models.claim_update_history.findAll({
     where: { reference }
   })
+
+export const redactPII = async (applicationReference, logger) => {
+  const redactedValueByField = {
+    vetsName: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`,
+    vetRCVSNumber: `${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}`,
+    laboratoryURN: `${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}`
+  }
+
+  for (const [field, redactedValue] of Object.entries(redactedValueByField)) {
+    const [affectedCount] = await models.claim.update(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal(`'{${field}}'`),
+          Sequelize.literal(`'"${redactedValue}"'`)
+        ),
+        updatedBy: 'admin',
+        updatedAt: Date.now()
+      },
+      {
+        where: {
+          reference: applicationReference,
+          [Op.and]: Sequelize.literal(`data->>'${field}' IS NOT NULL`)
+        }
+      }
+    )
+    logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
+  }
+
+  if (applicationReference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
+    await redactOWClaimData(applicationReference, logger)
+  }
+
+  await buildData.models.claim_update_history.update(
+    {
+      note: `${REDACT_PII_VALUES.REDACTED_NOTE}`
+    },
+    {
+      where: {
+        applicationReference,
+        note: { [Op.not]: null }
+      }
+    }
+  )
+
+  await buildData.models.claim_update_history.update(
+    {
+      newValue: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`,
+      oldValue: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`
+    },
+    {
+      where: {
+        applicationReference,
+        updatedProperty: 'vetName'
+      }
+    }
+  )
+}
+
+const redactOWClaimData = async (applicationReference, logger) => {
+  const redactedValueByOWField = {
+    vetName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
+    vetRcvs: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
+    urnResult: REDACT_PII_VALUES.REDACTED_LABORATORY_URN
+  }
+
+  for (const [field, redactedValue] of Object.entries(redactedValueByOWField)) {
+    const [affectedCount] = await models.application.update(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal(`'{${field}}'`),
+          Sequelize.literal(`'"${redactedValue}"'`)
+        ),
+        updatedBy: 'admin',
+        updatedAt: Date.now()
+      },
+      {
+        where: {
+          reference: applicationReference,
+          [Op.and]: Sequelize.literal(`data->>'${field}' IS NOT NULL`)
+        }
+      }
+    )
+    logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
+  }
+}
 
 const convertUpdatedPropertyToStandardType = (updatedProperty) => {
   switch (updatedProperty) {
