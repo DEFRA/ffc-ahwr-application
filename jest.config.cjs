@@ -34,7 +34,7 @@ module.exports = {
     '^.+\\.[j]sx?$': 'babel-jest'
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(ffc-ahwr-common-library)/)'
+    '/node_modules/(?!(ffc-ahwr-common-library|p-limit|yocto-queue)/)'
   ],
   testPathIgnorePatterns: [],
   verbose: true,

@@ -54,7 +54,7 @@
     "@faker-js/faker": "9.4.0",
     "babel-jest": "^29.7.0",
     "dotenv": "^16.0.3",
-    "jest": "^27.0.6",
+    "jest": "^30.0.5",
     "jest-junit": "^13.0.0",
     "jest-when": "^3.5.2",
     "lodash.unset": "^4.5.2",

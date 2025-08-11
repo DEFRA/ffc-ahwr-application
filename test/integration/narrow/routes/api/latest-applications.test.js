@@ -76,7 +76,7 @@ describe('/api/applications/latest', () => {
 
     const response = await server.inject(options)
     expect(response.statusCode).toBe(200)
-    expect(getLatestApplicationsBySbi).toBeCalledTimes(1)
+    expect(getLatestApplicationsBySbi).toHaveBeenCalledTimes(1)
   })
 
   test.each([
