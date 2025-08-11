@@ -30,7 +30,6 @@ export const updateEntitiesByPartitionKey = async (
       queryOptions: { filter }
     })
 
-    const updates = []
     for await (const entity of entities) {
       const replacements = { ...entityReplacements }
 
@@ -47,19 +46,16 @@ export const updateEntitiesByPartitionKey = async (
         ...replacements
       }
 
-      updates.push(
-        tableClient
-          .updateEntity(entityUpdates, 'Merge')
-          .then(() =>
-            logger.info(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
-          )
-          .catch((err) =>
-            logger.error(`Failed to update entity ${entity.rowKey}:`, err)
-          )
-      )
+      await tableClient
+        .updateEntity(entityUpdates, 'Merge')
+        .then(() =>
+          logger.info(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
+        )
+        .catch((err) =>
+          logger.error(`Failed to update entity ${entity.rowKey}:`, err)
+        )
     }
 
-    await Promise.all(updates)
     logger.info(`Finished updating entities with PartitionKey = '${partitionKey}'`)
   } catch (error) {
     logger.error('Error during update:', error)
