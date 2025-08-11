@@ -1,3 +1,4 @@
+import pLimit from 'p-limit'
 import { createTableClient } from './create-table-client.js'
 
 const redactFields = (target, redactedValueByField) => {
@@ -24,12 +25,14 @@ export const updateEntitiesByPartitionKey = async (
 ) => {
   const tableClient = createTableClient(tableName)
   const filter = queryFilter || `PartitionKey eq '${partitionKey}'`
+  const limit = pLimit(20)
 
   try {
     const entities = tableClient.listEntities({
       queryOptions: { filter }
     })
 
+    const updates = []
     for await (const entity of entities) {
       const replacements = { ...entityReplacements }
 
@@ -46,16 +49,20 @@ export const updateEntitiesByPartitionKey = async (
         ...replacements
       }
 
-      await tableClient
-        .updateEntity(entityUpdates, 'Merge')
-        .then(() =>
-          logger.info(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
+      updates.push(
+        limit(() => tableClient
+          .updateEntity(entityUpdates, 'Merge')
+          .then(() =>
+            logger.info(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
+          )
+          .catch((err) =>
+            logger.error(`Failed to update entity ${entity.rowKey}:`, err)
+          )
         )
-        .catch((err) =>
-          logger.error(`Failed to update entity ${entity.rowKey}:`, err)
-        )
+      )
     }
 
+    await Promise.all(updates)
     logger.info(`Finished updating entities with PartitionKey = '${partitionKey}'`)
   } catch (error) {
     logger.error('Error during update:', error)
