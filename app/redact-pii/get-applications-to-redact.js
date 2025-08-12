@@ -79,23 +79,21 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplicat
 }
 
 const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
-  const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(SEVEN_YEARS)
+  const applications = await getApplicationsToRedactOlderThan(SEVEN_YEARS)
 
-  const agreementsToRedact = (
-    await Promise.all(
-      applicationsOlderThanThreeYears.map(async ({ reference, dataValues: { sbi } }) => {
-        let claimReferences
+  const agreementsToRedact = await Promise.all(
+    applications.map(async ({ reference, dataValues: { sbi } }) => {
+      let claimReferences
 
-        if (reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
-          claimReferences = [reference]
-        } else {
-          const appClaims = await getByApplicationReference(reference)
-          claimReferences = appClaims.map(c => c.reference)
-        }
+      if (reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
+        claimReferences = [reference]
+      } else {
+        const appClaims = await getByApplicationReference(reference)
+        claimReferences = appClaims.map(c => c.reference)
+      }
 
-        return buildApplicationRedact(reference, sbi, claimReferences)
-      })
-    )
+      return buildApplicationRedact(reference, sbi, claimReferences)
+    })
   )
 
   return agreementsToRedact
