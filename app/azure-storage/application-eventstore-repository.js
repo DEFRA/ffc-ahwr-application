@@ -19,6 +19,7 @@ export const getApplicationEvents = async (sbi) => {
 export const redactPII = async (sbi, logger) => {
   const propertiesToMerge = {
     ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
+    EventBy: REDACT_PII_VALUES.REDACTED_EVENT_BY,
     Payload: {
       cph: REDACT_PII_VALUES.CPH,
       exception: REDACT_PII_VALUES.REDACTED_EXCEPTION,
