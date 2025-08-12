@@ -8,6 +8,8 @@ const { sequelize } = buildData
 const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
 
 const THREE_YEARS = 3
+const SEVEN_YEARS = 7
+
 const CLAIM_STATUS_PAID = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY]
 
 export const getApplicationsToRedact = async (requestedDate) => {
@@ -56,12 +58,13 @@ const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
 
   return agreementsToRedactWithNoPayment
 }
+const buildApplicationRedact = (reference, sbi, claimReferences) => ({ reference, data: { sbi, claims: claimReferences.map((claimReference) => ({ reference: claimReference })) } })
 
 const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) => {
   // skip if application has paid
   return CLAIM_STATUS_PAID.includes(oldWorldApplication.statusId)
     ? null
-    : { reference: oldWorldApplication.reference, data: { sbi: oldWorldApplication.dataValues.sbi, claims: [{ reference: oldWorldApplication.reference }] } }
+    : buildApplicationRedact(oldWorldApplication.reference, oldWorldApplication.dataValues.sbi, [oldWorldApplication.reference])
 }
 
 const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication) => {
@@ -71,12 +74,27 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplicat
   if (appClaims.some(c => CLAIM_STATUS_PAID.includes(c.statusId))) {
     return null
   }
-  const claims = appClaims.map(c => ({ reference: c.reference }))
-  return { reference: newWorldApplication.reference, data: { sbi: newWorldApplication.dataValues.sbi, claims } }
+  const claimReferences = appClaims.map(c => c.reference)
+  return buildApplicationRedact(newWorldApplication.reference, newWorldApplication.dataValues.sbi, claimReferences)
 }
 
-// TODO 1068 IMPL
 const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
-  const agreementsWithPayment = []
-  return agreementsWithPayment
+  const applications = await getApplicationsToRedactOlderThan(SEVEN_YEARS)
+
+  const agreementsToRedact = await Promise.all(
+    applications.map(async ({ reference, dataValues: { sbi } }) => {
+      let claimReferences
+
+      if (reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
+        claimReferences = [reference]
+      } else {
+        const appClaims = await getByApplicationReference(reference)
+        claimReferences = appClaims.map(c => c.reference)
+      }
+
+      return buildApplicationRedact(reference, sbi, claimReferences)
+    })
+  )
+
+  return agreementsToRedact
 }

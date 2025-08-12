@@ -3,6 +3,7 @@ import {
   evalSortField, findApplication,
   getAllApplications,
   getApplication,
+  getApplicationsToRedactOlderThan,
   getByEmail,
   getBySbi,
   getLatestApplicationsBySbi,
@@ -1587,5 +1588,52 @@ describe('redactPII', () => {
     expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,email' in 0 record(s) for agreementReference: IAWR-1234")
     expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,orgEmail' in 0 record(s) for agreementReference: IAWR-1234")
     expect(mockLogger.info).toHaveBeenCalledWith('No records updated for agreementReference: IAWR-1234')
+  })
+})
+
+describe('getApplicationsToRedactOlderThan', () => {
+  const mockApplication = {
+    dataValues: {
+      id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
+      reference: 'AHWR-7C72-8871',
+      statusId: 1,
+      data: {
+        organisation: {
+          sbi: '123456789',
+          email: 'business@email.com'
+        }
+      },
+      createdBy: 'test'
+    }
+  }
+
+  beforeAll(() => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date(Date.UTC(2025, 7, 8)))
+  })
+
+  afterAll(() => {
+    jest.useRealTimers()
+  })
+
+  it('returns applications that were created over three years ago when years is 3', async () => {
+    const years = 3
+    models.application.findAll.mockResolvedValueOnce([mockApplication])
+
+    const applications = await getApplicationsToRedactOlderThan(years)
+
+    expect(applications).toEqual([mockApplication])
+    expect(models.application.findAll).toHaveBeenCalledWith({
+      where: {
+        reference: {
+          [Op.notIn]: Sequelize.literal('(SELECT reference FROM application_redact)')
+        },
+        createdAt: {
+          [Op.lt]: new Date('2022-08-08T00:00:00.000Z')
+        }
+      },
+      attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi']],
+      order: [['createdAt', 'ASC']]
+    })
   })
 })
