@@ -448,7 +448,7 @@ export const redactPII = async (applicationReference, logger) => {
       },
       {
         where: {
-          reference: applicationReference,
+          applicationReference,
           [Op.and]: Sequelize.literal(`data->>'${field}' IS NOT NULL`)
         }
       }
