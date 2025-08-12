@@ -10,7 +10,7 @@ jest.mock('../../../../app/repositories/claim-repository.js')
 jest.mock('../../../../app/repositories/contact-history-repository.js')
 jest.mock('../../../../app/repositories/flag-repository.js')
 jest.mock('../../../../app/repositories/herd-repository.js')
-jest.mock('.../../../../app/repositories/application-repository.js')
+jest.mock('../../../../app/repositories/application-repository.js')
 jest.mock('../../../../app/redact-pii/update-application-redact-records.js')
 
 describe('redact-pii-application-database', () => {
