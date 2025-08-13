@@ -84,7 +84,7 @@ describe('Process Message test', () => {
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 
-  test(`unknown message calls nothing`, async () => {
+  test('unknown message calls nothing', async () => {
     const message = {
       messageId: '1234567890',
       body: {
