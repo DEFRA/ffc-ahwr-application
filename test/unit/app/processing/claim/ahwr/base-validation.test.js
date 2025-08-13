@@ -72,7 +72,7 @@ describe('Base Validation Tests', () => {
       const claim = deepClone(validBeefReviewClaim)
       delete claim.data.herd
 
-      const { error, value } = validateAhwrClaim(claim, [ { appliesToMh: true } ])
+      const { error, value } = validateAhwrClaim(claim, [{ appliesToMh: true }])
       expect(value).toBeDefined()
       expect(error).toBeUndefined()
     })
