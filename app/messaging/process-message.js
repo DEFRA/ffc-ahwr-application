@@ -19,6 +19,9 @@ export const processApplicationMessage = async (message, receiver, logger) => {
       case redactPiiRequestMsgType:
         await processRedactPiiRequest(message, logger)
         break
+      default:
+        logger.warn(`Unknown message type: ${properties.type}`)
+        break
     }
 
     await receiver.completeMessage(message)

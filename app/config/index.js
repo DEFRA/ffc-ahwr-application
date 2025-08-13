@@ -38,7 +38,7 @@ const buildConfig = () => {
     }
   })
 
-  const config = {
+  const mainConfig = {
     env: process.env.NODE_ENV,
     isDev: process.env.NODE_ENV === 'development',
     serviceUri: process.env.SERVICE_URI,
@@ -68,13 +68,13 @@ const buildConfig = () => {
     }
   }
 
-  const { error } = schema.validate(config, { abortEarly: false })
+  const { error } = schema.validate(mainConfig, { abortEarly: false })
 
   if (error) {
     throw new Error(`The server config is invalid. ${error.message}`)
   }
 
-  return config
+  return mainConfig
 }
 
 export const config = {

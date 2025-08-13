@@ -46,7 +46,7 @@ export const contactHistoryHandlers = [
         if (!applications.length) {
           return h.response('No applications found to update').code(200).takeover()
         }
-        applications.forEach(async (application) => {
+        await Promise.all(applications.map(async (application) => {
           const contactHistory = []
           const dataCopy = { ...application.data }
           if (request.payload.email !== dataCopy.organisation.email) {
@@ -87,17 +87,18 @@ export const contactHistoryHandlers = [
 
           if (contactHistory.length > 0) {
             await updateApplicationByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user }, false)
-            contactHistory.forEach(async (contact) => {
-              await set({
-                applicationReference: application.reference,
-                sbi: request.payload.sbi,
-                data: contact,
-                createdBy: 'admin',
-                createdAt: new Date()
-              })
-            })
+            await Promise.all(
+              contactHistory.map(async (contact) => {
+                await set({
+                  applicationReference: application.reference,
+                  sbi: request.payload.sbi,
+                  data: contact,
+                  createdBy: 'admin',
+                  createdAt: new Date()
+                })
+              }))
           }
-        })
+        }))
         return h.response().code(200)
       }
     }

@@ -18,6 +18,9 @@ describe('Process Message test', () => {
     completeMessage: jest.fn(),
     abandonMessage: jest.fn()
   }
+  const mockLogger = {
+    warn: jest.fn()
+  }
 
   beforeEach(async () => {
     jest.clearAllMocks()
@@ -41,7 +44,7 @@ describe('Process Message test', () => {
       sessionId
     }
 
-    await processApplicationMessage(message, receiver)
+    await processApplicationMessage(message, receiver, mockLogger)
     expect(processApplicationQueue).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
@@ -59,7 +62,7 @@ describe('Process Message test', () => {
       sessionId
     }
 
-    await processApplicationMessage(message, receiver)
+    await processApplicationMessage(message, receiver, mockLogger)
     expect(setPaymentStatusToPaid).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
@@ -76,8 +79,25 @@ describe('Process Message test', () => {
       sessionId
     }
 
-    await processApplicationMessage(message, receiver)
+    await processApplicationMessage(message, receiver, mockLogger)
     expect(processRedactPiiRequest).toHaveBeenCalledTimes(1)
+    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+  })
+
+  test(`unknown message calls nothing`, async () => {
+    const message = {
+      messageId: '1234567890',
+      body: {
+        requestDate: new Date()
+      },
+      applicationProperties: {
+        type: 'unknown'
+      },
+      sessionId
+    }
+
+    await processApplicationMessage(message, receiver, mockLogger)
+    expect(mockLogger.warn).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 })

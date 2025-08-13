@@ -58,7 +58,7 @@ export const processApplication = async (data, logger) => {
       data,
       createdBy: 'admin',
       createdAt: new Date(),
-      statusId: data.offerStatus === 'rejected' ? 7 : 1,
+      statusId: data.offerStatus === 'rejected' ? applicationStatus.notAgreed : applicationStatus.agreed,
       type: data.type ? data.type : 'VV'
     })
 
