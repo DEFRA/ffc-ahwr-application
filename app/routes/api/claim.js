@@ -312,7 +312,9 @@ export const claimHandlers = [
 
         if (laboratoryURN) {
           const { isURNUnique } = await isURNNumberUnique(sbi, laboratoryURN)
-          if (!isURNUnique) return h.response({ error: 'URN number is not unique' }).code(StatusCodes.BAD_REQUEST).takeover()
+          if (!isURNUnique) {
+            return h.response({ error: 'URN number is not unique' }).code(StatusCodes.BAD_REQUEST).takeover()
+          }
         }
 
         const amount = await getAmount(request.payload)
