@@ -198,9 +198,9 @@ export const claimHandlers = [
       handler: async (request, h) => {
         const claim = await getClaimByReference(request.params.ref)
         if (claim?.dataValues) {
-          return h.response(claim.dataValues).code(200)
+          return h.response(claim.dataValues).code(StatusCodes.OK)
         } else {
-          return h.response('Not Found').code(404).takeover()
+          return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
         }
       }
     }
@@ -221,7 +221,7 @@ export const claimHandlers = [
         const { typeOfLivestock } = request.query
         const claims = await getByApplicationReference(request.params.ref, typeOfLivestock)
 
-        return h.response(claims).code(200)
+        return h.response(claims).code(StatusCodes.OK)
       }
     }
   },
@@ -240,7 +240,7 @@ export const claimHandlers = [
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
-          return h.response({ err }).code(400).takeover()
+          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       },
       handler: async (request, h) => {
@@ -252,7 +252,7 @@ export const claimHandlers = [
           limit,
           sort
         )
-        return h.response({ total, claims }).code(200)
+        return h.response({ total, claims }).code(StatusCodes.OK)
       }
     }
   },
@@ -270,7 +270,7 @@ export const claimHandlers = [
         const { sbi, laboratoryURN } = request.payload
         const result = await isURNNumberUnique(sbi, laboratoryURN)
 
-        return h.response(result).code(200)
+        return h.response(result).code(StatusCodes.OK)
       }
     }
   },
@@ -370,12 +370,12 @@ export const claimHandlers = [
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
-          return h.response({ err }).code(400).takeover()
+          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       },
       handler: async (request, h) => {
         const amount = await getAmount({ type: request.payload.type, data: request.payload })
-        return h.response(amount).code(200)
+        return h.response(amount).code(StatusCodes.OK)
       }
     }
   },
@@ -393,7 +393,7 @@ export const claimHandlers = [
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
 
-          return h.response({ err }).code(400).takeover()
+          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       },
       handler: async (request, h) => {
@@ -406,7 +406,7 @@ export const claimHandlers = [
 
         const claim = await getClaimByReference(reference)
         if (!claim.dataValues) {
-          return h.response('Not Found').code(404).takeover()
+          return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
         }
         const { typeOfLivestock, reviewTestResults, vetVisitsReviewTestResults } = claim.dataValues.data || {}
         const applicationReference = claim.dataValues.applicationReference
@@ -471,7 +471,7 @@ export const claimHandlers = [
           )
         }
 
-        return h.response().code(200)
+        return h.response().code(StatusCodes.OK)
       }
     }
   }

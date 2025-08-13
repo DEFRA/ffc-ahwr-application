@@ -3,6 +3,7 @@ import { getClaimByReference, updateClaimByReference } from '../../repositories/
 import { applicationStatus } from '../../constants/index.js'
 import { getApplication, updateApplicationByReference } from '../../repositories/application-repository.js'
 import { getAll, set, getById, update, getByApplicationReference } from '../../repositories/stage-execution-repository.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const stageExecutionHandlers = [{
   method: 'GET',
@@ -11,9 +12,9 @@ export const stageExecutionHandlers = [{
     handler: async (request, h) => {
       const stageExecution = await getAll()
       if (stageExecution) {
-        return h.response(stageExecution).code(200)
+        return h.response(stageExecution).code(StatusCodes.OK)
       } else {
-        return h.response('Not Found').code(404).takeover()
+        return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
       }
     }
   }
@@ -25,9 +26,9 @@ export const stageExecutionHandlers = [{
       const stageExecutions = await getByApplicationReference(request.params.applicationReference)
 
       if (stageExecutions) {
-        return h.response(stageExecutions).code(200)
+        return h.response(stageExecutions).code(StatusCodes.OK)
       } else {
-        return h.response('Not Found').code(404).takeover()
+        return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
       }
     }
   }

@@ -5,6 +5,7 @@ import {
   getClaimByReference
 } from '../../repositories/claim-repository.js'
 import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-repository.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const buildFlagEvents = (flags) => {
   const getText = (appliesToMh, state) => {
@@ -114,7 +115,7 @@ export const applicationHistoryHandlers = [
           ...applicationFlagHistory
         ].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
 
-        return h.response({ historyRecords }).code(200)
+        return h.response({ historyRecords }).code(StatusCodes.OK)
       }
     }
   }

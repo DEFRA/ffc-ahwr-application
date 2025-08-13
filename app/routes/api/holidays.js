@@ -1,4 +1,5 @@
 import { isTodayHoliday } from '../../repositories/holiday-repository.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const holidayHandlers = [
   {
@@ -8,10 +9,10 @@ export const holidayHandlers = [
       const isHoliday = await isTodayHoliday()
 
       if (isHoliday) {
-        return h.response().code(200)
+        return h.response().code(StatusCodes.OK)
       }
 
-      return h.response().code(404)
+      return h.response().code(StatusCodes.NOT_FOUND)
     }
   }
 ]

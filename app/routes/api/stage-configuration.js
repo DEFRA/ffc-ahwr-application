@@ -1,5 +1,6 @@
 import Joi from 'joi'
 import { getAll, getById } from '../../repositories/stage-configuration-repository.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const stageConfiguationHandlers = [{
   method: 'GET',
@@ -8,9 +9,9 @@ export const stageConfiguationHandlers = [{
     handler: async (request, h) => {
       const stageConfiguration = await getAll()
       if (stageConfiguration) {
-        return h.response(stageConfiguration).code(200)
+        return h.response(stageConfiguration).code(StatusCodes.OK)
       } else {
-        return h.response('Not Found').code(404).takeover()
+        return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
       }
     }
   }
@@ -24,15 +25,15 @@ export const stageConfiguationHandlers = [{
       }),
       failAction: async (request, h, err) => {
         request.logger.setBindings({ err })
-        return h.response({ err }).code(400).takeover()
+        return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
       }
     },
     handler: async (request, h) => {
       const stageConfiguration = await getById(request.params.id)
       if (stageConfiguration) {
-        return h.response(stageConfiguration).code(200)
+        return h.response(stageConfiguration).code(StatusCodes.OK)
       }
-      return h.response('Not Found').code(404).takeover()
+      return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
     }
   }
 }]

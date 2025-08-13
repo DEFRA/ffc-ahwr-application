@@ -68,6 +68,15 @@ describe('Base Validation Tests', () => {
       expect(error).toBeUndefined()
     })
 
+    it('should return true for valid beef claim without herd when user flag indicates no MH', () => {
+      const claim = deepClone(validBeefReviewClaim)
+      delete claim.data.herd
+
+      const { error, value } = validateAhwrClaim(claim, [ { appliesToMh: true } ])
+      expect(value).toBeDefined()
+      expect(error).toBeUndefined()
+    })
+
     it('should return false for invalid beef claim missing required elements', () => {
       const claim = deepClone(validBeefReviewClaim)
       delete claim.data.vetsName
