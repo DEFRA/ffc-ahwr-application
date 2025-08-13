@@ -69,19 +69,19 @@ export function getBeefValidation (claimData) {
       ...getNumberAnimalsTested(minimumAnimalsTestedForReview),
       ...testResults
     }
-  } else {
-    const visitDateAfterPIHuntAndDairyGoLive = isVisitDateAfterPIHuntAndDairyGoLive(claimData.data.dateOfVisit)
-    const isPositiveReviewTestResult = claimData.data.reviewTestResults === testResultsConstant.positive
-    const piHuntYes = claimData.data.piHunt === piHunt.yes
-    const piHuntRecommendedYes = claimData.data.piHuntRecommended === piHuntRecommended.yes
-    const piHuntAllAnimalsYes = claimData.data.piHuntAllAnimals === piHuntAllAnimals.yes
-    return {
-      ...vetVisitsReviewTestResults,
-      ...reviewTestResults,
-      ...(!visitDateAfterPIHuntAndDairyGoLive && isPositiveReviewTestResult && dateOfTesting),
-      ...(!visitDateAfterPIHuntAndDairyGoLive && piHuntModel(isPositiveReviewTestResult)),
-      ...(visitDateAfterPIHuntAndDairyGoLive && optionalPiHuntModel(isPositiveReviewTestResult, piHuntYes, piHuntRecommendedYes, piHuntAllAnimalsYes)),
-      ...biosecurityData
-    }
+  }
+
+  const visitDateAfterPIHuntAndDairyGoLive = isVisitDateAfterPIHuntAndDairyGoLive(claimData.data.dateOfVisit)
+  const isPositiveReviewTestResult = claimData.data.reviewTestResults === testResultsConstant.positive
+  const piHuntYes = claimData.data.piHunt === piHunt.yes
+  const piHuntRecommendedYes = claimData.data.piHuntRecommended === piHuntRecommended.yes
+  const piHuntAllAnimalsYes = claimData.data.piHuntAllAnimals === piHuntAllAnimals.yes
+  return {
+    ...vetVisitsReviewTestResults,
+    ...reviewTestResults,
+    ...(!visitDateAfterPIHuntAndDairyGoLive && isPositiveReviewTestResult && dateOfTesting),
+    ...(!visitDateAfterPIHuntAndDairyGoLive && piHuntModel(isPositiveReviewTestResult)),
+    ...(visitDateAfterPIHuntAndDairyGoLive && optionalPiHuntModel(isPositiveReviewTestResult, piHuntYes, piHuntRecommendedYes, piHuntAllAnimalsYes)),
+    ...biosecurityData
   }
 }

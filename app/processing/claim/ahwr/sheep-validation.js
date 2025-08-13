@@ -29,12 +29,12 @@ export function getSheepValidation (claimData) {
       ...laboratoryURN,
       ...getNumberAnimalsTested(minimumAnimalsTestedForReview)
     }
-  } else {
-    return {
-      ...dateOfTesting,
-      ...getNumberAnimalsTested(minimumAnimalsTestedForFollowUp),
-      ...sheepEndemicsPackage,
-      ...testResults
-    }
+  }
+
+  return {
+    ...dateOfTesting,
+    ...getNumberAnimalsTested(minimumAnimalsTestedForFollowUp),
+    ...sheepEndemicsPackage,
+    ...testResults
   }
 }

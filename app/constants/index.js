@@ -105,9 +105,3 @@ export const messagingStates = {
   submitted: 'submitted',
   success: 'success'
 }
-
-export const UNNAMED_FLOCK = 'Unnamed flock'
-export const UNNAMED_HERD = 'Unnamed herd'
-
-export const AHWR_SCHEME = 'ahwr'
-export const SUPPORTED_SCHEMES = [AHWR_SCHEME]

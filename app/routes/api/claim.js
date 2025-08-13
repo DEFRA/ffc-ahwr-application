@@ -10,9 +10,7 @@ import {
   livestockTypes,
   claimType,
   applicationStatus,
-  livestockToReadableSpecies,
-  UNNAMED_FLOCK,
-  UNNAMED_HERD, AHWR_SCHEME
+  livestockToReadableSpecies
 } from '../../constants/index.js'
 import { setClaim, searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique, addHerdToClaimData } from '../../repositories/claim-repository.js'
 import { getApplication } from '../../repositories/application-repository.js'
@@ -28,6 +26,7 @@ import { arraysAreEqual } from '../../lib/array-utils.js'
 import { emitHerdMIEvents } from '../../lib/emit-herd-MI-events.js'
 import { validateClaim } from '../../processing/claim/validation.js'
 import { StatusCodes } from 'http-status-codes'
+import { AHWR_SCHEME, TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD } from 'ffc-ahwr-common-library'
 
 const { sequelize } = buildData
 
@@ -38,7 +37,7 @@ const isSheep = (payload) => payload.data.typeOfLivestock === livestockTypes.she
 
 const getHerdNameLabel = (payload) => isSheep(payload) ? 'Flock name' : 'Herd name'
 const getUnnamedHerdValue = (payload) => isSheep(payload) ? UNNAMED_FLOCK : UNNAMED_HERD
-const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) => typeOfLivestock === livestockTypes.sheep ? UNNAMED_FLOCK : UNNAMED_HERD
+const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) => typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
 
 const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
 

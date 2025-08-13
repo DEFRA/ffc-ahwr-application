@@ -1,5 +1,5 @@
-import { AHWR_SCHEME } from '../../constants/index.js'
 import { validateAhwrClaim } from './ahwr/base-validation.js'
+import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
 
 export const validateClaim = (scheme, claimData, applicationFlags) => {
   // forward on to scheme

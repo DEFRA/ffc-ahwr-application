@@ -1,6 +1,6 @@
-import { AHWR_SCHEME } from '../../../../../app/constants/index.js'
 import { validateClaim } from '../../../../../app/processing/claim/validation.js'
 import { validateAhwrClaim } from '../../../../../app/processing/claim/ahwr/base-validation.js'
+import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
 
 jest.mock('../../../../../app/processing/claim/ahwr/base-validation.js')
 

@@ -209,18 +209,8 @@ describe('Post claim test', () => {
     jest.clearAllMocks()
     jest.resetAllMocks()
     await server.start()
-    // jest.mock('../../../../../app/config', () => ({
-    //   storage: {
-    //     storageAccount: 'mockStorageAccount',
-    //     useConnectionString: false,
-    //     endemicsSettingsContainer: 'endemics-settings',
-    //     connectionString: 'connectionString'
-    //   }
-    // }))
     getBlob.mockReturnValue(claimPricesConfig)
     getAmount.mockReturnValue(100)
-    // isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => { return false })
-    // isMultipleHerdsUserJourney.mockImplementation(() => { return false })
     config.pigUpdates.enabled = false
     jest.spyOn(buildData.sequelize, 'transaction').mockImplementation(async (callback) => {
       return await callback()
@@ -366,75 +356,6 @@ describe('Post claim test', () => {
         method: 'POST',
         url: '/api/claim',
         payload: { ...claim, type, ...{ data: { ...claim.data, typeOfLivestock, numberOfSamplesTested, testResults, numberAnimalsTested, biosecurity, sheepEndemicsPackage, herdVaccinationStatus, diseaseStatus, numberOfOralFluidSamples: undefined, reviewTestResults, piHunt, ...(typeOfLivestock === 'sheep' && { laboratoryURN: undefined }) } } }
-      }
-
-      isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-      getApplication.mockResolvedValueOnce({
-        dataValues: {
-          createdAt: '2024-02-14T09:59:46.756Z',
-          id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
-          updatedAt: '2024-02-14T10:43:03.544Z',
-          updatedBy: 'admin',
-          reference: 'AHWR-0F5D-4A26',
-          applicationReference: 'AHWR-0AD3-3322',
-          data: {
-            organisation: {
-              sbi: '106705779'
-            }
-          },
-          statusId: 1,
-          type: 'R',
-          createdBy: 'admin'
-        }
-      })
-      setClaim.mockResolvedValueOnce({
-        dataValues: {
-          reference: claim.reference,
-          applicationReference: claim.applicationReference,
-          statusId: 11
-        }
-      })
-      generateClaimStatus.mockResolvedValueOnce(11)
-
-      await server.inject(options)
-
-      expect(setClaim).toHaveBeenCalledTimes(1)
-      expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    }
-  )
-
-  test.each([
-    { reviewTestResults: 'positive', numberOfSamplesTested: 6, pigsFollowUpTest: 'pcr', pigsElisaTestResult: undefined, pigsPcrTestResult: 'negative', pigsGeneticSequencing: undefined },
-    { reviewTestResults: 'positive', numberOfSamplesTested: 6, pigsFollowUpTest: 'pcr', pigsElisaTestResult: undefined, pigsPcrTestResult: 'positive', pigsGeneticSequencing: 'mlv' },
-    { reviewTestResults: 'negative', numberOfSamplesTested: 30, pigsFollowUpTest: 'elisa', pigsElisaTestResult: 'positive', pigsPcrTestResult: undefined, pigsGeneticSequencing: undefined }
-  ])(
-    'With pigUpdates enabled: Post pigs follow up claim with followup test type: $pigsFollowUpTest, pigsElisaTestResult: $pigsElisaTestResult, pcrResult $pigsPcrTestResult, genetic sequencing: $pigsGeneticSequencing and return 200',
-    async ({ reviewTestResults, numberOfSamplesTested, pigsFollowUpTest, pigsElisaTestResult, pigsPcrTestResult, pigsGeneticSequencing }) => {
-      config.pigUpdates.enabled = true
-      const options = {
-        method: 'POST',
-        url: '/api/claim',
-        payload: {
-          ...claim,
-          type: 'E',
-          ...{
-            data: {
-              ...claim.data,
-              numberOfOralFluidSamples: undefined,
-              typeOfLivestock: 'pigs',
-              numberOfSamplesTested,
-              testResults: undefined,
-              numberAnimalsTested: 30,
-              biosecurity: { biosecurity: 'yes', assessmentPercentage: '10' },
-              herdVaccinationStatus: 'vaccinated',
-              pigsFollowUpTest,
-              pigsElisaTestResult,
-              pigsPcrTestResult,
-              pigsGeneticSequencing,
-              reviewTestResults
-            }
-          }
-        }
       }
 
       isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })

@@ -13,8 +13,8 @@ export function getDairyValidation (claimData) {
       ...laboratoryURN,
       ...testResults
     }
-  } else {
-    // Currently dairy FU validation is exactly the same as beef, so we will delegate. If they ever need to diverge, then this file can be extended.
-    return getBeefValidation(claimData)
   }
+
+  // Currently dairy FU validation is exactly the same as beef, so we will delegate. If they ever need to diverge, then this file can be extended.
+  return getBeefValidation(claimData)
 }

@@ -3,9 +3,8 @@ import {
   getClaimByReference,
   updateClaimByReference
 } from '../../repositories/claim-repository.js'
-import { CLAIM_STATUS } from 'ffc-ahwr-common-library'
+import { CLAIM_STATUS, TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD } from 'ffc-ahwr-common-library'
 import { sendMessage } from '../send-message.js'
-import { UNNAMED_FLOCK, UNNAMED_HERD, livestockTypes } from '../../constants/index.js'
 import { config } from '../../config/index.js'
 import { v4 as uuid } from 'uuid'
 
@@ -47,7 +46,7 @@ export const setPaymentStatusToPaid = async (message, logger) => {
           claimType,
           typeOfLivestock,
           dateTime: new Date(),
-          herdName: herd?.herdName || (typeOfLivestock === livestockTypes.sheep ? UNNAMED_FLOCK : UNNAMED_HERD)
+          herdName: herd?.herdName || (typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD)
         },
         messageGeneratorMsgType,
         messageGeneratorQueue,

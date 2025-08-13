@@ -56,17 +56,17 @@ export function getPigsValidation (claimData) {
       ...numberOfOralFluidSamples,
       ...testResults
     }
-  } else {
-    return {
-      ...vetVisitsReviewTestResults,
-      ...reviewTestResults,
-      ...dateOfTesting,
-      ...getExactNumberAnimalsTested(exactAnimalsTestedForFollowUp),
-      ...herdVaccinationStatus,
-      ...laboratoryURN,
-      ...numberOfSamplesTested,
-      ...getPigDiseaseData(),
-      ...biosecurityData
-    }
+  }
+
+  return {
+    ...vetVisitsReviewTestResults,
+    ...reviewTestResults,
+    ...dateOfTesting,
+    ...getExactNumberAnimalsTested(exactAnimalsTestedForFollowUp),
+    ...herdVaccinationStatus,
+    ...laboratoryURN,
+    ...numberOfSamplesTested,
+    ...getPigDiseaseData(),
+    ...biosecurityData
   }
 }

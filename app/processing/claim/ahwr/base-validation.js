@@ -27,7 +27,7 @@ const getClaimModel = (multiHerds, specificValidationsForClaimType) => joi.objec
 })
 
 export const validateAhwrClaim = (claimData, applicationFlags) => {
-  const multiHerds = isMultipleHerdsUserJourney(claimData?.data?.dateOfVisit ?? 0, applicationFlags)
+  const multiHerds = isMultipleHerdsUserJourney(claimData.data.dateOfVisit, applicationFlags)
 
   const specificValidationsForClaimType = speciesSpecificValidations.get(claimData.data.typeOfLivestock)(claimData)
 

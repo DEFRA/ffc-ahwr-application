@@ -15,8 +15,8 @@ const req = (request) => ({
   url: request.url
 })
 
-const res = (resp) => ({
-  statusCode: resp.statusCode
+const res = (response) => ({
+  statusCode: response.statusCode
 })
 
 const err = (error) => ({
