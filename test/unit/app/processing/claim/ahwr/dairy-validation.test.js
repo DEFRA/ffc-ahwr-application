@@ -91,13 +91,23 @@ describe('Dairy Validation Tests', () => {
       expect(error).toBeUndefined()
     })
 
+    it('should return true for valid dairy follow up claim - pre Optional Pi hunt, negative review', () => {
+      const prePiHuntClaim = deepClone(validDairyFollowUpClaim)
+      prePiHuntClaim.data.reviewTestResults = 'negative'
+      delete prePiHuntClaim.data.piHunt
+      delete prePiHuntClaim.data.laboratoryURN
+      delete prePiHuntClaim.data.testResults
+      delete prePiHuntClaim.data.dateOfTesting
+
+      const { error, value } = validateAhwrClaim(prePiHuntClaim, applicationFlags)
+      expect(value).toBeDefined()
+      expect(error).toBeUndefined()
+    })
+
     it('should return true for valid dairy follow up claim - post Optional Pi hunt', () => {
       const postPiHuntClaim = deepClone(validDairyFollowUpClaim)
       postPiHuntClaim.data.dateOfVisit = PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE
       postPiHuntClaim.data.piHuntAllAnimals = 'yes'
-      delete postPiHuntClaim.data.dateOfTesting
-      delete postPiHuntClaim.data.laboratoryURN
-      delete postPiHuntClaim.data.testResults
 
       const { error, value } = validateAhwrClaim(postPiHuntClaim, applicationFlags)
       expect(value).toBeDefined()

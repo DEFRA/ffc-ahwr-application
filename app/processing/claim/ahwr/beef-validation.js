@@ -20,19 +20,20 @@ const reviewTestResults = { reviewTestResults: joi.string().valid(testResultsCon
 const biosecurityData = { biosecurity: joi.string().valid(biosecurity.yes, biosecurity.no).required() }
 
 const piHuntModel = (isPositiveReviewTestResult) => {
-  const validations = {}
-
   if (isPositiveReviewTestResult) {
-    validations.piHunt = joi.string().valid(piHunt.yes, piHunt.no).required()
-    Object.assign(validations, laboratoryURN)
-    Object.assign(validations, testResults)
+    return {
+      ...dateOfTesting,
+      ...laboratoryURN,
+      ...testResults,
+      piHunt: joi.string().valid(piHunt.yes, piHunt.no).required()
+    }
   }
 
-  return validations
+  return {}
 }
 
-const optionalPiHuntModel = (isPositiveReviewTestResult, piHuntYes, piHuntRecommendedYes, piHuntAllAnimalsYes) => {
-  const validations = {}
+const optionalPiHuntModel = (isPositiveReviewTestResult, piHuntYes, piHuntRecommendedYes, piHuntRecommendedYesOrNotSet, piHuntAllAnimalsYes) => {
+  let validations = {}
 
   if (isPositiveReviewTestResult) {
     validations.piHunt = joi.string().valid(piHunt.yes).required()
@@ -51,10 +52,13 @@ const optionalPiHuntModel = (isPositiveReviewTestResult, piHuntYes, piHuntRecomm
       }
     }
 
-    if (piHuntRecommendedYes && piHuntAllAnimalsYes) {
-      Object.assign(validations, laboratoryURN)
-      Object.assign(validations, testResults)
-      Object.assign(validations, dateOfTesting)
+    if (piHuntRecommendedYesOrNotSet && piHuntAllAnimalsYes) {
+      validations = {
+        ...validations,
+        ...dateOfTesting,
+        ...laboratoryURN,
+        ...testResults
+      }
     }
   }
 
@@ -75,13 +79,13 @@ export function getBeefValidation (claimData) {
   const isPositiveReviewTestResult = claimData.data.reviewTestResults === testResultsConstant.positive
   const piHuntYes = claimData.data.piHunt === piHunt.yes
   const piHuntRecommendedYes = claimData.data.piHuntRecommended === piHuntRecommended.yes
+  const piHuntRecommendedYesOrNotSet = claimData.data.piHuntRecommended !== piHuntRecommended.no
   const piHuntAllAnimalsYes = claimData.data.piHuntAllAnimals === piHuntAllAnimals.yes
   return {
     ...vetVisitsReviewTestResults,
     ...reviewTestResults,
-    ...(!visitDateAfterPIHuntAndDairyGoLive && isPositiveReviewTestResult && dateOfTesting),
     ...(!visitDateAfterPIHuntAndDairyGoLive && piHuntModel(isPositiveReviewTestResult)),
-    ...(visitDateAfterPIHuntAndDairyGoLive && optionalPiHuntModel(isPositiveReviewTestResult, piHuntYes, piHuntRecommendedYes, piHuntAllAnimalsYes)),
+    ...(visitDateAfterPIHuntAndDairyGoLive && optionalPiHuntModel(isPositiveReviewTestResult, piHuntYes, piHuntRecommendedYes, piHuntRecommendedYesOrNotSet, piHuntAllAnimalsYes)),
     ...biosecurityData
   }
 }
