@@ -1,5 +1,6 @@
 import joi from 'joi'
 import { getApplicationEvents } from '../../azure-storage/application-eventstore-repository.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const applicationEventsHandlers = [
   {
@@ -13,7 +14,7 @@ export const applicationEventsHandlers = [
       },
       handler: async (request, h) => {
         const eventRecords = await getApplicationEvents(request.params.ref)
-        return h.response({ eventRecords }).code(200)
+        return h.response({ eventRecords }).code(StatusCodes.OK)
       }
     }
   }

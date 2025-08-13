@@ -2,6 +2,7 @@ import Joi from 'joi'
 import { updateApplicationByReference, getLatestApplicationsBySbi } from '../../repositories/application-repository.js'
 import { getAllByApplicationReference, set } from '../../repositories/contact-history-repository.js'
 import { sbiSchema } from './schema/sbi.schema.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const contactHistoryHandlers = [
   {
@@ -16,7 +17,7 @@ export const contactHistoryHandlers = [
       handler: async (request, h) => {
         const history = await getAllByApplicationReference(request.params.ref)
 
-        return h.response(history).code(200)
+        return h.response(history).code(StatusCodes.OK)
       }
     }
   },
@@ -35,7 +36,7 @@ export const contactHistoryHandlers = [
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err, sbi: request.payload.sbi })
-          return h.response({ err }).code(400).takeover()
+          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       },
       handler: async (request, h) => {
@@ -44,9 +45,9 @@ export const contactHistoryHandlers = [
 
         const applications = await getLatestApplicationsBySbi(sbi)
         if (!applications.length) {
-          return h.response('No applications found to update').code(200).takeover()
+          return h.response('No applications found to update').code(StatusCodes.OK).takeover()
         }
-        applications.forEach(async (application) => {
+        await Promise.all(applications.map(async (application) => {
           const contactHistory = []
           const dataCopy = { ...application.data }
           if (request.payload.email !== dataCopy.organisation.email) {
@@ -87,18 +88,19 @@ export const contactHistoryHandlers = [
 
           if (contactHistory.length > 0) {
             await updateApplicationByReference({ reference: application.reference, contactHistory, data: dataCopy, updatedBy: request.payload.user }, false)
-            contactHistory.forEach(async (contact) => {
-              await set({
-                applicationReference: application.reference,
-                sbi: request.payload.sbi,
-                data: contact,
-                createdBy: 'admin',
-                createdAt: new Date()
-              })
-            })
+            await Promise.all(
+              contactHistory.map(async (contact) => {
+                await set({
+                  applicationReference: application.reference,
+                  sbi: request.payload.sbi,
+                  data: contact,
+                  createdBy: 'admin',
+                  createdAt: new Date()
+                })
+              }))
           }
-        })
-        return h.response().code(200)
+        }))
+        return h.response().code(StatusCodes.OK)
       }
     }
   }

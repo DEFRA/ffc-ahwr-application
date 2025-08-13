@@ -2,6 +2,7 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { getLatestApplicationsBySbi } from '../../repositories/application-repository.js'
 import { sbiSchema } from './schema/sbi.schema.js'
+import { StatusCodes } from 'http-status-codes'
 
 const ERROR_MESSAGE = {
   mandatoryQueryParameters: '"sbi" query param must be provided',
@@ -35,7 +36,7 @@ export const latestApplicationsHandlers = [
         request.logger.setBindings({ sbi })
         try {
           const applications = await getLatestApplicationsBySbi(sbi)
-          return h.response(applications).code(200)
+          return h.response(applications).code(StatusCodes.OK)
         } catch (error) {
           throw Boom.internal(error)
         }

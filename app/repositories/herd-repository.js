@@ -9,7 +9,7 @@ export const createHerd = async (data) => {
 
 export const getHerdById = async (id) => {
   return models.herd.findOne({
-    where: { id }
+    where: { id } // should this use isCurrent: true
   })
 }
 

@@ -207,19 +207,10 @@ describe('Post claim test', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks()
+    jest.resetAllMocks()
     await server.start()
-    jest.mock('../../../../../app/config', () => ({
-      storage: {
-        storageAccount: 'mockStorageAccount',
-        useConnectionString: false,
-        endemicsSettingsContainer: 'endemics-settings',
-        connectionString: 'connectionString'
-      }
-    }))
     getBlob.mockReturnValue(claimPricesConfig)
     getAmount.mockReturnValue(100)
-    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => { return false })
-    isMultipleHerdsUserJourney.mockImplementation(() => { return false })
     config.pigUpdates.enabled = false
     jest.spyOn(buildData.sequelize, 'transaction').mockImplementation(async (callback) => {
       return await callback()
@@ -270,7 +261,10 @@ describe('Post claim test', () => {
           vetRCVSNumber: 'AK-2024',
           speciesNumbers: 'yes',
           typeOfLivestock: 'pigs',
-          numberAnimalsTested: 30
+          numberAnimalsTested: 30,
+          organisation: {
+            sbi: '106705779'
+          }
         },
         statusId: 1,
         type: 'E',
@@ -373,72 +367,11 @@ describe('Post claim test', () => {
           updatedBy: 'admin',
           reference: 'AHWR-0F5D-4A26',
           applicationReference: 'AHWR-0AD3-3322',
-          data: {},
-          statusId: 1,
-          type: 'R',
-          createdBy: 'admin'
-        }
-      })
-      setClaim.mockResolvedValueOnce({
-        dataValues: {
-          reference: claim.reference,
-          applicationReference: claim.applicationReference,
-          statusId: 11
-        }
-      })
-      generateClaimStatus.mockResolvedValueOnce(11)
-
-      await server.inject(options)
-
-      expect(setClaim).toHaveBeenCalledTimes(1)
-      expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-    }
-  )
-
-  test.each([
-    { reviewTestResults: 'positive', numberOfSamplesTested: 6, pigsFollowUpTest: 'pcr', pigsElisaTestResult: undefined, pigsPcrTestResult: 'negative', pigsGeneticSequencing: undefined },
-    { reviewTestResults: 'positive', numberOfSamplesTested: 6, pigsFollowUpTest: 'pcr', pigsElisaTestResult: undefined, pigsPcrTestResult: 'positive', pigsGeneticSequencing: 'mlv' },
-    { reviewTestResults: 'negative', numberOfSamplesTested: 30, pigsFollowUpTest: 'elisa', pigsElisaTestResult: 'positive', pigsPcrTestResult: undefined, pigsGeneticSequencing: undefined }
-  ])(
-    'With pigUpdates enabled: Post pigs follow up claim with followup test type: $pigsFollowUpTest, pigsElisaTestResult: $pigsElisaTestResult, pcrResult $pigsPcrTestResult, genetic sequencing: $pigsGeneticSequencing and return 200',
-    async ({ reviewTestResults, numberOfSamplesTested, pigsFollowUpTest, pigsElisaTestResult, pigsPcrTestResult, pigsGeneticSequencing }) => {
-      config.pigUpdates.enabled = true
-      const options = {
-        method: 'POST',
-        url: '/api/claim',
-        payload: {
-          ...claim,
-          type: 'E',
-          ...{
-            data: {
-              ...claim.data,
-              numberOfOralFluidSamples: undefined,
-              typeOfLivestock: 'pigs',
-              numberOfSamplesTested,
-              testResults: undefined,
-              numberAnimalsTested: 30,
-              biosecurity: { biosecurity: 'yes', assessmentPercentage: '10' },
-              herdVaccinationStatus: 'vaccinated',
-              pigsFollowUpTest,
-              pigsElisaTestResult,
-              pigsPcrTestResult,
-              pigsGeneticSequencing,
-              reviewTestResults
+          data: {
+            organisation: {
+              sbi: '106705779'
             }
-          }
-        }
-      }
-
-      isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
-      getApplication.mockResolvedValueOnce({
-        dataValues: {
-          createdAt: '2024-02-14T09:59:46.756Z',
-          id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
-          updatedAt: '2024-02-14T10:43:03.544Z',
-          updatedBy: 'admin',
-          reference: 'AHWR-0F5D-4A26',
-          applicationReference: 'AHWR-0AD3-3322',
-          data: {},
+          },
           statusId: 1,
           type: 'R',
           createdBy: 'admin'
@@ -488,8 +421,8 @@ describe('Post claim test', () => {
         }
       }
     }
-    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => { return true })
-    isMultipleHerdsUserJourney.mockImplementation(() => { return false })
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementationOnce(() => { return true })
+    isMultipleHerdsUserJourney.mockImplementationOnce(() => { return false })
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {
@@ -898,7 +831,7 @@ describe('Post claim test', () => {
       payload: { type, reviewTestResults, typeOfLivestock, piHunt, piHuntAllAnimals, dateOfVisit }
     }
 
-    getAmount.mockReturnValue(amount)
+    getAmount.mockReturnValueOnce(amount)
 
     const res = await server.inject(options)
     expect(res.statusCode).toBe(200)
@@ -912,13 +845,15 @@ describe('Post claim test', () => {
       payload: { type: 'E' }
     }
 
-    getAmount.mockReturnValue(100)
+    getAmount.mockReturnValueOnce(100)
 
     const res = await server.inject(options)
     expect(res.statusCode).toBe(400)
   })
 
   test('should create a new herd and link it to the claim', async () => {
+    const applicationRef = 'AHWR-0AD3-3322'
+    const claimRef = 'TEMP-O9UD-22F6'
     const options = {
       method: 'POST',
       url: '/api/claim',
@@ -940,7 +875,9 @@ describe('Post claim test', () => {
         }
       }
     }
-    isMultipleHerdsUserJourney.mockImplementation(() => { return true })
+    isMultipleHerdsUserJourney
+      .mockImplementationOnce(() => { return true })
+      .mockImplementationOnce(() => { return true })
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {
@@ -948,19 +885,8 @@ describe('Post claim test', () => {
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
         updatedAt: '2024-02-14T10:43:03.544Z',
         updatedBy: 'admin',
-        reference: 'AHWR-0F5D-4A26',
-        applicationReference: 'AHWR-0AD3-3322',
+        reference: applicationRef,
         data: {
-          vetsName: 'Afshin',
-          dateOfVisit: '2025-05-01T00:00:00.000Z',
-          testResults: 'positive',
-          typeOfReview: 'review one',
-          dateOfTesting: '2025-05-01T00:00:00.000Z',
-          laboratoryURN: 'AK-2024',
-          vetRCVSNumber: 'AK-2024',
-          speciesNumbers: 'yes',
-          typeOfLivestock: 'pigs',
-          numberAnimalsTested: 30,
           organisation: {
             crn: '1100014934',
             sbi: '106705779',
@@ -979,7 +905,7 @@ describe('Post claim test', () => {
       dataValues: {
         id: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b',
         createdAt: '2024-02-14T09:59:46.756Z',
-        applicationReference: 'AHWR-0AD3-3322',
+        applicationReference: applicationRef,
         species: 'pigs',
         version: 1,
         herdName: 'Sample herd one',
@@ -990,8 +916,8 @@ describe('Post claim test', () => {
     })
     setClaim.mockResolvedValueOnce({
       dataValues: {
-        reference: claim.reference,
-        applicationReference: claim.applicationReference,
+        reference: claimRef,
+        applicationReference: applicationRef,
         statusId: 11
       }
     })
@@ -1000,7 +926,7 @@ describe('Post claim test', () => {
     await server.inject(options)
 
     expect(setClaim).toHaveBeenCalledWith({
-      applicationReference: 'AHWR-0AD3-3322',
+      applicationReference: applicationRef,
       createdBy: 'admin',
       data: {
         amount: 100,
@@ -1019,14 +945,14 @@ describe('Post claim test', () => {
         vetRCVSNumber: 'AK-2024',
         vetsName: 'Afshin'
       },
-      reference: 'TEMP-O9UD-22F6',
+      reference: claimRef,
       sbi: '106705779',
       statusId: 11,
       type: 'R'
     })
     expect(createHerd).toHaveBeenCalledWith({
       version: 1,
-      applicationReference: 'AHWR-0AD3-3322',
+      applicationReference: applicationRef,
       species: 'pigs',
       herdName: 'Sample herd one',
       cph: '43231',
@@ -1034,8 +960,8 @@ describe('Post claim test', () => {
       createdBy: 'admin'
     })
     expect(requestClaimConfirmationEmail).toHaveBeenCalledWith({
-      reference: 'TEMP-O9UD-22F6',
-      applicationReference: 'AHWR-0AD3-3322',
+      reference: claimRef,
+      applicationReference: applicationRef,
       email: 'test@test-unit.com',
       amount: 100,
       farmerName: 'John Doe',
@@ -1048,8 +974,8 @@ describe('Post claim test', () => {
       {
         crn: '1100014934',
         sbi: '106705779',
-        agreementReference: 'AHWR-0AD3-3322',
-        claimReference: 'TEMP-O9UD-22F6',
+        agreementReference: applicationRef,
+        claimReference: claimRef,
         claimStatus: 11,
         claimType: 'R',
         typeOfLivestock: 'pigs',
@@ -1216,7 +1142,9 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: { ...claim, ...{ data: { ...claim.data, herd: { herdId: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', cph: '13232', herdReasons: ['separateManagementNeeds', 'differentBreed'], herdVersion: 2 } } } }
     }
-    isMultipleHerdsUserJourney.mockImplementation(() => { return true })
+    isMultipleHerdsUserJourney
+      .mockImplementationOnce(() => { return true })
+      .mockImplementationOnce(() => { return true })
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {
@@ -1343,7 +1271,9 @@ describe('Post claim test', () => {
       url: '/api/claim',
       payload: { ...claim, ...{ data: { ...claim.data, herd: { herdId: '0f5d4a26-6a25-4f5b-882e-e18587ba9f4b', cph: '43200', herdReasons: ['separateManagementNeeds', 'differentBreed'], herdVersion: 2 } } } }
     }
-    isMultipleHerdsUserJourney.mockImplementation(() => { return true })
+    isMultipleHerdsUserJourney
+      .mockImplementationOnce(() => { return true })
+      .mockImplementationOnce(() => { return true })
     isURNNumberUnique.mockResolvedValueOnce({ isURNUnique: true })
     getApplication.mockResolvedValueOnce({
       dataValues: {

@@ -9,27 +9,27 @@ const transport = {
 }
 const testLevel = { level: 'silent' }
 
-const req = (req) => ({
-  id: req.id,
-  method: req.method,
-  url: req.url
+const req = (request) => ({
+  id: request.id,
+  method: request.method,
+  url: request.url
 })
 
-const res = (res) => ({
-  statusCode: res.statusCode
+const res = (response) => ({
+  statusCode: response.statusCode
 })
 
-const err = (err) => ({
-  type: err.type,
-  name: err.name,
-  message: err.message,
-  isBoom: err.isBoom,
-  isServer: err.isServer,
-  payload: err.payload,
-  stack: err.stack,
+const err = (error) => ({
+  type: error.type,
+  name: error.name,
+  message: error.message,
+  isBoom: error.isBoom,
+  isServer: error.isServer,
+  payload: error.payload,
+  stack: error.stack,
   data: {
-    isResponseError: err?.data?.isResponseError,
-    payload: err?.data?.payload
+    isResponseError: error?.data?.isResponseError,
+    payload: error?.data?.payload
   }
 })
 

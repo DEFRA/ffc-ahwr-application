@@ -1,5 +1,6 @@
 import joi from 'joi'
 import { getApplication } from '../../repositories/application-repository.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const latestContactDetailsHandlers = [
   {
@@ -15,7 +16,7 @@ export const latestContactDetailsHandlers = [
         const application = await getApplication(request.params.ref)
 
         if (!application) {
-          return h.response('Not Found').code(404).takeover()
+          return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
         }
 
         const { name, orgEmail, farmerName, email } = application.dataValues.data.organisation
@@ -26,7 +27,7 @@ export const latestContactDetailsHandlers = [
           email
         }
 
-        return h.response(contactDetails).code(200)
+        return h.response(contactDetails).code(StatusCodes.OK)
       }
     }
   }

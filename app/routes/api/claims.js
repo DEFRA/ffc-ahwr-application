@@ -1,5 +1,6 @@
 import joi from 'joi'
 import { findClaim, updateClaimData } from '../../repositories/claim-repository.js'
+import { StatusCodes } from 'http-status-codes'
 
 export const claimsHandlers = [
   {
@@ -32,7 +33,7 @@ export const claimsHandlers = [
 
       const claim = await findClaim(reference)
       if (claim === null) {
-        return h.response('Not Found').code(404).takeover()
+        return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
       }
 
       const [updatedProperty, newValue] = Object.entries(dataPayload)
@@ -40,14 +41,14 @@ export const claimsHandlers = [
         .flat()
 
       if (updatedProperty === undefined && newValue === undefined) {
-        return h.response().code(204)
+        return h.response().code(StatusCodes.NO_CONTENT)
       }
 
       const oldValue = claim.data[updatedProperty]
 
       await updateClaimData(reference, updatedProperty, newValue, oldValue, note, user)
 
-      return h.response().code(204)
+      return h.response().code(StatusCodes.NO_CONTENT)
     }
   }
 ]
