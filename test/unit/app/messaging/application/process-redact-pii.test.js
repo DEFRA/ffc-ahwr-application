@@ -6,6 +6,7 @@ import { updateApplicationRedactRecords } from '../../../../../app/redact-pii/up
 import { create as createRedactPIIFlag } from '../../../../../app/redact-pii/create-redact-pii-flag.js'
 import { getApplicationsToRedact } from '../../../../../app/redact-pii/get-applications-to-redact.js'
 import { processRedactPiiRequest } from '../../../../../app/messaging/application/process-redact-pii.js'
+import { validateRedactPIISchema } from '../../../../../app/messaging/schema/process-redact-pii-schema.js'
 
 jest.mock('../../../../../app/redact-pii/redact-pii-document-generator.js')
 jest.mock('../../../../../app/redact-pii/redact-pii-sfd-messaging-proxy.js')
@@ -14,11 +15,13 @@ jest.mock('../../../../../app/redact-pii/redact-pii-application-database.js')
 jest.mock('../../../../../app/redact-pii/update-application-redact-records.js')
 jest.mock('../../../../../app/redact-pii/create-redact-pii-flag.js')
 jest.mock('../../../../../app/redact-pii/get-applications-to-redact.js')
+jest.mock('../../../../../app/messaging/schema/process-redact-pii-schema.js')
 
 describe('processRedactPiiRequest', () => {
   const mockLogger = {
     setBindings: jest.fn(),
-    info: jest.fn()
+    info: jest.fn(),
+    error: jest.fn()
   }
   const message = {
     body: {
@@ -28,6 +31,7 @@ describe('processRedactPiiRequest', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    validateRedactPIISchema.mockReturnValue(true)
   })
 
   it('should log and exit when there are no applications to redact', async () => {
@@ -69,5 +73,10 @@ describe('processRedactPiiRequest', () => {
     expect(redactApplicationDatabasePII).not.toHaveBeenCalled()
     expect(createRedactPIIFlag).toHaveBeenCalled()
     expect(updateApplicationRedactRecords).toHaveBeenCalledWith(apps, false, ['applications-to-redact', 'documents', 'messages', 'storage-accounts', 'database-tables', 'redacted-flag'], 'Y')
+  })
+
+  it('should throw error when message validation fails', async () => {
+    validateRedactPIISchema.mockReturnValue(false)
+    await expect(processRedactPiiRequest({ body: { requestedDate: 'invalid' } }, mockLogger)).rejects.toThrow('Redact PII validation error')
   })
 })
