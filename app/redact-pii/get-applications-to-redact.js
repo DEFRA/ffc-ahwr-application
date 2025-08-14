@@ -1,8 +1,8 @@
 import { APPLICATION_REFERENCE_PREFIX_OLD_WORLD, CLAIM_STATUS, REDACT_PII_PROGRESS_STATUS } from 'ffc-ahwr-common-library'
 import { getFailedApplicationRedact, createApplicationRedact } from '../repositories/application-redact-repository.js'
 import { buildData } from '../data/index.js'
-import { getApplicationsToRedactOlderThan, getOWApplicationsToRedactOlderThan } from '../repositories/application-repository.js'
-import { getAppRefsWithLatestClaimOlderThan, getByApplicationReference } from '../repositories/claim-repository.js'
+import { getApplicationsToRedactOlderThan, getOWApplicationsToRedactLastUpdatedBefore } from '../repositories/application-repository.js'
+import { getAppRefsWithLatestClaimLastUpdatedBefore, getByApplicationReference } from '../repositories/claim-repository.js'
 
 const { sequelize } = buildData
 const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
@@ -84,7 +84,7 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplicat
 }
 
 const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
-  const nwAppReferences = await getAppRefsWithLatestClaimOlderThan(SEVEN_YEARS)
+  const nwAppReferences = await getAppRefsWithLatestClaimLastUpdatedBefore(SEVEN_YEARS)
   const nwAppRedacts = await Promise.all(
     nwAppReferences.map(async ({ applicationReference, dataValues: { sbi } }) => {
       const appClaims = await getByApplicationReference(applicationReference)
@@ -93,7 +93,7 @@ const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
     })
   )
 
-  const owApplications = await getOWApplicationsToRedactOlderThan(SEVEN_YEARS)
+  const owApplications = await getOWApplicationsToRedactLastUpdatedBefore(SEVEN_YEARS)
   const owAppRedacts = await Promise.all(
     owApplications.map(({ reference, dataValues: { sbi } }) => buildApplicationRedact(reference, sbi, [reference]))
   )

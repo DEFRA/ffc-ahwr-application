@@ -312,10 +312,10 @@ export const getApplicationsToRedactOlderThan = async (years) => {
     )
 }
 
-export const getOWApplicationsToRedactOlderThan = async (updatedAtYears) => {
+export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
   const now = new Date()
   const cutoffDate = new Date(Date.UTC(
-    now.getUTCFullYear() - updatedAtYears,
+    now.getUTCFullYear() - years,
     now.getUTCMonth(),
     now.getUTCDate()
   ))

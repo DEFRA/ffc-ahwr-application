@@ -11,7 +11,7 @@ import {
   updateClaimData,
   addHerdToClaimData,
   redactPII,
-  getAppRefsWithLatestClaimOlderThan
+  getAppRefsWithLatestClaimLastUpdatedBefore
 } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
@@ -1461,7 +1461,7 @@ describe('Claim repository test', () => {
       const mockResult = [{ dataValues: { applicationReference: 'APP123', updatedAt: '2020-01-01', sbi: '123456789' } }]
       buildData.models.claim.findAll.mockResolvedValue(mockResult)
 
-      const result = await getAppRefsWithLatestClaimOlderThan(3)
+      const result = await getAppRefsWithLatestClaimLastUpdatedBefore(3)
 
       expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(1)
       expect(result).toEqual(mockResult)

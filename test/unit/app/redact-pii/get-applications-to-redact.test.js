@@ -1,7 +1,7 @@
 import { getApplicationsToRedact } from '../../../../app/redact-pii/get-applications-to-redact'
 import { getFailedApplicationRedact, createApplicationRedact } from '../../../../app/repositories/application-redact-repository'
-import { getApplicationsToRedactOlderThan, getOWApplicationsToRedactOlderThan } from '../../../../app/repositories/application-repository'
-import { getByApplicationReference, getAppRefsWithLatestClaimOlderThan } from '../../../../app/repositories/claim-repository'
+import { getApplicationsToRedactOlderThan, getOWApplicationsToRedactLastUpdatedBefore } from '../../../../app/repositories/application-repository'
+import { getByApplicationReference, getAppRefsWithLatestClaimLastUpdatedBefore } from '../../../../app/repositories/claim-repository'
 
 jest.mock('../../../../app/repositories/application-redact-repository')
 jest.mock('../../../../app/repositories/application-repository')
@@ -35,10 +35,10 @@ describe('get-applications-to-redact', () => {
         dataValues: { sbi: '223456789' }
       }
     ])
-    getAppRefsWithLatestClaimOlderThan.mockResolvedValueOnce([
+    getAppRefsWithLatestClaimLastUpdatedBefore.mockResolvedValueOnce([
       { applicationReference: 'IAHW-9C72-8871', dataValues: { sbi: '323456789' } }
     ])
-    getOWApplicationsToRedactOlderThan.mockResolvedValueOnce([
+    getOWApplicationsToRedactLastUpdatedBefore.mockResolvedValueOnce([
       { reference: 'AHWR-7C72-8871', dataValues: { sbi: '423456789' } }
     ])
     createApplicationRedact.mockImplementation(app => Promise.resolve({ ...app }))
@@ -97,8 +97,8 @@ describe('get-applications-to-redact', () => {
         dataValues: { sbi: '223456789' }
       }
     ])
-    getAppRefsWithLatestClaimOlderThan.mockResolvedValueOnce([])
-    getOWApplicationsToRedactOlderThan.mockResolvedValueOnce([
+    getAppRefsWithLatestClaimLastUpdatedBefore.mockResolvedValueOnce([])
+    getOWApplicationsToRedactLastUpdatedBefore.mockResolvedValueOnce([
       { reference: 'AHWR-9C72-8871', dataValues: { sbi: '323456789' } }
     ])
     createApplicationRedact.mockImplementation(app => Promise.resolve({ ...app }))
@@ -147,8 +147,8 @@ describe('get-applications-to-redact', () => {
         dataValues: { sbi: '423456789' }
       }
     ])
-    getAppRefsWithLatestClaimOlderThan.mockResolvedValueOnce([])
-    getOWApplicationsToRedactOlderThan.mockResolvedValueOnce([])
+    getAppRefsWithLatestClaimLastUpdatedBefore.mockResolvedValueOnce([])
+    getOWApplicationsToRedactLastUpdatedBefore.mockResolvedValueOnce([])
     createApplicationRedact.mockImplementation(app => Promise.resolve({ ...app }))
     getByApplicationReference.mockImplementation((reference) => {
       if (reference === 'IAHW-9C72-8873') { return [{ statusId: 8, reference: 'REBC-1' }] }
@@ -171,8 +171,8 @@ describe('get-applications-to-redact', () => {
   it('should return 0 applications to redact when 0 previously failed attempts and 0 new applications to redact', async () => {
     getFailedApplicationRedact.mockResolvedValue([])
     getApplicationsToRedactOlderThan.mockResolvedValue([])
-    getAppRefsWithLatestClaimOlderThan.mockResolvedValueOnce([])
-    getOWApplicationsToRedactOlderThan.mockResolvedValueOnce([])
+    getAppRefsWithLatestClaimLastUpdatedBefore.mockResolvedValueOnce([])
+    getOWApplicationsToRedactLastUpdatedBefore.mockResolvedValueOnce([])
     createApplicationRedact.mockImplementation(app => Promise.resolve(app))
 
     const result = await getApplicationsToRedact(requestedDate)
@@ -187,7 +187,7 @@ describe('get-applications-to-redact', () => {
   it('should return application to redact with its latest claim lastUpdated over seven years', async () => {
     getFailedApplicationRedact.mockResolvedValue()
     getApplicationsToRedactOlderThan.mockResolvedValueOnce([])
-    getAppRefsWithLatestClaimOlderThan.mockResolvedValueOnce([
+    getAppRefsWithLatestClaimLastUpdatedBefore.mockResolvedValueOnce([
       { applicationReference: 'IAHW-9C72-8873', dataValues: { sbi: '323456789' } },
       { applicationReference: 'IAHW-9C72-8874', dataValues: { sbi: '423456789' } }
     ])
@@ -195,7 +195,7 @@ describe('get-applications-to-redact', () => {
       if (reference === 'IAHW-9C72-8873') { return [{ statusId: 8, reference: 'REBC-1' }] }
       if (reference === 'IAHW-9C72-8874') { return [{ statusId: 3, reference: 'REBC-2' }] }
     })
-    getOWApplicationsToRedactOlderThan.mockResolvedValueOnce([
+    getOWApplicationsToRedactLastUpdatedBefore.mockResolvedValueOnce([
       { reference: 'AHWR-7C72-8871', dataValues: { sbi: '123456789' } },
       { reference: 'AHWR-7C72-8872', dataValues: { sbi: '223456789' } }
     ])
@@ -232,10 +232,10 @@ describe('get-applications-to-redact', () => {
         dataValues: { sbi: '423456789' }
       }
     ])
-    getAppRefsWithLatestClaimOlderThan.mockResolvedValueOnce([
+    getAppRefsWithLatestClaimLastUpdatedBefore.mockResolvedValueOnce([
       { applicationReference: 'IAHW-7C72-8871', dataValues: { sbi: '123456789' } }
     ])
-    getOWApplicationsToRedactOlderThan.mockResolvedValueOnce([
+    getOWApplicationsToRedactLastUpdatedBefore.mockResolvedValueOnce([
       { reference: 'AHWR-7C72-8871', dataValues: { sbi: '423456789' } }
     ])
     createApplicationRedact.mockImplementation(app => Promise.resolve({ ...app }))

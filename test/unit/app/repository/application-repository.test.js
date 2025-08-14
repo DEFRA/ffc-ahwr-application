@@ -7,7 +7,7 @@ import {
   getByEmail,
   getBySbi,
   getLatestApplicationsBySbi,
-  getOWApplicationsToRedactOlderThan,
+  getOWApplicationsToRedactLastUpdatedBefore,
   redactPII,
   searchApplications,
   setApplication,
@@ -1668,7 +1668,7 @@ describe('getOWApplicationsToRedactOlderThan', () => {
     const years = 7
     models.application.findAll.mockResolvedValueOnce([mockApplication])
 
-    const applications = await getOWApplicationsToRedactOlderThan(years)
+    const applications = await getOWApplicationsToRedactLastUpdatedBefore(years)
 
     expect(applications).toEqual([mockApplication])
     expect(models.application.findAll).toHaveBeenCalledWith({

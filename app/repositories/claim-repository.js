@@ -529,10 +529,10 @@ const convertUpdatedPropertyToStandardType = (updatedProperty) => {
   }
 }
 
-export const getAppRefsWithLatestClaimOlderThan = async (lastUpdatedYears) => {
+export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {
   const now = new Date()
-  const lastUpdatedDate = new Date(Date.UTC(
-    now.getUTCFullYear() - lastUpdatedYears,
+  const updatedAtDate = new Date(Date.UTC(
+    now.getUTCFullYear() - years,
     now.getUTCMonth(),
     now.getUTCDate()
   ))
@@ -553,7 +553,7 @@ export const getAppRefsWithLatestClaimOlderThan = async (lastUpdatedYears) => {
     group: ['applicationReference', 'application.data'],
     having: Sequelize.where(
       Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')),
-      { [Op.lt]: lastUpdatedDate }
+      { [Op.lt]: updatedAtDate }
     ),
     order: [[Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')), 'DESC']]
   })
