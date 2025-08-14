@@ -3,11 +3,15 @@ import { updateApplicationRedact } from '../../../../app/repositories/applicatio
 
 jest.mock('../../../../app/repositories/application-redact-repository')
 
-jest.mock('../../../../app/data/index.js', () => ({
-  buildData: {
-    sequelize: { transaction: jest.fn(async (callback) => callback()) }
-  }
-}))
+jest.mock('../../../../app/data/index.js', () => {
+  const mockTransaction = { id: 1 }
+
+  return ({
+    buildData: {
+      sequelize: { transaction: jest.fn(async (callback) => callback(mockTransaction)) }
+    }
+  })
+})
 
 describe('update-application-redact-records redactPII', () => {
   beforeEach(() => {
@@ -25,8 +29,8 @@ describe('update-application-redact-records redactPII', () => {
     await updateApplicationRedactRecords(agreements, false, status, success)
 
     expect(updateApplicationRedact).toHaveBeenCalledTimes(2)
-    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 0, 'applications-to-redact,documents', true)
-    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 5, 'applications-to-redact,documents', true)
+    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 0, 'applications-to-redact,documents', true, { transaction: { id: 1 } })
+    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 5, 'applications-to-redact,documents', true, { transaction: { id: 1 } })
   })
 
   it('should increment retryCount when incrementRetryCount is true', async () => {
@@ -40,8 +44,8 @@ describe('update-application-redact-records redactPII', () => {
     await updateApplicationRedactRecords(agreements, true, status, success)
 
     expect(updateApplicationRedact).toHaveBeenCalledTimes(2)
-    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 1, 'applications-to-redact,documents', false)
-    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 6, 'applications-to-redact,documents', false)
+    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 1, 'applications-to-redact,documents', false, { transaction: { id: 1 } })
+    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 6, 'applications-to-redact,documents', false, { transaction: { id: 1 } })
   })
 
   it('should return when no applications to redact', async () => {

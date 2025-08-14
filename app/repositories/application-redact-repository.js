@@ -15,7 +15,7 @@ export const createApplicationRedact = async (data) => {
   return models.application_redact.create(data)
 }
 
-export const updateApplicationRedact = async (id, retryCount, status, success) => {
+export const updateApplicationRedact = async (id, retryCount, status, success, options = {}) => {
   return models.application_redact.update(
     {
       retryCount,
@@ -24,7 +24,8 @@ export const updateApplicationRedact = async (id, retryCount, status, success) =
     },
     {
       where: { id },
-      returning: true
+      returning: true,
+      ...options
     }
   )
 }
