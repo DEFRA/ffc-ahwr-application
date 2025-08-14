@@ -8,6 +8,8 @@ import { findApplication } from './application-repository.js'
 
 const { models, sequelize } = buildData
 
+const CLAIM_UPDATED_AT_COL = 'claim.updatedAt'
+
 export const getClaimByReference = async (reference) => {
   const results = await sequelize.query(
     `
@@ -540,7 +542,7 @@ export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {
   return models.claim.findAll({
     attributes: [
       'applicationReference',
-      [Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')), 'updatedAt'],
+      [Sequelize.fn('MAX', Sequelize.col(CLAIM_UPDATED_AT_COL)), 'updatedAt'],
       [Sequelize.literal('"application"."data"->\'organisation\'->>\'sbi\''), 'sbi']
     ],
     include: [
@@ -552,9 +554,9 @@ export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {
     ],
     group: ['applicationReference', 'application.data'],
     having: Sequelize.where(
-      Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')),
+      Sequelize.fn('MAX', Sequelize.col(CLAIM_UPDATED_AT_COL)),
       { [Op.lt]: updatedAtDate }
     ),
-    order: [[Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')), 'DESC']]
+    order: [[Sequelize.fn('MAX', Sequelize.col(CLAIM_UPDATED_AT_COL)), 'DESC']]
   })
 }
