@@ -1,5 +1,5 @@
 export const statusHistory = (sequelize, DataTypes) => {
-  const model = sequelize.define(
+  return sequelize.define(
     'status_history',
     {
       reference: DataTypes.STRING,
@@ -14,6 +14,4 @@ export const statusHistory = (sequelize, DataTypes) => {
       updatedAt: false
     }
   )
-
-  return model
 }

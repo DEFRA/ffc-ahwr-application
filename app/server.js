@@ -5,8 +5,6 @@ import { applicationHandlers } from './routes/api/applications.js'
 import { latestApplicationsHandlers } from './routes/api/latest-applications.js'
 import { latestContactDetailsHandlers } from './routes/api/latest-contact-details.js'
 import { applicationHistoryHandlers } from './routes/api/application-history.js'
-import { stageConfiguationHandlers } from './routes/api/stage-configuration.js'
-import { stageExecutionHandlers } from './routes/api/stage-execution.js'
 import { applicationEventsHandlers } from './routes/api/application-events.js'
 import { claimHandlers } from './routes/api/claim.js'
 import { claimsHandlers } from './routes/api/claims.js'
@@ -24,8 +22,6 @@ server.route([
   ...applicationHandlers,
   ...latestApplicationsHandlers,
   ...applicationHistoryHandlers,
-  ...stageConfiguationHandlers,
-  ...stageExecutionHandlers,
   ...applicationEventsHandlers,
   ...claimHandlers,
   ...claimsHandlers,
