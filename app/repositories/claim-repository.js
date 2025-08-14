@@ -528,3 +528,33 @@ const convertUpdatedPropertyToStandardType = (updatedProperty) => {
       return updatedProperty
   }
 }
+
+export const getAppRefsWithLatestClaimOlderThan = async (lastUpdatedYears) => {
+  const now = new Date()
+  const lastUpdatedDate = new Date(Date.UTC(
+    now.getUTCFullYear() - lastUpdatedYears,
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ))
+
+  return models.claim.findAll({
+    attributes: [
+      'applicationReference',
+      [Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')), 'updatedAt'],
+      [Sequelize.literal('"application"."data"->\'organisation\'->>\'sbi\''), 'sbi']
+    ],
+    include: [
+      {
+        model: models.application,
+        attributes: [],
+        required: true
+      }
+    ],
+    group: ['applicationReference', 'application.data'],
+    having: Sequelize.where(
+      Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')),
+      { [Op.lt]: lastUpdatedDate }
+    ),
+    order: [[Sequelize.fn('MAX', Sequelize.col('claim.updatedAt')), 'DESC']]
+  })
+}
