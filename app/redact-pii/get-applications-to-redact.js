@@ -95,8 +95,5 @@ const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
 
   const agreementsToRedact = [...nwAppRedacts, ...owAppRedacts]
 
-  console.log({
-    agreementsToRedact
-  })
   return agreementsToRedact
 }
