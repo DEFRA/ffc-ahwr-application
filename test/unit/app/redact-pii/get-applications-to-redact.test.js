@@ -215,4 +215,47 @@ describe('get-applications-to-redact', () => {
       status: ['applications-to-redact']
     })
   })
+
+  it('should return unique agreements', async () => {
+    getFailedApplicationRedact.mockResolvedValue()
+    getApplicationsToRedactOlderThan.mockResolvedValueOnce([
+      {
+        id: '280c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+        reference: 'IAHW-7C72-8871',
+        statusId: 3,
+        dataValues: { sbi: '123456789' }
+      },
+      {
+        id: '380c5d84-cc3f-4e50-9519-8b5a1fc83ac0',
+        reference: 'AHWR-7C72-8871',
+        statusId: 3,
+        dataValues: { sbi: '423456789' }
+      }
+    ])
+    getAppRefsWithLatestClaimOlderThan.mockResolvedValueOnce([
+      { applicationReference: 'IAHW-7C72-8871', dataValues: { sbi: '123456789' } }
+    ])
+    getOWApplicationsToRedactOlderThan.mockResolvedValueOnce([
+      { reference: 'AHWR-7C72-8871', dataValues: { sbi: '423456789' } }
+    ])
+    createApplicationRedact.mockImplementation(app => Promise.resolve({ ...app }))
+    getByApplicationReference.mockResolvedValue([
+      {
+        statusId: 'CREATED',
+        reference: 'REBC-1'
+      }
+    ])
+
+    const result = await getApplicationsToRedact(requestedDate)
+
+    expect(getApplicationsToRedactOlderThan).toHaveBeenCalled()
+    expect(createApplicationRedact).toHaveBeenCalledTimes(2)
+    expect(result).toEqual({
+      applicationsToRedact: [
+        { reference: 'IAHW-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'REBC-1' }] } },
+        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'AHWR-7C72-8871' }] } }
+      ],
+      status: ['applications-to-redact']
+    })
+  })
 })

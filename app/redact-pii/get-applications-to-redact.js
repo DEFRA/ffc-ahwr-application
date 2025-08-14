@@ -29,8 +29,13 @@ const createApplicationsToRedact = async (requestedDate) => {
   const agreementsWithNoPayment = await getApplicationsToRedactWithNoPaymentOlderThanThreeYears()
   const agreementsWithPayment = await getApplicationsToRedactWithPaymentOlderThanSevenYears()
 
-  const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithPayment]
-    .map(a => { return { ...a, requestedDate, status: GOT_APPLICATIONS_TO_REDACT } })
+  const uniqueAgreements = new Map();
+
+  [...agreementsWithNoPayment, ...agreementsWithPayment].forEach(a => {
+    uniqueAgreements.set(a.reference, { ...a, requestedDate, status: GOT_APPLICATIONS_TO_REDACT })
+  })
+
+  const agreementsToRedact = Array.from(uniqueAgreements.values())
 
   return sequelize.transaction(async () => Promise.all(
     agreementsToRedact.map((agreement) => createApplicationRedact(agreement))
