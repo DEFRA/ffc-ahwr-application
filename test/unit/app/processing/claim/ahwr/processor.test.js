@@ -53,6 +53,36 @@ describe('AHWR Claim Processor Tests', () => {
   })
 
   describe('saveClaimAndRelatedData', () => {
+    const sbi = '1234567890'
+    const dateOfVisit = new Date()
+    const flags = []
+    const inputHerd = {
+      herdName: 'Beefers',
+      herdVersion: 1,
+      cph: '12/345/6789',
+      herdReasons: ['onlyHerd'],
+      herdSame: 'no'
+    }
+
+    const claimData = {
+      incoming: {
+        data: {
+          applicationReference: 'APP123',
+          typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
+          dateOfVisit,
+          laboratoryURN: 'ABC12333',
+          vetsName: 'Geoff',
+          vetRCVSNumber: '1234567',
+          herd: inputHerd
+        },
+        type: 'R',
+        reference: 'TEMP-1234-5678',
+        applicationReference: 'IAHW-4321-5678',
+        createdBy: 'Aaron'
+      },
+      claimReference: 'REBC-1234-5678'
+    }
+
     beforeEach(() => {
       getAmount.mockResolvedValueOnce(200)
       isMultipleHerdsUserJourney.mockReturnValueOnce(true)
@@ -67,33 +97,6 @@ describe('AHWR Claim Processor Tests', () => {
     })
 
     it('should save multi-herd claim with brand new herd to the database and return claim info', async () => {
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
-      const inputHerd = {
-        herdName: 'Beefers',
-        herdVersion: 1,
-        cph: '12/345/6789',
-        herdReasons: ['onlyHerd'],
-        herdSame: 'no'
-      }
-      const claimData = {
-        incoming: {
-          data: {
-            applicationReference: 'APP123',
-            typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
-            dateOfVisit,
-            laboratoryURN: 'ABC12333',
-            vetsName: 'Geoff',
-            vetRCVSNumber: '1234567',
-            herd: inputHerd
-          },
-          type: 'R',
-          reference: 'TEMP-1234-5678',
-          applicationReference: 'IAHW-4321-5678',
-          createdBy: 'Aaron'
-        },
-        claimReference: 'REBC-1234-5678'
-      }
       const flags = [{ id: '1' }]
       createHerd.mockResolvedValueOnce({
         dataValues: {
@@ -148,34 +151,21 @@ describe('AHWR Claim Processor Tests', () => {
     })
 
     it('should save multi-herd claim with brand new herd and associate with past claims with no herd', async () => {
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
-      const inputHerd = {
-        herdName: 'Beefers',
-        herdVersion: 1,
-        cph: '12/345/6789',
-        herdReasons: ['onlyHerd'],
+      const inputHerdWithSame = {
+        ...inputHerd,
         herdSame: 'yes'
       }
-      const claimData = {
+      const claimDataToUse = {
+        ...claimData,
         incoming: {
+          ...claimData.incoming,
           data: {
-            applicationReference: 'APP123',
-            typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
-            dateOfVisit,
-            laboratoryURN: 'ABC12333',
-            vetsName: 'Geoff',
-            vetRCVSNumber: '1234567',
-            herd: inputHerd
-          },
-          type: 'R',
-          reference: 'TEMP-1234-5678',
-          applicationReference: 'IAHW-4321-5678',
-          createdBy: 'Aaron'
-        },
-        claimReference: 'REBC-1234-5678'
+            ...claimData.incoming.data,
+            herd: inputHerdWithSame
+          }
+        }
       }
-      const flags = []
+
       createHerd.mockResolvedValueOnce({
         dataValues: {
           ...inputHerd,
@@ -189,7 +179,7 @@ describe('AHWR Claim Processor Tests', () => {
         { reference: 'oldclaim3', data: { herdId: 'herd2' } }
       ])
 
-      const { herdGotUpdated } = await saveClaimAndRelatedData(sbi, claimData, flags, mockLogger)
+      const { herdGotUpdated } = await saveClaimAndRelatedData(sbi, claimDataToUse, flags, mockLogger)
 
       expect(herdGotUpdated).toBeTruthy()
       expect(setClaim).toHaveBeenCalledWith({
@@ -242,34 +232,25 @@ describe('AHWR Claim Processor Tests', () => {
     })
 
     it('should save multi-herd claim with updated herd to the database and return claim info', async () => {
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
-      const inputHerd = {
+      const updatedInputHerd = {
         herdId: 'herd1',
         herdVersion: 2,
         cph: '12/345/9999',
         herdReasons: ['differentBreed', 'differentPurpose'],
         herdSame: 'no'
       }
-      const claimData = {
+
+      const claimDataToUse = {
+        ...claimData,
         incoming: {
+          ...claimData.incoming,
           data: {
-            applicationReference: 'APP123',
-            typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
-            dateOfVisit,
-            laboratoryURN: 'ABC12333',
-            vetsName: 'Geoff',
-            vetRCVSNumber: '1234567',
-            herd: inputHerd
-          },
-          type: 'R',
-          reference: 'TEMP-1234-5678',
-          applicationReference: 'IAHW-4321-5678',
-          createdBy: 'Aaron'
-        },
-        claimReference: 'REBC-1234-5678'
+            ...claimData.incoming.data,
+            herd: updatedInputHerd
+          }
+        }
       }
-      const flags = [{ id: '1' }]
+
       getHerdById.mockResolvedValueOnce({
         dataValues: {
           id: 'herd1',
@@ -286,7 +267,7 @@ describe('AHWR Claim Processor Tests', () => {
       })
       createHerd.mockResolvedValueOnce({
         dataValues: {
-          ...inputHerd,
+          ...updatedInputHerd,
           herdName: 'Sample herd one',
           species: 'beef',
           version: 2,
@@ -295,17 +276,14 @@ describe('AHWR Claim Processor Tests', () => {
       })
 
       const {
-        claim,
         herdGotUpdated,
         herdData,
         isMultiHerdsClaim
-      } = await saveClaimAndRelatedData(sbi, claimData, flags, mockLogger)
-      expect(claim).toEqual({
-        dummy: 'dummyDbValue'
-      })
+      } = await saveClaimAndRelatedData(sbi, claimDataToUse, flags, mockLogger)
+
       expect(herdGotUpdated).toBeTruthy()
       expect(herdData).toEqual({
-        ...inputHerd,
+        ...updatedInputHerd,
         herdName: 'Sample herd one',
         species: 'beef',
         version: 2,
@@ -350,34 +328,24 @@ describe('AHWR Claim Processor Tests', () => {
     })
 
     it('should save multi-herd claim with reused, unchanged herd to the database and return claim info', async () => {
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
-      const inputHerd = {
+      const unchangingHerd = {
         herdId: 'herd1',
         herdVersion: 2,
         cph: '12/345/8888',
         herdReasons: ['differentBreed'],
         herdSame: 'no'
       }
-      const claimData = {
+      const claimDataToUse = {
+        ...claimData,
         incoming: {
+          ...claimData.incoming,
           data: {
-            applicationReference: 'APP123',
-            typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
-            dateOfVisit,
-            laboratoryURN: 'ABC12333',
-            vetsName: 'Geoff',
-            vetRCVSNumber: '1234567',
-            herd: inputHerd
-          },
-          type: 'R',
-          reference: 'TEMP-1234-5678',
-          applicationReference: 'IAHW-4321-5678',
-          createdBy: 'Aaron'
-        },
-        claimReference: 'REBC-1234-5678'
+            ...claimData.incoming.data,
+            herd: unchangingHerd
+          }
+        }
       }
-      const flags = []
+
       const databaseHerd = {
         id: 'herd1',
         createdAt: '2024-02-14T09:59:46.756Z',
@@ -397,14 +365,11 @@ describe('AHWR Claim Processor Tests', () => {
       })
 
       const {
-        claim,
         herdGotUpdated,
         herdData,
         isMultiHerdsClaim
-      } = await saveClaimAndRelatedData(sbi, claimData, flags, mockLogger)
-      expect(claim).toEqual({
-        dummy: 'dummyDbValue'
-      })
+      } = await saveClaimAndRelatedData(sbi, claimDataToUse, flags, mockLogger)
+
       expect(herdGotUpdated).toBeFalsy()
       expect(herdData).toEqual(databaseHerd)
       expect(isMultiHerdsClaim).toBe(true)
@@ -439,8 +404,6 @@ describe('AHWR Claim Processor Tests', () => {
       isMultipleHerdsUserJourney.mockRestore()
       isMultipleHerdsUserJourney.mockReturnValueOnce(false)
 
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
       const claimData = {
         incoming: {
           data: {
@@ -457,17 +420,13 @@ describe('AHWR Claim Processor Tests', () => {
         },
         claimReference: 'REBC-1234-5678'
       }
-      const flags = []
 
       const {
-        claim,
         herdGotUpdated,
         herdData,
         isMultiHerdsClaim
       } = await saveClaimAndRelatedData(sbi, claimData, flags, mockLogger)
-      expect(claim).toEqual({
-        dummy: 'dummyDbValue'
-      })
+
       expect(herdGotUpdated).toBeUndefined()
       expect(herdData).toEqual({})
       expect(isMultiHerdsClaim).toBe(false)
@@ -491,108 +450,72 @@ describe('AHWR Claim Processor Tests', () => {
     })
 
     it('error is thrown when trying to update a herd that is not found', async () => {
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
-      const inputHerd = {
-        herdId: 'herd1',
-        herdVersion: 2,
-        cph: '12/345/8888',
-        herdReasons: ['differentBreed'],
-        herdSame: 'no'
+      const versionTwoHerd = {
+        ...inputHerd,
+        herdVersion: 2
       }
-      const claimData = {
+      const claimDataToUse = {
+        ...claimData,
         incoming: {
+          ...claimData.incoming,
           data: {
-            applicationReference: 'APP123',
-            typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
-            dateOfVisit,
-            laboratoryURN: 'ABC12333',
-            vetsName: 'Geoff',
-            vetRCVSNumber: '1234567',
-            herd: inputHerd
-          },
-          type: 'R',
-          reference: 'TEMP-1234-5678',
-          applicationReference: 'IAHW-4321-5678'
-        },
-        claimReference: 'REBC-1234-5678'
+            ...claimData.incoming.data,
+            herd: versionTwoHerd
+          }
+        }
       }
-      const flags = []
+
       getHerdById.mockResolvedValueOnce(undefined)
 
-      expect(saveClaimAndRelatedData(sbi, claimData, flags, mockLogger)).rejects.toThrow('Herd not found')
+      expect(saveClaimAndRelatedData(sbi, claimDataToUse, flags, mockLogger)).rejects.toThrow('Herd not found')
 
       expect(createHerd).toHaveBeenCalledTimes(0)
       expect(setClaim).toHaveBeenCalledTimes(0)
     })
 
     it('error is thrown when trying to update a herd that is not current', async () => {
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
-      const inputHerd = {
-        herdId: 'herd1',
-        herdVersion: 2,
-        cph: '12/345/8888',
-        herdReasons: ['differentBreed'],
-        herdSame: 'no'
+      const versionTwoHerd = {
+        ...inputHerd,
+        herdVersion: 2
       }
-      const claimData = {
+      const claimDataToUse = {
+        ...claimData,
         incoming: {
+          ...claimData.incoming,
           data: {
-            applicationReference: 'APP123',
-            typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
-            dateOfVisit,
-            laboratoryURN: 'ABC12333',
-            vetsName: 'Geoff',
-            vetRCVSNumber: '1234567',
-            herd: inputHerd
-          },
-          type: 'R',
-          reference: 'TEMP-1234-5678',
-          applicationReference: 'IAHW-4321-5678'
-        },
-        claimReference: 'REBC-1234-5678'
+            ...claimData.incoming.data,
+            herd: versionTwoHerd
+          }
+        }
       }
-      const flags = []
+
       getHerdById.mockResolvedValueOnce({ dataValues: { isCurrent: false } })
 
-      expect(saveClaimAndRelatedData(sbi, claimData, flags, mockLogger)).rejects.toThrow('Attempting to update an older version of a herd')
+      expect(saveClaimAndRelatedData(sbi, claimDataToUse, flags, mockLogger)).rejects.toThrow('Attempting to update an older version of a herd')
 
       expect(createHerd).toHaveBeenCalledTimes(0)
       expect(setClaim).toHaveBeenCalledTimes(0)
     })
 
     it('error is thrown when trying to update a herd at same version as current', async () => {
-      const sbi = '1234567890'
-      const dateOfVisit = new Date()
-      const inputHerd = {
-        herdId: 'herd1',
-        herdVersion: 2,
-        cph: '12/345/8888',
-        herdReasons: ['differentBreed'],
-        herdSame: 'no'
+      const versionTwoHerd = {
+        ...inputHerd,
+        herdVersion: 2
       }
-      const claimData = {
+      const claimDataToUse = {
+        ...claimData,
         incoming: {
+          ...claimData.incoming,
           data: {
-            applicationReference: 'APP123',
-            typeOfLivestock: TYPE_OF_LIVESTOCK.BEEF,
-            dateOfVisit,
-            laboratoryURN: 'ABC12333',
-            vetsName: 'Geoff',
-            vetRCVSNumber: '1234567',
-            herd: inputHerd
-          },
-          type: 'R',
-          reference: 'TEMP-1234-5678',
-          applicationReference: 'IAHW-4321-5678'
-        },
-        claimReference: 'REBC-1234-5678'
+            ...claimData.incoming.data,
+            herd: versionTwoHerd
+          }
+        }
       }
-      const flags = []
+
       getHerdById.mockResolvedValueOnce({ dataValues: { isCurrent: true, version: 2 } })
 
-      expect(saveClaimAndRelatedData(sbi, claimData, flags, mockLogger)).rejects.toThrow('Attempting to update a herd with the same version')
+      expect(saveClaimAndRelatedData(sbi, claimDataToUse, flags, mockLogger)).rejects.toThrow('Attempting to update a herd with the same version')
 
       expect(createHerd).toHaveBeenCalledTimes(0)
       expect(setClaim).toHaveBeenCalledTimes(0)
