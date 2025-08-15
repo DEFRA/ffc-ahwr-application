@@ -1,8 +1,8 @@
 import { APPLICATION_REFERENCE_PREFIX_OLD_WORLD, CLAIM_STATUS, REDACT_PII_PROGRESS_STATUS } from 'ffc-ahwr-common-library'
 import { getFailedApplicationRedact, createApplicationRedact } from '../repositories/application-redact-repository.js'
 import { buildData } from '../data/index.js'
-import { getApplicationsToRedactOlderThan } from '../repositories/application-repository.js'
-import { getByApplicationReference } from '../repositories/claim-repository.js'
+import { getApplicationsToRedactOlderThan, getOWApplicationsToRedactLastUpdatedBefore } from '../repositories/application-repository.js'
+import { getAppRefsWithLatestClaimLastUpdatedBefore, getByApplicationReference } from '../repositories/claim-repository.js'
 
 const { sequelize } = buildData
 const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
@@ -29,8 +29,13 @@ const createApplicationsToRedact = async (requestedDate) => {
   const agreementsWithNoPayment = await getApplicationsToRedactWithNoPaymentOlderThanThreeYears()
   const agreementsWithPayment = await getApplicationsToRedactWithPaymentOlderThanSevenYears()
 
-  const agreementsToRedact = [...agreementsWithNoPayment, ...agreementsWithPayment]
-    .map(a => { return { ...a, requestedDate, status: GOT_APPLICATIONS_TO_REDACT } })
+  const uniqueAgreements = new Map();
+
+  [...agreementsWithNoPayment, ...agreementsWithPayment].forEach(a => {
+    uniqueAgreements.set(a.reference, { ...a, requestedDate, status: GOT_APPLICATIONS_TO_REDACT })
+  })
+
+  const agreementsToRedact = Array.from(uniqueAgreements.values())
 
   return sequelize.transaction(async () => Promise.all(
     agreementsToRedact.map((agreement) => createApplicationRedact(agreement))
@@ -79,22 +84,21 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplicat
 }
 
 const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
-  const applications = await getApplicationsToRedactOlderThan(SEVEN_YEARS)
-
-  const agreementsToRedact = await Promise.all(
-    applications.map(async ({ reference, dataValues: { sbi } }) => {
-      let claimReferences
-
-      if (reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
-        claimReferences = [reference]
-      } else {
-        const appClaims = await getByApplicationReference(reference)
-        claimReferences = appClaims.map(c => c.reference)
-      }
-
-      return buildApplicationRedact(reference, sbi, claimReferences)
+  const nwAppReferences = await getAppRefsWithLatestClaimLastUpdatedBefore(SEVEN_YEARS)
+  const nwAppRedacts = await Promise.all(
+    nwAppReferences.map(async ({ applicationReference, dataValues: { sbi } }) => {
+      const appClaims = await getByApplicationReference(applicationReference)
+      const claimReferences = appClaims.map(c => c.reference)
+      return buildApplicationRedact(applicationReference, sbi, claimReferences)
     })
   )
+
+  const owApplications = await getOWApplicationsToRedactLastUpdatedBefore(SEVEN_YEARS)
+  const owAppRedacts = await Promise.all(
+    owApplications.map(({ reference, dataValues: { sbi } }) => buildApplicationRedact(reference, sbi, [reference]))
+  )
+
+  const agreementsToRedact = [...nwAppRedacts, ...owAppRedacts]
 
   return agreementsToRedact
 }

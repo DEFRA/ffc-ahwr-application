@@ -4,17 +4,24 @@ import { redactPII as redactFlagPII } from '../repositories/flag-repository.js'
 import { redactPII as redactHerdPII } from '../repositories/herd-repository.js'
 import { redactPII as redactApplicationPII } from '../repositories/application-repository.js'
 import { updateApplicationRedactRecords } from './update-application-redact-records.js'
+import pLimit from 'p-limit'
+
+const CONCURRENCY = 20
 
 export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
   try {
+    const limit = pLimit(CONCURRENCY)
+
     await Promise.all(
-      agreementsToRedact.map(async (agreement) => {
-        await redactHerdPII(agreement.reference)
-        await redactFlagPII(agreement.reference)
-        await redactContactHistoryPII(agreement.reference, logger)
-        await redactClaimPII(agreement.reference, logger)
-        await redactApplicationPII(agreement.reference, logger)
-      })
+      agreementsToRedact.map((agreement) =>
+        limit(async () => {
+          await redactHerdPII(agreement.reference)
+          await redactFlagPII(agreement.reference)
+          await redactContactHistoryPII(agreement.reference, logger)
+          await redactClaimPII(agreement.reference, logger)
+          await redactApplicationPII(agreement.reference, logger)
+        })
+      )
     )
     logger.info(`applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
   } catch (err) {
