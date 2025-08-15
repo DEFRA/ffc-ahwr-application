@@ -80,6 +80,8 @@ export const evalSortField = (sort) => {
         return ['data.organisation.sbi', sort.direction ?? 'ASC']
       case 'organisation':
         return ['data.organisation.name', sort.direction ?? 'ASC']
+      default:
+        return ['createdAt', sort.direction ?? 'ASC']
     }
   }
   return ['createdAt', sort?.direction ?? 'ASC']
@@ -130,6 +132,8 @@ const buildSearchQuery = (searchText, searchType, filter) => {
           attributes: ['status'],
           where: { status: { [Op.iLike]: `%${searchText}%` } }
         }
+        break
+      default:
         break
     }
   }
@@ -206,7 +210,9 @@ export const updateApplicationByReference = async (dataWithNote, publishEvent = 
       returning: true
     })
 
-    if (application?.dataValues?.statusId === data?.statusId) return application
+    if (application?.dataValues?.statusId === data?.statusId) {
+      return application
+    }
 
     const result = await models.application.update(data, {
       where: {

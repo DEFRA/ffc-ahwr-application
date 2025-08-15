@@ -87,7 +87,10 @@ export const updateClaimByReference = async (data, note, logger) => {
       }
     })
 
-    if (claim?.dataValues?.statusId === data.statusId) return claim
+    if (claim?.dataValues?.statusId === data.statusId) {
+      logger.info(`Claim ${data.reference} already has status ${data.statusId}, no update needed.`)
+      return
+    }
 
     const result = await models.claim.update(data, {
       where: {
@@ -122,13 +125,16 @@ export const getAllClaimedClaims = async (claimStatusIds) => {
 export const isURNNumberUnique = async (sbi, laboratoryURN) => {
   const applications = await models.application.findAll({ where: { 'data.organisation.sbi': sbi } })
 
-  if (applications.find((application) => application.dataValues?.data?.urnResult?.toLowerCase() === laboratoryURN.toLowerCase())) return { isURNUnique: false }
+  if (applications.find((application) => application.dataValues.data.urnResult?.toLowerCase() === laboratoryURN.toLowerCase())) {
+    return { isURNUnique: false }
+  }
 
-  const applicationsReferences = applications.map((application) => application.dataValues.reference)
-  const claims = await models.claim.findAll({ where: { applicationReference: applicationsReferences } })
-  if (claims.find((claim) => claim.dataValues?.data?.laboratoryURN?.toLowerCase() === laboratoryURN.toLowerCase())) return { isURNUnique: false }
+  const applicationReferences = applications.map((application) => application.dataValues.reference)
+  const claims = await models.claim.findAll({ where: { applicationReference: applicationReferences } })
 
-  return { isURNUnique: true }
+  const isUnique = !claims.find((claim) => claim.dataValues.data.laboratoryURN?.toLowerCase() === laboratoryURN.toLowerCase())
+
+  return { isURNUnique: isUnique }
 }
 
 const evalSortField = (sort) => {

@@ -1466,6 +1466,11 @@ describe('evalSortField function', () => {
     const result = evalSortField({ field: 'unknownField', direction: 'ASC' })
     expect(result).toEqual(['createdAt', 'ASC'])
   })
+
+  test('returns default sort for no specified field', () => {
+    const result = evalSortField({ })
+    expect(result).toEqual(['createdAt', 'ASC'])
+  })
 })
 
 describe('redactPII', () => {
