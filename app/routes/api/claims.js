@@ -21,7 +21,7 @@ export const claimsHandlers = [
           .required(),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ err })
-          return h.response({ err }).code(400).takeover()
+          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       }
     },

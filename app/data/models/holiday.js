@@ -1,5 +1,5 @@
 export const holiday = (sequelize, DataTypes) => {
-  const Holiday = sequelize.define('holiday', {
+  return sequelize.define('holiday', {
     date: {
       type: DataTypes.DATE,
       primaryKey: true
@@ -13,5 +13,4 @@ export const holiday = (sequelize, DataTypes) => {
     tableName: 'holiday',
     timestamps: false
   })
-  return Holiday
 }

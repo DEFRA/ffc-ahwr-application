@@ -11,7 +11,7 @@ export const healthHandlers = [
   {
     method: 'GET',
     path: '/healthz',
-    handler: (request, h) => {
+    handler: (_request, h) => {
       return h.response('ok').code(StatusCodes.OK)
     }
   }
