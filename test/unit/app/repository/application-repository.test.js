@@ -7,6 +7,7 @@ import {
   getByEmail,
   getBySbi,
   getLatestApplicationsBySbi,
+  getOWApplicationsToRedactLastUpdatedBefore,
   redactPII,
   searchApplications,
   setApplication,
@@ -1639,6 +1640,54 @@ describe('getApplicationsToRedactOlderThan', () => {
       },
       attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi']],
       order: [['createdAt', 'ASC']]
+    })
+  })
+})
+
+describe('getOWApplicationsToRedactOlderThan', () => {
+  const mockApplication = {
+    dataValues: {
+      id: '3da2454b-326b-44e9-9b6e-63289dd18ca7',
+      reference: 'AHWR-7C72-8871',
+      statusId: 1,
+      data: {
+        organisation: {
+          sbi: '123456789',
+          email: 'business@email.com'
+        }
+      },
+      createdBy: 'test'
+    }
+  }
+
+  beforeAll(() => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date(Date.UTC(2025, 7, 8)))
+  })
+
+  afterAll(() => {
+    jest.useRealTimers()
+  })
+
+  it('returns old world applications that were last updated over seven years ago when years is 7', async () => {
+    const years = 7
+    models.application.findAll.mockResolvedValueOnce([mockApplication])
+
+    const applications = await getOWApplicationsToRedactLastUpdatedBefore(years)
+
+    expect(applications).toEqual([mockApplication])
+    expect(models.application.findAll).toHaveBeenCalledWith({
+      where: {
+        reference: {
+          [Op.notIn]: Sequelize.literal('(SELECT reference FROM application_redact)')
+        },
+        updatedAt: {
+          [Op.lt]: new Date('2018-08-08T00:00:00.000Z')
+        },
+        type: 'VV'
+      },
+      attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi']],
+      order: [['updatedAt', 'ASC']]
     })
   })
 })

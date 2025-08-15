@@ -1,29 +1,36 @@
 import { raiseApplicationFlaggedEvent } from '../event-publisher/index.js'
 import { createFlagForRedactPII } from '../repositories/flag-repository.js'
 import { updateApplicationRedactRecords } from './update-application-redact-records.js'
+import pLimit from 'p-limit'
+
+const CONCURRENCY = 20
 
 export const create = async (applicationsToRedact, redactProgress, logger) => {
   try {
+    const limit = pLimit(CONCURRENCY)
+
     await Promise.all(
-      applicationsToRedact.map(async (application) => {
-        const { reference: applicationReference, data: { sbi } } = application
+      applicationsToRedact.map((application) =>
+        limit(async () => {
+          const { reference: applicationReference, data: { sbi } } = application
 
-        const result = await createFlagForRedactPII({
-          applicationReference,
-          sbi,
-          note: 'Application PII redacted',
-          createdBy: 'admin',
-          appliesToMh: false
+          const result = await createFlagForRedactPII({
+            applicationReference,
+            sbi,
+            note: 'Application PII redacted',
+            createdBy: 'admin',
+            appliesToMh: false
+          })
+
+          await raiseApplicationFlaggedEvent({
+            application: { id: applicationReference },
+            message: 'Application flagged',
+            flag: { id: result.id, note: result.note, appliesToMh: result.appliesToMh },
+            raisedBy: result.createdBy,
+            raisedOn: result.createdAt
+          }, sbi)
         })
-
-        await raiseApplicationFlaggedEvent({
-          application: { id: applicationReference },
-          message: 'Application flagged',
-          flag: { id: result.id, note: result.note, appliesToMh: result.appliesToMh },
-          raisedBy: result.createdBy,
-          raisedOn: result.createdAt
-        }, sbi)
-      })
+      )
     )
     logger.info(`addFlagForRedactPII with: ${JSON.stringify(applicationsToRedact)}`)
   } catch (err) {

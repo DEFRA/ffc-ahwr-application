@@ -6,10 +6,14 @@ import { redactPII as redactApplicationDatabasePII } from '../../redact-pii/reda
 import { updateApplicationRedactRecords } from '../../redact-pii/update-application-redact-records.js'
 import { create as createRedactPIIFlag } from '../../redact-pii/create-redact-pii-flag.js'
 import { getApplicationsToRedact } from '../../redact-pii/get-applications-to-redact.js'
+import { validateRedactPIISchema } from '../schema/process-redact-pii-schema.js'
 
 const { DOCUMENT_GENERATOR_REDACTED, SFD_MESSAGE_PROXY_REDACTED, APPLICATION_STORAGE_REDACTED, APPLICATION_DATABASE_REDACTED, APPLICATION_REDACT_FLAG_ADDED } = REDACT_PII_PROGRESS_STATUS
 
 export const processRedactPiiRequest = async (message, logger) => {
+  if (!validateRedactPIISchema(message?.body, logger)) {
+    throw new Error('Redact PII validation error')
+  }
   const redactRequestedDate = message.body.requestedDate
   logger.setBindings({ redactRequestedDate })
 

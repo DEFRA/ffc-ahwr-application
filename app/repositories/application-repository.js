@@ -318,6 +318,32 @@ export const getApplicationsToRedactOlderThan = async (years) => {
     )
 }
 
+export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
+  const now = new Date()
+  const cutoffDate = new Date(Date.UTC(
+    now.getUTCFullYear() - years,
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ))
+
+  return models.application
+    .findAll(
+      {
+        where: {
+          reference: {
+            [Op.notIn]: Sequelize.literal('(SELECT reference FROM application_redact)')
+          },
+          updatedAt: {
+            [Op.lt]: cutoffDate
+          },
+          type: 'VV'
+        },
+        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
+        order: [['updatedAt', 'ASC']]
+      }
+    )
+}
+
 export const redactPII = async (agreementReference, logger) => {
   const redactedValueByJSONPath = {
     'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,

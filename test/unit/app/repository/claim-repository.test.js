@@ -10,7 +10,8 @@ import {
   updateClaimByReference,
   updateClaimData,
   addHerdToClaimData,
-  redactPII
+  redactPII,
+  getAppRefsWithLatestClaimLastUpdatedBefore
 } from '../../../../app/repositories/claim-repository'
 import { buildData } from '../../../../app/data'
 import { livestockTypes } from '../../../../app/constants'
@@ -1448,6 +1449,22 @@ describe('Claim repository test', () => {
       expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetRCVSNumber' in 1 message(s) for applicationReference: AHWR-1234")
       expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'laboratoryURN' in 1 message(s) for applicationReference: AHWR-1234")
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('getAppRefsForLatestAppClaimBefore', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should call models.claim.findAll with correct query', async () => {
+      const mockResult = [{ dataValues: { applicationReference: 'APP123', updatedAt: '2020-01-01', sbi: '123456789' } }]
+      buildData.models.claim.findAll.mockResolvedValue(mockResult)
+
+      const result = await getAppRefsWithLatestClaimLastUpdatedBefore(3)
+
+      expect(buildData.models.claim.findAll).toHaveBeenCalledTimes(1)
+      expect(result).toEqual(mockResult)
     })
   })
 })
