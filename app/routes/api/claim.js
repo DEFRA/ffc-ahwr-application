@@ -171,7 +171,7 @@ export const claimHandlers = [
 
         // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
         // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
-        generateEventsAndComms(isMultiHerdsClaim, claim, application, herdData, herdGotUpdated, herd.herdId)
+        generateEventsAndComms(isMultiHerdsClaim, claim, application, herdData, herdGotUpdated, herd?.herdId)
 
         return h.response(claim).code(StatusCodes.OK)
       }
