@@ -12,6 +12,9 @@ import { holidayHandlers } from './routes/api/holidays.js'
 import { contactHistoryHandlers } from './routes/api/contact-history.js'
 import { flagHandlers } from './routes/api/flags.js'
 import { redactPiiRequestHandlers } from './routes/api/redact-pii.js'
+import { setup } from './insights.js'
+
+export const appInsightsEnabled = setup()
 
 export const server = Hapi.server({
   port: process.env.PORT
