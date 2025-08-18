@@ -1,11 +1,11 @@
-import { server } from './server.js'
+import { appInsightsEnabled, server } from './server.js'
 import { startMessagingService, stopMessagingService } from './messaging/service.js'
-import { setup } from './insights.js'
 
 const init = async () => {
   await startMessagingService(server.logger)
   await server.start()
-  setup(server.logger)
+
+  server.logger.info(`Application Insights ${appInsightsEnabled ? '' : 'not '}running`)
 }
 
 process.on('unhandledRejection', async (err) => {
