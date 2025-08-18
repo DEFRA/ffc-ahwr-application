@@ -54,9 +54,6 @@ export const updateEntitiesByPartitionKey = async (
       updates.push(
         limit(() => tableClient
           .updateEntity(entityUpdates, 'Merge')
-          .then(() =>
-            logger.info(`Updated: PartitionKey=${entity.partitionKey}, RowKey=${entity.rowKey}`)
-          )
           .catch((err) =>
             logger.error(`Failed to update entity ${entity.rowKey}:`, err)
           )
@@ -65,7 +62,7 @@ export const updateEntitiesByPartitionKey = async (
     }
 
     await Promise.all(updates)
-    logger.info(`Finished updating entities with PartitionKey = '${partitionKey}'`)
+    logger.info(`Finished updating ${updates.length} entities with PartitionKey = '${partitionKey}'`)
   } catch (error) {
     logger.error('Error during update:', error)
     throw error

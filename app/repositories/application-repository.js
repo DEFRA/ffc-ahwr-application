@@ -352,7 +352,6 @@ export const redactPII = async (agreementReference, logger) => {
     'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
     'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
   }
-
   let totalUpdates = 0
 
   for (const [jsonPath, redactedValue] of Object.entries(redactedValueByJSONPath)) {
@@ -379,13 +378,10 @@ export const redactPII = async (agreementReference, logger) => {
     )
 
     totalUpdates += affectedCount
-    logger.info(
-      `Redacted field '${jsonPath}' in ${affectedCount} record(s) for agreementReference: ${agreementReference}`
-    )
   }
 
   if (totalUpdates > 0) {
-    logger.info(`Total redacted fields across records: ${totalUpdates} for agreementReference: ${agreementReference}`)
+    logger.info(`Redacted ${totalUpdates} application records for agreementReference: ${agreementReference}`)
   } else {
     logger.info(`No records updated for agreementReference: ${agreementReference}`)
   }

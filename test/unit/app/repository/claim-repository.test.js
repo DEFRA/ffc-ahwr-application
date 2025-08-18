@@ -1407,9 +1407,6 @@ describe('Claim repository test', () => {
       await redactPII(applicationReference, mockLogger)
 
       expect(buildData.models.claim.update).toHaveBeenCalledTimes(3)
-      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetsName' in 1 message(s) for applicationReference: IAHW-1234")
-      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetRCVSNumber' in 1 message(s) for applicationReference: IAHW-1234")
-      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'laboratoryURN' in 1 message(s) for applicationReference: IAHW-1234")
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledWith(
         {
@@ -1445,9 +1442,6 @@ describe('Claim repository test', () => {
 
       expect(buildData.models.claim.update).toHaveBeenCalledTimes(3)
       expect(buildData.models.application.update).toHaveBeenCalledTimes(3)
-      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetsName' in 1 message(s) for applicationReference: AHWR-1234")
-      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'vetRCVSNumber' in 1 message(s) for applicationReference: AHWR-1234")
-      expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'laboratoryURN' in 1 message(s) for applicationReference: AHWR-1234")
       expect(buildData.models.claim_update_history.update).toHaveBeenCalledTimes(2)
     })
   })

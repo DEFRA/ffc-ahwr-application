@@ -1590,9 +1590,6 @@ describe('redactPII', () => {
 
     await redactPII('IAWR-1234', mockLogger)
 
-    expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,name' in 0 record(s) for agreementReference: IAWR-1234")
-    expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,email' in 0 record(s) for agreementReference: IAWR-1234")
-    expect(mockLogger.info).toHaveBeenCalledWith("Redacted field 'organisation,orgEmail' in 0 record(s) for agreementReference: IAWR-1234")
     expect(mockLogger.info).toHaveBeenCalledWith('No records updated for agreementReference: IAWR-1234')
   })
 })

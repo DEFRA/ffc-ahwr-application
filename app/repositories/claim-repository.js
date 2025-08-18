@@ -441,6 +441,7 @@ export const redactPII = async (applicationReference, logger) => {
     vetRCVSNumber: `${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}`,
     laboratoryURN: `${REDACT_PII_VALUES.REDACTED_LABORATORY_URN}`
   }
+  let totalAffectedCount = 0
 
   for (const [field, redactedValue] of Object.entries(redactedValueByField)) {
     const [affectedCount] = await models.claim.update(
@@ -461,8 +462,10 @@ export const redactPII = async (applicationReference, logger) => {
         }
       }
     )
-    logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
+
+    totalAffectedCount += affectedCount
   }
+  logger.info(`Redacted ${totalAffectedCount} claim records for applicationReference: ${applicationReference}`)
 
   if (applicationReference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
     await redactOWClaimData(applicationReference, logger)
@@ -501,6 +504,7 @@ const redactOWClaimData = async (applicationReference, logger) => {
     urnResult: REDACT_PII_VALUES.REDACTED_LABORATORY_URN
   }
 
+  let totalAffectedCount = 0
   for (const [field, redactedValue] of Object.entries(redactedValueByOWField)) {
     const [affectedCount] = await models.application.update(
       {
@@ -520,8 +524,10 @@ const redactOWClaimData = async (applicationReference, logger) => {
         }
       }
     )
-    logger.info(`Redacted field '${field}' in ${affectedCount} message(s) for applicationReference: ${applicationReference}`)
+    totalAffectedCount += affectedCount
   }
+
+  logger.info(`Redacted ${totalAffectedCount} ow application records for applicationReference: ${applicationReference}`)
 }
 
 const convertUpdatedPropertyToStandardType = (updatedProperty) => {
