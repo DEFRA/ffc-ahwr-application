@@ -4,7 +4,6 @@ import { raiseClaimEvents, raiseHerdEvent } from '../event-publisher/index.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 import { Op, QueryTypes, Sequelize } from 'sequelize'
 import { findApplication } from './application-repository.js'
-import { applySearchConditions } from './claim/search.js'
 
 const { models, sequelize } = buildData
 
@@ -137,116 +136,6 @@ export const isURNNumberUnique = async (sbi, laboratoryURN) => {
   const isUnique = !claims.find((claim) => claim.dataValues.data.laboratoryURN?.toLowerCase() === laboratoryURN.toLowerCase())
 
   return { isURNUnique: isUnique }
-}
-
-const evalSortField = (sort) => {
-  const direction = sort?.direction ?? 'ASC'
-  const field = sort?.field?.toLowerCase()
-
-  if (!field) {
-    return ['createdAt', direction]
-  }
-
-  const orderBySortField = {
-    status: [models.status, field, direction],
-    'claim date': ['createdAt', direction],
-    sbi: ['data.organisation.sbi', direction],
-    'claim number': ['reference', direction],
-    'type of visit': ['type', direction],
-    species: ['data.typeOfLivestock', direction]
-  }
-
-  return orderBySortField[field] || ['createdAt', direction]
-}
-
-export const searchClaims = async (search, filter, offset, limit, sort = { field: 'createdAt', direction: 'DESC' }) => {
-  if (search?.type && !['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'].includes(search.type)) {
-    return { total: 0, claims: [] }
-  }
-
-  const query = {
-    include: [
-      {
-        model: models.status,
-        attributes: ['status']
-      },
-      {
-        model: models.application,
-        attributes: ['data']
-      },
-      {
-        model: models.flag,
-        as: 'flags',
-        attributes: ['appliesToMh'],
-        where: {
-          deletedBy: null
-        },
-        required: false
-      }
-    ]
-  }
-
-  applySearchConditions(query, search)
-
-  if (filter) {
-    query.where = {
-      ...query.where,
-      [filter.field]: {
-        [Op[filter.op]]: filter.value
-      }
-    }
-  }
-
-  const claims = await models.claim.findAll({
-    ...query,
-    order: [evalSortField(sort)],
-    limit,
-    offset
-  })
-
-  const total = await models.claim.count(query)
-
-  const herdKeys = claims
-    .map((claim) => {
-      const { herdId, herdVersion } = claim.dataValues.data || {}
-      return herdId && herdVersion ? `${herdId}::${herdVersion}` : null
-    })
-    .filter(Boolean)
-
-  const uniqueKeys = [...new Set(herdKeys)]
-
-  const herdWhere = {
-    [Op.or]: uniqueKeys.map((key) => {
-      const [id, version] = key.split('::')
-
-      return {
-        id,
-        version
-      }
-    })
-  }
-
-  const herds = await models.herd.findAll({ where: herdWhere })
-
-  const herdMap = new Map(
-    herds.map((herd) => [`${herd.dataValues.id}::${herd.dataValues.version}`, herd.toJSON()])
-  )
-
-  const claimsWithHerd = claims.map((claim) => {
-    const { herdId, herdVersion } = claim.dataValues.data || {}
-    const herdKey = `${herdId}::${herdVersion}`
-    const herd = herdMap.get(herdKey)
-
-    return {
-      ...claim.toJSON(),
-      herd
-    }
-  })
-
-  return {
-    total,
-    claims: claimsWithHerd
-  }
 }
 
 export const findClaim = async (reference) => {

@@ -1,5 +1,5 @@
 import { server } from '../../../../../app/server'
-import { getClaimByReference, getByApplicationReference, isURNNumberUnique, updateClaimByReference, searchClaims } from '../../../../../app/repositories/claim-repository'
+import { getClaimByReference, getByApplicationReference, isURNNumberUnique, updateClaimByReference } from '../../../../../app/repositories/claim-repository'
 import { getApplication } from '../../../../../app/repositories/application-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
 import { claimPricesConfig } from '../../../../data/claim-prices-config'
@@ -9,11 +9,13 @@ import { isVisitDateAfterPIHuntAndDairyGoLive, isMultipleHerdsUserJourney } from
 import { buildData } from '../../../../../app/data/index.js'
 import { validateClaim } from '../../../../../app/processing/claim/validation.js'
 import { generateEventsAndComms, saveClaimAndRelatedData } from '../../../../../app/processing/claim/ahwr/processor.js'
+import { searchClaims } from '../../../../../app/repositories/claim/claim-search-repository'
 
 jest.mock('../../../../../app/insights')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/repositories/claim-repository')
+jest.mock('../../../../../app/repositories/claim/claim-search-repository')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/lib/getAmount.js')
 jest.mock('../../../../../app/storage/getBlob.js')

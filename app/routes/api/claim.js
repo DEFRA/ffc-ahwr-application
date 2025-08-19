@@ -11,7 +11,7 @@ import {
   claimType,
   applicationStatus
 } from '../../constants/index.js'
-import { searchClaims, getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository.js'
+import { getClaimByReference, updateClaimByReference, getByApplicationReference, isURNNumberUnique } from '../../repositories/claim-repository.js'
 import { getApplication } from '../../repositories/application-repository.js'
 import { getAmount } from '../../lib/getAmount.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
@@ -21,6 +21,7 @@ import { validateClaim } from '../../processing/claim/validation.js'
 import { StatusCodes } from 'http-status-codes'
 import { AHWR_SCHEME, TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD } from 'ffc-ahwr-common-library'
 import { generateEventsAndComms, saveClaimAndRelatedData } from '../../processing/claim/ahwr/processor.js'
+import { searchClaims } from '../../repositories/claim/claim-search-repository.js'
 
 const { submitPaymentRequestMsgType, submitRequestQueue, messageGeneratorMsgType, messageGeneratorQueue } = config
 
