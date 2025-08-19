@@ -344,6 +344,48 @@ describe('Claim repository: Search Claim', () => {
     })
   })
 
+  test('it applies the search for type date if provided', async () => {
+    const search = { type: 'date', text: '2025-08-19T12:43:19Z' }
+    const filter = { field: 'X', op: 'lte', value: 'Z' }
+    const offset = 10
+    const limit = 20
+    const sort = { field: 'createdAt', direction: 'DESC' }
+
+    const result = await searchClaims(search, filter, offset, limit, sort)
+
+    expect(buildData.models.claim.findAll).toHaveBeenCalledWith({
+      include: [
+        { attributes: ['status'], model: 'mock-status' },
+        { attributes: ['data'], model: { findAll: expect.anything(), update: expect.anything() } },
+        {
+          as: 'flags',
+          attributes: ['appliesToMh'],
+          model: 'mock-flag',
+          required: false,
+          where: { deletedBy: null }
+        }
+      ],
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+      where: { [filter.field]: expect.any(Object), createdAt: expect.any(Object) }
+    })
+
+    expect(result).toEqual({
+      claims: [
+        {
+          data: { herdId: 'aaa111', herdVersion: 1 },
+          herd: { id: 'aaa111', version: 1, herdName: 'My first herd' }
+        },
+        {
+          data: { herdId: 'aaa222', herdVersion: 1 },
+          herd: { id: 'aaa222', version: 1, herdName: 'My second herd' }
+        }
+      ],
+      total: 2
+    })
+  })
+
   test('adds filter to query', async () => {
     buildData.models.herd.findAll.mockResolvedValue([
       {
