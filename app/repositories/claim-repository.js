@@ -374,7 +374,10 @@ export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {
       {
         model: models.application,
         attributes: [],
-        required: true
+        required: true,
+        where: {
+          eligiblePiiRedaction: true
+        }
       }
     ],
     group: ['applicationReference', 'application.data'],

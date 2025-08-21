@@ -5,7 +5,8 @@ import {
   getApplication,
   updateApplicationByReference,
   findApplication,
-  updateApplicationData
+  updateApplicationData,
+  updatePiiRedactionEligible
 } from '../../../../../app/repositories/application-repository'
 import { getAllFlags, getFlagsForApplication } from '../../../../../app/repositories/flag-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
@@ -763,5 +764,51 @@ describe('GET /api/application/{ref}/herds', () => {
 
     expect(res.statusCode).toBe(400)
     expect(JSON.parse(res.payload)).toHaveProperty('err')
+  })
+})
+
+describe('PUT /api/application/{ref}/eligible-pii-redaction', () => {
+  test('updates pii redaction eligible when application exists', async () => {
+    updatePiiRedactionEligible.mockResolvedValueOnce()
+    getApplication.mockResolvedValueOnce({
+      dataValues: {
+        reference: 'IAHW-U6ZE-5R5E'
+      }
+    })
+
+    const res = await server.inject({
+      method: 'put',
+      url: '/api/application/IAHW-U6ZE-5R5E/eligible-pii-redaction',
+      payload: {
+        eligiblePiiRedaction: true,
+        note: 'updated note',
+        user: 'admin'
+      }
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(updatePiiRedactionEligible).toHaveBeenCalledWith(
+      'IAHW-U6ZE-5R5E', true, 'admin', 'updated note'
+    )
+  })
+
+  test('returns 404 when application does not exist', async () => {
+    updatePiiRedactionEligible.mockResolvedValueOnce()
+    getApplication.mockResolvedValueOnce({})
+
+    const res = await server.inject({
+      method: 'put',
+      url: '/api/application/IAHW-U6ZE-5R5E/eligible-pii-redaction',
+      payload: {
+        eligiblePiiRedaction: true,
+        note: 'updated note',
+        user: 'admin'
+      }
+    })
+
+    expect(res.statusCode).toBe(404)
+    expect(updatePiiRedactionEligible).toHaveBeenCalledWith(
+      'IAHW-U6ZE-5R5E', true, 'admin', 'updated note'
+    )
   })
 })

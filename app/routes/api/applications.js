@@ -5,7 +5,8 @@ import {
   searchApplications,
   updateApplicationByReference,
   findApplication,
-  updateApplicationData
+  updateApplicationData,
+  updatePiiRedactionEligible
 } from '../../repositories/application-repository.js'
 import {
   createFlag,
@@ -369,6 +370,41 @@ export const applicationHandlers = [
           herdReasons: herd.herdReasons,
           species: herd.species
         }))).code(HttpStatus.OK)
+      }
+    }
+  },
+  {
+    method: 'put',
+    path: '/api/application/{ref}/eligible-pii-redaction',
+    options: {
+      validate: {
+        params: joi.object({
+          ref: joi.string().valid()
+        }),
+        payload: joi.object({
+          eligiblePiiRedaction: joi.bool(),
+          note: joi.string().required(),
+          user: joi.string().required()
+        }),
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ err })
+          return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const { ref } = request.params
+        const { eligiblePiiRedaction, user, note } = request.payload
+
+        request.logger.setBindings({ applicationReference: ref, eligiblePiiRedaction })
+
+        const application = await getApplication(ref)
+        if (!application.dataValues) {
+          return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
+        }
+
+        await updatePiiRedactionEligible(ref, eligiblePiiRedaction, user, note)
+
+        return h.response().code(HttpStatus.OK)
       }
     }
   }
