@@ -6,7 +6,7 @@ import {
   updateApplicationByReference,
   findApplication,
   updateApplicationData,
-  updatePiiRedactionEligible
+  updateEligiblePiiRedaction
 } from '../../repositories/application-repository.js'
 import {
   createFlag,
@@ -382,7 +382,7 @@ export const applicationHandlers = [
           ref: joi.string().valid()
         }),
         payload: joi.object({
-          eligiblePiiRedaction: joi.bool(),
+          eligiblePiiRedaction: joi.bool().required(),
           note: joi.string().required(),
           user: joi.string().required()
         }),
@@ -402,7 +402,7 @@ export const applicationHandlers = [
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
 
-        await updatePiiRedactionEligible(ref, eligiblePiiRedaction, user, note)
+        await updateEligiblePiiRedaction(ref, eligiblePiiRedaction, user, note)
 
         return h.response().code(HttpStatus.OK)
       }

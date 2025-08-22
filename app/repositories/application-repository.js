@@ -393,7 +393,7 @@ export const redactPII = async (agreementReference, logger) => {
   }
 }
 
-export const updatePiiRedactionEligible = async (reference, newValue, user, note) => {
+export const updateEligiblePiiRedaction = async (reference, newValue, user, note) => {
   const [affectedCount] = await models.application.update(
     { eligiblePiiRedaction: newValue },
     {

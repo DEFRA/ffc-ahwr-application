@@ -12,7 +12,7 @@ import {
   searchApplications,
   setApplication,
   updateApplicationByReference, updateApplicationData,
-  updatePiiRedactionEligible
+  updateEligiblePiiRedaction
 } from '../../../../app/repositories/application-repository'
 import { buildData } from '../../../../app/data'
 import { Op, Sequelize } from 'sequelize'
@@ -1704,7 +1704,7 @@ describe('updatePiiRedactionEligible', () => {
   it('updates pii redaction eligible on application and creates application update history record when value has changed', async () => {
     models.application.update.mockResolvedValueOnce([3])
 
-    await updatePiiRedactionEligible('IAHW-5BA2-6DFD', false, 'admin', 'Investigating issue')
+    await updateEligiblePiiRedaction('IAHW-5BA2-6DFD', false, 'admin', 'Investigating issue')
 
     expect(models.application.update).toHaveBeenCalledWith(
       { eligiblePiiRedaction: false },
@@ -1730,7 +1730,7 @@ describe('updatePiiRedactionEligible', () => {
   it('does not create new application update history record when the value has not changed', async () => {
     models.application.update.mockResolvedValueOnce([0])
 
-    await updatePiiRedactionEligible('IAHW-5BA2-6DFD', false, 'admin', 'Investigating issue')
+    await updateEligiblePiiRedaction('IAHW-5BA2-6DFD', false, 'admin', 'Investigating issue')
 
     expect(models.application.update).toHaveBeenCalledWith(
       { eligiblePiiRedaction: false },

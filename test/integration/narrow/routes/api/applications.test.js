@@ -6,7 +6,7 @@ import {
   updateApplicationByReference,
   findApplication,
   updateApplicationData,
-  updatePiiRedactionEligible
+  updateEligiblePiiRedaction
 } from '../../../../../app/repositories/application-repository'
 import { getAllFlags, getFlagsForApplication } from '../../../../../app/repositories/flag-repository'
 import { sendMessage } from '../../../../../app/messaging/send-message'
@@ -769,7 +769,7 @@ describe('GET /api/application/{ref}/herds', () => {
 
 describe('PUT /api/application/{ref}/eligible-pii-redaction', () => {
   test('updates pii redaction eligible when application exists', async () => {
-    updatePiiRedactionEligible.mockResolvedValueOnce()
+    updateEligiblePiiRedaction.mockResolvedValueOnce()
     getApplication.mockResolvedValueOnce({
       dataValues: {
         reference: 'IAHW-U6ZE-5R5E'
@@ -787,13 +787,13 @@ describe('PUT /api/application/{ref}/eligible-pii-redaction', () => {
     })
 
     expect(res.statusCode).toBe(200)
-    expect(updatePiiRedactionEligible).toHaveBeenCalledWith(
+    expect(updateEligiblePiiRedaction).toHaveBeenCalledWith(
       'IAHW-U6ZE-5R5E', true, 'admin', 'updated note'
     )
   })
 
   test('returns 404 when application does not exist', async () => {
-    updatePiiRedactionEligible.mockResolvedValueOnce()
+    updateEligiblePiiRedaction.mockResolvedValueOnce()
     getApplication.mockResolvedValueOnce({})
 
     const res = await server.inject({
@@ -807,7 +807,7 @@ describe('PUT /api/application/{ref}/eligible-pii-redaction', () => {
     })
 
     expect(res.statusCode).toBe(404)
-    expect(updatePiiRedactionEligible).toHaveBeenCalledWith(
+    expect(updateEligiblePiiRedaction).toHaveBeenCalledWith(
       'IAHW-U6ZE-5R5E', true, 'admin', 'updated note'
     )
   })

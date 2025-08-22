@@ -62,7 +62,7 @@ export const updateEntitiesByPartitionKey = async (
     }
 
     await Promise.all(updates)
-    logger.info(`Finished updating ${updates.length} entities with PartitionKey = '${partitionKey}'`)
+    logger.info(`Redacted ${updates.length} entities in '${tableName}' with PartitionKey = '${partitionKey}'`)
   } catch (error) {
     logger.error('Error during update:', error)
     throw error
