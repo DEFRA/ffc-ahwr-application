@@ -1639,7 +1639,7 @@ describe('getApplicationsToRedactOlderThan', () => {
           [Op.eq]: true
         }
       },
-      attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi']],
+      attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi'], 'statusId'],
       order: [['createdAt', 'ASC']]
     })
   })
