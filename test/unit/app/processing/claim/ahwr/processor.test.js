@@ -5,9 +5,7 @@ import {
   saveClaimAndRelatedData
 } from '../../../../../../app/processing/claim/ahwr/processor.js'
 import { getAmount } from '../../../../../../app/lib/getAmount.js'
-import { requestClaimConfirmationEmail } from '../../../../../../app/lib/request-email.js'
 import appInsights from 'applicationinsights'
-import { config } from '../../../../../../app/config/index.js'
 import { sendMessage } from '../../../../../../app/messaging/send-message.js'
 import { emitHerdMIEvents } from '../../../../../../app/lib/emit-herd-MI-events.js'
 import {
@@ -22,7 +20,6 @@ import { createHerd, getHerdById, updateIsCurrentHerd } from '../../../../../../
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../../../app/lib/context-helper.js')
 jest.mock('../../../../../../app/lib/getAmount.js')
-jest.mock('../../../../../../app/lib/request-email.js')
 jest.mock('../../../../../../app/lib/requires-compliance-check.js')
 jest.mock('../../../../../../app/messaging/send-message.js')
 jest.mock('../../../../../../app/lib/emit-herd-MI-events.js')
@@ -523,10 +520,6 @@ describe('AHWR Claim Processor Tests', () => {
   })
 
   describe('generateEventsAndComms', () => {
-    beforeEach(() => {
-      requestClaimConfirmationEmail.mockResolvedValueOnce(true)
-    })
-
     function expectAppInsightsEventRaised (data, reference, statusId, sbi) {
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
         name: 'process-claim',
@@ -540,7 +533,7 @@ describe('AHWR Claim Processor Tests', () => {
       })
     }
 
-    it('should send email request, emit herd events and emit status change message as expected for multi-herd claim (herd)', async () => {
+    it('should emit herd events and emit status change message as expected for multi-herd claim (herd)', async () => {
       const herdData = {
         id: '1234567890',
         version: 1,
@@ -590,18 +583,6 @@ describe('AHWR Claim Processor Tests', () => {
         sbi: '106705779'
       })
 
-      expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
-        amount: 100,
-        applicationReference: 'IAHW-0F5D-4A26',
-        email: 'test@test-unit.com',
-        farmerName: 'farmerName',
-        herdName: 'Beefers',
-        herdNameLabel: 'Herd name',
-        orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', sbi: '106705779', crn: '1234567890' },
-        reference: 'FUBC-ABCS-1287',
-        species: 'Beef cattle'
-      }), config.notify.templateIdFarmerEndemicsFollowupComplete)
-
       expectAppInsightsEventRaised({
         applicationReference: 'IAHW-0F5D-4A26',
         typeOfLivestock: 'beef',
@@ -615,6 +596,7 @@ describe('AHWR Claim Processor Tests', () => {
         claimReference: 'FUBC-ABCS-1287',
         claimStatus: 11,
         claimType: 'E',
+        claimAmount: 100,
         crn: '1234567890',
         dateTime: expect.any(Date),
         herdName: 'Beefers',
@@ -629,7 +611,7 @@ describe('AHWR Claim Processor Tests', () => {
       { sessionId: expect.any(String) })
     })
 
-    it('should send email request, emit herd events and emit status change message as expected for multi-herd claim (flock)', async () => {
+    it('should emit herd events and emit status change message as expected for multi-herd claim (flock)', async () => {
       const herdData = {
         id: '1234567890',
         version: 1,
@@ -676,18 +658,6 @@ describe('AHWR Claim Processor Tests', () => {
         sbi: '106705779'
       })
 
-      expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
-        amount: 100,
-        applicationReference: 'IAHW-0F5D-4A26',
-        email: 'test@test-unit.com',
-        farmerName: 'farmerName',
-        herdName: 'Sheepies',
-        herdNameLabel: 'Flock name',
-        orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', sbi: '106705779', crn: '1234567890' },
-        reference: 'FUSH-ABCS-1287',
-        species: 'Sheep'
-      }), config.notify.templateIdFarmerEndemicsFollowupComplete)
-
       expectAppInsightsEventRaised({
         applicationReference: 'IAHW-0F5D-4A26',
         typeOfLivestock: 'sheep',
@@ -701,6 +671,7 @@ describe('AHWR Claim Processor Tests', () => {
         claimReference: 'FUSH-ABCS-1287',
         claimStatus: 11,
         claimType: 'E',
+        claimAmount: 100,
         crn: '1234567890',
         dateTime: expect.any(Date),
         herdName: 'Sheepies',
@@ -715,7 +686,7 @@ describe('AHWR Claim Processor Tests', () => {
       { sessionId: expect.any(String) })
     })
 
-    it('should send email request, emit status change message as expected for non multi-herd claim', async () => {
+    it('should emit status change message as expected for non multi-herd claim', async () => {
       const claim = {
         reference: 'REDC-ABCS-1287',
         applicationReference: 'IAHW-0F5D-4A26',
@@ -731,19 +702,6 @@ describe('AHWR Claim Processor Tests', () => {
 
       await generateEventsAndComms(false, claim, application, {}, undefined, undefined)
 
-      expect(requestClaimConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
-        amount: 100,
-        applicationReference: 'IAHW-0F5D-4A26',
-        email: 'test@test-unit.com',
-        farmerName: 'farmerName',
-        herdName: 'Unnamed herd',
-        herdNameLabel: 'Herd name',
-        orgData: { orgName: 'orgName', orgEmail: 'test@test-unit.org', sbi: '106705779', crn: '1234567890' },
-        reference: 'REDC-ABCS-1287',
-        species: 'Dairy cattle'
-
-      }), config.notify.templateIdFarmerEndemicsReviewComplete)
-
       expectAppInsightsEventRaised({
         applicationReference: 'IAHW-0F5D-4A26',
         typeOfLivestock: 'dairy',
@@ -757,6 +715,7 @@ describe('AHWR Claim Processor Tests', () => {
         claimReference: 'REDC-ABCS-1287',
         claimStatus: 11,
         claimType: 'R',
+        claimAmount: 100,
         crn: '1234567890',
         dateTime: expect.any(Date),
         herdName: 'Unnamed herd',
@@ -769,24 +728,6 @@ describe('AHWR Claim Processor Tests', () => {
       'uk.gov.ffc.ahwr.claim.status.update',
       expect.anything(),
       { sessionId: expect.any(String) })
-    })
-
-    it('should not raise insights event when claim confirmation was not sent', async () => {
-      requestClaimConfirmationEmail.mockRestore()
-      requestClaimConfirmationEmail.mockResolvedValueOnce(false)
-      const claim = {
-        reference: 'REBC-0F5D-4A26',
-        applicationReference: 'IAHW-0AD3-3322',
-        data: {
-          vetsName: 'Jim',
-          dateOfVisit: '2024-01-22T00:00:00.000Z'
-        }
-      }
-
-      await generateEventsAndComms(false, claim, application, {}, undefined, undefined)
-
-      expect(requestClaimConfirmationEmail).toHaveBeenCalledTimes(1)
-      expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledTimes(0)
     })
   })
 })

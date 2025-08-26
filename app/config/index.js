@@ -1,5 +1,4 @@
 import Joi from 'joi'
-import { notifyConfig } from './notify.js'
 import { messageQueueConfig } from './message-queue.js'
 import { storageConfig } from './storage.js'
 
@@ -80,6 +79,5 @@ const buildConfig = () => {
 export const config = {
   ...buildConfig(),
   ...messageQueueConfig,
-  notify: notifyConfig,
   storage: storageConfig
 }

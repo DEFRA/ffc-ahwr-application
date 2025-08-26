@@ -12,14 +12,12 @@ import { buildData } from '../../../data/index.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 import { sendMessage } from '../../../messaging/send-message.js'
 import { v4 as uuid } from 'uuid'
-import { requestClaimConfirmationEmail } from '../../../lib/request-email.js'
-import { claimType, livestockToReadableSpecies } from '../../../constants/index.js'
 import appInsights from 'applicationinsights'
 import { TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD } from 'ffc-ahwr-common-library'
 import { config } from '../../../config/index.js'
 
 const { sequelize } = buildData
-const { notify: { templateIdFarmerEndemicsReviewComplete, templateIdFarmerEndemicsFollowupComplete }, messageGeneratorMsgType, messageGeneratorQueue } = config
+const { messageGeneratorMsgType, messageGeneratorQueue } = config
 
 const hasHerdChanged = (existingHerd, updatedHerd) => existingHerd.cph !== updatedHerd.cph || !arraysAreEqual(existingHerd.herdReasons.sort(), updatedHerd.herdReasons.sort())
 
@@ -122,51 +120,7 @@ const addClaimAndHerdToDatabase = async (claimPayload, logger, isMultiHerdsClaim
   return { claim, herdGotUpdated, herdData }
 }
 
-const sendClaimConfirmationEmail = async (claim, application, { sbi, applicationReference, type, typeOfLivestock, dateOfVisit, amount, herdData }) => {
-  const { crn, email, farmerName, name: orgName, orgEmail } = application.data.organisation
-
-  const claimConfirmationEmailSent = await requestClaimConfirmationEmail({
-    reference: claim.reference,
-    applicationReference,
-    amount,
-    email,
-    farmerName,
-    species: livestockToReadableSpecies[typeOfLivestock],
-    orgData: {
-      orgName,
-      orgEmail,
-      crn,
-      sbi
-    },
-    herdNameLabel: getHerdNameLabel(typeOfLivestock),
-    herdName: herdData.herdName ?? getUnnamedHerdValue(typeOfLivestock)
-  },
-  isFollowUp(claim.type) ? templateIdFarmerEndemicsFollowupComplete : templateIdFarmerEndemicsReviewComplete
-  )
-
-  if (claimConfirmationEmailSent) {
-    appInsights.defaultClient.trackEvent({
-      name: 'process-claim',
-      properties: {
-        data: {
-          applicationReference,
-          typeOfLivestock,
-          dateOfVisit,
-          claimType: type,
-          piHunt: claim.data.piHunt
-        },
-        reference: claim.reference,
-        status: claim.statusId,
-        sbi,
-        scheme: 'new-world'
-      }
-    })
-  }
-}
-
 const getUnnamedHerdValue = (typeOfLivestock) => typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
-const getHerdNameLabel = (typeOfLivestock) => typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? 'Flock name' : 'Herd name'
-const isFollowUp = (type) => type === claimType.endemics
 
 export async function saveClaimAndRelatedData (sbi, claimData, flags, logger) {
   const { incoming: claimDataPayload, claimReference } = claimData
@@ -191,8 +145,6 @@ export async function generateEventsAndComms (isMultiHerdsClaim, claim, applicat
     await emitHerdMIEvents({ sbi, herdData, herdIdSelected, herdGotUpdated, claimReference, applicationReference })
   }
 
-  await sendClaimConfirmationEmail(claim, application, { sbi, applicationReference, type, typeOfLivestock, dateOfVisit, amount, herdData })
-
   await sendMessage(
     {
       crn,
@@ -205,6 +157,7 @@ export async function generateEventsAndComms (isMultiHerdsClaim, claim, applicat
       reviewTestResults,
       piHuntRecommended,
       piHuntAllAnimals,
+      claimAmount: amount,
       dateTime: new Date(),
       herdName: herdData.herdName ?? getUnnamedHerdValue(typeOfLivestock)
     },
@@ -212,4 +165,21 @@ export async function generateEventsAndComms (isMultiHerdsClaim, claim, applicat
     messageGeneratorQueue,
     { sessionId: uuid() }
   )
+
+  appInsights.defaultClient.trackEvent({
+    name: 'process-claim',
+    properties: {
+      data: {
+        applicationReference,
+        typeOfLivestock,
+        dateOfVisit,
+        claimType: type,
+        piHunt: claim.data.piHunt
+      },
+      reference: claim.reference,
+      status: claim.statusId,
+      sbi,
+      scheme: 'new-world'
+    }
+  })
 }
