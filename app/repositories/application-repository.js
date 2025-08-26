@@ -315,7 +315,7 @@ export const getApplicationsToRedactOlderThan = async (years) => {
             [Op.eq]: true
           }
         },
-        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
+        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi'], 'statusId'],
         order: [['createdAt', 'ASC']]
       }
     )

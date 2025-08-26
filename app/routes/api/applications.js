@@ -379,7 +379,7 @@ export const applicationHandlers = [
     options: {
       validate: {
         params: joi.object({
-          ref: joi.string().valid()
+          ref: joi.string().required()
         }),
         payload: joi.object({
           eligiblePiiRedaction: joi.bool().required(),
