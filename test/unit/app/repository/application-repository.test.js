@@ -11,7 +11,8 @@ import {
   redactPII,
   searchApplications,
   setApplication,
-  updateApplicationByReference, updateApplicationData
+  updateApplicationByReference, updateApplicationData,
+  updateEligiblePiiRedaction
 } from '../../../../app/repositories/application-repository'
 import { buildData } from '../../../../app/data'
 import { Op, Sequelize } from 'sequelize'
@@ -1469,7 +1470,7 @@ describe('evalSortField function', () => {
   })
 
   test('returns default sort for no specified field', () => {
-    const result = evalSortField({ })
+    const result = evalSortField({})
     expect(result).toEqual(['createdAt', 'ASC'])
   })
 })
@@ -1633,9 +1634,12 @@ describe('getApplicationsToRedactOlderThan', () => {
         },
         createdAt: {
           [Op.lt]: new Date('2022-08-08T00:00:00.000Z')
+        },
+        eligiblePiiRedaction: {
+          [Op.eq]: true
         }
       },
-      attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi']],
+      attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi'], 'statusId'],
       order: [['createdAt', 'ASC']]
     })
   })
@@ -1681,10 +1685,63 @@ describe('getOWApplicationsToRedactOlderThan', () => {
         updatedAt: {
           [Op.lt]: new Date('2018-08-08T00:00:00.000Z')
         },
+        eligiblePiiRedaction: {
+          [Op.eq]: true
+        },
         type: 'VV'
       },
       attributes: ['reference', [Sequelize.literal("data->'organisation'->>'sbi'"), 'sbi']],
       order: [['updatedAt', 'ASC']]
     })
+  })
+})
+
+describe('updatePiiRedactionEligible', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('updates pii redaction eligible on application and creates application update history record when value has changed', async () => {
+    models.application.update.mockResolvedValueOnce([3])
+
+    await updateEligiblePiiRedaction('IAHW-5BA2-6DFD', false, 'admin', 'Investigating issue')
+
+    expect(models.application.update).toHaveBeenCalledWith(
+      { eligiblePiiRedaction: false },
+      {
+        where: {
+          reference: 'IAHW-5BA2-6DFD',
+          eligiblePiiRedaction: { [Op.ne]: false }
+        },
+        returning: true
+      }
+    )
+    expect(models.application_update_history.create).toHaveBeenCalledWith({
+      applicationReference: 'IAHW-5BA2-6DFD',
+      note: 'Investigating issue',
+      updatedProperty: 'eligiblePiiRedaction',
+      newValue: false,
+      oldValue: true,
+      eventType: 'application-eligiblePiiRedaction',
+      createdBy: 'admin'
+    })
+  })
+
+  it('does not create new application update history record when the value has not changed', async () => {
+    models.application.update.mockResolvedValueOnce([0])
+
+    await updateEligiblePiiRedaction('IAHW-5BA2-6DFD', false, 'admin', 'Investigating issue')
+
+    expect(models.application.update).toHaveBeenCalledWith(
+      { eligiblePiiRedaction: false },
+      {
+        where: {
+          reference: 'IAHW-5BA2-6DFD',
+          eligiblePiiRedaction: { [Op.ne]: false }
+        },
+        returning: true
+      }
+    )
+    expect(models.application_update_history.create).not.toHaveBeenCalled()
   })
 })

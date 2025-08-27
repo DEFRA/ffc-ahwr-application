@@ -1,0 +1,58 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+
+  <changeSet id="39" author="Ross Jarvis">
+    <addColumn tableName="application">
+      <column name="eligiblePiiRedaction" type="boolean" defaultValue="true">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+
+    <createTable tableName="application_update_history">
+     <column name="id" type="uuid" defaultValueComputed="public.uuid_generate_v4()">
+        <constraints nullable="false" primaryKey="true" />
+      </column>
+      <column name="applicationReference" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="note" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="updatedProperty" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="newValue" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="oldValue" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="eventType" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="createdBy" type="text">
+        <constraints nullable="false" />
+      </column>
+      <column name="createdAt" defaultValueComputed="now()" type="timestamp with time zone">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+      baseColumnNames="applicationReference"
+      baseTableName="application_update_history"
+      constraintName="fk_application_reference"
+      referencedColumnNames="reference"
+      referencedTableName="application"
+    />
+  </changeSet>
+
+  <changeSet id="39-tag" author="Ross Jarvis">
+    <tagDatabase tag="v1.39.0"/>
+  </changeSet>
+
+</databaseChangeLog>
