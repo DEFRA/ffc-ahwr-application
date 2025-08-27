@@ -310,9 +310,12 @@ export const getApplicationsToRedactOlderThan = async (years) => {
           },
           createdAt: {
             [Op.lt]: cutoffDate
+          },
+          eligiblePiiRedaction: {
+            [Op.eq]: true
           }
         },
-        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
+        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi'], 'statusId'],
         order: [['createdAt', 'ASC']]
       }
     )
@@ -335,6 +338,9 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
           },
           updatedAt: {
             [Op.lt]: cutoffDate
+          },
+          eligiblePiiRedaction: {
+            [Op.eq]: true
           },
           type: 'VV'
         },
@@ -384,5 +390,33 @@ export const redactPII = async (agreementReference, logger) => {
     logger.info(`Redacted ${totalUpdates} application records for agreementReference: ${agreementReference}`)
   } else {
     logger.info(`No records updated for agreementReference: ${agreementReference}`)
+  }
+}
+
+export const updateEligiblePiiRedaction = async (reference, newValue, user, note) => {
+  const [affectedCount] = await models.application.update(
+    { eligiblePiiRedaction: newValue },
+    {
+      where: {
+        reference,
+        eligiblePiiRedaction: { [Op.ne]: newValue } // only update if value has changed
+      },
+      returning: true
+    }
+  )
+
+  if (affectedCount > 0) {
+    const updatedProperty = 'eligiblePiiRedaction'
+    const type = `application-${updatedProperty}`
+
+    await models.application_update_history.create({
+      applicationReference: reference,
+      note,
+      updatedProperty,
+      newValue,
+      oldValue: !newValue,
+      eventType: type,
+      createdBy: user
+    })
   }
 }

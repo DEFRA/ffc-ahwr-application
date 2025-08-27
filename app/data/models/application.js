@@ -19,7 +19,8 @@ export const application = (sequelize, DataTypes) => {
     createdBy: DataTypes.STRING,
     updatedBy: { type: DataTypes.STRING, defaultValue: null },
     statusId: DataTypes.SMALLINT,
-    type: DataTypes.STRING
+    type: DataTypes.STRING,
+    eligiblePiiRedaction: { type: DataTypes.BOOLEAN, defaultValue: true }
   }, {
     freezeTableName: true,
     tableName: 'application'
