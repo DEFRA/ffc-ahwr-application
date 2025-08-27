@@ -12,9 +12,8 @@ jest.mock('../../../../app/redact-pii/update-application-redact-records.js', () 
 
 describe('redact-pii-message-generator', () => {
   const endpoint = `${config.messageGeneratorApiUri}/redact/pii`
-  let agreementsToRedact
   const redactProgress = ['applications-to-redact', 'message-generator']
-  let logger
+  let logger, agreementsToRedact
 
   beforeEach(() => {
     agreementsToRedact = [
