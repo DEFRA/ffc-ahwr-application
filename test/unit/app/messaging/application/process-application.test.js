@@ -1,6 +1,6 @@
 import { when, resetAllWhenMocks } from 'jest-when'
 import appInsights from 'applicationinsights'
-import { requestApplicationDocumentGenerateAndEmail } from '../../../../../app/lib/request-email.js'
+import { requestApplicationDocumentGenerateAndEmail } from '../../../../../app/lib/request-application-document-generate.js'
 import { getBySbi, setApplication } from '../../../../../app/repositories/application-repository'
 import { processApplication, processApplicationApi, processApplicationQueue } from '../../../../../app/messaging/application/process-application'
 import { applicationStatus } from '../../../../../app/constants'
@@ -16,7 +16,7 @@ const mockMonthsAgo = (months) => {
   return mockDate.setMonth(mockDate.getMonth() - months)
 }
 
-jest.mock('../../../../../app/lib/request-email.js')
+jest.mock('../../../../../app/lib/request-application-document-generate.js')
 jest.mock('../../../../../app/messaging/send-message')
 jest.mock('../../../../../app/repositories/application-repository')
 jest.mock('../../../../../app/messaging/send-message')

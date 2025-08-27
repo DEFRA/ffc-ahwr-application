@@ -1,6 +1,6 @@
 import { messagingStates, applicationStatus } from '../../constants/index.js'
 import { config } from '../../config/index.js'
-import { requestApplicationDocumentGenerateAndEmail } from '../../lib/request-email.js'
+import { requestApplicationDocumentGenerateAndEmail } from '../../lib/request-application-document-generate.js'
 import { sendMessage } from '../send-message.js'
 import { validateApplication } from '../schema/process-application-schema.js'
 import appInsights from 'applicationinsights'

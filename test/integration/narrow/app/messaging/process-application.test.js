@@ -1,7 +1,7 @@
 import { processApplication } from '../../../../../app/messaging/application/process-application'
 import boom from '@hapi/boom'
-import { requestApplicationDocumentGenerateAndEmail } from '../../../../../app/lib/request-email.js'
-jest.mock('../../../../../app/lib/request-email.js')
+import { requestApplicationDocumentGenerateAndEmail } from '../../../../../app/lib/request-application-document-generate.js'
+jest.mock('../../../../../app/lib/request-application-document-generate.js')
 
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 boom.internal = jest.fn()

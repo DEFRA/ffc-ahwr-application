@@ -24,13 +24,6 @@ export const livestockTypes = {
   sheep: 'sheep'
 }
 
-export const livestockToReadableSpecies = {
-  beef: 'Beef cattle',
-  dairy: 'Dairy cattle',
-  pigs: 'Pigs',
-  sheep: 'Sheep'
-}
-
 export const claimType = {
   review: 'R',
   endemics: 'E'
