@@ -27,6 +27,7 @@ services:
       SERVICE_URI: http://localhost:3000
       DOCUMENT_GENERATOR_SERVICE_URI: http://host.docker.internal:3006/api
       SFD_MESSAGING_PROXY_SERVICE_URI: http://host.docker.internal:3007/api
+      MESSAGE_GENERATOR_SERVICE_URI: http://host.docker.internal:3008/api
       AZURE_STORAGE_CONNECTION_STRING: ${AZURE_STORAGE_CONNECTION_STRING:-changeme}
       AZURE_STORAGE_USE_CONNECTION_STRING: "true"
       AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME:-changeme}

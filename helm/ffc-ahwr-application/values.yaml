@@ -48,6 +48,7 @@ container:
   serviceUri:
   documentGeneratorApiUri: http://ffc-ahwr-document-generator.ffc-ahwr-snd2/api
   sfdMessagingProxyApiUri: http://ffc-ahwr-sfd-messaging-proxy.ffc-ahwr-snd2/api
+  messageGeneratorApiUri: http://ffc-ahwr-message-generator.ffc-ahwr-snd2/api
   azureStorageConnectionString:
   azureStorageUseConnectionString: true
   azureStorageAccountName:

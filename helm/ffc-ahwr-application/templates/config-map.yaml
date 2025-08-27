@@ -17,6 +17,7 @@ data:
   SERVICE_URI: {{ quote .Values.container.serviceUri }}
   DOCUMENT_GENERATOR_SERVICE_URI: {{ quote .Values.container.documentGeneratorApiUri }}
   SFD_MESSAGING_PROXY_SERVICE_URI: {{ quote .Values.container.sfdMessagingProxyApiUri }}
+  MESSAGE_GENERATOR_SERVICE_URI: {{ quote .Values.container.messageGeneratorApiUri }}
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
   CLAIM_COMPLIANCE_CHECK_RATIO: {{ quote .Values.container.claimComplianceCheckRatio }}

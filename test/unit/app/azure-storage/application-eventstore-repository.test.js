@@ -48,6 +48,7 @@ describe('Application Event Store Repository test', () => {
         "PartitionKey eq '123456789'",
         {
           ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
+          EventBy: REDACT_PII_VALUES.REDACTED_EVENT_BY,
           Payload: {
             cph: REDACT_PII_VALUES.CPH,
             exception: REDACT_PII_VALUES.REDACTED_EXCEPTION,
