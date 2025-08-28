@@ -32,6 +32,7 @@ export const redactPII = async (applicationReference, logger) => {
   )
   const [, updatedRows] = await buildData.models.contact_history.update(
     {
+      sbi: REDACT_PII_VALUES.REDACTED_SBI,
       data,
       updatedBy: 'admin',
       updatedAt: Date.now()

@@ -356,7 +356,8 @@ export const redactPII = async (agreementReference, logger) => {
     'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
     'organisation,orgEmail': REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
     'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
-    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
+    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS,
+    'organisation,sbi': REDACT_PII_VALUES.REDACTED_SBI
   }
   let totalUpdates = 0
 
