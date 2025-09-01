@@ -1,4 +1,3 @@
-import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { raiseApplicationFlaggedEvent } from '../event-publisher/index.js'
 import { createFlagForRedactPII } from '../repositories/flag-repository.js'
 import { updateApplicationRedactRecords } from './update-application-redact-records.js'
@@ -13,7 +12,7 @@ export const create = async (applicationsToRedact, redactProgress, logger) => {
     await Promise.all(
       applicationsToRedact.map((application) =>
         limit(async () => {
-          const { reference: applicationReference, data: { sbi }, redactedSbi } = application
+          const { reference: applicationReference, redactedSbi } = application
 
           const result = await createFlagForRedactPII({
             applicationReference,
