@@ -41,6 +41,10 @@ export const applicationRedact = (sequelize, DataTypes) => {
       createdAt: {
         type: DataTypes.DATE,
         defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+      },
+      redactedSbi: {
+        type: DataTypes.STRING,
+        allowNull: false
       }
     },
     {

@@ -1,6 +1,5 @@
-import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { Sequelize } from 'sequelize'
 import { buildData } from '../data/index.js'
-import { Op, Sequelize } from 'sequelize'
 
 const { models } = buildData
 
@@ -17,19 +16,17 @@ export const createApplicationRedact = async (data) => {
   return models.application_redact.create(data)
 }
 
-export const updateApplicationRedact = async (id, retryCount, status, success, options = {}) => {
+export const updateApplicationRedact = async (id, retryCount, status, success, options = {}, redactedSbi) => {
   return models.application_redact.update(
     {
       retryCount,
       status,
       success,
-      data: Sequelize.fn(
-        'jsonb_set',
-        Sequelize.col('data'),
-        Sequelize.literal(`'{sbi}'`),
-        Sequelize.literal(`'"${REDACT_PII_VALUES.REDACTED_SBI}"'`),
-        true
-      ),
+      ...(redactedSbi !== undefined && {
+        data: Sequelize.literal(
+         `jsonb_set("data", '{sbi}', '"${redactedSbi}"')`
+        )
+      })
     },
     {
       where: { id },
@@ -37,4 +34,22 @@ export const updateApplicationRedact = async (id, retryCount, status, success, o
       ...options
     }
   )
+}
+
+const sbiExists = async (value) => {
+  const result = await models.application_redact.findOne({
+    where: { redactedSbi: value }
+  })
+  return result !== null
+}
+
+export const generateRandomUniqueSBI = async () => {
+  let sbi
+  let exists = true
+  while (exists) {
+    sbi = Math.floor(1000000000 + Math.random() * 9000000000).toString()
+    exists = await sbiExists(sbi)
+  }
+
+  return sbi
 }

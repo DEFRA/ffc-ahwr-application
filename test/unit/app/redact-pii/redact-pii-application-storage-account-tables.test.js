@@ -22,6 +22,7 @@ describe('redactPII', () => {
 
     agreementsToRedact = [
       {
+        redactedSbi: '437154925',
         data: {
           sbi: 'SBI123',
           claims: [
@@ -31,6 +32,7 @@ describe('redactPII', () => {
         }
       },
       {
+        redactedSbi: '582154926',
         data: {
           sbi: 'SBI456',
           claims: [
@@ -45,12 +47,12 @@ describe('redactPII', () => {
     await redactPII(agreementsToRedact, ['applications-to-redact', 'documents'], mockLogger)
 
     expect(redactApplicationEventPII).toHaveBeenCalledTimes(2)
-    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI123', mockLogger)
-    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI456', mockLogger)
+    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI123', '437154925', mockLogger)
+    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI456', '582154926', mockLogger)
 
     expect(redactIneligibilityPII).toHaveBeenCalledTimes(2)
-    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI123', mockLogger)
-    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI456', mockLogger)
+    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI123', '437154925', mockLogger)
+    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI456', '582154926', mockLogger)
 
     expect(redactStatusPII).toHaveBeenCalledTimes(3)
     expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-1', mockLogger)

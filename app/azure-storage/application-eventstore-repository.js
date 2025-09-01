@@ -1,7 +1,7 @@
 import { queryEntitiesByPartitionKey } from './query-entities.js'
 import { odata } from '@azure/data-tables'
 import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
-import { updateEntitiesByPartitionKey } from './update-entities.js'
+import { replaceEntitiesByPartitionKey } from './update-entities.js'
 
 export const getApplicationEvents = async (sbi) => {
   const eventRecords = await queryEntitiesByPartitionKey(
@@ -16,7 +16,7 @@ export const getApplicationEvents = async (sbi) => {
   return eventRecords
 }
 
-export const redactPII = async (sbi, logger) => {
+export const redactPII = async (sbi, redactedSbi, logger) => {
   const propertiesToMerge = {
     ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
     EventBy: REDACT_PII_VALUES.REDACTED_EVENT_BY,
@@ -50,11 +50,12 @@ export const redactPII = async (sbi, logger) => {
     }
   }
 
-  await updateEntitiesByPartitionKey(
+  await replaceEntitiesByPartitionKey(
     'ahwreventstore',
     sbi,
     odata`PartitionKey eq '${sbi}'`,
     propertiesToMerge,
+    redactedSbi,
     logger
   )
 }
