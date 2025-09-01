@@ -34,8 +34,8 @@ describe('redact-pii-application-database', () => {
 
   it('should call all redact functions for each agreement and log success', async () => {
     const agreements = [
-      { reference: 'AG-001' },
-      { reference: 'AG-002' }
+      { reference: 'AG-001', redactedSbi: '104857389' },
+      { reference: 'AG-002', redactedSbi: '109254189' }
     ]
 
     await redactPII(agreements, 'progressId', mockLogger)
@@ -46,12 +46,12 @@ describe('redact-pii-application-database', () => {
     expect(redactClaimPII).toHaveBeenCalledTimes(2)
     expect(redactApplicationPII).toHaveBeenCalledTimes(2)
 
-    agreements.forEach(({ reference }) => {
+    agreements.forEach(({ reference, redactedSbi }) => {
       expect(redactHerdPII).toHaveBeenCalledWith(reference)
       expect(redactFlagPII).toHaveBeenCalledWith(reference)
-      expect(redactContactHistoryPII).toHaveBeenCalledWith(reference, mockLogger)
+      expect(redactContactHistoryPII).toHaveBeenCalledWith(reference, redactedSbi, mockLogger)
       expect(redactClaimPII).toHaveBeenCalledWith(reference, mockLogger)
-      expect(redactApplicationPII).toHaveBeenCalledWith(reference, mockLogger)
+      expect(redactApplicationPII).toHaveBeenCalledWith(reference, redactedSbi, mockLogger)
     })
 
     expect(mockLogger.info).toHaveBeenCalledWith(
@@ -60,7 +60,7 @@ describe('redact-pii-application-database', () => {
   })
 
   it('should handle errors, call updateApplicationRedactRecords, and rethrow error', async () => {
-    const agreements = [{ reference: 'AG-003' }]
+    const agreements = [{ reference: 'AG-003', redactedSbi: '109254189' }]
     const testError = new Error('Redaction failed')
 
     redactFlagPII.mockRejectedValueOnce(testError)

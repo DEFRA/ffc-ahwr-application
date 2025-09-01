@@ -1487,7 +1487,7 @@ describe('redactPII', () => {
   test('should update fields to redacted values for agreement', async () => {
     models.application.update.mockResolvedValue([10], mockLogger)
 
-    await redactPII('IAWR-1234', mockLogger)
+    await redactPII('IAWR-1234', '104294495', mockLogger)
 
     expect(models.application.update).toHaveBeenCalledWith(
       {
@@ -1579,8 +1579,27 @@ describe('redactPII', () => {
       },
       {
         where: {
-          reference: 'IAWR-1234',
+        reference: 'IAWR-1234',
           [Op.and]: Sequelize.literal('data->\'organisation\'->\'address\' IS NOT NULL')
+        }
+      }
+    )
+    expect(models.application.update).toHaveBeenCalledWith(
+      {
+        data: Sequelize.fn(
+          'jsonb_set',
+          Sequelize.col('data'),
+          Sequelize.literal('\'{organisation,sbi}\''),
+          Sequelize.literal('\'"104294495"\''),
+          true
+        ),
+        updatedBy: 'admin',
+        updatedAt: Sequelize.fn('NOW')
+      },
+      {
+        where: {
+          reference: 'IAWR-1234',
+          [Op.and]: Sequelize.literal('data->\'organisation\'->\'sbi\' IS NOT NULL')
         }
       }
     )
@@ -1589,7 +1608,7 @@ describe('redactPII', () => {
   test('should log no updates when updating agreement with null fields', async () => {
     models.application.update.mockResolvedValue([0], mockLogger)
 
-    await redactPII('IAWR-1234', mockLogger)
+    await redactPII('IAWR-1234', '10405304', mockLogger)
 
     expect(mockLogger.info).toHaveBeenCalledWith('No records updated for agreementReference: IAWR-1234')
   })

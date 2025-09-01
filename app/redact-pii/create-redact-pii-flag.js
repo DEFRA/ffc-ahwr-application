@@ -13,11 +13,11 @@ export const create = async (applicationsToRedact, redactProgress, logger) => {
     await Promise.all(
       applicationsToRedact.map((application) =>
         limit(async () => {
-          const { reference: applicationReference } = application
+          const { reference: applicationReference, data: { sbi }, redactedSbi } = application
 
           const result = await createFlagForRedactPII({
             applicationReference,
-            sbi: REDACT_PII_VALUES.REDACTED_SBI,
+            sbi: redactedSbi,
             note: 'Application PII redacted',
             createdBy: 'admin',
             appliesToMh: false
@@ -29,7 +29,7 @@ export const create = async (applicationsToRedact, redactProgress, logger) => {
             flag: { id: result.id, note: result.note, appliesToMh: result.appliesToMh },
             raisedBy: result.createdBy,
             raisedOn: result.createdAt
-          }, result.sbi)
+          }, redactedSbi)
         })
       )
     )

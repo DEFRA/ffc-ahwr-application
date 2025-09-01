@@ -22,11 +22,13 @@ describe('create', () => {
   const agreementsToRedact = [
     {
       reference: 'AHWR-123',
-      data: { sbi: 'SBI-001' }
+      data: { sbi: 'SBI-001' },
+      redactedSbi: '105834729'
     },
     {
       reference: 'AHWR-456',
-      data: { sbi: 'SBI-002' }
+      data: { sbi: 'SBI-002' },
+      redactedSbi: '103592529'
     }
   ]
 
@@ -52,14 +54,14 @@ describe('create', () => {
     expect(createFlagForRedactPII).toHaveBeenCalledTimes(2)
     expect(createFlagForRedactPII).toHaveBeenCalledWith({
       applicationReference: 'AHWR-123',
-      sbi: 'SBI-001',
+      sbi: '105834729',
       note: 'Application PII redacted',
       createdBy: 'admin',
       appliesToMh: false
     })
     expect(createFlagForRedactPII).toHaveBeenCalledWith({
       applicationReference: 'AHWR-456',
-      sbi: 'SBI-002',
+      sbi: '103592529',
       note: 'Application PII redacted',
       createdBy: 'admin',
       appliesToMh: false
@@ -72,14 +74,14 @@ describe('create', () => {
       flag: { id: 'FLAG-1', note: 'Application PII redacted', appliesToMh: false },
       raisedBy: 'admin',
       raisedOn: '2025-08-05T12:00:00Z'
-    }, 'SBI-001')
+    }, '105834729')
     expect(raiseApplicationFlaggedEvent).toHaveBeenCalledWith({
       application: { id: 'AHWR-456' },
       message: 'Application flagged',
       flag: { id: 'FLAG-2', note: 'Application PII redacted', appliesToMh: false },
       raisedBy: 'admin',
       raisedOn: '2025-08-05T12:00:01Z'
-    }, 'SBI-002')
+    }, '103592529')
 
     expect(mockLogger.info).toHaveBeenCalledWith(
       `addFlagForRedactPII with: ${JSON.stringify(agreementsToRedact)}`

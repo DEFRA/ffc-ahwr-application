@@ -19,7 +19,7 @@ export const set = async (data) => {
   return result
 }
 
-export const redactPII = async (applicationReference, logger) => {
+export const redactPII = async (applicationReference, redactedSbi, logger) => {
   const data = Sequelize.fn(
     'jsonb_set',
     Sequelize.fn(
@@ -32,7 +32,7 @@ export const redactPII = async (applicationReference, logger) => {
   )
   const [, updatedRows] = await buildData.models.contact_history.update(
     {
-      sbi: REDACT_PII_VALUES.REDACTED_SBI,
+      sbi: redactedSbi,
       data,
       updatedBy: 'admin',
       updatedAt: Date.now()
