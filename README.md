@@ -46,6 +46,7 @@ overridden by build and release pipelines.
 | SERVICE_URI                                                                            | URI of service (used in links, in emails) e.g. `http://localhost:3000` or `https://defra.gov.uk` |
 | DOCUMENT_GENERATOR_SERVICE_URI                                                         | API URI of ffc-ahwr-document-generator service e.g. `http://localhost:3006/api`                  |
 | SFD_MESSAGING_PROXY_SERVICE_URI                                                        | API URI of ffc-ahwr-sfd-messaging-proxy service e.g. `http://localhost:3007/api`                 |
+| MESSAGE_GENERATOR_SERVICE_URI                                                        | API URI of ffc-ahwr-message-generator service e.g. `http://localhost:3008/api`                 |
 | CLAIM_COMPLIANCE_CHECK_RATIO                                                           | The ratio in which claims require a compliance check, e.g. 3 means one in every 3 claims         |
 
 ## Running the application
