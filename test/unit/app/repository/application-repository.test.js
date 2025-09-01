@@ -1641,7 +1641,7 @@ describe('redactPII', () => {
       },
       {
         where: {
-        reference: 'IAWR-1234',
+          reference: 'IAWR-1234',
           [Op.and]: Sequelize.literal('data->\'organisation\'->\'address\' IS NOT NULL')
         }
       }
