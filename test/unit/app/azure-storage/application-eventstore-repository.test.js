@@ -1,7 +1,7 @@
 import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { getApplicationEvents, redactPII } from '../../../../app/azure-storage/application-eventstore-repository'
 import { queryEntitiesByPartitionKey } from '../../../../app/azure-storage/query-entities'
-import { updateEntitiesByPartitionKey } from '../../../../app/azure-storage/update-entities'
+import { replaceEntitiesByPartitionKey } from '../../../../app/azure-storage/update-entities'
 
 jest.mock('../../../../app/azure-storage/query-entities')
 jest.mock('../../../../app/azure-storage/update-entities')
@@ -36,13 +36,13 @@ describe('Application Event Store Repository test', () => {
   })
 
   describe('redactPII', () => {
-    test('should call updateEntitiesByPartitionKey with the correct parameters', async () => {
+    test('should call replaceEntitiesByPartitionKey with the correct parameters', async () => {
       const mockLogger = jest.fn()
 
-      await redactPII('123456789', mockLogger)
+      await redactPII('123456789', '987654321', mockLogger)
 
-      expect(updateEntitiesByPartitionKey).toHaveBeenCalledTimes(1)
-      expect(updateEntitiesByPartitionKey).toHaveBeenCalledWith(
+      expect(replaceEntitiesByPartitionKey).toHaveBeenCalledTimes(1)
+      expect(replaceEntitiesByPartitionKey).toHaveBeenCalledWith(
         'ahwreventstore',
         '123456789',
         "PartitionKey eq '123456789'",
@@ -78,6 +78,7 @@ describe('Application Event Store Repository test', () => {
             message: REDACT_PII_VALUES.REDACTED_MESSAGE
           }
         },
+        '987654321',
         mockLogger
       )
     })

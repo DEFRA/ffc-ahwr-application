@@ -18,8 +18,8 @@ describe('redact-pii-document-generator', () => {
 
   beforeEach(() => {
     agreementsToRedact = [
-      { reference: 'AHWR-123', data: { sbi: 'SBI001' } },
-      { reference: 'AHWR-456', data: { sbi: 'SBI002' } }
+      { reference: 'AHWR-123', data: { sbi: 'SBI001' }, redactedSbi: '7521342841' },
+      { reference: 'AHWR-456', data: { sbi: 'SBI002' }, redactedSbi: '5582349241' }
     ]
     logger = { setBindings: jest.fn() }
     jest.clearAllMocks()
@@ -34,8 +34,8 @@ describe('redact-pii-document-generator', () => {
       json: true,
       payload: {
         agreementsToRedact: [
-          { reference: 'AHWR-123', sbi: 'SBI001' },
-          { reference: 'AHWR-456', sbi: 'SBI002' }
+          { reference: 'AHWR-123', sbi: 'SBI001', redactedSbi: '7521342841' },
+          { reference: 'AHWR-456', sbi: 'SBI002', redactedSbi: '5582349241' }
         ]
       }
     })
