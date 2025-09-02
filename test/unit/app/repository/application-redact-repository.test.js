@@ -120,7 +120,7 @@ describe('generateRandomUniqueSBI', () => {
         redactedSbi: expect.any(String)
       }
     })
-    expect(result).toEqual(expect.any(String))
+    expect(result.length).toEqual(10)
   })
 
   it('should generate a random unique SBI on second attempt when first attempt already exists', async () => {
@@ -133,6 +133,6 @@ describe('generateRandomUniqueSBI', () => {
     const result = await generateRandomUniqueSBI()
 
     expect(models.application_redact.findOne).toHaveBeenCalledTimes(2)
-    expect(result).toEqual(expect.any(String))
+    expect(result.length).toEqual(10)
   })
 })
