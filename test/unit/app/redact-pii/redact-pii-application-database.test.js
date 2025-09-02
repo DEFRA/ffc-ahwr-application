@@ -34,8 +34,8 @@ describe('redact-pii-application-database', () => {
 
   it('should call all redact functions for each agreement and log success', async () => {
     const agreements = [
-      { reference: 'AG-001', redactedSbi: '104857389' },
-      { reference: 'AG-002', redactedSbi: '109254189' }
+      { reference: 'AG-001', redactedSbi: '1048573892' },
+      { reference: 'AG-002', redactedSbi: '1092541892' }
     ]
 
     await redactPII(agreements, 'progressId', mockLogger)
@@ -60,7 +60,7 @@ describe('redact-pii-application-database', () => {
   })
 
   it('should handle errors, call updateApplicationRedactRecords, and rethrow error', async () => {
-    const agreements = [{ reference: 'AG-003', redactedSbi: '109254189' }]
+    const agreements = [{ reference: 'AG-003', redactedSbi: '1092541892' }]
     const testError = new Error('Redaction failed')
 
     redactFlagPII.mockRejectedValueOnce(testError)

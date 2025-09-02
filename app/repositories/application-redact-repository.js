@@ -1,7 +1,11 @@
 import { Sequelize } from 'sequelize'
 import { buildData } from '../data/index.js'
+import crypto from 'crypto'
 
 const { models } = buildData
+
+const MIN_SBI = 1000000000
+const MAX_SBI = 9999999999
 
 export const getFailedApplicationRedact = async (requestedDate) => {
   return models.application_redact.findAll({
@@ -16,7 +20,7 @@ export const createApplicationRedact = async (data) => {
   return models.application_redact.create(data)
 }
 
-export const updateApplicationRedact = async (id, retryCount, status, success, options = {}, redactedSbi) => {
+export const updateApplicationRedact = async (id, retryCount, status, success, redactedSbi, options = {}) => {
   return models.application_redact.update(
     {
       retryCount,
@@ -47,7 +51,7 @@ export const generateRandomUniqueSBI = async () => {
   let sbi
   let exists = true
   while (exists) {
-    sbi = Math.floor(1000000000 + Math.random() * 9000000000).toString()
+    sbi = crypto.randomInt(MIN_SBI, MAX_SBI + 1).toString()
     exists = await sbiExists(sbi)
   }
 

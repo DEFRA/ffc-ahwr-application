@@ -86,7 +86,7 @@ describe('application-redact-repository', () => {
 
       models.application_redact.update.mockResolvedValue(mockResponse)
 
-      const result = await updateApplicationRedact(mockId, mockData.retryCount, mockData.status, mockData.success, {}, '10583957')
+      const result = await updateApplicationRedact(mockId, mockData.retryCount, mockData.status, mockData.success, '10583957', {})
 
       expect(models.application_redact.update).toHaveBeenCalledWith(
         {

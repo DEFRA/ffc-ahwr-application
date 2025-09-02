@@ -18,6 +18,18 @@ const redactFields = (target, redactedValueByField) => {
   return target
 }
 
+const applyReplacements = (entity, entityReplacements) => {
+  const replacements = { ...entityReplacements }
+
+  if (entityReplacements?.Payload) {
+    const payload = JSON.parse(`${entity.Payload}`)
+    const redactedPayload = redactFields(payload, replacements.Payload)
+    replacements.Payload = JSON.stringify(redactedPayload)
+  }
+
+  return replacements
+}
+
 export const updateEntitiesByPartitionKey = async (
   tableName,
   partitionKey,
@@ -36,13 +48,7 @@ export const updateEntitiesByPartitionKey = async (
 
     const updates = []
     for await (const entity of entities) {
-      const replacements = { ...entityReplacements }
-
-      if (entityReplacements?.Payload) {
-        const payload = JSON.parse(`${entity.Payload}`)
-        const redactedPayload = redactFields(payload, replacements.Payload)
-        replacements.Payload = JSON.stringify(redactedPayload)
-      }
+      const replacements = applyReplacements(entity, entityReplacements)
 
       // only update if something to update
       const entityUpdates = {
@@ -88,13 +94,7 @@ export const replaceEntitiesByPartitionKey = async (
 
     const updates = []
     for await (const entity of entities) {
-      const replacements = { ...entityReplacements }
-
-      if (entityReplacements?.Payload) {
-        const payload = JSON.parse(`${entity.Payload}`)
-        const redactedPayload = redactFields(payload, replacements.Payload)
-        replacements.Payload = JSON.stringify(redactedPayload)
-      }
+      const replacements = applyReplacements(entity, entityReplacements)
 
       const newEntity = {
         ...entity,

@@ -20,8 +20,8 @@ describe('update-application-redact-records redactPII', () => {
 
   it('should call updateApplicationRedact for each agreement without incrementing retry count', async () => {
     const agreements = [
-      { id: 1, retryCount: 0, redactedSbi: '748329487' },
-      { id: 2, retryCount: 5, redactedSbi: '326929487' }
+      { id: 1, retryCount: 0, redactedSbi: '7483294871' },
+      { id: 2, retryCount: 5, redactedSbi: '3269294871' }
     ]
     const status = ['applications-to-redact', 'documents']
     const success = true
@@ -29,14 +29,14 @@ describe('update-application-redact-records redactPII', () => {
     await updateApplicationRedactRecords(agreements, false, status, success)
 
     expect(updateApplicationRedact).toHaveBeenCalledTimes(2)
-    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 0, 'applications-to-redact,documents', true, { transaction: { id: 1 } }, '748329487')
-    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 5, 'applications-to-redact,documents', true, { transaction: { id: 1 } }, '326929487')
+    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 0, 'applications-to-redact,documents', true, '7483294871', { transaction: { id: 1 } })
+    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 5, 'applications-to-redact,documents', true, '3269294871', { transaction: { id: 1 } })
   })
 
   it('should increment retryCount when incrementRetryCount is true', async () => {
     const agreements = [
-      { id: 1, retryCount: 0, redactedSbi: '748329487' },
-      { id: 2, retryCount: 5, redactedSbi: '326929487' }
+      { id: 1, retryCount: 0, redactedSbi: '7483294871' },
+      { id: 2, retryCount: 5, redactedSbi: '3269294871' }
     ]
     const status = ['applications-to-redact', 'documents']
     const success = false
@@ -44,8 +44,8 @@ describe('update-application-redact-records redactPII', () => {
     await updateApplicationRedactRecords(agreements, true, status, success)
 
     expect(updateApplicationRedact).toHaveBeenCalledTimes(2)
-    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 1, 'applications-to-redact,documents', false, { transaction: { id: 1 } }, '748329487')
-    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 6, 'applications-to-redact,documents', false, { transaction: { id: 1 } }, '326929487')
+    expect(updateApplicationRedact).toHaveBeenCalledWith(1, 1, 'applications-to-redact,documents', false, '7483294871', { transaction: { id: 1 } })
+    expect(updateApplicationRedact).toHaveBeenCalledWith(2, 6, 'applications-to-redact,documents', false, '3269294871', { transaction: { id: 1 } })
   })
 
   it('should return when no applications to redact', async () => {
