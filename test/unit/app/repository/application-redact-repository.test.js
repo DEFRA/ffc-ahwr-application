@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize'
 import { buildData } from '../../../../app/data/index.js'
-import { getFailedApplicationRedact, createApplicationRedact, updateApplicationRedact, generateRandomUniqueSBI } from '../../../../app/repositories/application-redact-repository.js'
+import { getFailedApplicationRedact, createApplicationRedact, updateApplicationRedact, generateRandomUniqueSbi } from '../../../../app/repositories/application-redact-repository.js'
 
 jest.mock('../../../../app/data/index.js', () => {
   const mockFindAll = jest.fn()
@@ -112,7 +112,7 @@ describe('generateRandomUniqueSBI', () => {
   it('should generate a random unique SBI on first attempt when it does not already exist', async () => {
     models.application_redact.findOne.mockResolvedValueOnce(null)
 
-    const result = await generateRandomUniqueSBI()
+    const result = await generateRandomUniqueSbi()
 
     expect(models.application_redact.findOne).toHaveBeenCalledTimes(1)
     expect(models.application_redact.findOne).toHaveBeenCalledWith({
@@ -130,7 +130,7 @@ describe('generateRandomUniqueSBI', () => {
     })
     models.application_redact.findOne.mockResolvedValueOnce(null)
 
-    const result = await generateRandomUniqueSBI()
+    const result = await generateRandomUniqueSbi()
 
     expect(models.application_redact.findOne).toHaveBeenCalledTimes(2)
     expect(result.length).toEqual(10)

@@ -3,6 +3,7 @@ import {
   evalSortField, findApplication,
   getAllApplications,
   getApplication,
+  getApplicationsBySbi,
   getApplicationsToRedactOlderThan,
   getByEmail,
   getBySbi,
@@ -1824,5 +1825,37 @@ describe('updatePiiRedactionEligible', () => {
       }
     )
     expect(models.application_update_history.create).not.toHaveBeenCalled()
+  })
+})
+
+describe('getApplicationsBySbi', () => {
+  const mockSbi = '758937489'
+  const mockApps = [
+    { id: 1, reference: 'IAHW-G3CL-V59P', data: { organisation: { sbi: mockSbi } }, createdAt: '2024-04-05T00:00:00.000Z' },
+    { id: 2, reference: 'IAHW-G3CL-V59P', data: { organisation: { sbi: mockSbi } }, createdAt: '2024-04-05T00:00:00.000Z' }
+  ]
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should call findAll with correct params and return results', async () => {
+    models.application.findAll.mockResolvedValue(mockApps)
+
+    const result = await getApplicationsBySbi(mockSbi)
+
+    expect(models.application.findAll).toHaveBeenCalledWith({
+      where: expect.any(Object),
+      order: [['createdAt', 'ASC']]
+    })
+    expect(result).toEqual(mockApps)
+  })
+
+  it('returns an empty array when no applications found', async () => {
+    models.application.findAll.mockResolvedValue([])
+
+    const result = await getApplicationsBySbi(mockSbi)
+
+    expect(result).toEqual([])
   })
 })

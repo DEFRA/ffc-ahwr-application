@@ -443,3 +443,13 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
     })
   }
 }
+
+export const getApplicationsBySbi = async (sbi) => {
+  return models.application.findAll({
+    where: Sequelize.where(
+      Sequelize.json('data.organisation.sbi'),
+      sbi
+    ),
+    order: [['createdAt', 'ASC']]
+  })
+}

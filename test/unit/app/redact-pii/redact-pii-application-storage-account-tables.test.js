@@ -28,7 +28,9 @@ describe('redactPII', () => {
           claims: [
             { reference: 'CLAIM-1' },
             { reference: 'CLAIM-2' }
-          ]
+          ],
+          startDate: '2024-04-05T00:00:00.000Z',
+          endDate: '2024-08-05T00:00:00.000Z'
         }
       },
       {
@@ -37,7 +39,9 @@ describe('redactPII', () => {
           sbi: 'SBI456',
           claims: [
             { reference: 'CLAIM-3' }
-          ]
+          ],
+          startDate: '2025-04-05T00:00:00.000Z',
+          endDate: '2025-08-05T00:00:00.000Z'
         }
       }
     ]
@@ -47,8 +51,8 @@ describe('redactPII', () => {
     await redactPII(agreementsToRedact, ['applications-to-redact', 'documents'], mockLogger)
 
     expect(redactApplicationEventPII).toHaveBeenCalledTimes(2)
-    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI123', '4371549251', mockLogger)
-    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI456', '5821549261', mockLogger)
+    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI123', '4371549251', mockLogger, '2024-04-05T00:00:00.000Z', '2024-08-05T00:00:00.000Z')
+    expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI456', '5821549261', mockLogger, '2025-04-05T00:00:00.000Z', '2025-08-05T00:00:00.000Z')
 
     expect(redactIneligibilityPII).toHaveBeenCalledTimes(2)
     expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI123', '4371549251', mockLogger)

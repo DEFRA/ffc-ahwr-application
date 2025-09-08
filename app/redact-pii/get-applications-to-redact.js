@@ -1,7 +1,7 @@
 import { APPLICATION_REFERENCE_PREFIX_OLD_WORLD, CLAIM_STATUS, REDACT_PII_PROGRESS_STATUS } from 'ffc-ahwr-common-library'
-import { getFailedApplicationRedact, createApplicationRedact, generateRandomUniqueSBI } from '../repositories/application-redact-repository.js'
+import { getFailedApplicationRedact, createApplicationRedact, generateRandomUniqueSbi } from '../repositories/application-redact-repository.js'
 import { buildData } from '../data/index.js'
-import { getApplicationsToRedactOlderThan, getOWApplicationsToRedactLastUpdatedBefore } from '../repositories/application-repository.js'
+import { getApplicationsToRedactOlderThan, getApplicationsBySbi, getOWApplicationsToRedactLastUpdatedBefore } from '../repositories/application-repository.js'
 import { getAppRefsWithLatestClaimLastUpdatedBefore, getByApplicationReference } from '../repositories/claim-repository.js'
 
 const { sequelize } = buildData
@@ -40,9 +40,7 @@ const createApplicationsToRedact = async (requestedDate) => {
   return sequelize.transaction(async () => {
     const createdAgreementsToRedact = []
     for (const agreement of agreementsToRedact) {
-      const redactedSbi = await generateRandomUniqueSBI()
-      const agreementToRedact = await createApplicationRedact({ ...agreement, redactedSbi })
-
+      const agreementToRedact = await createApplicationRedact(agreement)
       createdAgreementsToRedact.push(agreementToRedact)
     }
     return createdAgreementsToRedact
@@ -70,7 +68,26 @@ const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
 
   return agreementsToRedactWithNoPayment
 }
-const buildApplicationRedact = (reference, sbi, claimReferences) => ({ reference, data: { sbi, claims: claimReferences.map((claimReference) => ({ reference: claimReference })) } })
+const buildApplicationRedact = async (reference, sbi, claimReferences) => {
+  console.log({
+    sbi
+  })
+  const redactedSbi = await generateRandomUniqueSbi()
+  const applications = await getApplicationsBySbi(sbi)
+
+  const index = applications.findIndex((application) => application.reference === reference)
+
+  return {
+    reference,
+    redactedSbi,
+    data: {
+      sbi,
+      startDate: applications.length ? applications[index].createdAt : undefined,
+      endDate: applications.length ? applications[index + 1]?.createdAt : undefined,
+      claims: claimReferences.map((claimReference) => ({ reference: claimReference }))
+    }
+  }
+}
 
 const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) => {
   // skip if application has paid

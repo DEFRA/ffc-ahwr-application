@@ -47,7 +47,7 @@ const sbiExists = async (value) => {
   return result !== null
 }
 
-export const generateRandomUniqueSBI = async () => {
+export const generateRandomUniqueSbi = async () => {
   let sbi
   let exists = true
   while (exists) {

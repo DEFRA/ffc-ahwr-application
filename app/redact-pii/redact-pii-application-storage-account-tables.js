@@ -7,8 +7,8 @@ export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
   try {
     logger.info(`applicationStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
     for (const { data, redactedSbi } of agreementsToRedact) {
-      const { sbi, claims } = data
-      await redactApplicationEventPII(sbi, redactedSbi, logger)
+      const { sbi, claims, startDate, endDate } = data
+      await redactApplicationEventPII(sbi, redactedSbi, logger, startDate, endDate)
       await redactIneligibilityPII(sbi, redactedSbi, logger)
       await Promise.all(
         claims.map(({ reference }) => redactStatusPII(reference, logger))

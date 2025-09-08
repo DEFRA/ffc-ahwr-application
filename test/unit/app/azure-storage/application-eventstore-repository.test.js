@@ -82,5 +82,55 @@ describe('Application Event Store Repository test', () => {
         mockLogger
       )
     })
+
+    test('should call replaceEntitiesByPartitionKey with the correct parameters when given startDate and endDate', async () => {
+      const mockLogger = jest.fn()
+
+      const startDate = '2025-03-05T03:18:00.000Z'
+      const endDate = '2025-09-18T18:34:00.000Z'
+
+      await redactPII('123456789', '987654321', mockLogger, startDate, endDate)
+
+      expect(replaceEntitiesByPartitionKey).toHaveBeenCalledTimes(1)
+      expect(replaceEntitiesByPartitionKey).toHaveBeenCalledWith(
+        'ahwreventstore',
+        '123456789',
+        "PartitionKey eq '123456789' and EventRaised ge '2025-03-04T21:18:00.000Z' and EventRaised lt '2025-09-18T12:34:00.000Z'",
+        {
+          ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
+          EventBy: REDACT_PII_VALUES.REDACTED_EVENT_BY,
+          Payload: {
+            cph: REDACT_PII_VALUES.CPH,
+            exception: REDACT_PII_VALUES.REDACTED_EXCEPTION,
+            farmerName: REDACT_PII_VALUES.REDACTED_FARMER_NAME,
+            organisationName: REDACT_PII_VALUES.REDACTED_ORGANISATION_NAME,
+            orgEmail: REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
+            email: REDACT_PII_VALUES.REDACTED_EMAIL,
+            name: REDACT_PII_VALUES.REDACTED_NAME,
+            address: REDACT_PII_VALUES.REDACTED_ADDRESS,
+            vetName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
+            vetRcvs: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
+            vetsName: REDACT_PII_VALUES.REDACTED_VETS_NAME,
+            vetRcvsNumber: REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER,
+            urnResult: REDACT_PII_VALUES.REDACTED_URN_RESULT,
+            latestEndemicsApplication: REDACT_PII_VALUES.REDACTED_LATEST_ENDEMICS_APPLICATION,
+            latestVetVisitApplication: REDACT_PII_VALUES.REDACTED_LATEST_VET_VISIT_APPLICATION,
+            relevantReviewForEndemics: REDACT_PII_VALUES.REDACTED_RELEVANT_REVIEW_FOR_ENDEMICS,
+            previousClaims: REDACT_PII_VALUES.REDACTED_PREVIOUS_CLAIMS,
+            herdName: REDACT_PII_VALUES.REDACTED_HERD_NAME,
+            herdCph: REDACT_PII_VALUES.REDACTED_CPH,
+            herds: REDACT_PII_VALUES.REDACTED_HERDS,
+            flagDetail: REDACT_PII_VALUES.REDACTED_FLAG_DETAIL,
+            deletedNote: REDACT_PII_VALUES.REDACTED_DELETED_NOTE,
+            note: REDACT_PII_VALUES.REDACTED_NOTE,
+            invalidClaimData: REDACT_PII_VALUES.REDACTED_INVALID_CLAIM_DATA,
+            raisedBy: REDACT_PII_VALUES.REDACTED_RAISED_BY,
+            message: REDACT_PII_VALUES.REDACTED_MESSAGE
+          }
+        },
+        '987654321',
+        mockLogger
+      )
+    })
   })
 })
