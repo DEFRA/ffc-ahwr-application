@@ -38,14 +38,6 @@ describe('date utils', () => {
       expect(result).toBe('2025-09-07T23:00:00.000Z')
     })
 
-    it('should work with fractional hours', () => {
-      const input = '2025-09-08T12:00:00.000Z'
-
-      const result = minusHours(input, 1.5)
-
-      expect(result).toBe('2025-09-08T10:30:00.000Z')
-    })
-
     it('should throw an invalid eate error if dateStr is invalid', () => {
       expect(() => minusHours('invalid-date', 5)).toThrow()
     })

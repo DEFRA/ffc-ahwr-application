@@ -42,7 +42,7 @@ describe('Application Ineligibility Repository test', () => {
       expect(replaceEntitiesByPartitionKey).toHaveBeenCalledWith(
         'ffcahwrineligibility',
         '123456789',
-        "PartitionKey eq '123456789' and EventRaised ge '2025-03-04T21:18:00.000Z' and EventRaised lt '2025-09-18T12:34:00.000Z'",
+        "PartitionKey eq '123456789' and ChangedOn ge '2025-03-04T21:18:00.000Z' and ChangedOn lt '2025-09-18T12:34:00.000Z'",
         {
           ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
           Payload: {
