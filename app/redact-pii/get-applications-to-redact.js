@@ -1,5 +1,5 @@
 import { APPLICATION_REFERENCE_PREFIX_OLD_WORLD, CLAIM_STATUS, REDACT_PII_PROGRESS_STATUS } from 'ffc-ahwr-common-library'
-import { getFailedApplicationRedact, createApplicationRedact } from '../repositories/application-redact-repository.js'
+import { getFailedApplicationRedact, createApplicationRedact, generateRandomUniqueSBI } from '../repositories/application-redact-repository.js'
 import { buildData } from '../data/index.js'
 import { getApplicationsToRedactOlderThan, getOWApplicationsToRedactLastUpdatedBefore } from '../repositories/application-repository.js'
 import { getAppRefsWithLatestClaimLastUpdatedBefore, getByApplicationReference } from '../repositories/claim-repository.js'
@@ -37,9 +37,16 @@ const createApplicationsToRedact = async (requestedDate) => {
 
   const agreementsToRedact = Array.from(uniqueAgreements.values())
 
-  return sequelize.transaction(async () => Promise.all(
-    agreementsToRedact.map((agreement) => createApplicationRedact(agreement))
-  ))
+  return sequelize.transaction(async () => {
+    const createdAgreementsToRedact = []
+    for (const agreement of agreementsToRedact) {
+      const redactedSbi = await generateRandomUniqueSBI()
+      const agreementToRedact = await createApplicationRedact({ ...agreement, redactedSbi })
+
+      createdAgreementsToRedact.push(agreementToRedact)
+    }
+    return createdAgreementsToRedact
+  })
 }
 
 const getStatus = (agreementsToRedact) => {

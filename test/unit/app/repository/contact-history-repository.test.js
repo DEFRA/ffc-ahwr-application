@@ -237,9 +237,10 @@ describe('Contact history Repository test', () => {
     const mockLogger = { info: jest.fn() }
     buildData.models.contact_history.update.mockResolvedValue([2, [{ applicationReference: 'IAHW-FAK3-FAK3', data: { field: 'foo' } }, { applicationReference: 'IAHW-FAK3-FAK3', data: { field: 'bar' } }]])
 
-    await redactPII('IAHW-FAK3-FAK3', mockLogger)
+    await redactPII('IAHW-FAK3-FAK3', '104034858', mockLogger)
 
     expect(buildData.models.contact_history.update).toHaveBeenCalledWith({
+      sbi: '104034858',
       data: expect.any(Object),
       updatedBy: 'admin',
       updatedAt: expect.any(Number)
