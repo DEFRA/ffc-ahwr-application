@@ -69,9 +69,6 @@ const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
   return agreementsToRedactWithNoPayment
 }
 const buildApplicationRedact = async (reference, sbi, claimReferences) => {
-  console.log({
-    sbi
-  })
   const redactedSbi = await generateRandomUniqueSbi()
   const applications = await getApplicationsBySbi(sbi)
 
