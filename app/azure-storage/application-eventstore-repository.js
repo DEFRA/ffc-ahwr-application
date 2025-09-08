@@ -2,14 +2,9 @@ import { queryEntitiesByPartitionKey } from './query-entities.js'
 import { odata } from '@azure/data-tables'
 import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { replaceEntitiesByPartitionKey } from './update-entities.js'
+import { minusHours } from '../lib/date-utils.js'
 
 const REDACT_HOURS_BEFORE = 6
-
-const minusHours = (dateStr, hours) => {
-  const date = new Date(dateStr)
-  date.setHours(date.getHours() - hours)
-  return date.toISOString()
-}
 
 export const getApplicationEvents = async (sbi) => {
   const eventRecords = await queryEntitiesByPartitionKey(

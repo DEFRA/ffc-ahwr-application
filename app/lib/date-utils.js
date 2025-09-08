@@ -9,3 +9,9 @@ export const startandEndDate = (date) => {
   endDate.setDate(startDate.getDate() + 1)
   return { startDate, endDate }
 }
+
+export const minusHours = (dateStr, hours) => {
+  const date = new Date(dateStr)
+  date.setHours(date.getHours() - hours)
+  return date.toISOString()
+}
