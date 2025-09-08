@@ -9,7 +9,7 @@ export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
     for (const { data, redactedSbi } of agreementsToRedact) {
       const { sbi, claims, startDate, endDate } = data
       await redactApplicationEventPII(sbi, redactedSbi, logger, startDate, endDate)
-      await redactIneligibilityPII(sbi, redactedSbi, logger)
+      await redactIneligibilityPII(sbi, redactedSbi, logger, startDate, endDate)
       await Promise.all(
         claims.map(({ reference }) => redactStatusPII(reference, logger))
       )

@@ -55,8 +55,8 @@ describe('redactPII', () => {
     expect(redactApplicationEventPII).toHaveBeenCalledWith('SBI456', '5821549261', mockLogger, '2025-04-05T00:00:00.000Z', '2025-08-05T00:00:00.000Z')
 
     expect(redactIneligibilityPII).toHaveBeenCalledTimes(2)
-    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI123', '4371549251', mockLogger)
-    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI456', '5821549261', mockLogger)
+    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI123', '4371549251', mockLogger, '2024-04-05T00:00:00.000Z', '2024-08-05T00:00:00.000Z')
+    expect(redactIneligibilityPII).toHaveBeenCalledWith('SBI456', '5821549261', mockLogger, '2025-04-05T00:00:00.000Z', '2025-08-05T00:00:00.000Z')
 
     expect(redactStatusPII).toHaveBeenCalledTimes(3)
     expect(redactStatusPII).toHaveBeenCalledWith('CLAIM-1', mockLogger)
