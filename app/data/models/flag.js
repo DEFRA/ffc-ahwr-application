@@ -40,6 +40,12 @@ export const flag = (sequelize, DataTypes) => {
       targetKey: 'applicationReference',
       as: 'claim'
     })
+
+    flagModel.hasMany(models.application_redact, {
+      sourceKey: 'applicationReference',
+      foreignKey: 'reference',
+      as: 'applicationRedacts'
+    })
   }
 
   return flagModel

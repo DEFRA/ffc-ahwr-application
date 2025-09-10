@@ -79,7 +79,22 @@ describe('Flag Repository tests', () => {
   test('getAllFlags', async () => {
     await getAllFlags()
 
-    expect(models.flag.findAll).toHaveBeenCalledWith({ where: { deletedAt: null, deletedBy: null } })
+    expect(models.flag.findAll).toHaveBeenCalledWith(
+      {
+        where: { deletedAt: null, deletedBy: null },
+        include: [
+          {
+            model: models.application_redact,
+            as: 'applicationRedacts',
+            attributes: ['success'],
+            where: {
+              success: 'Y'
+            },
+            required: false
+          }
+        ]
+      }
+    )
   })
 
   test('getFlagsForApplicationIncludingDeleted', async () => {

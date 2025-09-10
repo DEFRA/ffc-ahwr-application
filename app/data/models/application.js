@@ -35,6 +35,11 @@ export const application = (sequelize, DataTypes) => {
       sourceKey: 'reference',
       foreignKey: 'applicationReference'
     })
+    applicationModel.hasMany(models.application_redact, {
+      sourceKey: 'reference',
+      foreignKey: 'reference',
+      as: 'applicationRedacts'
+    })
   }
 
   return applicationModel

@@ -1,5 +1,7 @@
 import joi from 'joi'
 import { v4 as uuid } from 'uuid'
+import Boom from '@hapi/boom'
+
 import {
   getApplication,
   searchApplications,
@@ -281,6 +283,10 @@ export const applicationHandlers = [
 
         if (application === null) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
+        }
+
+        if (application.applicationRedacts?.length > 0) {
+          throw Boom.badRequest('Unable to create flag for redacted agreement')
         }
 
         const flag = await getFlagByAppRef(ref, appliesToMh)

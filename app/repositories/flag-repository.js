@@ -30,7 +30,20 @@ export const deleteFlag = async (flagId, user, deletedNote) => {
 }
 
 export const getAllFlags = async () => {
-  return models.flag.findAll({ where: { deletedAt: null, deletedBy: null } })
+  return models.flag.findAll({
+    where: { deletedAt: null, deletedBy: null },
+    include: [
+      {
+        model: models.application_redact,
+        as: 'applicationRedacts',
+        attributes: ['success'],
+        where: {
+          success: 'Y'
+        },
+        required: false
+      }
+    ]
+  })
 }
 
 export const getFlagsForApplicationIncludingDeleted = async (applicationReference) => {

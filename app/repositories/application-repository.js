@@ -24,6 +24,15 @@ export const getApplication = async (reference) => {
             deletedBy: null
           },
           required: false
+        },
+        {
+          model: models.application_redact,
+          as: 'applicationRedacts',
+          attributes: ['success'],
+          where: {
+            success: 'Y'
+          },
+          required: false
         }
       ]
     })
@@ -245,7 +254,20 @@ export const updateApplicationByReference = async (dataWithNote, publishEvent = 
 }
 
 export const findApplication = async (reference) => {
-  const application = await models.application.findOne({ where: { reference } })
+  const application = await models.application.findOne({
+    where: { reference },
+    include: [
+      {
+        model: models.application_redact,
+        as: 'applicationRedacts',
+        attributes: ['success'],
+        where: {
+          success: 'Y'
+        },
+        required: false
+      }
+    ]
+  })
 
   return application === null ? application : application.dataValues
 }
