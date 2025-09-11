@@ -1,5 +1,5 @@
 import { getApplicationsToRedact } from '../../../../app/redact-pii/get-applications-to-redact'
-import { getFailedApplicationRedact, createApplicationRedact, generateRandomUniqueSbi } from '../../../../app/repositories/application-redact-repository'
+import { getFailedApplicationRedact, createApplicationRedact } from '../../../../app/repositories/application-redact-repository'
 import { getApplicationsBySbi, getApplicationsToRedactOlderThan, getOWApplicationsToRedactLastUpdatedBefore } from '../../../../app/repositories/application-repository'
 import { getByApplicationReference, getAppRefsWithLatestClaimLastUpdatedBefore } from '../../../../app/repositories/claim-repository'
 import { when } from 'jest-when'
@@ -55,22 +55,16 @@ describe('get-applications-to-redact', () => {
     when(getApplicationsBySbi).calledWith('323456789').mockResolvedValueOnce([{ reference: 'IAHW-9C72-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('423456789').mockResolvedValueOnce([{ reference: 'AHWR-7C72-8871', createdAt: '2025-12-05T00:00:00.000Z' }])
 
-    generateRandomUniqueSbi
-      .mockResolvedValueOnce('5738383312')
-      .mockResolvedValueOnce('6738383312')
-      .mockResolvedValueOnce('7738383312')
-      .mockResolvedValueOnce('8738383312')
-
     const result = await getApplicationsToRedact(requestedDate)
 
     expect(getApplicationsToRedactOlderThan).toHaveBeenCalled()
     expect(createApplicationRedact).toHaveBeenCalledTimes(4)
     expect(result).toEqual({
       applicationsToRedact: [
-        { reference: 'IAHW-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '5738383312' },
-        { reference: 'IAHW-8C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-06-05T00:00:00.000Z' }, redactedSbi: '6738383312' },
-        { reference: 'IAHW-9C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '7738383312' },
-        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-12-05T00:00:00.000Z' }, redactedSbi: '8738383312' }
+        { reference: 'IAHW-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'IAHW-8C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-06-05T00:00:00.000Z' } },
+        { reference: 'IAHW-9C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-12-05T00:00:00.000Z' } }
       ],
       status: ['applications-to-redact']
     })
@@ -125,10 +119,6 @@ describe('get-applications-to-redact', () => {
     when(getApplicationsBySbi).calledWith('123456789').mockResolvedValueOnce([{ reference: 'AHWR-7C72-8871', createdAt: '2025-04-05T00:00:00.000Z' }, { reference: 'IAHW-1A12-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('223456789').mockResolvedValueOnce([{ reference: 'AHWR-8C72-8871', createdAt: '2025-04-05T00:00:00.000Z' }, { reference: 'IAHW-1A12-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('323456789').mockResolvedValueOnce([{ reference: 'AHWR-9C72-8871', createdAt: '2025-04-05T00:00:00.000Z' }, { reference: 'IAHW-1A12-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
-    generateRandomUniqueSbi
-      .mockResolvedValueOnce('5738383312')
-      .mockResolvedValueOnce('6738383312')
-      .mockResolvedValueOnce('7738383312')
 
     const result = await getApplicationsToRedact(requestedDate)
 
@@ -136,9 +126,9 @@ describe('get-applications-to-redact', () => {
     expect(createApplicationRedact).toHaveBeenCalledTimes(3)
     expect(result).toEqual({
       applicationsToRedact: [
-        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '5738383312' },
-        { reference: 'AHWR-8C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'AHWR-8C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '6738383312' },
-        { reference: 'AHWR-9C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'AHWR-9C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '7738383312' }
+        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'AHWR-8C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'AHWR-8C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'AHWR-9C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'AHWR-9C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } }
       ],
       status: ['applications-to-redact']
     })
@@ -183,11 +173,6 @@ describe('get-applications-to-redact', () => {
     when(getApplicationsBySbi).calledWith('223456789').mockResolvedValueOnce([{ reference: 'AHWR-8C72-8872', createdAt: '2025-04-05T00:00:00.000Z' }, { reference: 'IAHW-1A12-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('323456789').mockResolvedValueOnce([{ reference: 'IAHW-9C72-8873', createdAt: '2025-04-05T00:00:00.000Z' }, { reference: 'IAHW-1A12-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('423456789').mockResolvedValueOnce([{ reference: 'IAHW-9C72-8874', createdAt: '2025-04-05T00:00:00.000Z' }, { reference: 'IAHW-1A12-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
-    generateRandomUniqueSbi
-      .mockResolvedValueOnce('5738383312')
-      .mockResolvedValueOnce('6738383312')
-      .mockResolvedValueOnce('7738383312')
-      .mockResolvedValueOnce('8738383312')
 
     const result = await getApplicationsToRedact(requestedDate)
 
@@ -195,8 +180,8 @@ describe('get-applications-to-redact', () => {
     expect(createApplicationRedact).toHaveBeenCalledTimes(2)
     expect(result).toEqual({
       applicationsToRedact: [
-        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '5738383312' },
-        { reference: 'IAHW-9C72-8874', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'REBC-2' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '6738383312' }
+        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'IAHW-9C72-8874', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'REBC-2' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } }
       ],
       status: ['applications-to-redact']
     })
@@ -238,11 +223,6 @@ describe('get-applications-to-redact', () => {
     when(getApplicationsBySbi).calledWith('223456789').mockResolvedValueOnce([{ reference: 'AHWR-7C72-8872', createdAt: '2025-06-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('323456789').mockResolvedValueOnce([{ reference: 'IAHW-9C72-8873', createdAt: '2025-08-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('423456789').mockResolvedValueOnce([{ reference: 'IAHW-9C72-8874', createdAt: '2025-12-05T00:00:00.000Z' }])
-    generateRandomUniqueSbi
-      .mockResolvedValueOnce('5738383312')
-      .mockResolvedValueOnce('6738383312')
-      .mockResolvedValueOnce('7738383312')
-      .mockResolvedValueOnce('8738383312')
 
     const result = await getApplicationsToRedact(requestedDate)
 
@@ -250,10 +230,10 @@ describe('get-applications-to-redact', () => {
     expect(createApplicationRedact).toHaveBeenCalledTimes(4)
     expect(result).toEqual({
       applicationsToRedact: [
-        { reference: 'IAHW-9C72-8873', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '7738383312' },
-        { reference: 'IAHW-9C72-8874', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'REBC-2' }], startDate: '2025-12-05T00:00:00.000Z' }, redactedSbi: '8738383312' },
-        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '5738383312' },
-        { reference: 'AHWR-7C72-8872', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'AHWR-7C72-8872' }], startDate: '2025-06-05T00:00:00.000Z' }, redactedSbi: '6738383312' }
+        { reference: 'IAHW-9C72-8873', requestedDate, status: 'applications-to-redact', data: { sbi: '323456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'IAHW-9C72-8874', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'REBC-2' }], startDate: '2025-12-05T00:00:00.000Z' } },
+        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'AHWR-7C72-8872', requestedDate, status: 'applications-to-redact', data: { sbi: '223456789', claims: [{ reference: 'AHWR-7C72-8872' }], startDate: '2025-06-05T00:00:00.000Z' } }
       ],
       status: ['applications-to-redact']
     })
@@ -290,11 +270,6 @@ describe('get-applications-to-redact', () => {
     ])
     when(getApplicationsBySbi).calledWith('123456789').mockResolvedValue([{ reference: 'IAHW-7C72-8871', createdAt: '2025-04-05T00:00:00.000Z' }, { reference: 'IAHW-1A12-8871', createdAt: '2025-08-05T00:00:00.000Z' }])
     when(getApplicationsBySbi).calledWith('423456789').mockResolvedValue([{ reference: 'AHWR-7C72-8871', createdAt: '2025-06-05T00:00:00.000Z' }])
-    generateRandomUniqueSbi
-      .mockResolvedValueOnce('5738383312')
-      .mockResolvedValueOnce('6738383312')
-      .mockResolvedValueOnce('7738383312')
-      .mockResolvedValueOnce('8738383312')
 
     const result = await getApplicationsToRedact(requestedDate)
 
@@ -302,8 +277,8 @@ describe('get-applications-to-redact', () => {
     expect(createApplicationRedact).toHaveBeenCalledTimes(2)
     expect(result).toEqual({
       applicationsToRedact: [
-        { reference: 'IAHW-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' }, redactedSbi: '5738383312' },
-        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-06-05T00:00:00.000Z' }, redactedSbi: '6738383312' }
+        { reference: 'IAHW-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '123456789', claims: [{ reference: 'REBC-1' }], startDate: '2025-04-05T00:00:00.000Z', endDate: '2025-08-05T00:00:00.000Z' } },
+        { reference: 'AHWR-7C72-8871', requestedDate, status: 'applications-to-redact', data: { sbi: '423456789', claims: [{ reference: 'AHWR-7C72-8871' }], startDate: '2025-06-05T00:00:00.000Z' } }
       ],
       status: ['applications-to-redact']
     })

@@ -6,7 +6,7 @@ const { documentGeneratorApiUri } = config
 
 export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
   const endpoint = `${documentGeneratorApiUri}/redact/pii`
-  const agreementsToRedactPayload = agreementsToRedact.map(({ reference, data, redactedSbi }) => { return { reference, sbi: data.sbi, redactedSbi } })
+  const agreementsToRedactPayload = agreementsToRedact.map(({ reference, data }) => { return { reference, sbi: data.sbi } })
   try {
     await wreck.post(endpoint, { json: true, payload: { agreementsToRedact: agreementsToRedactPayload } })
   } catch (err) {

@@ -1,16 +1,13 @@
-import { replaceEntitiesByPartitionKey } from './update-entities.js'
+import { updateEntitiesByPartitionKey } from './update-entities.js'
 import { odata } from '@azure/data-tables'
 import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 import { minusHours } from '../lib/date-utils.js'
 
 const REDACT_HOURS_BEFORE = 6
 
-export const redactPII = async (sbi, redactedSbi, logger, startDate, endDate) => {
+export const redactPII = async (sbi, logger, startDate, endDate) => {
   const propertiesToMerge = {
-    ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
-    Payload: {
-      sbi: redactedSbi
-    }
+    ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY
   }
 
   let queryFilter = odata`PartitionKey eq '${sbi}'`
@@ -25,12 +22,11 @@ export const redactPII = async (sbi, redactedSbi, logger, startDate, endDate) =>
     queryFilter += ` and ChangedOn lt '${eventEndDate}'`
   }
 
-  await replaceEntitiesByPartitionKey(
+  await updateEntitiesByPartitionKey(
     'ffcahwrineligibility',
     sbi,
     queryFilter,
     propertiesToMerge,
-    redactedSbi,
     logger
   )
 }

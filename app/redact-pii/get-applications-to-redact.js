@@ -1,5 +1,5 @@
 import { APPLICATION_REFERENCE_PREFIX_OLD_WORLD, CLAIM_STATUS, REDACT_PII_PROGRESS_STATUS } from 'ffc-ahwr-common-library'
-import { getFailedApplicationRedact, createApplicationRedact, generateRandomUniqueSbi } from '../repositories/application-redact-repository.js'
+import { getFailedApplicationRedact, createApplicationRedact } from '../repositories/application-redact-repository.js'
 import { buildData } from '../data/index.js'
 import { getApplicationsToRedactOlderThan, getApplicationsBySbi, getOWApplicationsToRedactLastUpdatedBefore } from '../repositories/application-repository.js'
 import { getAppRefsWithLatestClaimLastUpdatedBefore, getByApplicationReference } from '../repositories/claim-repository.js'
@@ -69,14 +69,12 @@ const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
   return agreementsToRedactWithNoPayment
 }
 const buildApplicationRedact = async (reference, sbi, claimReferences) => {
-  const redactedSbi = await generateRandomUniqueSbi()
   const applications = await getApplicationsBySbi(sbi)
 
   const index = applications.findIndex((application) => application.reference === reference)
 
   return {
     reference,
-    redactedSbi,
     data: {
       sbi,
       startDate: applications.length ? applications[index].createdAt : undefined,

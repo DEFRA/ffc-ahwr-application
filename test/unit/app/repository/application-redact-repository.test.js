@@ -1,6 +1,5 @@
-import { Sequelize } from 'sequelize'
 import { buildData } from '../../../../app/data/index.js'
-import { getFailedApplicationRedact, createApplicationRedact, updateApplicationRedact, generateRandomUniqueSbi } from '../../../../app/repositories/application-redact-repository.js'
+import { getFailedApplicationRedact, createApplicationRedact, updateApplicationRedact } from '../../../../app/repositories/application-redact-repository.js'
 
 jest.mock('../../../../app/data/index.js', () => {
   const mockFindAll = jest.fn()
@@ -78,7 +77,7 @@ describe('application-redact-repository', () => {
       expect(result).toEqual(mockResponse)
     })
 
-    it('should update an application redact with redactedSbi and return updated rows', async () => {
+    it('should update an application redact and return updated rows', async () => {
       const mockId = 3
       const mockData = { retryCount: 2, status: [], success: 'N' }
       const mockUpdatedRecord = { id: mockId, ...mockData }
@@ -86,53 +85,17 @@ describe('application-redact-repository', () => {
 
       models.application_redact.update.mockResolvedValue(mockResponse)
 
-      const result = await updateApplicationRedact(mockId, mockData.retryCount, mockData.status, mockData.success, '10583957', {})
+      const result = await updateApplicationRedact(mockId, mockData.retryCount, mockData.status, mockData.success, {})
 
       expect(models.application_redact.update).toHaveBeenCalledWith(
         {
           retryCount: mockData.retryCount,
           status: mockData.status,
-          success: mockData.success,
-          data: Sequelize.literal(
-            'jsonb_set("data", \'{sbi}\', \'"10583957"\')'
-          )
+          success: mockData.success
         },
         { where: { id: mockId }, returning: true }
       )
       expect(result).toEqual(mockResponse)
     })
-  })
-})
-
-describe('generateRandomUniqueSBI', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it('should generate a random unique SBI on first attempt when it does not already exist', async () => {
-    models.application_redact.findOne.mockResolvedValueOnce(null)
-
-    const result = await generateRandomUniqueSbi()
-
-    expect(models.application_redact.findOne).toHaveBeenCalledTimes(1)
-    expect(models.application_redact.findOne).toHaveBeenCalledWith({
-      where: {
-        redactedSbi: expect.any(String)
-      }
-    })
-    expect(result.length).toEqual(10)
-  })
-
-  it('should generate a random unique SBI on second attempt when first attempt already exists', async () => {
-    models.application_redact.findOne.mockResolvedValueOnce({
-      id: 1,
-      sbi: 123
-    })
-    models.application_redact.findOne.mockResolvedValueOnce(null)
-
-    const result = await generateRandomUniqueSbi()
-
-    expect(models.application_redact.findOne).toHaveBeenCalledTimes(2)
-    expect(result.length).toEqual(10)
   })
 })

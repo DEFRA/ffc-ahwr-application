@@ -372,14 +372,13 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
     )
 }
 
-export const redactPII = async (agreementReference, redactedSbi, logger) => {
+export const redactPII = async (agreementReference, logger) => {
   const redactedValueByJSONPath = {
     'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
     'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
     'organisation,orgEmail': REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
     'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
-    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS,
-    'organisation,sbi': redactedSbi
+    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
   }
   let totalUpdates = 0
 
