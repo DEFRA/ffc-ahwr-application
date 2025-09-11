@@ -173,10 +173,6 @@ describe('Application Flag tests', () => {
       }
       const res = await server.inject(options)
 
-      console.log({
-        payload: res.payload
-      })
-
       expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST)
       expect(JSON.parse(res.payload).message).toBe('Unable to create flag for redacted agreement')
       expect(createFlag).not.toHaveBeenCalled()
