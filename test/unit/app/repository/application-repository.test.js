@@ -1200,7 +1200,7 @@ describe('Application Repository test', () => {
     })
   })
 
-  test('get', async () => {
+  test('getApplication', async () => {
     const reference = 'AHWR-5C1C-CCCC'
 
     when(models.application.findOne)
@@ -1219,6 +1219,15 @@ describe('Application Repository test', () => {
             attributes: ['appliesToMh'],
             where: {
               deletedBy: null
+            },
+            required: false
+          },
+          {
+            model: models.application_redact,
+            as: 'applicationRedacts',
+            attributes: ['success'],
+            where: {
+              success: 'Y'
             },
             required: false
           }
@@ -1250,6 +1259,15 @@ describe('Application Repository test', () => {
           attributes: ['appliesToMh'],
           where: {
             deletedBy: null
+          },
+          required: false
+        },
+        {
+          model: models.application_redact,
+          as: 'applicationRedacts',
+          attributes: ['success'],
+          where: {
+            success: 'Y'
           },
           required: false
         }
@@ -1293,7 +1311,18 @@ describe('Application Repository test', () => {
       .calledWith({
         where: {
           reference: ref
-        }
+        },
+        include: [
+          {
+            model: models.application_redact,
+            as: 'applicationRedacts',
+            attributes: ['success'],
+            where: {
+              success: 'Y'
+            },
+            required: false
+          }
+        ]
       })
       .mockResolvedValue({
         dataValues: {
@@ -1311,7 +1340,18 @@ describe('Application Repository test', () => {
     expect(models.application.findOne).toHaveBeenCalledWith({
       where: {
         reference: ref
-      }
+      },
+      include: [
+        {
+          model: models.application_redact,
+          as: 'applicationRedacts',
+          attributes: ['success'],
+          where: {
+            success: 'Y'
+          },
+          required: false
+        }
+      ]
     })
   })
 
@@ -1322,7 +1362,18 @@ describe('Application Repository test', () => {
       .calledWith({
         where: {
           reference: ref
-        }
+        },
+        include: [
+          {
+            model: models.application_redact,
+            as: 'applicationRedacts',
+            attributes: ['success'],
+            where: {
+              success: 'Y'
+            },
+            required: false
+          }
+        ]
       })
       .mockResolvedValue(null)
 
@@ -1334,7 +1385,18 @@ describe('Application Repository test', () => {
     expect(models.application.findOne).toHaveBeenCalledWith({
       where: {
         reference: ref
-      }
+      },
+      include: [
+        {
+          model: models.application_redact,
+          as: 'applicationRedacts',
+          attributes: ['success'],
+          where: {
+            success: 'Y'
+          },
+          required: false
+        }
+      ]
     })
   })
 

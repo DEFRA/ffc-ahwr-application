@@ -144,6 +144,39 @@ describe('Application Flag tests', () => {
       expect(res.statusCode).toBe(HttpStatus.NOT_FOUND)
       expect(createFlag).not.toHaveBeenCalled()
     })
+
+    test('flagging an application returns a 400 if application is redacted', async () => {
+      findApplication.mockResolvedValue({
+        reference: 'IAHW-F3F4-GGDE',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: {
+          organisation: {
+            sbi: '123456789'
+          }
+        },
+        applicationRedacts: [
+          {
+            success: 'Y'
+          }
+        ]
+      })
+
+      const options = {
+        method: 'POST',
+        url: '/api/application/IAHW-F3F4-GGDE/flag',
+        payload: {
+          user: 'Dave',
+          note: 'This needs more flagging',
+          appliesToMh: false
+        }
+      }
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(HttpStatus.BAD_REQUEST)
+      expect(JSON.parse(res.payload).message).toBe('Unable to create flag for redacted agreement')
+      expect(createFlag).not.toHaveBeenCalled()
+    })
   })
 
   describe('GET /api/application/{ref}/flag', () => {
