@@ -7,7 +7,7 @@
   <changeSet id="40" author="Ross Jarvis">
     <addColumn tableName="application_redact">
       <column name="redactedSbi" type="VARCHAR(10)">
-        <constraints nullable="false"/>
+        <constraints nullable="true"/>
       </column>
     </addColumn>
 
