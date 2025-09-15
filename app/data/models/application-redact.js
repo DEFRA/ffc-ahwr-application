@@ -44,7 +44,7 @@ export const applicationRedact = (sequelize, DataTypes) => {
       },
       redactedSbi: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
       }
     },
     {
