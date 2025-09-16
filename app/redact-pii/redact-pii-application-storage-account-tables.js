@@ -6,10 +6,10 @@ import { updateApplicationRedactRecords } from './update-application-redact-reco
 export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
   try {
     logger.info(`applicationStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`)
-    for (const { data, redactedSbi } of agreementsToRedact) {
-      const { sbi, claims } = data
-      await redactApplicationEventPII(sbi, redactedSbi, logger)
-      await redactIneligibilityPII(sbi, redactedSbi, logger)
+    for (const { data } of agreementsToRedact) {
+      const { sbi, claims, startDate, endDate } = data
+      await redactApplicationEventPII(sbi, logger, startDate, endDate)
+      await redactIneligibilityPII(sbi, logger, startDate, endDate)
       await Promise.all(
         claims.map(({ reference }) => redactStatusPII(reference, logger))
       )

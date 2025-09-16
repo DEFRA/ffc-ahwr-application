@@ -22,13 +22,11 @@ describe('create', () => {
   const agreementsToRedact = [
     {
       reference: 'AHWR-123',
-      data: { sbi: 'SBI-001' },
-      redactedSbi: '1058347297'
+      data: { sbi: '1058347297' }
     },
     {
       reference: 'AHWR-456',
-      data: { sbi: 'SBI-002' },
-      redactedSbi: '1035925297'
+      data: { sbi: '1035925297' }
     }
   ]
 

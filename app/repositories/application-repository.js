@@ -372,14 +372,13 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
     )
 }
 
-export const redactPII = async (agreementReference, redactedSbi, logger) => {
+export const redactPII = async (agreementReference, logger) => {
   const redactedValueByJSONPath = {
     'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
     'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
     'organisation,orgEmail': REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
     'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
-    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS,
-    'organisation,sbi': redactedSbi
+    'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
   }
   let totalUpdates = 0
 
@@ -442,4 +441,14 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
       createdBy: user
     })
   }
+}
+
+export const getApplicationsBySbi = async (sbi) => {
+  return models.application.findAll({
+    where: Sequelize.where(
+      Sequelize.json('data.organisation.sbi'),
+      sbi
+    ),
+    order: [['createdAt', 'ASC']]
+  })
 }

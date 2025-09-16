@@ -17,9 +17,9 @@ export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
         limit(async () => {
           await redactHerdPII(agreement.reference)
           await redactFlagPII(agreement.reference)
-          await redactContactHistoryPII(agreement.reference, agreement.redactedSbi, logger)
+          await redactContactHistoryPII(agreement.reference, logger)
           await redactClaimPII(agreement.reference, logger)
-          await redactApplicationPII(agreement.reference, agreement.redactedSbi, logger)
+          await redactApplicationPII(agreement.reference, logger)
         })
       )
     )

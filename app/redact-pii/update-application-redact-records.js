@@ -13,7 +13,7 @@ export const updateApplicationRedactRecords = async (applicationsToRedact, incre
       applicationsToRedact.map((a) =>
         limit(() => {
           const retryCount = incrementRetryCount ? Number(a.retryCount) + 1 : a.retryCount
-          return updateApplicationRedact(a.id, retryCount, status.join(), success, a.redactedSbi, { transaction: t })
+          return updateApplicationRedact(a.id, retryCount, status.join(), success, { transaction: t })
         })
       )
     )

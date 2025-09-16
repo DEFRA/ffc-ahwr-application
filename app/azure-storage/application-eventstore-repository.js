@@ -1,7 +1,10 @@
 import { queryEntitiesByPartitionKey } from './query-entities.js'
 import { odata } from '@azure/data-tables'
 import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
-import { replaceEntitiesByPartitionKey } from './update-entities.js'
+import { updateEntitiesByPartitionKey } from './update-entities.js'
+import { minusHours } from '../lib/date-utils.js'
+
+const REDACT_HOURS_BEFORE = 6
 
 export const getApplicationEvents = async (sbi) => {
   const eventRecords = await queryEntitiesByPartitionKey(
@@ -16,7 +19,7 @@ export const getApplicationEvents = async (sbi) => {
   return eventRecords
 }
 
-export const redactPII = async (sbi, redactedSbi, logger) => {
+export const redactPII = async (sbi, logger, startDate, endDate) => {
   const propertiesToMerge = {
     ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY,
     EventBy: REDACT_PII_VALUES.REDACTED_EVENT_BY,
@@ -50,12 +53,23 @@ export const redactPII = async (sbi, redactedSbi, logger) => {
     }
   }
 
-  await replaceEntitiesByPartitionKey(
+  let queryFilter = odata`PartitionKey eq '${sbi}'`
+
+  if (startDate) {
+    const eventStartDate = minusHours(startDate, REDACT_HOURS_BEFORE)
+    queryFilter += ` and EventRaised ge '${eventStartDate}'`
+  }
+
+  if (endDate) {
+    const eventEndDate = minusHours(endDate, REDACT_HOURS_BEFORE)
+    queryFilter += ` and EventRaised lt '${eventEndDate}'`
+  }
+
+  await updateEntitiesByPartitionKey(
     'ahwreventstore',
     sbi,
-    odata`PartitionKey eq '${sbi}'`,
+    queryFilter,
     propertiesToMerge,
-    redactedSbi,
     logger
   )
 }

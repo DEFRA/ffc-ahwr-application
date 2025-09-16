@@ -116,9 +116,9 @@ export const replaceEntitiesByPartitionKey = async (
     }
 
     await Promise.all(updates)
-    logger.info(`Redacted ${updates.length} entities in '${tableName}' with PartitionKey = '${partitionKey}'`)
+    logger.info(`Redacted ${updates.length} entities in ${tableName} with PartitionKey: ${partitionKey}`)
   } catch (error) {
-    logger.error('Error during update:', error)
+    logger.error(error, `Error replacing entities in table ${tableName} with PartionKey: ${partitionKey}`)
     throw error
   }
 }
