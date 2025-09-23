@@ -7,7 +7,6 @@ import {
 } from '../../../constants/index.js'
 import joi from 'joi'
 import { PIG_GENETIC_SEQUENCING_VALUES } from 'ffc-ahwr-common-library'
-import { config } from '../../../config/index.js'
 
 const POSITIVE_SAMPLE_REQ = 6
 const NEGATIVE_SAMPLE_REQ = 30
@@ -27,7 +26,6 @@ const reviewTestResults = { reviewTestResults: joi.string().valid(testResultsCon
 const herdVaccinationStatus = { herdVaccinationStatus: joi.string().valid('vaccinated', 'notVaccinated').required() }
 const numberOfSamplesTested = { numberOfSamplesTested: joi.number().valid(POSITIVE_SAMPLE_REQ, NEGATIVE_SAMPLE_REQ).required() }
 
-const diseaseStatus = { diseaseStatus: joi.string().valid('1', '2', '3', '4').required() }
 const pigsFollowUpTest = { pigsFollowUpTest: joi.string().valid('pcr', 'elisa').required() }
 const pigsPcrTestResult = { pigsPcrTestResult: joi.string().when('pigsFollowUpTest', { is: 'pcr', then: joi.string().valid('positive', 'negative').required() }) }
 const pigsElisaTestResult = { pigsElisaTestResult: joi.string().when('pigsFollowUpTest', { is: 'elisa', then: joi.string().valid('positive', 'negative').required() }) }
@@ -36,10 +34,6 @@ const pigsGeneticSequencing = { pigsGeneticSequencing: joi.string().when('pigsPc
 const biosecurityData = { biosecurity: joi.alternatives().try(joi.string().valid(biosecurity.no), joi.object({ biosecurity: joi.string().valid(biosecurity.yes), assessmentPercentage: joi.string().pattern(/^(?!0$)(100|\d{1,2})$/) })).required() }
 
 const getPigDiseaseData = () => {
-  if (config.pigUpdates.enabled === false) {
-    return diseaseStatus
-  }
-
   return {
     ...pigsFollowUpTest,
     ...pigsPcrTestResult,
