@@ -57,7 +57,6 @@ container:
   sfdMessageQueueAddress: ffc-ahwr-sfd-message
   messageGeneratorQueueAddress: ffc-ahwr-message-generator
   multiHerdsReleaseDate: '2025-05-01'
-  pigUpdatesEnabled: 'false'
   storeHistoryInDbEnabled: 'false'
   featureAssuranceEnabled: 'true'
   featureAssuranceStartDate: '2025-05-01'
