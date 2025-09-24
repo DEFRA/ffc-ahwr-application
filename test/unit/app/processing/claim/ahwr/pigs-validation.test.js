@@ -3,7 +3,6 @@ import {
   claimType,
   livestockTypes
 } from '../../../../../../app/constants/index.js'
-import { config } from '../../../../../../app/config/index.js'
 
 describe('Pigs Validation Tests', () => {
   const applicationFlags = []
@@ -103,22 +102,13 @@ describe('Pigs Validation Tests', () => {
     validPigsFollowupClaimPostUpdate.data.pigsGeneticSequencing = 'mlv'
     delete validPigsFollowupClaimPostUpdate.data.diseaseStatus
 
-    it('should return true for valid pigs follow up claim - pig updates disabled', () => {
-      config.pigUpdates.enabled = false
-      const { error, value } = validateAhwrClaim(validPigsFollowUpClaimPreUpdate, applicationFlags)
-      expect(value).toBeDefined()
-      expect(error).toBeUndefined()
-    })
-
-    it('should return true for valid pigs follow up claim - pig updates enabled, PCR positive', () => {
-      config.pigUpdates.enabled = true
+    it('should return true for valid pigs follow up claim - PCR positive', () => {
       const { error, value } = validateAhwrClaim(validPigsFollowupClaimPostUpdate, applicationFlags)
       expect(value).toBeDefined()
       expect(error).toBeUndefined()
     })
 
-    it('should return true for valid pigs follow up claim - pig updates enabled, PCR negative', () => {
-      config.pigUpdates.enabled = true
+    it('should return true for valid pigs follow up claim - PCR negative', () => {
       const claim = deepClone(validPigsFollowupClaimPostUpdate)
       claim.data.pigsPcrTestResult = 'negative'
       claim.data.biosecurity = 'no'
@@ -129,8 +119,7 @@ describe('Pigs Validation Tests', () => {
       expect(error).toBeUndefined()
     })
 
-    it('should return true for valid pigs follow up claim - pig updates enabled, Elisa positive', () => {
-      config.pigUpdates.enabled = true
+    it('should return true for valid pigs follow up claim - Elisa positive', () => {
       const claim = deepClone(validPigsFollowupClaimPostUpdate)
       claim.data.pigsFollowUpTest = 'elisa'
       claim.data.pigsElisaTestResult = 'positive'

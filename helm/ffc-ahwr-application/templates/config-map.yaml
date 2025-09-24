@@ -25,7 +25,6 @@ data:
   SFD_MESSAGE_QUEUE_ADDRESS: {{ quote .Values.container.sfdMessageQueueAddress }}
   MESSAGE_GENERATOR_QUEUE_ADDRESS: {{ quote .Values.container.messageGeneratorQueueAddress }}
   MULTI_HERDS_RELEASE_DATE: {{ quote .Values.container.multiHerdsReleaseDate }}
-  PIG_UPDATES_ENABLED: {{ quote .Values.container.pigUpdatesEnabled }}
   STORE_HISTORY_IN_DB_ENABLED: {{ quote .Values.container.storeHistoryInDbEnabled }}
   FEATURE_ASSURANCE_ENABLED: {{ quote .Values.container.featureAssuranceEnabled }}
   FEATURE_ASSURANCE_START: {{ quote .Values.container.featureAssuranceStartDate }}
