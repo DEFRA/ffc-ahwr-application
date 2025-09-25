@@ -1142,6 +1142,15 @@ describe('Application Repository test', () => {
                 deletedBy: null
               },
               required: false
+            },
+            {
+              model: models.application_redact,
+              as: 'applicationRedacts',
+              attributes: ['success'],
+              where: {
+                success: 'Y'
+              },
+              required: false
             }
           ],
           order: [['createdAt', 'DESC']]
@@ -1162,6 +1171,15 @@ describe('Application Repository test', () => {
             attributes: ['appliesToMh'],
             where: {
               deletedBy: null
+            },
+            required: false
+          },
+          {
+            model: models.application_redact,
+            as: 'applicationRedacts',
+            attributes: ['success'],
+            where: {
+              success: 'Y'
             },
             required: false
           }
