@@ -44,6 +44,6 @@ describe('Process Message test', () => {
     await processApplication(message, mockLogger)
     expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
     expect(mockErrorLogger).toHaveBeenNthCalledWith(1, 'Application validation error - ValidationError: "confirmCheckDetails" is required.')
-    expect(mockErrorLogger).toHaveBeenNthCalledWith(2, 'Failed to process application', expect.any(Error))
+    expect(mockErrorLogger).toHaveBeenNthCalledWith(2, expect.any(Error), 'Failed to process application')
   })
 })

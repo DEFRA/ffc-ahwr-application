@@ -1198,6 +1198,17 @@ describe('Application Repository test', () => {
         where: {
           'data.organisation.sbi': sbi
         },
+        include: [
+          {
+            model: models.application_redact,
+            as: 'applicationRedacts',
+            attributes: ['success'],
+            where: {
+              success: 'Y'
+            },
+            required: false
+          }
+        ],
         order: [['createdAt', 'DESC']]
       })
       .mockResolvedValue({
@@ -1215,6 +1226,17 @@ describe('Application Repository test', () => {
       where: {
         'data.organisation.sbi': sbi
       },
+      include: [
+        {
+          model: models.application_redact,
+          as: 'applicationRedacts',
+          attributes: ['success'],
+          where: {
+            success: 'Y'
+          },
+          required: false
+        }
+      ],
       order: [['createdAt', 'DESC']]
     })
   })
