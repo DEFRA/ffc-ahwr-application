@@ -125,7 +125,8 @@ describe(('Store application in database'), () => {
             reference: MOCK_REFERENCE
           },
           createdAt: MOCK_NOW,
-          statusId: testCase.when.statusId
+          statusId: testCase.when.statusId,
+          applicationRedacts: []
         })
 
       const mockErrorLogger = jest.fn()
@@ -157,7 +158,8 @@ describe(('Store application in database'), () => {
           },
           statusId: applicationStatus.readyToPay,
           createdAt: mockApplicationDate,
-          type: 'EE'
+          type: 'EE',
+          applicationRedacts: [{ success: 'Y' }]
         })
 
       const mockErrorLogger = jest.fn()
@@ -257,6 +259,36 @@ describe(('Store application in database'), () => {
     await processApplication(data, mockLogger)
     expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
     expect(mockErrorLogger).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "organisation.email" is required.'))
+  })
+
+  test('successfully submits when existing application is redacted', async () => {
+    when(getBySbi)
+      .calledWith(
+        data.organisation.sbi
+      )
+      .mockResolvedValue({
+        dataValues: {
+          reference: MOCK_REFERENCE
+        },
+        createdAt: MOCK_NOW,
+        statusId: applicationStatus.readyToPay,
+        applicationRedacts: [{ success: 'N' }]
+      })
+
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
+
+    await processApplication(data, mockLogger)
+
+    expect(setApplication).toHaveBeenCalledTimes(1)
+    expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
+      reference: MOCK_REFERENCE,
+      data,
+      createdBy: 'admin',
+      createdAt: expect.any(Date),
+      statusId: applicationStatus.agreed,
+      type: 'VV'
+    }))
   })
 
   describe('processApplicationApi', () => {
