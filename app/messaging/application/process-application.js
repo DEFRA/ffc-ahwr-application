@@ -8,7 +8,9 @@ import { createApplicationReference } from '../../lib/create-reference.js'
 import { getBySbi, setApplication } from '../../repositories/application-repository.js'
 
 const isPreviousApplicationRelevant = (existingApplication) => {
-  return existingApplication?.type === 'EE' && ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId)
+  return existingApplication?.type === 'EE' &&
+    ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(existingApplication?.statusId) &&
+    !existingApplication?.applicationRedacts?.length
 }
 
 export const processApplicationApi = async (body, logger) => {
@@ -42,10 +44,10 @@ export const processApplication = async (data, logger) => {
       existingApplicationReference = existingApplication.dataValues.reference
       throw Object.assign(
         new Error(
-            `Recent application already exists: ${JSON.stringify({
-              reference: existingApplication.dataValues.reference,
-              createdAt: existingApplication.dataValues.createdAt
-            })}`
+          `Recent application already exists: ${JSON.stringify({
+            reference: existingApplication.dataValues.reference,
+            createdAt: existingApplication.dataValues.createdAt
+          })}`
         ),
         {
           applicationState: messagingStates.alreadyExists
@@ -87,13 +89,13 @@ export const processApplication = async (data, logger) => {
         }
         )
       } catch (error) {
-        logger.error('Failed to request application document generation and email', error)
+        logger.error(error, 'Failed to request application document generation and email')
       }
     }
 
     return response
   } catch (error) {
-    logger.error('Failed to process application', error)
+    logger.error(error, 'Failed to process application')
     appInsights.defaultClient.trackException({ exception: error })
 
     return {

@@ -73,6 +73,17 @@ export const getBySbi = async (sbi) => {
     where: {
       'data.organisation.sbi': sbi
     },
+    include: [
+      {
+        model: models.application_redact,
+        as: 'applicationRedacts',
+        attributes: ['success'],
+        where: {
+          success: 'Y'
+        },
+        required: false
+      }
+    ],
     order: [['createdAt', 'DESC']]
   })
 }

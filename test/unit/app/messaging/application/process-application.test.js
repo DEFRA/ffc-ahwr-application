@@ -125,7 +125,8 @@ describe(('Store application in database'), () => {
             reference: MOCK_REFERENCE
           },
           createdAt: MOCK_NOW,
-          statusId: testCase.when.statusId
+          statusId: testCase.when.statusId,
+          applicationRedacts: []
         })
 
       const mockErrorLogger = jest.fn()
@@ -157,7 +158,8 @@ describe(('Store application in database'), () => {
           },
           statusId: applicationStatus.readyToPay,
           createdAt: mockApplicationDate,
-          type: 'EE'
+          type: 'EE',
+          applicationRedacts: []
         })
 
       const mockErrorLogger = jest.fn()
@@ -168,11 +170,11 @@ describe(('Store application in database'), () => {
       expect(setApplication).toHaveBeenCalledTimes(0)
       expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
       expect(mockErrorLogger).toHaveBeenCalledWith(
-        'Failed to process application',
         new Error(`Recent application already exists: ${JSON.stringify({
           reference: MOCK_NW_REFERENCE,
           createdAt: mockApplicationDate
-        })}`)
+        })}`),
+        'Failed to process application'
       )
     })
 
@@ -209,13 +211,12 @@ describe(('Store application in database'), () => {
     const mockErrorLogger = jest.fn()
     const mockLogger = { error: mockErrorLogger }
 
-    data.offerStatus = 'rejected'
-    await processApplication(data, mockLogger)
+    await processApplication({ ...data, offerStatus: 'rejected' }, mockLogger)
 
     expect(setApplication).toHaveBeenCalledTimes(1)
     expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
       reference: MOCK_REFERENCE,
-      data,
+      data: { ...data, offerStatus: 'rejected' },
       createdBy: 'admin',
       createdAt: expect.any(Date),
       statusId: applicationStatus.notAgreed,
@@ -247,16 +248,46 @@ describe(('Store application in database'), () => {
     await processApplication(data, mockLogger)
 
     expect(requestApplicationDocumentGenerateAndEmail).not.toHaveBeenCalled()
-    expect(mockErrorLogger).toHaveBeenCalledWith('Failed to process application', expect.any(Error))
+    expect(mockErrorLogger).toHaveBeenCalledWith(expect.any(Error), 'Failed to process application')
   })
 
   test('Application submission message validation failed', async () => {
     const mockErrorLogger = jest.fn()
     const mockLogger = { error: mockErrorLogger }
-    delete data.organisation.email
-    await processApplication(data, mockLogger)
+
+    await processApplication({ ...data, organisation: { ...data.organisation, email: undefined } }, mockLogger)
+
     expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
     expect(mockErrorLogger).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "organisation.email" is required.'))
+  })
+
+  test('successfully submits when existing application is redacted', async () => {
+    when(getBySbi)
+      .calledWith(
+        data.organisation.sbi
+      )
+      .mockResolvedValue({
+        dataValues: {
+          reference: MOCK_REFERENCE
+        },
+        createdAt: MOCK_NOW,
+        statusId: applicationStatus.readyToPay,
+        applicationRedacts: [{ success: 'Y' }]
+      })
+    const mockErrorLogger = jest.fn()
+    const mockLogger = { error: mockErrorLogger }
+
+    await processApplication({ ...data, type: 'EE' }, mockLogger)
+
+    expect(setApplication).toHaveBeenCalledTimes(1)
+    expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
+      reference: MOCK_REFERENCE,
+      data: { ...data, type: 'EE' },
+      createdBy: 'admin',
+      createdAt: expect.any(Date),
+      statusId: applicationStatus.agreed,
+      type: 'EE'
+    }))
   })
 
   describe('processApplicationApi', () => {
@@ -307,7 +338,7 @@ describe(('Store application in database'), () => {
       const response = await processApplicationApi({ some: 'invalid data' }, mockLogger)
 
       expect(mockErrorLogger).toHaveBeenNthCalledWith(1, expect.stringContaining('Application validation error - ValidationError: "confirmCheckDetails" is required.'))
-      expect(mockErrorLogger).toHaveBeenNthCalledWith(2, 'Failed to process application', expect.anything())
+      expect(mockErrorLogger).toHaveBeenNthCalledWith(2, expect.anything(), 'Failed to process application')
       expect(response).toEqual(expect.objectContaining({
         applicationReference: null,
         applicationState: 'failed'
@@ -344,7 +375,7 @@ describe(('Store application in database'), () => {
       requestApplicationDocumentGenerateAndEmail.mockImplementation(() => { throw new Error() })
 
       await processApplication(testData, mockLogger)
-      expect(mockErrorLogger).toHaveBeenNthCalledWith(1, 'Failed to request application document generation and email', expect.anything())
+      expect(mockErrorLogger).toHaveBeenNthCalledWith(1, expect.anything(), 'Failed to request application document generation and email')
       expect(setApplication).toHaveBeenCalledTimes(1)
     })
 
@@ -368,7 +399,7 @@ describe(('Store application in database'), () => {
       await processApplicationQueue({ some: 'invalid data' }, mockLogger)
 
       expect(mockInfoLogger).toHaveBeenCalledWith('Processing application...')
-      expect(mockErrorLogger).toHaveBeenCalledWith('Failed to process application', expect.any(Error))
+      expect(mockErrorLogger).toHaveBeenCalledWith(expect.any(Error), 'Failed to process application')
       expect(requestApplicationDocumentGenerateAndEmail).toHaveBeenCalledTimes(0)
     })
   })
