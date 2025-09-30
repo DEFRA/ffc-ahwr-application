@@ -203,7 +203,7 @@ describe(('Store application in database'), () => {
     })
   })
 
-  test.only('successfully submits when application rejected', async () => {
+  test('successfully submits when application rejected', async () => {
     setApplication.mockResolvedValue({
       dataValues: { reference: MOCK_REFERENCE }
     })
@@ -286,7 +286,7 @@ describe(('Store application in database'), () => {
       createdBy: 'admin',
       createdAt: expect.any(Date),
       statusId: applicationStatus.agreed,
-      type: 'VV'
+      type: 'EE'
     }))
   })
 
