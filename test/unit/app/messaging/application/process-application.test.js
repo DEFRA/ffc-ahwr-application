@@ -277,12 +277,12 @@ describe(('Store application in database'), () => {
     const mockErrorLogger = jest.fn()
     const mockLogger = { error: mockErrorLogger }
 
-    await processApplication(data, mockLogger)
+    await processApplication({ ...data, type: 'EE' }, mockLogger)
 
     expect(setApplication).toHaveBeenCalledTimes(1)
     expect(setApplication).toHaveBeenCalledWith(expect.objectContaining({
       reference: MOCK_REFERENCE,
-      data,
+      data: { ...data, type: 'EE' },
       createdBy: 'admin',
       createdAt: expect.any(Date),
       statusId: applicationStatus.agreed,
