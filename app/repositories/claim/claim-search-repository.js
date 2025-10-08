@@ -4,11 +4,11 @@ import { buildData } from '../../data/index.js'
 
 const { models } = buildData
 
-const evalSortField = (sort) => {
+const evalSortField = (sort, searchType) => {
   const direction = sort?.direction ?? 'ASC'
   const field = sort?.field?.toLowerCase()
 
-  if (!field) {
+  if (!field || (searchType === 'status' && field === 'status')) {
     return ['createdAt', direction]
   }
 
@@ -64,7 +64,7 @@ export const searchClaims = async (search, filter, offset, limit, sort = { field
 
   const claims = await models.claim.findAll({
     ...query,
-    order: [evalSortField(sort)],
+    order: [evalSortField(sort, search.type)],
     limit,
     offset
   })
