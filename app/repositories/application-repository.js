@@ -463,6 +463,36 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
   }
 }
 
+export const getRemindersToSend = async (_requestedDate, _reminderType) => {
+  // TODO BH 1334 implement db query
+  return [
+    {
+      reminders: 'notClaimed_threeMonths',
+      reference: 'IAHW-BEKR-AWIU', 
+      crn: '1100407200', 
+      sbi: '106282723', 
+      email: 'defra-vets-visits-testing@equalexperts.com', 
+      orgEmail: undefined,
+    }
+  ]
+}
+
+export const updateReminders = async (reference, value) => {
+  // TODO BH 1334 implement db update
+  // await models.application.update(
+  //   { reminders: value },
+  //   {
+  //     where: {
+  //       reference,
+  //       reminders: { [Op.ne]: value } // only update if value has changed
+  //     },
+  //     returning: true
+  //   }
+  // )
+
+  // TODO BH 1334 application_update_history
+}
+
 export const getApplicationsBySbi = async (sbi) => {
   return models.application.findAll({
     where: Sequelize.where(

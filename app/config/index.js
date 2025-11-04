@@ -19,10 +19,12 @@ const buildConfig = () => {
     applicationEmailDocRequestMsgType: Joi.string(),
     moveClaimToPaidMsgType: Joi.string(),
     redactPiiRequestMsgType: Joi.string(),
+    reminderEmailRequestMsgType: Joi.string(),
     submitPaymentRequestMsgType: Joi.string(),
     complianceCheckRatio: Joi.number().default(1),
     sfdRequestMsgType: Joi.string(),
     messageGeneratorMsgType: Joi.string(),
+    messageGeneratorMsgReminderType: Joi.string(),
     multiHerds: {
       releaseDate: Joi.string().required()
     },
@@ -47,10 +49,12 @@ const buildConfig = () => {
     applicationEmailDocRequestMsgType: `${msgTypePrefix}.app.email.doc.request`,
     moveClaimToPaidMsgType: `${msgTypePrefix}.set.paid.status`,
     redactPiiRequestMsgType: `${msgTypePrefix}.redact.pii.request`,
+    reminderEmailRequestMsgType: `${msgTypePrefix}.email.reminder.request`,
     submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
     complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
     messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
+    messageGeneratorMsgReminderType: `reminderEmail`, // TODO BH 1334 change type to align, message-generator change
     multiHerds: {
       releaseDate: process.env.MULTI_HERDS_RELEASE_DATE || '2025-05-01'
     },
