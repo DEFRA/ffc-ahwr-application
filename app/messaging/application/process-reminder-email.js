@@ -62,24 +62,25 @@ export const processReminderEmailRequest = async (message, logger) => {
 
 const getApplicationsDueReminderEmail = async (requestedDate, logger) => {
   const { threeMonths, sixMonths, nineMonths } = reminders.notClaimed
+  const THREE_MONTHS = 3; const SIX_MONTHS = 6; const NINE_MONTHS = 9
 
   // applicationsWithoutClaimAfterNineMonths
   const nineMonthReminderWindowStart = new Date(requestedDate)
-  nineMonthReminderWindowStart.setUTCMonth(nineMonthReminderWindowStart.getMonth() - 9)
+  nineMonthReminderWindowStart.setUTCMonth(nineMonthReminderWindowStart.getMonth() - NINE_MONTHS)
   const notClaimedNineMonths = await getRemindersToSend(nineMonths, nineMonthReminderWindowStart, undefined, [], logger)
 
   // applicationsWithoutClaimAfterSixMonths
   const sixMonthReminderWindowStart = new Date(requestedDate)
-  sixMonthReminderWindowStart.setUTCMonth(sixMonthReminderWindowStart.getMonth() - 6)
+  sixMonthReminderWindowStart.setUTCMonth(sixMonthReminderWindowStart.getMonth() - SIX_MONTHS)
   const sixMonthReminderWindowEnd = new Date(requestedDate)
-  sixMonthReminderWindowEnd.setUTCMonth(sixMonthReminderWindowEnd.getMonth() - 9)
+  sixMonthReminderWindowEnd.setUTCMonth(sixMonthReminderWindowEnd.getMonth() - NINE_MONTHS)
   const notClaimedSixMonths = await getRemindersToSend(sixMonths, sixMonthReminderWindowStart, sixMonthReminderWindowEnd, [nineMonths], logger)
 
   // applicationsWithoutClaimAfterThreeMonths
   const threeMonthReminderWindowStart = new Date(requestedDate)
-  threeMonthReminderWindowStart.setUTCMonth(threeMonthReminderWindowStart.getMonth() - 3)
+  threeMonthReminderWindowStart.setUTCMonth(threeMonthReminderWindowStart.getMonth() - THREE_MONTHS)
   const threeMonthReminderWindowEnd = new Date(requestedDate)
-  threeMonthReminderWindowEnd.setUTCMonth(threeMonthReminderWindowEnd.getMonth() - 6)
+  threeMonthReminderWindowEnd.setUTCMonth(threeMonthReminderWindowEnd.getMonth() - SIX_MONTHS)
   const notClaimedThreeMonths = await getRemindersToSend(threeMonths, threeMonthReminderWindowStart, threeMonthReminderWindowEnd, [sixMonths, nineMonths], logger)
 
   // transform and promote to next reminder if within one week

@@ -7,6 +7,8 @@ import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event
 
 const { models, sequelize } = buildData
 
+const ATTRIBUTES_LOCATION_OF_SBI = 'data->\'organisation\'->>\'sbi\''
+
 export const getApplication = async (reference) => {
   return models.application.findOne(
     {
@@ -357,7 +359,7 @@ export const getApplicationsToRedactOlderThan = async (years) => {
             [Op.eq]: true
           }
         },
-        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi'], 'statusId'],
+        attributes: ['reference', [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'], 'statusId'],
         order: [['createdAt', 'ASC']]
       }
     )
@@ -386,7 +388,7 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
           },
           type: 'VV'
         },
-        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
+        attributes: ['reference', [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi']],
         order: [['updatedAt', 'ASC']]
       }
     )
@@ -486,7 +488,7 @@ export const getRemindersToSend = async (reminderType, reminderWindowStartDate, 
         attributes: [
           'reference',
           [literal('data->\'organisation\'->>\'crn\''), 'crn'], // TODO BH 1334 what if no CRN?
-          [literal('data->\'organisation\'->>\'sbi\''), 'sbi'],
+          [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'],
           [literal('data->\'organisation\'->>\'email\''), 'email'],
           [literal('data->\'organisation\'->>\'orgEmail\''), 'orgEmail'],
           'reminders',
