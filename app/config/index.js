@@ -54,7 +54,7 @@ const buildConfig = () => {
     complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
     messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
-    messageGeneratorMsgReminderType: `reminderEmail`, // TODO BH 1334 change type to align, message-generator change
+    messageGeneratorMsgReminderType: 'reminderEmail', // TODO BH 1334 change type to align, message-generator change
     multiHerds: {
       releaseDate: process.env.MULTI_HERDS_RELEASE_DATE || '2025-05-01'
     },

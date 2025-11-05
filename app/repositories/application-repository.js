@@ -468,11 +468,11 @@ export const getRemindersToSend = async (_requestedDate, _reminderType) => {
   return [
     {
       reminders: 'notClaimed_threeMonths',
-      reference: 'IAHW-BEKR-AWIU', 
-      crn: '1100407200', 
-      sbi: '106282723', 
-      email: 'defra-vets-visits-testing@equalexperts.com', 
-      orgEmail: undefined,
+      reference: 'IAHW-BEKR-AWIU',
+      crn: '1100407200',
+      sbi: '106282723',
+      email: 'defra-vets-visits-testing@equalexperts.com',
+      orgEmail: undefined
     }
   ]
 }
