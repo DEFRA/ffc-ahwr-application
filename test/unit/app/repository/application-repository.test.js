@@ -1892,22 +1892,38 @@ describe('getRemindersToSend', () => {
     jest.clearAllMocks()
   })
 
-  it('updates reminders on application', async () => {
-    // models.application.update.mockResolvedValueOnce([1])
+  it('get applications due notClaimed_threeMonths reminders, documents input, expected query structure and expected output', async () => {
+    models.application.findAll.mockResolvedValueOnce([
+      { dataValues: { reference: 'IAHW-BEKR-TEST', crn: '1000000000', sbi: '100000000', email: 'dummy@example.com', orgEmail: undefined, reminders: undefined, reminderType: 'notClaimed_threeMonths' } }
+    ])
 
-    const reminders = await getRemindersToSend('2024-11-05T00:00:00.000Z', 'notClaimed_threeMonths', mockLogger)
+    const reminders = await getRemindersToSend('notClaimed_threeMonths', '2025-08-05T00:00:00.000Z', '2024-05-05T00:00:00.000Z', ['notClaimed_sixMonths', 'notClaimed_nineMonths'], mockLogger)
 
-    // expect(models.application.update).toHaveBeenCalledWith(
-    //   { reminders: 'notClaimed_nineMonths' },
-    //   {
-    //     where: {
-    //       reference: 'IAHW-5BA2-6DFD'
-    //     },
-    //     returning: true
-    //   }
-    // )
+    expect(models.application.findAll).toHaveBeenCalledWith(
+      {
+        where: {
+          createdAt: {
+            [Op.lte]: '2025-08-05T00:00:00.000Z',
+            [Op.gte]: '2024-05-05T00:00:00.000Z'
+          },
+          reminders: {
+            [Op.notIn]: ['notClaimed_threeMonths', 'notClaimed_sixMonths', 'notClaimed_nineMonths']
+          }
+        },
+        attributes: [
+          'reference',
+          [{ val: "data->'organisation'->>'crn'" }, 'crn'],
+          [{ val: "data->'organisation'->>'sbi'" }, 'sbi'],
+          [{ val: "data->'organisation'->>'email'" }, 'email'],
+          [{ val: "data->'organisation'->>'orgEmail'" }, 'orgEmail'],
+          'reminders',
+          [{ val: "'notClaimed_threeMonths'" }, 'reminderType']
+        ],
+        order: [['createdAt', 'ASC']]
+      }
+    )
     expect(mockLogger.info).toHaveBeenCalledTimes(1)
-    expect(mockLogger.info).toHaveBeenCalledWith("Getting reminders due for 'notClaimed_threeMonths' and '2024-11-05T00:00:00.000Z'")
+    expect(mockLogger.info).toHaveBeenCalledWith("Getting reminders due, reminder type 'notClaimed_threeMonths', window start '2025-08-05T00:00:00.000Z', end '2024-05-05T00:00:00.000Z' and haven't already received later reminders 'notClaimed_sixMonths,notClaimed_nineMonths'")
     expect(reminders).toHaveLength(1)
   })
 })

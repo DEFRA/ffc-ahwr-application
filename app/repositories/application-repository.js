@@ -463,19 +463,38 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
   }
 }
 
-export const getRemindersToSend = async (requestedDate, reminderType, logger) => {
-  logger.info(`Getting reminders due for '${reminderType}' and '${requestedDate}'`)
-  // TODO BH 1334 implement db query
-  return [
-    {
-      reminders: 'notClaimed_threeMonths',
-      reference: 'IAHW-BEKR-AWIU',
-      crn: '1100407200',
-      sbi: '106282723',
-      email: 'defra-vets-visits-testing@equalexperts.com',
-      orgEmail: undefined
+export const getRemindersToSend = async (reminderType, reminderWindowStartDate, reminderWindowEndDate, laterReminders, logger) => {
+  logger.info(`Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`)
+  const reminderTypesToExclude = laterReminders ? [reminderType, ...laterReminders] : [reminderType]
+
+  const where = {
+    createdAt: {
+      [Op.lte]: reminderWindowStartDate
+    },
+    reminders: {
+      [Op.notIn]: reminderTypesToExclude
     }
-  ]
+  }
+  if (reminderWindowEndDate) {
+    where.createdAt[Op.gte] = reminderWindowEndDate
+  }
+
+  return models.application
+    .findAll(
+      {
+        where,
+        attributes: [
+          'reference',
+          [literal('data->\'organisation\'->>\'crn\''), 'crn'], // TODO BH 1334 what if no CRN?
+          [literal('data->\'organisation\'->>\'sbi\''), 'sbi'],
+          [literal('data->\'organisation\'->>\'email\''), 'email'],
+          [literal('data->\'organisation\'->>\'orgEmail\''), 'orgEmail'],
+          'reminders',
+          [literal(`'${reminderType}'`), 'reminderType']
+        ],
+        order: [['createdAt', 'ASC']]
+      }
+    )
 }
 
 export const updateReminders = async (reference, updatedReminders, logger) => {

@@ -53,7 +53,7 @@ export const processReminderEmailRequest = async (message, logger) => {
       await sendToMessageGenerator(payload)
       await saveLastReminderSent(application, logger)
     } catch (error) {
-      logger.error({ error }, 'Failed to processed reminders request')
+      logger.error(error, 'Failed to processed reminders request')
       throw error
     }
   }
@@ -61,24 +61,32 @@ export const processReminderEmailRequest = async (message, logger) => {
 }
 
 const getApplicationsDueReminderEmail = async (requestedDate, logger) => {
-  const { notClaimed } = reminders
+  const { threeMonths, sixMonths, nineMonths } = reminders.notClaimed
 
-  // TODO BH 1334 implement get apps
   // applicationsWithoutClaimAfterNineMonths
-  const notClaimedNineMonths = []
-  // applicationsWithoutClaimAfterSixMonths
-  const notClaimedSixMonths = await getRemindersToSend(requestedDate, notClaimed.threeMonths, logger)
-  // applicationsWithoutClaimAfterThreeMonths
-  const notClaimedThreeMonths = []
+  const nineMonthReminderWindowStart = new Date(requestedDate)
+  nineMonthReminderWindowStart.setUTCMonth(nineMonthReminderWindowStart.getMonth() - 9)
+  const notClaimedNineMonths = await getRemindersToSend(nineMonths, nineMonthReminderWindowStart, undefined, [], logger)
 
-  // order added to set matters, used to only send latest reminder due for each type
-  const remindersNotClaimed = [...new Set([...notClaimedNineMonths, ...notClaimedSixMonths, ...notClaimedThreeMonths])]
-    .map((r) => {
-      const lastReminder = r.reminders?.split('|').pop()
-      const nextReminder = getNextNotClaimedReminderToSend(lastReminder)
-      return { ...r, reminderType: nextReminder, reminders: nextReminder }
-    })
+  // applicationsWithoutClaimAfterSixMonths
+  const sixMonthReminderWindowStart = new Date(requestedDate)
+  sixMonthReminderWindowStart.setUTCMonth(sixMonthReminderWindowStart.getMonth() - 6)
+  const sixMonthReminderWindowEnd = new Date(requestedDate)
+  sixMonthReminderWindowEnd.setUTCMonth(sixMonthReminderWindowEnd.getMonth() - 9)
+  const notClaimedSixMonths = await getRemindersToSend(sixMonths, sixMonthReminderWindowStart, sixMonthReminderWindowEnd, [nineMonths], logger)
+
+  // applicationsWithoutClaimAfterThreeMonths
+  const threeMonthReminderWindowStart = new Date(requestedDate)
+  threeMonthReminderWindowStart.setUTCMonth(threeMonthReminderWindowStart.getMonth() - 3)
+  const threeMonthReminderWindowEnd = new Date(requestedDate)
+  threeMonthReminderWindowEnd.setUTCMonth(threeMonthReminderWindowEnd.getMonth() - 6)
+  const notClaimedThreeMonths = await getRemindersToSend(threeMonths, threeMonthReminderWindowStart, threeMonthReminderWindowEnd, [sixMonths, nineMonths], logger)
+
+  // transform and promote to next reminder if within one week
+  const remindersNotClaimed = [...notClaimedNineMonths, ...notClaimedSixMonths, ...notClaimedThreeMonths]
+    .map((reminder) => { return { ...reminder.dataValues } })
     // TODO BH 1334 promote to next reminder if within one week
+    // TODO BH 1334 deduplicate any email and orgEmails that are the same
 
   return [...remindersNotClaimed]
 }
@@ -102,6 +110,6 @@ const sendToMessageGenerator = async (reminder) => {
   )
 }
 
-const saveLastReminderSent = async ({ reference, reminders }, logger) => {
-  updateReminders(reference, reminders, logger)
+const saveLastReminderSent = async ({ reference, reminderType }, logger) => {
+  await updateReminders(reference, reminderType, logger)
 }

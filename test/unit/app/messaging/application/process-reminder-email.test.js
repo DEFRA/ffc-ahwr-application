@@ -27,12 +27,21 @@ describe('processReminderEmailRequest', () => {
   })
 
   it('should log and exit when there are no applications due reminders', async () => {
+    // requestedDate in message is '2025-11-05T00:00:00.000Z'
+    const threeMonthsBeforeRequestedDate = new Date('2025-08-05T00:00:00.000Z')
+    const sixMonthsBeforeRequestedDate = new Date('2025-05-05T00:00:00.000Z')
+    const nineMonthsBeforeRequestedDate = new Date('2025-02-05T00:00:00.000Z')
+
+    getRemindersToSend.mockResolvedValueOnce([])
+    getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([])
 
     await processReminderEmailRequest(message, mockLogger)
 
-    expect(getRemindersToSend).toHaveBeenCalledTimes(1)
-    expect(getRemindersToSend).toHaveBeenCalledWith('2025-11-05T00:00:00.000Z', 'notClaimed_threeMonths', mockLogger)
+    expect(getRemindersToSend).toHaveBeenCalledTimes(3)
+    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_nineMonths', nineMonthsBeforeRequestedDate, undefined, [], mockLogger)
+    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_sixMonths', sixMonthsBeforeRequestedDate, nineMonthsBeforeRequestedDate, ['notClaimed_nineMonths'], mockLogger)
+    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_threeMonths', threeMonthsBeforeRequestedDate, sixMonthsBeforeRequestedDate, ['notClaimed_sixMonths', 'notClaimed_nineMonths'], mockLogger)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(mockLogger.info).toHaveBeenCalledWith('No new applications due reminders')
@@ -41,13 +50,15 @@ describe('processReminderEmailRequest', () => {
   })
 
   it('should send to message-generator and update reminders for application when first reminder due', async () => {
+    getRemindersToSend.mockResolvedValueOnce([])
+    getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
-      { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: undefined }
+      { dataValues: { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: undefined, reminderType: 'notClaimed_threeMonths' } }
     ])
 
     await processReminderEmailRequest(message, mockLogger)
 
-    expect(getRemindersToSend).toHaveBeenCalledTimes(1)
+    expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(mockLogger.info).toHaveBeenCalledWith('Successfully processed reminders request')
@@ -69,13 +80,15 @@ describe('processReminderEmailRequest', () => {
   })
 
   it('should send notClaimed_sixMonths to two address when two email addresses and notClaimed_threeMonths already sent', async () => {
+    getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
-      { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy1@example.com', orgEmail: 'dummy2@example.com', reminders: 'notClaimed_threeMonths' }
+      { dataValues: { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy1@example.com', orgEmail: 'dummy2@example.com', reminders: 'notClaimed_threeMonths', reminderType: 'notClaimed_sixMonths' } }
     ])
+    getRemindersToSend.mockResolvedValueOnce([])
 
     await processReminderEmailRequest(message, mockLogger)
 
-    expect(getRemindersToSend).toHaveBeenCalledTimes(1)
+    expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(mockLogger.info).toHaveBeenCalledWith('Successfully processed reminders request')
@@ -97,6 +110,8 @@ describe('processReminderEmailRequest', () => {
   })
 
   it('should send to message-generator and update reminders for multiple applications when multiple reminders due', async () => {
+    getRemindersToSend.mockResolvedValueOnce([])
+    getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       { reference: 'IAHW-BEKR-AWI1', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths' },
       { reference: 'IAHW-BEKR-AWI2', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths' },
@@ -107,13 +122,15 @@ describe('processReminderEmailRequest', () => {
 
     await processReminderEmailRequest(message, mockLogger)
 
-    expect(getRemindersToSend).toHaveBeenCalledTimes(1)
+    expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(sendMessage).toHaveBeenCalledTimes(5)
     expect(updateReminders).toHaveBeenCalledTimes(5)
   })
 
   it('should log error and exit processing to allow message retry when fail send message-generator', async () => {
+    getRemindersToSend.mockResolvedValueOnce([])
+    getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: undefined }
     ])
@@ -121,7 +138,7 @@ describe('processReminderEmailRequest', () => {
 
     await expect(processReminderEmailRequest(message, mockLogger)).rejects.toThrow()
 
-    expect(getRemindersToSend).toHaveBeenCalledTimes(1)
+    expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(1)
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(sendMessage).toHaveBeenCalledTimes(1)
