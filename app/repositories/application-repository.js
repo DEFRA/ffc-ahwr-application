@@ -463,7 +463,8 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
   }
 }
 
-export const getRemindersToSend = async (_requestedDate, _reminderType) => {
+export const getRemindersToSend = async (requestedDate, reminderType, logger) => {
+  logger.info(`Getting reminders due for '${reminderType}' and '${requestedDate}'`)
   // TODO BH 1334 implement db query
   return [
     {
@@ -477,20 +478,21 @@ export const getRemindersToSend = async (_requestedDate, _reminderType) => {
   ]
 }
 
-export const updateReminders = async (reference, value) => {
-  // TODO BH 1334 implement db update
-  // await models.application.update(
-  //   { reminders: value },
-  //   {
-  //     where: {
-  //       reference,
-  //       reminders: { [Op.ne]: value } // only update if value has changed
-  //     },
-  //     returning: true
-  //   }
-  // )
+export const updateReminders = async (reference, updatedReminders, logger) => {
+  const [affectedCount] = await models.application.update(
+    {
+      reminders: updatedReminders
+    },
+    {
+      where: {
+        reference
+      },
+      returning: true
+    }
+  )
 
   // TODO BH 1334 application_update_history
+  logger.info(`Successfully updated reminders, rows affected: ${affectedCount}`)
 }
 
 export const getApplicationsBySbi = async (sbi) => {

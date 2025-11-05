@@ -1,0 +1,20 @@
+<?xml version="1.1" encoding="utf-8" standalone="no"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+  <changeSet id="42" author="Ben Hope">
+    <addColumn tableName="application">
+      <column name="reminders" type="VARCHAR(200)">
+        <constraints nullable="true"/>
+      </column>
+    </addColumn>
+
+  </changeSet>
+
+  <changeSet id="42-tag" author="Ben Hope">
+    <tagDatabase tag="v1.42.0"/>
+  </changeSet>
+
+</databaseChangeLog>

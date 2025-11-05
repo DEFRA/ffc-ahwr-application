@@ -6,7 +6,7 @@ import { getRemindersToSend, updateReminders } from '../../repositories/applicat
 const { messageGeneratorMsgReminderType, messageGeneratorQueue } = config
 
 // START copied from common-lib@3.0.2
-const getNextNotClaimedReminderToSend = (previousReminderSent) => {
+export const getNextNotClaimedReminderToSend = (previousReminderSent) => {
   return getNextReminderToSend(reminders.notClaimed, previousReminderSent)
 }
 const getNextReminderToSend = (type, previousReminderSent) => {
@@ -25,7 +25,7 @@ const getNextReminderToSend = (type, previousReminderSent) => {
   }
   throw new TypeError(`The type provided is not recognised, type:${type}`)
 }
-const reminders = Object.freeze({
+export const reminders = Object.freeze({
   notClaimed: Object.freeze({
     threeMonths: 'notClaimed_threeMonths',
     sixMonths: 'notClaimed_sixMonths',
@@ -51,7 +51,7 @@ export const processReminderEmailRequest = async (message, logger) => {
     const payload = constructMessage(application)
     try {
       await sendToMessageGenerator(payload)
-      await saveLastReminderSent(application)
+      await saveLastReminderSent(application, logger)
     } catch (error) {
       logger.error({ error }, 'Failed to processed reminders request')
       throw error
@@ -67,7 +67,7 @@ const getApplicationsDueReminderEmail = async (requestedDate, logger) => {
   // applicationsWithoutClaimAfterNineMonths
   const notClaimedNineMonths = []
   // applicationsWithoutClaimAfterSixMonths
-  const notClaimedSixMonths = await getRemindersToSend(requestedDate, notClaimed.threeMonths)
+  const notClaimedSixMonths = await getRemindersToSend(requestedDate, notClaimed.threeMonths, logger)
   // applicationsWithoutClaimAfterThreeMonths
   const notClaimedThreeMonths = []
 
@@ -102,6 +102,6 @@ const sendToMessageGenerator = async (reminder) => {
   )
 }
 
-const saveLastReminderSent = async ({ reference, reminders }) => {
-  updateReminders(reference, reminders)
+const saveLastReminderSent = async ({ reference, reminders }, logger) => {
+  updateReminders(reference, reminders, logger)
 }

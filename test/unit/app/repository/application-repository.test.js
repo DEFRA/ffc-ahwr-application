@@ -13,7 +13,9 @@ import {
   searchApplications,
   setApplication,
   updateApplicationByReference, updateApplicationData,
-  updateEligiblePiiRedaction
+  updateEligiblePiiRedaction,
+  getRemindersToSend,
+  updateReminders
 } from '../../../../app/repositories/application-repository'
 import { buildData } from '../../../../app/data'
 import { Op, Sequelize } from 'sequelize'
@@ -1878,5 +1880,62 @@ describe('getApplicationsBySbi', () => {
     const result = await getApplicationsBySbi(mockSbi)
 
     expect(result).toEqual([])
+  })
+})
+
+describe('getRemindersToSend', () => {
+  const mockLogger = {
+    info: jest.fn()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('updates reminders on application', async () => {
+    // models.application.update.mockResolvedValueOnce([1])
+
+    const reminders = await getRemindersToSend('2024-11-05T00:00:00.000Z', 'notClaimed_threeMonths', mockLogger)
+
+    // expect(models.application.update).toHaveBeenCalledWith(
+    //   { reminders: 'notClaimed_nineMonths' },
+    //   {
+    //     where: {
+    //       reference: 'IAHW-5BA2-6DFD'
+    //     },
+    //     returning: true
+    //   }
+    // )
+    expect(mockLogger.info).toHaveBeenCalledTimes(1)
+    expect(mockLogger.info).toHaveBeenCalledWith("Getting reminders due for 'notClaimed_threeMonths' and '2024-11-05T00:00:00.000Z'")
+    expect(reminders).toHaveLength(1)
+  })
+})
+
+describe('updateReminders', () => {
+  const mockLogger = {
+    info: jest.fn()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('updates reminders on application', async () => {
+    models.application.update.mockResolvedValueOnce([1])
+
+    await updateReminders('IAHW-5BA2-6DFD', 'notClaimed_nineMonths', mockLogger)
+
+    expect(models.application.update).toHaveBeenCalledWith(
+      { reminders: 'notClaimed_nineMonths' },
+      {
+        where: {
+          reference: 'IAHW-5BA2-6DFD'
+        },
+        returning: true
+      }
+    )
+    expect(mockLogger.info).toHaveBeenCalledTimes(1)
+    expect(mockLogger.info).toHaveBeenCalledWith('Successfully updated reminders, rows affected: 1')
   })
 })
