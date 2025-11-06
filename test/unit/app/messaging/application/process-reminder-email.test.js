@@ -76,7 +76,7 @@ describe('processReminderEmailRequest', () => {
       { sessionId: expect.any(String) }
     )
     expect(updateReminders).toHaveBeenCalledTimes(1)
-    expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_threeMonths', mockLogger)
+    expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_threeMonths', undefined, mockLogger)
   })
 
   it('should send notClaimed_sixMonths to two address when two email addresses and notClaimed_threeMonths already sent', async () => {
@@ -106,7 +106,7 @@ describe('processReminderEmailRequest', () => {
       { sessionId: expect.any(String) }
     )
     expect(updateReminders).toHaveBeenCalledTimes(1)
-    expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_sixMonths', mockLogger)
+    expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_sixMonths', 'notClaimed_threeMonths', mockLogger)
   })
 
   it('should send to message-generator and update reminders for multiple applications when multiple reminders due', async () => {

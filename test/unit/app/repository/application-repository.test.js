@@ -21,6 +21,7 @@ import { buildData } from '../../../../app/data'
 import { Op, Sequelize } from 'sequelize'
 import { claimDataUpdateEvent } from '../../../../app/event-publisher/claim-data-update-event.js'
 import { SEND_SESSION_EVENT } from '../../../../app/event-publisher'
+import { applicationStatus } from '../../../../app/constants/index.js'
 
 const { models } = buildData
 
@@ -1893,6 +1894,7 @@ describe('getRemindersToSend', () => {
   })
 
   it('get applications due notClaimed_threeMonths reminders, documents input, expected query structure and expected output', async () => {
+    const { notAgreed } = applicationStatus
     models.application.findAll.mockResolvedValueOnce([
       { dataValues: { reference: 'IAHW-BEKR-TEST', crn: '1000000000', sbi: '100000000', email: 'dummy@example.com', orgEmail: undefined, reminders: undefined, reminderType: 'notClaimed_threeMonths' } }
     ])
@@ -1902,6 +1904,15 @@ describe('getRemindersToSend', () => {
     expect(models.application.findAll).toHaveBeenCalledWith(
       {
         where: {
+          reference: {
+            [Op.like]: 'I%',
+            [Op.notIn]: {
+              val: '(SELECT DISTINCT "applicationReference" FROM claim)'
+            }
+          },
+          statusId: {
+            [Op.ne]: notAgreed
+          },
           createdAt: {
             [Op.lte]: '2025-08-05T00:00:00.000Z',
             [Op.gte]: '2024-05-05T00:00:00.000Z'
@@ -1940,7 +1951,7 @@ describe('updateReminders', () => {
   it('updates reminders on application', async () => {
     models.application.update.mockResolvedValueOnce([1])
 
-    await updateReminders('IAHW-5BA2-6DFD', 'notClaimed_nineMonths', mockLogger)
+    await updateReminders('IAHW-5BA2-6DFD', 'notClaimed_nineMonths', undefined, mockLogger)
 
     expect(models.application.update).toHaveBeenCalledWith(
       { reminders: 'notClaimed_nineMonths' },
@@ -1951,6 +1962,15 @@ describe('updateReminders', () => {
         returning: true
       }
     )
+    expect(models.application_update_history.create).toHaveBeenCalledWith({
+      eventType: 'application-reminders',
+      updatedProperty: 'reminders',
+      note: 'Reminder sent',
+      applicationReference: 'IAHW-5BA2-6DFD',
+      newValue: 'notClaimed_nineMonths',
+      oldValue: undefined,
+      createdBy: 'admin'
+    })
     expect(mockLogger.info).toHaveBeenCalledTimes(1)
     expect(mockLogger.info).toHaveBeenCalledWith('Successfully updated reminders, rows affected: 1')
   })

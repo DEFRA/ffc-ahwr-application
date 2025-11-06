@@ -4,6 +4,7 @@ import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+import { applicationStatus } from '../constants/index.js'
 
 const { models, sequelize } = buildData
 
@@ -467,9 +468,17 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
 
 export const getRemindersToSend = async (reminderType, reminderWindowStartDate, reminderWindowEndDate, laterReminders, logger) => {
   logger.info(`Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`)
+  const { notAgreed } = applicationStatus
   const reminderTypesToExclude = laterReminders ? [reminderType, ...laterReminders] : [reminderType]
 
   const where = {
+    reference: {
+      [Op.like]: 'I%',
+      [Op.notIn]: Sequelize.literal('(SELECT DISTINCT "applicationReference" FROM claim)')
+    },
+    statusId: {
+      [Op.ne]: notAgreed
+    },
     createdAt: {
       [Op.lte]: reminderWindowStartDate
     },
@@ -487,7 +496,7 @@ export const getRemindersToSend = async (reminderType, reminderWindowStartDate, 
         where,
         attributes: [
           'reference',
-          [literal('data->\'organisation\'->>\'crn\''), 'crn'], // TODO BH 1334 what if no CRN?
+          [literal('data->\'organisation\'->>\'crn\''), 'crn'],
           [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'],
           [literal('data->\'organisation\'->>\'email\''), 'email'],
           [literal('data->\'organisation\'->>\'orgEmail\''), 'orgEmail'],
@@ -499,10 +508,10 @@ export const getRemindersToSend = async (reminderType, reminderWindowStartDate, 
     )
 }
 
-export const updateReminders = async (reference, updatedReminders, logger) => {
+export const updateReminders = async (reference, newReminder, oldReminder, logger) => {
   const [affectedCount] = await models.application.update(
     {
-      reminders: updatedReminders
+      reminders: newReminder
     },
     {
       where: {
@@ -512,7 +521,21 @@ export const updateReminders = async (reference, updatedReminders, logger) => {
     }
   )
 
-  // TODO BH 1334 application_update_history
+  if (affectedCount > 0) {
+    const updatedProperty = 'reminders'
+    const type = `application-${updatedProperty}`
+
+    await models.application_update_history.create({
+      applicationReference: reference,
+      note: 'Reminder sent',
+      updatedProperty,
+      newValue: newReminder,
+      oldValue: oldReminder,
+      eventType: type,
+      createdBy: 'admin'
+    })
+  }
+
   logger.info(`Successfully updated reminders, rows affected: ${affectedCount}`)
 }
 
