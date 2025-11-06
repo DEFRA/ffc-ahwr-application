@@ -7,42 +7,13 @@ import { getRemindersToSend, updateReminders } from '../../repositories/applicat
 
 const { messageGeneratorMsgReminderType, messageGeneratorQueue } = config
 
-// START copied from common-lib@3.0.2
-export const getNextNotClaimedReminderToSend = (previousReminderSent) => {
-  return getNextReminderToSend(reminders.notClaimed, previousReminderSent)
-}
-const getNextReminderToSend = (type, previousReminderSent) => {
-  if (type === reminders.notClaimed) {
-    const { threeMonths, sixMonths, nineMonths } = reminders.notClaimed
-    switch (previousReminderSent) {
-      case threeMonths:
-        return sixMonths
-      case sixMonths:
-        return nineMonths
-      case nineMonths:
-        return undefined
-      default:
-        return threeMonths
-    }
-  }
-  throw new TypeError(`The type provided is not recognised, type:${type}`)
-}
-export const reminders = Object.freeze({
-  notClaimed: Object.freeze({
-    threeMonths: 'notClaimed_threeMonths',
-    sixMonths: 'notClaimed_sixMonths',
-    nineMonths: 'notClaimed_nineMonths'
-  })
-})
-// END copied from common-lib@3.0.2
-
 export const processReminderEmailRequest = async (message, logger) => {
-  const { requestedDate } = message.body
+  const { requestedDate, maxBatchSize } = message.body
 
   logger.setBindings({ requestedDate })
   logger.info('Processing reminders request started..')
 
-  const applicationsDueReminder = await getApplicationsDueReminderEmail(requestedDate, logger)
+  const applicationsDueReminder = await getApplicationsDueReminderEmail(requestedDate, maxBatchSize, logger)
 
   if (applicationsDueReminder.length === 0) {
     logger.info('No new applications due reminders')
@@ -63,31 +34,32 @@ export const processReminderEmailRequest = async (message, logger) => {
   logger.info('Successfully processed reminders request')
 }
 
-const getApplicationsDueReminderEmail = async (requestedDate, logger) => {
-  const notClaimedNineMonths = await getApplicationsWithoutClaimAfterNineMonths(requestedDate, logger)
-  const notClaimedSixMonths = await getApplicationsWithoutClaimAfterSixMonths(requestedDate, logger)
-  const notClaimedThreeMonths = await getApplicationsWithoutClaimAfterThreeMonths(requestedDate, logger)
+const getApplicationsDueReminderEmail = async (requestedDate, maxBatchSize, logger) => {
+  const notClaimedNineMonths = await getApplicationsWithoutClaimAfterNineMonths(requestedDate, maxBatchSize, logger)
+  const notClaimedSixMonths = await getApplicationsWithoutClaimAfterSixMonths(requestedDate, maxBatchSize, logger)
+  const notClaimedThreeMonths = await getApplicationsWithoutClaimAfterThreeMonths(requestedDate, maxBatchSize, logger)
 
   const remindersNotClaimed = [...notClaimedNineMonths, ...notClaimedSixMonths, ...notClaimedThreeMonths]
+    .slice(0, maxBatchSize)
     .map(unwrapDatabaseQueryDataValues)
-    .map(removeOrgEmailIfSameAddressAsEmail) // prevents send two email to same address
-    // TODO BH 1334 promote to next reminder if within one week
+    .map(removeOrgEmailIfSameAddressAsEmail)
+    .map(promoteToNextReminderIfWithinOneMonth)
 
   return [...remindersNotClaimed]
 }
 
-const getApplicationsWithoutClaimAfterNineMonths = async (requestedDate, logger) => {
-  const { nineMonths } = reminders.notClaimed
+const getApplicationsWithoutClaimAfterNineMonths = async (requestedDate, maxBatchSize, logger) => {
+  const { nineMonths } = reminderTypes.notClaimed
   const NINE_MONTHS = 9
 
   const nineMonthReminderWindowStart = new Date(requestedDate)
   nineMonthReminderWindowStart.setUTCMonth(nineMonthReminderWindowStart.getMonth() - NINE_MONTHS)
 
-  return await getRemindersToSend(nineMonths, nineMonthReminderWindowStart, undefined, [], logger)
+  return await getRemindersToSend(nineMonths, nineMonthReminderWindowStart, undefined, [], maxBatchSize, logger)
 }
 
-const getApplicationsWithoutClaimAfterSixMonths = async (requestedDate, logger) => {
-  const { sixMonths, nineMonths } = reminders.notClaimed
+const getApplicationsWithoutClaimAfterSixMonths = async (requestedDate, maxBatchSize, logger) => {
+  const { sixMonths, nineMonths } = reminderTypes.notClaimed
   const SIX_MONTHS = 6; const NINE_MONTHS = 9
 
   const sixMonthReminderWindowStart = new Date(requestedDate)
@@ -95,11 +67,11 @@ const getApplicationsWithoutClaimAfterSixMonths = async (requestedDate, logger) 
   const sixMonthReminderWindowEnd = new Date(requestedDate)
   sixMonthReminderWindowEnd.setUTCMonth(sixMonthReminderWindowEnd.getMonth() - NINE_MONTHS)
 
-  return await getRemindersToSend(sixMonths, sixMonthReminderWindowStart, sixMonthReminderWindowEnd, [nineMonths], logger)
+  return await getRemindersToSend(sixMonths, sixMonthReminderWindowStart, sixMonthReminderWindowEnd, [nineMonths], maxBatchSize, logger)
 }
 
-const getApplicationsWithoutClaimAfterThreeMonths = async (requestedDate, logger) => {
-  const { threeMonths, sixMonths, nineMonths } = reminders.notClaimed
+const getApplicationsWithoutClaimAfterThreeMonths = async (requestedDate, maxBatchSize, logger) => {
+  const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
   const THREE_MONTHS = 3; const SIX_MONTHS = 6
 
   const threeMonthReminderWindowStart = new Date(requestedDate)
@@ -107,15 +79,27 @@ const getApplicationsWithoutClaimAfterThreeMonths = async (requestedDate, logger
   const threeMonthReminderWindowEnd = new Date(requestedDate)
   threeMonthReminderWindowEnd.setUTCMonth(threeMonthReminderWindowEnd.getMonth() - SIX_MONTHS)
 
-  return await getRemindersToSend(threeMonths, threeMonthReminderWindowStart, threeMonthReminderWindowEnd, [sixMonths, nineMonths], logger)
+  return await getRemindersToSend(threeMonths, threeMonthReminderWindowStart, threeMonthReminderWindowEnd, [sixMonths, nineMonths], maxBatchSize, logger)
 }
 
 const unwrapDatabaseQueryDataValues = (reminder) => { return { ...reminder.dataValues } }
 
+// prevents send two email to same address
 const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
   if (reminder.email === reminder.orgEmail) {
     delete reminder.orgEmail
   }
+  return reminder
+}
+
+// prevents contacting users too often
+const promoteToNextReminderIfWithinOneMonth = (reminder) => {
+  // TODO BH 1334 promote to next reminder if within one week
+
+  // if 3month reminder and 5months old
+
+  // if 6month reminder and 8months old
+
   return reminder
 }
 
@@ -166,3 +150,32 @@ const sendApplicationSessionEvent = async ({ sbi, reference, reminderType }) => 
 const saveLastReminderSent = async ({ reference, reminderType, reminders }, logger) => {
   await updateReminders(reference, reminderType, reminders, logger)
 }
+
+// START copied from common-lib@3.0.2
+export const getNextNotClaimedReminderToSend = (previousReminderSent) => {
+  return getNextReminderToSend(reminderTypes.notClaimed, previousReminderSent)
+}
+const getNextReminderToSend = (type, previousReminderSent) => {
+  if (type === reminderTypes.notClaimed) {
+    const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
+    switch (previousReminderSent) {
+      case threeMonths:
+        return sixMonths
+      case sixMonths:
+        return nineMonths
+      case nineMonths:
+        return undefined
+      default:
+        return threeMonths
+    }
+  }
+  throw new TypeError(`The type provided is not recognised, type:${type}`)
+}
+export const reminderTypes = Object.freeze({
+  notClaimed: Object.freeze({
+    threeMonths: 'notClaimed_threeMonths',
+    sixMonths: 'notClaimed_sixMonths',
+    nineMonths: 'notClaimed_nineMonths'
+  })
+})
+// END copied from common-lib@3.0.2

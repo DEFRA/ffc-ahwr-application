@@ -2,7 +2,7 @@ import HttpStatus from 'http-status-codes'
 import { config } from '../../config/index.js'
 import { sendMessage } from '../../messaging/send-message.js'
 
-const { reminderEmailRequestMsgType, applicationRequestQueue } = config
+const { reminderEmailRequestMsgType, applicationRequestQueue, reminderEmailMaxBatchSize } = config
 
 export const reminderEmailRequestHandlers = [
   {
@@ -13,7 +13,7 @@ export const reminderEmailRequestHandlers = [
 
       const now = new Date()
       const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-      sendMessage({ requestedDate: utcMidnight }, reminderEmailRequestMsgType, applicationRequestQueue)
+      sendMessage({ requestedDate: utcMidnight, maxBatchSize: reminderEmailMaxBatchSize }, reminderEmailRequestMsgType, applicationRequestQueue)
 
       return h.response().code(HttpStatus.ACCEPTED)
     }

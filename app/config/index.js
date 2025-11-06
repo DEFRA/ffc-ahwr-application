@@ -34,7 +34,8 @@ const buildConfig = () => {
     featureAssurance: {
       enabled: Joi.bool().required(),
       startDate: Joi.string().optional()
-    }
+    },
+    reminderEmailMaxBatchSize: Joi.number()
   })
 
   const mainConfig = {
@@ -54,7 +55,7 @@ const buildConfig = () => {
     complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
     messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
-    messageGeneratorMsgReminderType: 'reminderEmail', // TODO BH 1334 change type to align, message-generator change
+    messageGeneratorMsgReminderType: `${msgTypePrefix}.agreement.reminder.email`,
     multiHerds: {
       releaseDate: process.env.MULTI_HERDS_RELEASE_DATE || '2025-05-01'
     },
@@ -64,7 +65,8 @@ const buildConfig = () => {
     featureAssurance: {
       enabled: process.env.FEATURE_ASSURANCE_ENABLED === 'true',
       startDate: process.env.FEATURE_ASSURANCE_START || undefined
-    }
+    },
+    reminderEmailMaxBatchSize: process.env.REMINDER_EMAIL_MAX_BATCH_SIZE || 5000
   }
 
   const { error } = schema.validate(mainConfig, { abortEarly: false })

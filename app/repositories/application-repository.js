@@ -4,7 +4,7 @@ import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
-import { applicationStatus } from '../constants/index.js'
+import { applicationStatus as applicationStatusTypes } from '../constants/index.js'
 
 const { models, sequelize } = buildData
 
@@ -466,9 +466,9 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
   }
 }
 
-export const getRemindersToSend = async (reminderType, reminderWindowStartDate, reminderWindowEndDate, laterReminders, logger) => {
+export const getRemindersToSend = async (reminderType, reminderWindowStartDate, reminderWindowEndDate, laterReminders, maxBatchSize, logger) => {
   logger.info(`Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`)
-  const { notAgreed } = applicationStatus
+  const { notAgreed } = applicationStatusTypes
   const reminderTypesToExclude = laterReminders ? [reminderType, ...laterReminders] : [reminderType]
 
   const where = {
@@ -503,7 +503,8 @@ export const getRemindersToSend = async (reminderType, reminderWindowStartDate, 
           'reminders',
           [literal(`'${reminderType}'`), 'reminderType']
         ],
-        order: [['createdAt', 'ASC']]
+        order: [['createdAt', 'ASC']],
+        limit: maxBatchSize
       }
     )
 }

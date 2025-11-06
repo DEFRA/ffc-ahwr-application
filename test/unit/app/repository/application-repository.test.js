@@ -1894,12 +1894,13 @@ describe('getRemindersToSend', () => {
   })
 
   it('get applications due notClaimed_threeMonths reminders, documents input, expected query structure and expected output', async () => {
+    const fakeMaxBatchSize = 5000
     const { notAgreed } = applicationStatus
     models.application.findAll.mockResolvedValueOnce([
       { dataValues: { reference: 'IAHW-BEKR-TEST', crn: '1000000000', sbi: '100000000', email: 'dummy@example.com', orgEmail: undefined, reminders: undefined, reminderType: 'notClaimed_threeMonths' } }
     ])
 
-    const reminders = await getRemindersToSend('notClaimed_threeMonths', '2025-08-05T00:00:00.000Z', '2024-05-05T00:00:00.000Z', ['notClaimed_sixMonths', 'notClaimed_nineMonths'], mockLogger)
+    const reminders = await getRemindersToSend('notClaimed_threeMonths', '2025-08-05T00:00:00.000Z', '2024-05-05T00:00:00.000Z', ['notClaimed_sixMonths', 'notClaimed_nineMonths'], fakeMaxBatchSize, mockLogger)
 
     expect(models.application.findAll).toHaveBeenCalledWith(
       {
@@ -1930,7 +1931,8 @@ describe('getRemindersToSend', () => {
           'reminders',
           [{ val: "'notClaimed_threeMonths'" }, 'reminderType']
         ],
-        order: [['createdAt', 'ASC']]
+        order: [['createdAt', 'ASC']],
+        limit: fakeMaxBatchSize
       }
     )
     expect(mockLogger.info).toHaveBeenCalledTimes(1)

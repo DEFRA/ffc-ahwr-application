@@ -1,8 +1,8 @@
-import { processReminderEmailRequest, getNextNotClaimedReminderToSend, reminders } from '../../../../../app/messaging/application/process-reminder-email.js'
+import { processReminderEmailRequest, getNextNotClaimedReminderToSend, reminderTypes } from '../../../../../app/messaging/application/process-reminder-email.js'
 import { sendMessage } from '../../../../../app/messaging/send-message.js'
 import { getRemindersToSend, updateReminders } from '../../../../../app/repositories/application-repository.js'
 
-const { notClaimed } = reminders
+const { notClaimed } = reminderTypes
 
 const mockSendEvent = jest.fn()
 jest.mock('ffc-ahwr-common-library', () => ({
@@ -17,6 +17,8 @@ jest.mock('../../../../../app/messaging/send-message.js', () => ({
 }))
 
 describe('processReminderEmailRequest', () => {
+  const fakeMaxBatchSize = 5000
+
   const mockLogger = {
     setBindings: jest.fn(),
     info: jest.fn(),
@@ -24,7 +26,8 @@ describe('processReminderEmailRequest', () => {
   }
   const message = {
     body: {
-      requestedDate: '2025-11-05T00:00:00.000Z'
+      requestedDate: '2025-11-05T00:00:00.000Z',
+      maxBatchSize: fakeMaxBatchSize
     }
   }
 
@@ -45,9 +48,9 @@ describe('processReminderEmailRequest', () => {
     await processReminderEmailRequest(message, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
-    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_nineMonths', nineMonthsBeforeRequestedDate, undefined, [], mockLogger)
-    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_sixMonths', sixMonthsBeforeRequestedDate, nineMonthsBeforeRequestedDate, ['notClaimed_nineMonths'], mockLogger)
-    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_threeMonths', threeMonthsBeforeRequestedDate, sixMonthsBeforeRequestedDate, ['notClaimed_sixMonths', 'notClaimed_nineMonths'], mockLogger)
+    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_nineMonths', nineMonthsBeforeRequestedDate, undefined, [], fakeMaxBatchSize, mockLogger)
+    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_sixMonths', sixMonthsBeforeRequestedDate, nineMonthsBeforeRequestedDate, ['notClaimed_nineMonths'], fakeMaxBatchSize, mockLogger)
+    expect(getRemindersToSend).toHaveBeenCalledWith('notClaimed_threeMonths', threeMonthsBeforeRequestedDate, sixMonthsBeforeRequestedDate, ['notClaimed_sixMonths', 'notClaimed_nineMonths'], fakeMaxBatchSize, mockLogger)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(mockLogger.info).toHaveBeenCalledWith('No new applications due reminders')
@@ -78,7 +81,7 @@ describe('processReminderEmailRequest', () => {
         emailAddresses: ['dummy@example.com'],
         reminderType: 'notClaimed_threeMonths'
       },
-      'reminderEmail',
+      'uk.gov.ffc.ahwr.agreement.reminder.email',
       expect.any(Object),
       { sessionId: expect.any(String) }
     )
@@ -109,7 +112,7 @@ describe('processReminderEmailRequest', () => {
         emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
         reminderType: 'notClaimed_sixMonths'
       },
-      'reminderEmail',
+      'uk.gov.ffc.ahwr.agreement.reminder.email',
       expect.any(Object),
       { sessionId: expect.any(String) }
     )
