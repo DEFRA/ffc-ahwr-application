@@ -4,6 +4,12 @@ import { getRemindersToSend, updateReminders } from '../../../../../app/reposito
 
 const { notClaimed } = reminders
 
+const mockSendEvent = jest.fn()
+jest.mock('ffc-ahwr-common-library', () => ({
+  PublishEvent: jest.fn().mockImplementation(() => ({
+    sendEvent: mockSendEvent
+  }))
+}))
 jest.mock('../../../../../app/config/index.js')
 jest.mock('../../../../../app/repositories/application-repository.js')
 jest.mock('../../../../../app/messaging/send-message.js', () => ({
@@ -46,6 +52,7 @@ describe('processReminderEmailRequest', () => {
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(mockLogger.info).toHaveBeenCalledWith('No new applications due reminders')
     expect(sendMessage).toHaveBeenCalledTimes(0)
+    expect(mockSendEvent).toHaveBeenCalledTimes(0)
     expect(updateReminders).toHaveBeenCalledTimes(0)
   })
 
@@ -75,6 +82,7 @@ describe('processReminderEmailRequest', () => {
       expect.any(Object),
       { sessionId: expect.any(String) }
     )
+    expect(mockSendEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_threeMonths', undefined, mockLogger)
   })
@@ -105,6 +113,7 @@ describe('processReminderEmailRequest', () => {
       expect.any(Object),
       { sessionId: expect.any(String) }
     )
+    expect(mockSendEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_sixMonths', 'notClaimed_threeMonths', mockLogger)
   })
@@ -125,6 +134,7 @@ describe('processReminderEmailRequest', () => {
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(sendMessage).toHaveBeenCalledTimes(5)
+    expect(mockSendEvent).toHaveBeenCalledTimes(5)
     expect(updateReminders).toHaveBeenCalledTimes(5)
   })
 
@@ -144,6 +154,7 @@ describe('processReminderEmailRequest', () => {
     expect(sendMessage).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledWith(expect.any(Object), 'Failed to processed reminders request')
+    expect(mockSendEvent).toHaveBeenCalledTimes(0)
     expect(updateReminders).toHaveBeenCalledTimes(0)
   })
 })
