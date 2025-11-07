@@ -1929,7 +1929,8 @@ describe('getRemindersToSend', () => {
           [{ val: "data->'organisation'->>'email'" }, 'email'],
           [{ val: "data->'organisation'->>'orgEmail'" }, 'orgEmail'],
           'reminders',
-          [{ val: "'notClaimed_threeMonths'" }, 'reminderType']
+          [{ val: "'notClaimed_threeMonths'" }, 'reminderType'],
+          'createdAt'
         ],
         order: [['createdAt', 'ASC']],
         limit: fakeMaxBatchSize

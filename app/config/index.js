@@ -4,6 +4,7 @@ import { storageConfig } from './storage.js'
 
 const buildConfig = () => {
   const msgTypePrefix = 'uk.gov.ffc.ahwr'
+  const DEFAULT_REMINDER_EMAIL_MAX_BATCH_SIZE = 5000
 
   const schema = Joi.object({
     env: Joi.string()
@@ -66,7 +67,7 @@ const buildConfig = () => {
       enabled: process.env.FEATURE_ASSURANCE_ENABLED === 'true',
       startDate: process.env.FEATURE_ASSURANCE_START || undefined
     },
-    reminderEmailMaxBatchSize: process.env.REMINDER_EMAIL_MAX_BATCH_SIZE || 5000
+    reminderEmailMaxBatchSize: process.env.REMINDER_EMAIL_MAX_BATCH_SIZE || DEFAULT_REMINDER_EMAIL_MAX_BATCH_SIZE
   }
 
   const { error } = schema.validate(mainConfig, { abortEarly: false })

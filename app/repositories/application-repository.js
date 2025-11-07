@@ -501,7 +501,8 @@ export const getRemindersToSend = async (reminderType, reminderWindowStartDate, 
           [literal('data->\'organisation\'->>\'email\''), 'email'],
           [literal('data->\'organisation\'->>\'orgEmail\''), 'orgEmail'],
           'reminders',
-          [literal(`'${reminderType}'`), 'reminderType']
+          [literal(`'${reminderType}'`), 'reminderType'],
+          'createdAt'
         ],
         order: [['createdAt', 'ASC']],
         limit: maxBatchSize

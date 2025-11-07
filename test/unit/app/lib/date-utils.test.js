@@ -1,4 +1,4 @@
-import { minusHours, startandEndDate } from '../../../../app/lib/date-utils.js'
+import { minusHours, startandEndDate, isAtLeastMonthsOld } from '../../../../app/lib/date-utils.js'
 
 describe('date utils', () => {
   describe('startandEndDate', () => {
@@ -40,6 +40,40 @@ describe('date utils', () => {
 
     it('should throw an invalid eate error if dateStr is invalid', () => {
       expect(() => minusHours('invalid-date', 5)).toThrow()
+    })
+  })
+
+  describe('isAtLeastMonthsOld', () => {
+    const mockToday = new Date('2025-11-07T00:00:00Z')
+    let originalDateNow
+
+    beforeAll(() => {
+      originalDateNow = Date.now
+      Date.now = jest.fn(() => mockToday.getTime())
+    })
+
+    afterAll(() => {
+      Date.now = originalDateNow
+    })
+
+    test('returns true when date is older than specified months', () => {
+      const oldDate = new Date('2025-02-01')
+      expect(isAtLeastMonthsOld(oldDate, 6)).toBe(true)
+    })
+
+    test('returns false when date is newer than specified months', () => {
+      const recentDate = new Date('2025-09-01')
+      expect(isAtLeastMonthsOld(recentDate, 3)).toBe(false)
+    })
+
+    test('returns true when date is exactly N months old', () => {
+      const exactDate = new Date('2025-05-07')
+      expect(isAtLeastMonthsOld(exactDate, 6)).toBe(true)
+    })
+
+    test('returns false when date is in the future', () => {
+      const futureDate = new Date('2026-01-01')
+      expect(isAtLeastMonthsOld(futureDate, 1)).toBe(false)
     })
   })
 })

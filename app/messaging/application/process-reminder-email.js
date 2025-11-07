@@ -4,6 +4,7 @@ import { config } from '../../config/index.js'
 import { PublishEvent } from 'ffc-ahwr-common-library'
 import { sendMessage } from '../../messaging/send-message.js'
 import { getRemindersToSend, updateReminders } from '../../repositories/application-repository.js'
+import { isAtLeastMonthsOld } from '../../lib/date-utils.js'
 
 const { messageGeneratorMsgReminderType, messageGeneratorQueue } = config
 
@@ -94,11 +95,14 @@ const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
 
 // prevents contacting users too often
 const promoteToNextReminderIfWithinOneMonth = (reminder) => {
-  // TODO BH 1334 promote to next reminder if within one week
+  const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
+  const { reminderType, createdAt } = reminder
 
-  // if 3month reminder and 5months old
-
-  // if 6month reminder and 8months old
+  if (reminderType === threeMonths && isAtLeastMonthsOld(createdAt, 5)) {
+    reminder.reminderType = sixMonths
+  } else if (reminderType === sixMonths && isAtLeastMonthsOld(createdAt, 8)) {
+    reminder.reminderType = nineMonths
+  }
 
   return reminder
 }
