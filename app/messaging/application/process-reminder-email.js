@@ -56,7 +56,7 @@ const getApplicationsWithoutClaimAfterNineMonths = async (requestedDate, maxBatc
   const nineMonthReminderWindowStart = new Date(requestedDate)
   nineMonthReminderWindowStart.setUTCMonth(nineMonthReminderWindowStart.getMonth() - NINE_MONTHS)
 
-  return await getRemindersToSend(nineMonths, nineMonthReminderWindowStart, undefined, [], maxBatchSize, logger)
+  return getRemindersToSend(nineMonths, nineMonthReminderWindowStart, undefined, [], maxBatchSize, logger)
 }
 
 const getApplicationsWithoutClaimAfterSixMonths = async (requestedDate, maxBatchSize, logger) => {
@@ -68,7 +68,7 @@ const getApplicationsWithoutClaimAfterSixMonths = async (requestedDate, maxBatch
   const sixMonthReminderWindowEnd = new Date(requestedDate)
   sixMonthReminderWindowEnd.setUTCMonth(sixMonthReminderWindowEnd.getMonth() - NINE_MONTHS)
 
-  return await getRemindersToSend(sixMonths, sixMonthReminderWindowStart, sixMonthReminderWindowEnd, [nineMonths], maxBatchSize, logger)
+  return getRemindersToSend(sixMonths, sixMonthReminderWindowStart, sixMonthReminderWindowEnd, [nineMonths], maxBatchSize, logger)
 }
 
 const getApplicationsWithoutClaimAfterThreeMonths = async (requestedDate, maxBatchSize, logger) => {
@@ -80,7 +80,7 @@ const getApplicationsWithoutClaimAfterThreeMonths = async (requestedDate, maxBat
   const threeMonthReminderWindowEnd = new Date(requestedDate)
   threeMonthReminderWindowEnd.setUTCMonth(threeMonthReminderWindowEnd.getMonth() - SIX_MONTHS)
 
-  return await getRemindersToSend(threeMonths, threeMonthReminderWindowStart, threeMonthReminderWindowEnd, [sixMonths, nineMonths], maxBatchSize, logger)
+  return getRemindersToSend(threeMonths, threeMonthReminderWindowStart, threeMonthReminderWindowEnd, [sixMonths, nineMonths], maxBatchSize, logger)
 }
 
 const unwrapDatabaseQueryDataValues = (reminder) => { return { ...reminder.dataValues } }
