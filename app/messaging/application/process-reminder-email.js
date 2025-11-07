@@ -44,7 +44,7 @@ const getApplicationsDueReminderEmail = async (requestedDate, maxBatchSize, logg
     .slice(0, maxBatchSize)
     .map(unwrapDatabaseQueryDataValues)
     .map(removeOrgEmailIfSameAddressAsEmail)
-    .map(promoteToNextReminderIfWithinOneMonth)
+    .map(promoteToNextReminderIfNoRemindersAndWithinOneMonth)
 
   return [...remindersNotClaimed]
 }
@@ -94,14 +94,18 @@ const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
 }
 
 // prevents contacting users too often
-const promoteToNextReminderIfWithinOneMonth = (reminder) => {
-  const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
-  const { reminderType, createdAt } = reminder
+const promoteToNextReminderIfNoRemindersAndWithinOneMonth = (reminder) => {
+  if (!reminder.reminders) {
+    const FIVE_MONTHS = 5; const EIGHT_MONTHS = 8
+    const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
+    const { reminderType, createdAt } = reminder
 
-  if (reminderType === threeMonths && isAtLeastMonthsOld(createdAt, 5)) {
-    reminder.reminderType = sixMonths
-  } else if (reminderType === sixMonths && isAtLeastMonthsOld(createdAt, 8)) {
-    reminder.reminderType = nineMonths
+    // NOSONAR
+    if (reminderType === threeMonths && isAtLeastMonthsOld(createdAt, FIVE_MONTHS)) {
+      reminder.reminderType = sixMonths
+    } else if (reminderType === sixMonths && isAtLeastMonthsOld(createdAt, EIGHT_MONTHS)) {
+      reminder.reminderType = nineMonths
+    }
   }
 
   return reminder

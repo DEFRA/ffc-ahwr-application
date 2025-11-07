@@ -63,7 +63,7 @@ describe('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
-      { dataValues: { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: undefined, reminderType: 'notClaimed_threeMonths' } }
+      { dataValues: { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: undefined, reminderType: 'notClaimed_threeMonths', createdAt: new Date('2025-08-05T00:00:00.000Z') } }
     ])
 
     await processReminderEmailRequest(message, mockLogger)
@@ -90,10 +90,10 @@ describe('processReminderEmailRequest', () => {
     expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_threeMonths', undefined, mockLogger)
   })
 
-  it('should send notClaimed_sixMonths to two address when two email addresses and notClaimed_threeMonths already sent', async () => {
+  it('should send notClaimed_sixMonths to two addresses when two email addresses and notClaimed_threeMonths already sent', async () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
-      { dataValues: { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy1@example.com', orgEmail: 'dummy2@example.com', reminders: 'notClaimed_threeMonths', reminderType: 'notClaimed_sixMonths' } }
+      { dataValues: { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy1@example.com', orgEmail: 'dummy2@example.com', reminders: 'notClaimed_threeMonths', reminderType: 'notClaimed_sixMonths', createdAt: new Date('2025-05-05T00:00:00.000Z') } }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
 
@@ -121,15 +121,117 @@ describe('processReminderEmailRequest', () => {
     expect(updateReminders).toHaveBeenCalledWith('IAHW-BEKR-AWIU', 'notClaimed_sixMonths', 'notClaimed_threeMonths', mockLogger)
   })
 
+  it('should promote to notClaimed_nineMonths when 8months old and no reminders previously sent', async () => {
+    getRemindersToSend.mockResolvedValueOnce([])
+    getRemindersToSend.mockResolvedValueOnce([{
+      dataValues: {
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy1@example.com',
+        orgEmail: 'dummy2@example.com',
+        reminders: '',
+        reminderType: 'notClaimed_sixMonths',
+        createdAt: new Date('2025-03-05T00:00:00.000Z')
+      }
+    }
+    ])
+    getRemindersToSend.mockResolvedValueOnce([])
+
+    await processReminderEmailRequest(message, mockLogger)
+
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
+        reminderType: 'notClaimed_nineMonths'
+      },
+      'uk.gov.ffc.ahwr.agreement.reminder.email',
+      expect.any(Object),
+      { sessionId: expect.any(String) }
+    )
+  })
+
+  it('should not promote to notClaimed_nineMonths when 8months old but has reminders previously sent', async () => {
+    getRemindersToSend.mockResolvedValueOnce([])
+    getRemindersToSend.mockResolvedValueOnce([{
+      dataValues: {
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy1@example.com',
+        orgEmail: 'dummy2@example.com',
+        reminders: 'notClaimed_threeMonths',
+        reminderType: 'notClaimed_sixMonths',
+        createdAt: new Date('2025-03-05T00:00:00.000Z')
+      }
+    }
+    ])
+    getRemindersToSend.mockResolvedValueOnce([])
+
+    await processReminderEmailRequest(message, mockLogger)
+
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
+        reminderType: 'notClaimed_sixMonths'
+      },
+      'uk.gov.ffc.ahwr.agreement.reminder.email',
+      expect.any(Object),
+      { sessionId: expect.any(String) }
+    )
+  })
+
+  it('should only send to one address when email and orgEmail are the same', async () => {
+    getRemindersToSend.mockResolvedValueOnce([])
+    getRemindersToSend.mockResolvedValueOnce([{
+      dataValues: {
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy@example.com',
+        orgEmail: 'dummy@example.com',
+        reminders: 'notClaimed_threeMonths',
+        reminderType: 'notClaimed_sixMonths',
+        createdAt: new Date('2025-03-05T00:00:00.000Z')
+      }
+    }
+    ])
+    getRemindersToSend.mockResolvedValueOnce([])
+
+    await processReminderEmailRequest(message, mockLogger)
+
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith(
+      {
+        agreementReference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        emailAddresses: ['dummy@example.com'],
+        reminderType: 'notClaimed_sixMonths'
+      },
+      'uk.gov.ffc.ahwr.agreement.reminder.email',
+      expect.any(Object),
+      { sessionId: expect.any(String) }
+    )
+  })
+
   it('should send to message-generator and update reminders for multiple applications when multiple reminders due', async () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
-      { reference: 'IAHW-BEKR-AWI1', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths' },
-      { reference: 'IAHW-BEKR-AWI2', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths' },
-      { reference: 'IAHW-BEKR-AWI3', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths' },
-      { reference: 'IAHW-BEKR-AWI4', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths' },
-      { reference: 'IAHW-BEKR-AWI5', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths' }
+      { reference: 'IAHW-BEKR-AWI1', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths', createdAt: new Date('2025-08-05T00:00:00.000Z') },
+      { reference: 'IAHW-BEKR-AWI2', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths', createdAt: new Date('2025-08-05T00:00:00.000Z') },
+      { reference: 'IAHW-BEKR-AWI3', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths', createdAt: new Date('2025-08-05T00:00:00.000Z') },
+      { reference: 'IAHW-BEKR-AWI4', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths', createdAt: new Date('2025-08-05T00:00:00.000Z') },
+      { reference: 'IAHW-BEKR-AWI5', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: 'dummy@example.com', reminders: 'notClaimed_threeMonths', createdAt: new Date('2025-08-05T00:00:00.000Z') }
     ])
 
     await processReminderEmailRequest(message, mockLogger)
@@ -145,7 +247,7 @@ describe('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
-      { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: undefined }
+      { reference: 'IAHW-BEKR-AWIU', crn: '1100407200', sbi: '106282723', email: 'dummy@example.com', orgEmail: undefined, createdAt: new Date('2025-08-05T00:00:00.000Z') }
     ])
     sendMessage.mockRejectedValueOnce(new Error('Faild to send message!'))
 
