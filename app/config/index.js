@@ -4,6 +4,7 @@ import { storageConfig } from './storage.js'
 
 const buildConfig = () => {
   const msgTypePrefix = 'uk.gov.ffc.ahwr'
+  const DEFAULT_REMINDER_EMAIL_MAX_BATCH_SIZE = 5000
 
   const schema = Joi.object({
     env: Joi.string()
@@ -19,10 +20,12 @@ const buildConfig = () => {
     applicationEmailDocRequestMsgType: Joi.string(),
     moveClaimToPaidMsgType: Joi.string(),
     redactPiiRequestMsgType: Joi.string(),
+    reminderEmailRequestMsgType: Joi.string(),
     submitPaymentRequestMsgType: Joi.string(),
     complianceCheckRatio: Joi.number().default(1),
     sfdRequestMsgType: Joi.string(),
     messageGeneratorMsgType: Joi.string(),
+    messageGeneratorMsgReminderType: Joi.string(),
     multiHerds: {
       releaseDate: Joi.string().required()
     },
@@ -32,7 +35,8 @@ const buildConfig = () => {
     featureAssurance: {
       enabled: Joi.bool().required(),
       startDate: Joi.string().optional()
-    }
+    },
+    reminderEmailMaxBatchSize: Joi.number()
   })
 
   const mainConfig = {
@@ -47,10 +51,12 @@ const buildConfig = () => {
     applicationEmailDocRequestMsgType: `${msgTypePrefix}.app.email.doc.request`,
     moveClaimToPaidMsgType: `${msgTypePrefix}.set.paid.status`,
     redactPiiRequestMsgType: `${msgTypePrefix}.redact.pii.request`,
+    reminderEmailRequestMsgType: `${msgTypePrefix}.email.reminder.request`,
     submitPaymentRequestMsgType: `${msgTypePrefix}.submit.payment.request`,
     complianceCheckRatio: process.env.CLAIM_COMPLIANCE_CHECK_RATIO,
     sfdRequestMsgType: `${msgTypePrefix}.sfd.request`,
     messageGeneratorMsgType: `${msgTypePrefix}.claim.status.update`,
+    messageGeneratorMsgReminderType: `${msgTypePrefix}.agreement.reminder.email`,
     multiHerds: {
       releaseDate: process.env.MULTI_HERDS_RELEASE_DATE || '2025-05-01'
     },
@@ -60,7 +66,8 @@ const buildConfig = () => {
     featureAssurance: {
       enabled: process.env.FEATURE_ASSURANCE_ENABLED === 'true',
       startDate: process.env.FEATURE_ASSURANCE_START || undefined
-    }
+    },
+    reminderEmailMaxBatchSize: process.env.REMINDER_EMAIL_MAX_BATCH_SIZE || DEFAULT_REMINDER_EMAIL_MAX_BATCH_SIZE
   }
 
   const { error } = schema.validate(mainConfig, { abortEarly: false })

@@ -12,6 +12,7 @@ import { holidayHandlers } from './routes/api/holidays.js'
 import { contactHistoryHandlers } from './routes/api/contact-history.js'
 import { flagHandlers } from './routes/api/flags.js'
 import { redactPiiRequestHandlers } from './routes/api/redact-pii.js'
+import { reminderEmailRequestHandlers } from './routes/api/reminder-email.js'
 import { setup } from './insights.js'
 
 export const appInsightsEnabled = setup()
@@ -32,7 +33,8 @@ server.route([
   ...contactHistoryHandlers,
   ...latestContactDetailsHandlers,
   ...flagHandlers,
-  ...redactPiiRequestHandlers
+  ...redactPiiRequestHandlers,
+  ...reminderEmailRequestHandlers
 ])
 
 server.register(logger)

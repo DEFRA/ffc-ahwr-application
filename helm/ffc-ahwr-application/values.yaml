@@ -60,6 +60,7 @@ container:
   storeHistoryInDbEnabled: 'false'
   featureAssuranceEnabled: 'true'
   featureAssuranceStartDate: '2025-05-01'
+  reminderEmailMaxBatchSize: 5000
 
 postgresService:
   postgresDb: ffc_ahwr_application

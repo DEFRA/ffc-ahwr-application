@@ -3,13 +3,15 @@ import { processApplicationMessage } from '../../../../app/messaging/process-mes
 import { processApplicationQueue } from '../../../../app/messaging/application/process-application'
 import { setPaymentStatusToPaid } from '../../../../app/messaging/application/set-payment-status-to-paid'
 import { processRedactPiiRequest } from '../../../../app/messaging/application/process-redact-pii'
+import { processReminderEmailRequest } from '../../../../app/messaging/application/process-reminder-email'
 
 jest.mock('../../../../app/messaging/application/process-application')
 jest.mock('applicationinsights', () => ({ defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() }, dispose: jest.fn() }))
 jest.mock('../../../../app/messaging/application/set-payment-status-to-paid')
 jest.mock('../../../../app/messaging/application/process-redact-pii')
+jest.mock('../../../../app/messaging/application/process-reminder-email')
 
-const { applicationRequestMsgType, moveClaimToPaidMsgType, redactPiiRequestMsgType } = config
+const { applicationRequestMsgType, moveClaimToPaidMsgType, redactPiiRequestMsgType, reminderEmailRequestMsgType } = config
 
 describe('Process Message test', () => {
   const sessionId = '8e5b5789-dad5-4f16-b4dc-bf6db90ce090'
@@ -81,6 +83,23 @@ describe('Process Message test', () => {
 
     await processApplicationMessage(message, receiver, mockLogger)
     expect(processRedactPiiRequest).toHaveBeenCalledTimes(1)
+    expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
+  })
+
+  test(`${reminderEmailRequestMsgType} message calls processReminderEmailRequest`, async () => {
+    const message = {
+      messageId: '1234567890',
+      body: {
+        requestDate: new Date()
+      },
+      applicationProperties: {
+        type: reminderEmailRequestMsgType
+      },
+      sessionId
+    }
+
+    await processApplicationMessage(message, receiver, mockLogger)
+    expect(processReminderEmailRequest).toHaveBeenCalledTimes(1)
     expect(receiver.completeMessage).toHaveBeenCalledTimes(1)
   })
 

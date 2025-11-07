@@ -4,8 +4,14 @@ import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { Op, Sequelize, literal } from 'sequelize'
 import { startandEndDate } from '../lib/date-utils.js'
 import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+import { applicationStatus as applicationStatusTypes } from '../constants/index.js'
 
 const { models, sequelize } = buildData
+
+const ATTRIBUTES_LOCATION_OF_CRN = 'data->\'organisation\'->>\'crn\''
+const ATTRIBUTES_LOCATION_OF_SBI = 'data->\'organisation\'->>\'sbi\''
+const ATTRIBUTES_LOCATION_OF_EMAIL = 'data->\'organisation\'->>\'email\''
+const ATTRIBUTES_LOCATION_OF_ORG_EMAIL = 'data->\'organisation\'->>\'orgEmail\''
 
 export const getApplication = async (reference) => {
   return models.application.findOne(
@@ -357,7 +363,7 @@ export const getApplicationsToRedactOlderThan = async (years) => {
             [Op.eq]: true
           }
         },
-        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi'], 'statusId'],
+        attributes: ['reference', [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'], 'statusId'],
         order: [['createdAt', 'ASC']]
       }
     )
@@ -386,7 +392,7 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
           },
           type: 'VV'
         },
-        attributes: ['reference', [literal('data->\'organisation\'->>\'sbi\''), 'sbi']],
+        attributes: ['reference', [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi']],
         order: [['updatedAt', 'ASC']]
       }
     )
@@ -461,6 +467,83 @@ export const updateEligiblePiiRedaction = async (reference, newValue, user, note
       createdBy: user
     })
   }
+}
+
+export const getRemindersToSend = async (reminderType, reminderWindowStartDate, reminderWindowEndDate, laterReminders, maxBatchSize, logger) => {
+  logger.info(`Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`)
+  const { notAgreed } = applicationStatusTypes
+  const reminderTypesToExclude = laterReminders ? [reminderType, ...laterReminders] : [reminderType]
+
+  const where = {
+    type: {
+      [Op.eq]: 'EE'
+    },
+    reference: {
+      [Op.notIn]: Sequelize.literal('(SELECT DISTINCT "applicationReference" FROM claim)')
+    },
+    statusId: {
+      [Op.ne]: notAgreed
+    },
+    createdAt: {
+      [Op.lte]: reminderWindowStartDate
+    },
+    reminders: {
+      [Op.notIn]: reminderTypesToExclude
+    }
+  }
+  if (reminderWindowEndDate) {
+    where.createdAt[Op.gte] = reminderWindowEndDate
+  }
+
+  return models.application
+    .findAll(
+      {
+        where,
+        attributes: [
+          'reference',
+          [literal(ATTRIBUTES_LOCATION_OF_CRN), 'crn'],
+          [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'],
+          [literal(ATTRIBUTES_LOCATION_OF_EMAIL), 'email'],
+          [literal(ATTRIBUTES_LOCATION_OF_ORG_EMAIL), 'orgEmail'],
+          'reminders',
+          [literal(`'${reminderType}'`), 'reminderType'],
+          'createdAt'
+        ],
+        order: [['createdAt', 'ASC']],
+        limit: maxBatchSize
+      }
+    )
+}
+
+export const updateReminders = async (reference, newReminder, oldReminder, logger) => {
+  const [affectedCount] = await models.application.update(
+    {
+      reminders: newReminder
+    },
+    {
+      where: {
+        reference
+      },
+      returning: true
+    }
+  )
+
+  if (affectedCount > 0) {
+    const updatedProperty = 'reminders'
+    const type = `application-${updatedProperty}`
+
+    await models.application_update_history.create({
+      applicationReference: reference,
+      note: 'Reminder sent',
+      updatedProperty,
+      newValue: newReminder,
+      oldValue: oldReminder,
+      eventType: type,
+      createdBy: 'admin'
+    })
+  }
+
+  logger.info(`Successfully updated reminders, rows affected: ${affectedCount}`)
 }
 
 export const getApplicationsBySbi = async (sbi) => {

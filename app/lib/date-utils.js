@@ -15,3 +15,14 @@ export const minusHours = (dateStr, hours) => {
   date.setHours(date.getHours() - hours)
   return date.toISOString()
 }
+
+export const isAtLeastMonthsOld = (dateToCheck, months) => {
+  const now = new Date()
+  const comparisonDate = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth() - months,
+    now.getUTCDate()
+  ))
+
+  return dateToCheck <= comparisonDate
+}
