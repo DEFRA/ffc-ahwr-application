@@ -8,7 +8,10 @@ import { applicationStatus as applicationStatusTypes } from '../constants/index.
 
 const { models, sequelize } = buildData
 
+const ATTRIBUTES_LOCATION_OF_CRN = 'data->\'organisation\'->>\'crn\''
 const ATTRIBUTES_LOCATION_OF_SBI = 'data->\'organisation\'->>\'sbi\''
+const ATTRIBUTES_LOCATION_OF_EMAIL = 'data->\'organisation\'->>\'email\''
+const ATTRIBUTES_LOCATION_OF_ORG_EMAIL = 'data->\'organisation\'->>\'orgEmail\''
 
 export const getApplication = async (reference) => {
   return models.application.findOne(
@@ -472,8 +475,10 @@ export const getRemindersToSend = async (reminderType, reminderWindowStartDate, 
   const reminderTypesToExclude = laterReminders ? [reminderType, ...laterReminders] : [reminderType]
 
   const where = {
+    type: {
+      [Op.eq]: 'EE'
+    },
     reference: {
-      [Op.like]: 'I%',
       [Op.notIn]: Sequelize.literal('(SELECT DISTINCT "applicationReference" FROM claim)')
     },
     statusId: {
@@ -496,10 +501,10 @@ export const getRemindersToSend = async (reminderType, reminderWindowStartDate, 
         where,
         attributes: [
           'reference',
-          [literal('data->\'organisation\'->>\'crn\''), 'crn'],
+          [literal(ATTRIBUTES_LOCATION_OF_CRN), 'crn'],
           [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'],
-          [literal('data->\'organisation\'->>\'email\''), 'email'],
-          [literal('data->\'organisation\'->>\'orgEmail\''), 'orgEmail'],
+          [literal(ATTRIBUTES_LOCATION_OF_EMAIL), 'email'],
+          [literal(ATTRIBUTES_LOCATION_OF_ORG_EMAIL), 'orgEmail'],
           'reminders',
           [literal(`'${reminderType}'`), 'reminderType'],
           'createdAt'

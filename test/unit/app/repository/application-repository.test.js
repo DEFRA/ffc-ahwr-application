@@ -1905,8 +1905,10 @@ describe('getRemindersToSend', () => {
     expect(models.application.findAll).toHaveBeenCalledWith(
       {
         where: {
+          type: {
+            [Op.eq]: 'EE'
+          },
           reference: {
-            [Op.like]: 'I%',
             [Op.notIn]: {
               val: '(SELECT DISTINCT "applicationReference" FROM claim)'
             }
