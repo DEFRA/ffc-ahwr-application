@@ -44,16 +44,24 @@ describe('date utils', () => {
   })
 
   describe('isAtLeastMonthsOld', () => {
-    const mockToday = new Date('2025-11-07T00:00:00Z')
-    let originalDateNow
+    const RealDate = Date
 
     beforeAll(() => {
-      originalDateNow = Date.now
-      Date.now = jest.fn(() => mockToday.getTime())
+      global.Date = class extends RealDate {
+        constructor (value) {
+          super()
+          // Use real implementation if value
+          if (value) {
+            return new RealDate(value)
+          }
+          // Otherwise use fake
+          return new RealDate('2025-11-07T00:00:00Z')
+        }
+      }
     })
 
     afterAll(() => {
-      Date.now = originalDateNow
+      global.Date = RealDate
     })
 
     test('returns true when date is older than specified months', () => {

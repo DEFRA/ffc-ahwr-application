@@ -2,7 +2,7 @@ import {
   biosecurity,
   claimType,
   livestockTypes,
-  minimumNumberOfAnimalsTested, minimumNumberOfOralFluidSamples,
+  minimumNumberOfAnimalsTested, minimumNumberOfOralFluidSamples, exactNumberOfBloodSamples,
   testResults as testResultsConstant
 } from '../../../constants/index.js'
 import joi from 'joi'
@@ -18,7 +18,10 @@ const dateOfTesting = { dateOfTesting: joi.date().required() }
 const laboratoryURN = { laboratoryURN: joi.string().required() }
 const getMinNumberAnimalsTested = (minNumber) => ({ numberAnimalsTested: joi.number().min(minNumber).required() })
 const getExactNumberAnimalsTested = (threshold) => ({ numberAnimalsTested: joi.number().valid(threshold).required() }) // this was not required previously. Should be?
-const numberOfOralFluidSamples = { numberOfOralFluidSamples: joi.number().min(minimumNumberOfOralFluidSamples).required() }
+
+const numberOfOralFluidSamples = { numberOfOralFluidSamples: joi.number().min(minimumNumberOfOralFluidSamples) }
+const numberOfBloodSamples = { numberOfBloodSamples: joi.number().min(exactNumberOfBloodSamples).max(exactNumberOfBloodSamples).messages({ 'number.min': 'The number of blood samples should be exactly 30', 'number.max': 'The number of blood samples should be exactly 30' }) }
+
 const testResults = { testResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required() }
 
 const vetVisitsReviewTestResults = { vetVisitsReviewTestResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional() }
@@ -48,6 +51,7 @@ export function getPigsValidation (claimData) {
       ...laboratoryURN,
       ...getMinNumberAnimalsTested(minimumAnimalsTestedForReview),
       ...numberOfOralFluidSamples,
+      ...numberOfBloodSamples,
       ...testResults
     }
   }

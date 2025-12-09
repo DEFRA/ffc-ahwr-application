@@ -54,11 +54,10 @@ describe('Pigs Validation Tests', () => {
 
     it('should return false for invalid pigs claim missing required elements', () => {
       const claim = deepClone(validPigsReviewClaim)
-      delete claim.data.numberOfOralFluidSamples
       delete claim.data.testResults
 
       const { error } = validateAhwrClaim(claim, applicationFlags)
-      expect(error.message).toEqual('"data.numberOfOralFluidSamples" is required. "data.testResults" is required')
+      expect(error.message).toEqual('"data.testResults" is required')
     })
   })
 
