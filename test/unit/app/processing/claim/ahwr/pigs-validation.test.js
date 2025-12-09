@@ -37,8 +37,20 @@ describe('Pigs Validation Tests', () => {
       createdBy: 'somebody'
     }
 
-    it('should return true for valid pigs claim', () => {
+    it('should return true for valid pigs claim with oral fluid samples', () => {
       const { error, value } = validateAhwrClaim(validPigsReviewClaim, applicationFlags)
+      expect(value).toBeDefined()
+      expect(error).toBeUndefined()
+    })
+
+    it('should return true for valid pigs claim with blood samples', () => {
+      const claim = deepClone(validPigsReviewClaim)
+      claim.data.typeOfSamplesTaken = 'blood'
+      delete claim.data.numberOfOralFluidSamples
+      claim.data.numberOfBloodSamples = 30
+
+      const { error, value } = validateAhwrClaim(claim, applicationFlags)
+
       expect(value).toBeDefined()
       expect(error).toBeUndefined()
     })
@@ -58,6 +70,58 @@ describe('Pigs Validation Tests', () => {
 
       const { error } = validateAhwrClaim(claim, applicationFlags)
       expect(error.message).toEqual('"data.testResults" is required')
+    })
+
+    it('should return false for invalid pigs claim when no value for typeOfSamplesTaken and numberOfOralFluidSamples not provided', () => {
+      const claim = deepClone(validPigsReviewClaim)
+      delete claim.data.numberOfOralFluidSamples
+
+      const { error } = validateAhwrClaim(claim, applicationFlags)
+
+      expect(error.message).toEqual('"data.numberOfOralFluidSamples" is required')
+    })
+
+    it('should return false for invalid pigs claim when typeOfSamplesTaken is oral-fluid and numberOfOralFluidSamples not provided', () => {
+      const claim = deepClone(validPigsReviewClaim)
+      claim.data.typeOfSamplesTaken = 'oral-fluid'
+      delete claim.data.numberOfOralFluidSamples
+
+      const { error } = validateAhwrClaim(claim, applicationFlags)
+
+      expect(error.message).toEqual('"data.numberOfOralFluidSamples" is required')
+    })
+
+    it('should return false for invalid pigs claim when typeOfSamplesTaken is blood and numberOfBloodSamples not provided', () => {
+      const claim = deepClone(validPigsReviewClaim)
+      claim.data.typeOfSamplesTaken = 'blood'
+      delete claim.data.numberOfOralFluidSamples
+      delete claim.data.numberOfBloodSamples // not in validPigsReviewClaim but want to be explicit
+
+      const { error } = validateAhwrClaim(claim, applicationFlags)
+
+      expect(error.message).toEqual('"data.numberOfBloodSamples" is required')
+    })
+
+    it('should return false for invalid pigs claim when typeOfSamplesTaken is blood and contains both numberOfBloodSamples and numberOfOralFluidSamples', () => {
+      const claim = deepClone(validPigsReviewClaim)
+      claim.data.typeOfSamplesTaken = 'blood'
+      claim.data.numberOfOralFluidSamples = 5
+      claim.data.numberOfBloodSamples = 30
+
+      const { error } = validateAhwrClaim(claim, applicationFlags)
+
+      expect(error.message).toEqual('"data.numberOfOralFluidSamples" is not allowed')
+    })
+
+    it('should return false for invalid pigs claim when typeOfSamplesTaken is oral-fluid and contains both numberOfBloodSamples and numberOfOralFluidSamples', () => {
+      const claim = deepClone(validPigsReviewClaim)
+      claim.data.typeOfSamplesTaken = 'oral-fluid'
+      claim.data.numberOfOralFluidSamples = 5
+      claim.data.numberOfBloodSamples = 30
+
+      const { error } = validateAhwrClaim(claim, applicationFlags)
+
+      expect(error.message).toEqual('"data.numberOfBloodSamples" is not allowed')
     })
   })
 

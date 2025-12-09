@@ -2,7 +2,7 @@ import {
   biosecurity,
   claimType,
   livestockTypes,
-  minimumNumberOfAnimalsTested, minimumNumberOfOralFluidSamples, exactNumberOfBloodSamples,
+  minimumNumberOfAnimalsTested, minimumNumberOfOralFluidSamples, requiredNumberOfBloodSamples,
   testResults as testResultsConstant
 } from '../../../constants/index.js'
 import joi from 'joi'
@@ -19,8 +19,16 @@ const laboratoryURN = { laboratoryURN: joi.string().required() }
 const getMinNumberAnimalsTested = (minNumber) => ({ numberAnimalsTested: joi.number().min(minNumber).required() })
 const getExactNumberAnimalsTested = (threshold) => ({ numberAnimalsTested: joi.number().valid(threshold).required() }) // this was not required previously. Should be?
 
-const numberOfOralFluidSamples = { numberOfOralFluidSamples: joi.number().min(minimumNumberOfOralFluidSamples) }
-const numberOfBloodSamples = { numberOfBloodSamples: joi.number().min(exactNumberOfBloodSamples).max(exactNumberOfBloodSamples).messages({ 'number.min': 'The number of blood samples should be exactly 30', 'number.max': 'The number of blood samples should be exactly 30' }) }
+const typeOfSamplesTaken = { typeOfSamplesTaken: joi.string().valid('oral-fluid', 'blood') }
+const numberOfOralFluidSamples = {
+  numberOfOralFluidSamples: joi.number()
+    .when('typeOfSamplesTaken', {
+      is: 'blood',
+      then: joi.forbidden(),
+      otherwise: joi.number().min(minimumNumberOfOralFluidSamples).required()
+    })
+}
+const numberOfBloodSamples = { numberOfBloodSamples: joi.number().when('typeOfSamplesTaken', { is: 'blood', then: joi.number().valid(requiredNumberOfBloodSamples).required(), otherwise: joi.forbidden() }) }
 
 const testResults = { testResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required() }
 
@@ -50,6 +58,7 @@ export function getPigsValidation (claimData) {
       ...dateOfTesting,
       ...laboratoryURN,
       ...getMinNumberAnimalsTested(minimumAnimalsTestedForReview),
+      ...typeOfSamplesTaken,
       ...numberOfOralFluidSamples,
       ...numberOfBloodSamples,
       ...testResults

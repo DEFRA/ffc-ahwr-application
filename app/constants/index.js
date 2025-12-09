@@ -60,7 +60,7 @@ export const piHuntAllAnimals = {
 }
 
 export const minimumNumberOfOralFluidSamples = 5
-export const exactNumberOfBloodSamples = 30
+export const requiredNumberOfBloodSamples = 30
 
 export const minimumNumberOfAnimalsTested = {
   [livestockTypes.beef]: {

@@ -63,7 +63,7 @@ const createClaim = (applicationReference, species, claimType) => {
   }
 
   if (type === review && typeOfLivestock === 'pigs') {
-    optional.numberOfOralFluidSamples = '30' // TODO BH 1396 correct?
+    optional.numberOfOralFluidSamples = '30'
     optional.numberOfBloodSamples = '30'
   }
 
