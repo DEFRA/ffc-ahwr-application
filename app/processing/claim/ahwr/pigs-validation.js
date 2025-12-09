@@ -8,6 +8,8 @@ import {
 import joi from 'joi'
 import { PIG_GENETIC_SEQUENCING_VALUES } from 'ffc-ahwr-common-library'
 
+export const TYPES_OF_SAMPLE_TAKEN = { blood: 'blood', oralFluid: 'oral-fluid' }
+
 const POSITIVE_SAMPLE_REQ = 6
 const NEGATIVE_SAMPLE_REQ = 30
 
@@ -19,16 +21,23 @@ const laboratoryURN = { laboratoryURN: joi.string().required() }
 const getMinNumberAnimalsTested = (minNumber) => ({ numberAnimalsTested: joi.number().min(minNumber).required() })
 const getExactNumberAnimalsTested = (threshold) => ({ numberAnimalsTested: joi.number().valid(threshold).required() }) // this was not required previously. Should be?
 
-const typeOfSamplesTaken = { typeOfSamplesTaken: joi.string().valid('oral-fluid', 'blood') }
+const typeOfSamplesTaken = { typeOfSamplesTaken: joi.string().valid(TYPES_OF_SAMPLE_TAKEN.oralFluid, TYPES_OF_SAMPLE_TAKEN.blood) }
 const numberOfOralFluidSamples = {
   numberOfOralFluidSamples: joi.number()
     .when('typeOfSamplesTaken', {
-      is: 'blood',
+      is: TYPES_OF_SAMPLE_TAKEN.blood,
       then: joi.forbidden(),
       otherwise: joi.number().min(minimumNumberOfOralFluidSamples).required()
     })
 }
-const numberOfBloodSamples = { numberOfBloodSamples: joi.number().when('typeOfSamplesTaken', { is: 'blood', then: joi.number().valid(requiredNumberOfBloodSamples).required(), otherwise: joi.forbidden() }) }
+const numberOfBloodSamples = {
+  numberOfBloodSamples: joi.number()
+    .when('typeOfSamplesTaken', {
+      is: TYPES_OF_SAMPLE_TAKEN.blood,
+      then: joi.number().valid(requiredNumberOfBloodSamples).required(),
+      otherwise: joi.forbidden()
+    })
+}
 
 const testResults = { testResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required() }
 
