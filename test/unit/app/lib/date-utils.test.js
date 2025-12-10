@@ -44,7 +44,6 @@ describe('date utils', () => {
   })
 
   describe('isAtLeastMonthsOld', () => {
-
     beforeAll(() => {
       jest.useFakeTimers().setSystemTime(new Date('2025-11-07T00:00:00Z'))
     })
