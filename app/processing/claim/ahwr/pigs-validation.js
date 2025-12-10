@@ -2,11 +2,13 @@ import {
   biosecurity,
   claimType,
   livestockTypes,
-  minimumNumberOfAnimalsTested, minimumNumberOfOralFluidSamples,
+  minimumNumberOfAnimalsTested, minimumNumberOfOralFluidSamples, requiredNumberOfBloodSamples,
   testResults as testResultsConstant
 } from '../../../constants/index.js'
 import joi from 'joi'
 import { PIG_GENETIC_SEQUENCING_VALUES } from 'ffc-ahwr-common-library'
+
+export const TYPES_OF_SAMPLE_TAKEN = { blood: 'blood', oralFluid: 'oral-fluid' }
 
 const POSITIVE_SAMPLE_REQ = 6
 const NEGATIVE_SAMPLE_REQ = 30
@@ -18,7 +20,25 @@ const dateOfTesting = { dateOfTesting: joi.date().required() }
 const laboratoryURN = { laboratoryURN: joi.string().required() }
 const getMinNumberAnimalsTested = (minNumber) => ({ numberAnimalsTested: joi.number().min(minNumber).required() })
 const getExactNumberAnimalsTested = (threshold) => ({ numberAnimalsTested: joi.number().valid(threshold).required() }) // this was not required previously. Should be?
-const numberOfOralFluidSamples = { numberOfOralFluidSamples: joi.number().min(minimumNumberOfOralFluidSamples).required() }
+
+const typeOfSamplesTaken = { typeOfSamplesTaken: joi.string().valid(TYPES_OF_SAMPLE_TAKEN.oralFluid, TYPES_OF_SAMPLE_TAKEN.blood) }
+const numberOfOralFluidSamples = {
+  numberOfOralFluidSamples: joi.number()
+    .when('typeOfSamplesTaken', {
+      is: TYPES_OF_SAMPLE_TAKEN.blood,
+      then: joi.forbidden(),
+      otherwise: joi.number().min(minimumNumberOfOralFluidSamples).required()
+    })
+}
+const numberOfBloodSamples = {
+  numberOfBloodSamples: joi.number()
+    .when('typeOfSamplesTaken', {
+      is: TYPES_OF_SAMPLE_TAKEN.blood,
+      then: joi.number().valid(requiredNumberOfBloodSamples).required(),
+      otherwise: joi.forbidden()
+    })
+}
+
 const testResults = { testResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).required() }
 
 const vetVisitsReviewTestResults = { vetVisitsReviewTestResults: joi.string().valid(testResultsConstant.positive, testResultsConstant.negative).optional() }
@@ -47,7 +67,9 @@ export function getPigsValidation (claimData) {
       ...dateOfTesting,
       ...laboratoryURN,
       ...getMinNumberAnimalsTested(minimumAnimalsTestedForReview),
+      ...typeOfSamplesTaken,
       ...numberOfOralFluidSamples,
+      ...numberOfBloodSamples,
       ...testResults
     }
   }
