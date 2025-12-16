@@ -7,6 +7,9 @@ jest.mock('../../../../../app/config/index', () => ({
     multiHerds: {
       releaseDate: new Date()
     },
+    pigsAndPayments: {
+      releaseDate: '2026-01-22'
+    },
     notify: {
       templateIdFarmerEndemicsReviewComplete: ''
     },

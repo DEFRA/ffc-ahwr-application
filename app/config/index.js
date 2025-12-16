@@ -7,9 +7,7 @@ const buildConfig = () => {
   const DEFAULT_REMINDER_EMAIL_MAX_BATCH_SIZE = 5000
 
   const schema = Joi.object({
-    env: Joi.string()
-      .valid('development', 'test', 'production')
-      .default('development'),
+    env: Joi.string().valid('development', 'test', 'production').default('development'),
     isDev: Joi.boolean().default(false),
     serviceUri: Joi.string().uri(),
     documentGeneratorApiUri: Joi.string().uri(),
@@ -36,7 +34,8 @@ const buildConfig = () => {
       enabled: Joi.bool().required(),
       startDate: Joi.string().optional()
     },
-    reminderEmailMaxBatchSize: Joi.number()
+    reminderEmailMaxBatchSize: Joi.number(),
+    pigsAndPayments: { releaseDate: Joi.string().required() }
   })
 
   const mainConfig = {
@@ -67,7 +66,8 @@ const buildConfig = () => {
       enabled: process.env.FEATURE_ASSURANCE_ENABLED === 'true',
       startDate: process.env.FEATURE_ASSURANCE_START || undefined
     },
-    reminderEmailMaxBatchSize: process.env.REMINDER_EMAIL_MAX_BATCH_SIZE || DEFAULT_REMINDER_EMAIL_MAX_BATCH_SIZE
+    reminderEmailMaxBatchSize: process.env.REMINDER_EMAIL_MAX_BATCH_SIZE || DEFAULT_REMINDER_EMAIL_MAX_BATCH_SIZE,
+    pigsAndPayments: { releaseDate: process.env.PIGS_AND_PAYMENTS_RELEASE_DATE || '2026-01-22' }
   }
 
   const { error } = schema.validate(mainConfig, { abortEarly: false })

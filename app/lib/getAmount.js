@@ -1,6 +1,6 @@
 import { getBlob } from '../storage/getBlob.js'
 import { livestockTypes, claimType as claimTypeConstant, testResults, piHunt as piHuntMap, piHuntAllAnimals as piHuntAllAnimalsMap } from './../constants/index.js'
-import { isVisitDateAfterPIHuntAndDairyGoLive } from './context-helper.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive, isPigsAndPaymentsUserJourney } from './context-helper.js'
 
 const getPiHuntValue = (reviewTestResults, piHunt, piHuntAllAnimals, pricesConfig, claimType, typeOfLivestock) => {
   const optionalPiHuntValue = (piHunt === piHuntMap.yes && piHuntAllAnimals === piHuntAllAnimalsMap.yes) ? 'yesPiHunt' : 'noPiHunt'
@@ -30,17 +30,24 @@ const getBeefDairyAmount = (data, pricesConfig, claimType) => {
   return getNonPiHuntValue(reviewTestResults, pricesConfig, claimType, typeOfLivestock)
 }
 
+const isBeefOrDairyFollowUp = (type, typeOfLivestock) => {
+  const { beef, dairy } = livestockTypes
+  const { endemics } = claimTypeConstant
+
+  return [beef, dairy].includes(typeOfLivestock) && type === endemics
+}
+
 export const getAmount = async (payload) => {
+  const { review } = claimTypeConstant
   const { type, data } = payload
-  const typeOfClaim = type === claimTypeConstant.review ? 'review' : 'followUp'
+  const { typeOfLivestock, dateOfVisit } = data
+  const typeOfClaim = type === review ? 'review' : 'followUp'
 
-  const pricesConfig = await getBlob('claim-prices-config.json')
+  const pricesConfigFilename = isPigsAndPaymentsUserJourney(dateOfVisit) ? 'claim-prices-config-20260122.json' : 'claim-prices-config.json'
+  const pricesConfig = await getBlob(pricesConfigFilename)
 
-  const { typeOfLivestock } = data
-
-  if ([livestockTypes.beef, livestockTypes.dairy].includes(typeOfLivestock) && data.reviewTestResults && type === claimTypeConstant.endemics) {
+  if (isBeefOrDairyFollowUp(type, typeOfLivestock)) {
     return getBeefDairyAmount(data, pricesConfig, typeOfClaim)
   }
-
   return pricesConfig[typeOfClaim][typeOfLivestock].value
 }

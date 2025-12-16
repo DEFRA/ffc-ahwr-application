@@ -1,12 +1,14 @@
 import { getAmount } from '../../../../app/lib/getAmount'
 import { livestockTypes, claimType, testResults } from '../../../../app/constants'
-import { claimPricesConfig as mockClaimPricesConfig } from '../../../data/claim-prices-config'
-import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../../app/lib/context-helper.js'
+import { claimPricesConfig as mockClaimPricesConfig, claimPricesConfig20260122 as mockClaimPricesConfig20260122 } from '../../../data/claim-prices-config'
+import { isVisitDateAfterPIHuntAndDairyGoLive, isPigsAndPaymentsUserJourney } from '../../../../app/lib/context-helper.js'
 
 jest.mock('../../../../app/lib/context-helper.js')
 
 jest.mock('../../../../app/storage/getBlob', () => ({
-  getBlob: () => mockClaimPricesConfig
+  getBlob: (filename) => {
+    return (filename === 'claim-prices-config-20260122.json') ? mockClaimPricesConfig20260122 : mockClaimPricesConfig
+  }
 }))
 
 const { beef, dairy, pigs, sheep } = livestockTypes
@@ -20,165 +22,367 @@ describe('getAmount', () => {
     jest.resetAllMocks()
   })
 
-  test.each([
-    {
-      payload: {
-        type: review,
-        data: {
-          typeOfLivestock: beef
-        }
+  describe('pre payment rate increase', () => {
+    beforeEach(async () => {
+      isPigsAndPaymentsUserJourney.mockImplementation(() => { return false })
+    })
+
+    test.each([
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-21'
+          }
+        },
+        amount: 522
       },
-      amount: 522
-    },
-    {
-      payload: {
-        type: review,
-        data: {
-          typeOfLivestock: dairy
-        }
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-21'
+          }
+        },
+        amount: 372
       },
-      amount: 372
-    },
-    {
-      payload: {
-        type: review,
-        data: {
-          typeOfLivestock: pigs
-        }
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: pigs,
+            dateOfVisit: '2026-01-21'
+          }
+        },
+        amount: 557
       },
-      amount: 557
-    },
-    {
-      payload: {
-        type: review,
-        data: {
-          typeOfLivestock: sheep
-        }
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: sheep,
+            dateOfVisit: '2026-01-21'
+          }
+        },
+        amount: 436
+      }
+    ])('for type: $payload.type $payload.data.typeOfLivestock should return $amount', async ({ payload, amount }) => {
+      expect(await getAmount(payload)).toBe(amount)
+    })
+
+    test.each([
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.positive,
+            piHunt: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 837
       },
-      amount: 436
-    }
-  ])('for type: $payload.type $payload.data.typeOfLivestock should return $amount', async ({ payload, amount }) => {
-    expect(await getAmount(payload)).toBe(amount)
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.negative,
+            piHunt: 'yes',
+            piHuntRecommended: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 837
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.negative,
+            piHunt: 'no',
+            piHuntRecommended: 'no',
+            piHuntAllAnimals: 'no'
+          }
+        },
+        amount: 215
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.positive,
+            piHunt: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 1714
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.negative,
+            piHunt: 'yes',
+            piHuntRecommended: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 1714
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.negative,
+            piHunt: 'no',
+            piHuntRecommended: 'no',
+            piHuntAllAnimals: 'no'
+          }
+        },
+        amount: 215
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: pigs,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.negative
+          }
+        },
+        amount: 923
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: pigs,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.positive
+          }
+        },
+        amount: 923
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: sheep,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.negative
+          }
+        },
+        amount: 639
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: sheep,
+            dateOfVisit: '2026-01-21',
+            reviewTestResults: testResults.positive
+          }
+        },
+        amount: 639
+      }
+    ])('for type: $payload.type $payload.data.typeOfLivestock $payload.data.testResults $payload.data.piHunt should return $amount', async ({ payload, amount }) => {
+      expect(await getAmount(payload)).toBe(amount)
+    })
   })
 
-  test.each([
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: beef,
-          reviewTestResults: testResults.positive,
-          piHunt: 'yes',
-          piHuntAllAnimals: 'yes'
-        }
+  describe('post payment rate increase', () => {
+    beforeEach(async () => {
+      isPigsAndPaymentsUserJourney.mockImplementation(() => { return true })
+    })
+
+    test.each([
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-22'
+          }
+        },
+        amount: 647
       },
-      amount: 837
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: beef,
-          reviewTestResults: testResults.negative,
-          piHunt: 'yes',
-          piHuntRecommended: 'yes',
-          piHuntAllAnimals: 'yes'
-        }
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-22'
+          }
+        },
+        amount: 447
       },
-      amount: 837
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: beef,
-          reviewTestResults: testResults.negative,
-          piHunt: 'no',
-          piHuntRecommended: 'no',
-          piHuntAllAnimals: 'no'
-        }
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: pigs,
+            dateOfVisit: '2026-01-22'
+          }
+        },
+        amount: 648
       },
-      amount: 215
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: dairy,
-          reviewTestResults: testResults.positive,
-          piHunt: 'yes',
-          piHuntAllAnimals: 'yes'
-        }
+      {
+        payload: {
+          type: review,
+          data: {
+            typeOfLivestock: sheep,
+            dateOfVisit: '2026-01-22'
+          }
+        },
+        amount: 574
+      }
+    ])('for type: $payload.type $payload.data.typeOfLivestock should return $amount', async ({ payload, amount }) => {
+      expect(await getAmount(payload)).toBe(amount)
+    })
+
+    test.each([
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.positive,
+            piHunt: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 954
       },
-      amount: 1714
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: dairy,
-          reviewTestResults: testResults.negative,
-          piHunt: 'yes',
-          piHuntRecommended: 'yes',
-          piHuntAllAnimals: 'yes'
-        }
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.negative,
+            piHunt: 'yes',
+            piHuntRecommended: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 954
       },
-      amount: 1714
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: dairy,
-          reviewTestResults: testResults.negative,
-          piHunt: 'no',
-          piHuntRecommended: 'no',
-          piHuntAllAnimals: 'no'
-        }
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: beef,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.negative,
+            piHunt: 'no',
+            piHuntRecommended: 'no',
+            piHuntAllAnimals: 'no'
+          }
+        },
+        amount: 258
       },
-      amount: 215
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: pigs,
-          reviewTestResults: testResults.negative
-        }
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.positive,
+            piHunt: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 1844
       },
-      amount: 923
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: pigs,
-          reviewTestResults: testResults.positive
-        }
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.negative,
+            piHunt: 'yes',
+            piHuntRecommended: 'yes',
+            piHuntAllAnimals: 'yes'
+          }
+        },
+        amount: 1844
       },
-      amount: 923
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: sheep,
-          reviewTestResults: testResults.negative
-        }
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: dairy,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.negative,
+            piHunt: 'no',
+            piHuntRecommended: 'no',
+            piHuntAllAnimals: 'no'
+          }
+        },
+        amount: 258
       },
-      amount: 639
-    },
-    {
-      payload: {
-        type: endemics,
-        data: {
-          typeOfLivestock: sheep,
-          reviewTestResults: testResults.positive
-        }
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: pigs,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.negative
+          }
+        },
+        amount: 1087
       },
-      amount: 639
-    }
-  ])('for type: $payload.type $payload.data.typeOfLivestock $payload.data.testResults $payload.data.piHunt should return $amount', async ({ payload, amount }) => {
-    expect(await getAmount(payload)).toBe(amount)
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: pigs,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.positive
+          }
+        },
+        amount: 1087
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: sheep,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.negative
+          }
+        },
+        amount: 658
+      },
+      {
+        payload: {
+          type: endemics,
+          data: {
+            typeOfLivestock: sheep,
+            dateOfVisit: '2026-01-22',
+            reviewTestResults: testResults.positive
+          }
+        },
+        amount: 658
+      }
+    ])('for type: $payload.type $payload.data.typeOfLivestock $payload.data.testResults $payload.data.piHunt should return $amount', async ({ payload, amount }) => {
+      expect(await getAmount(payload)).toBe(amount)
+    })
   })
 })
