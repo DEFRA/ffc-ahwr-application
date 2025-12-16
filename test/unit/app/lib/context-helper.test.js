@@ -1,5 +1,5 @@
 import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from '../../../../app/constants/index.js'
-import { isVisitDateAfterPIHuntAndDairyGoLive, isMultipleHerdsUserJourney } from '../../../../app/lib/context-helper.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive, isMultipleHerdsUserJourney, isPigsAndPaymentsUserJourney } from '../../../../app/lib/context-helper.js'
 
 describe('context-helper', () => {
   test('isVisitDateAfterGoLive throws error when no visit date provided', () => {
@@ -34,5 +34,19 @@ describe('context-helper', () => {
   })
   test('isMultipleHerdsUserJourney, returns true when visit date on/after go-live and no reject T&Cs flag', () => {
     expect(isMultipleHerdsUserJourney('2025-05-01T00:00:00.000Z', [{ appliesToMh: false }])).toBe(true)
+  })
+
+  describe('isPigsAndPaymentsUserJourney', () => {
+    it('should return true when visit date on golive', () => {
+      expect(isPigsAndPaymentsUserJourney('2026-01-22T00:00:00.000Z')).toBe(true)
+    })
+
+    it('should return true when visit date after golive', () => {
+      expect(isPigsAndPaymentsUserJourney('2026-01-23T00:00:00.000Z')).toBe(true)
+    })
+
+    it('should return false when visit date before golive', () => {
+      expect(isPigsAndPaymentsUserJourney('2026-01-21T00:00:00.000Z')).toBe(false)
+    })
   })
 })

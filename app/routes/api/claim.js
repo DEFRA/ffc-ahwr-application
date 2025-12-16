@@ -284,6 +284,7 @@ export const claimHandlers = [
               whichReview: typeOfLivestock,
               isEndemics: true,
               claimType: claim.dataValues.data.claimType,
+              dateOfVisit: claim.dataValues.data.dateOfVisit,
               reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
               frn,
               optionalPiHuntValue

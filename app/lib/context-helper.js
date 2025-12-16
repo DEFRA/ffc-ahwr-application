@@ -1,4 +1,4 @@
-import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE, MULTIPLE_HERDS_RELEASE_DATE } from '../constants/index.js'
+import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE, MULTIPLE_HERDS_RELEASE_DATE, PIGS_AND_PAYMENTS_RELEASE_DATE } from '../constants/index.js'
 
 export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
   const dateOfVisitParsed = new Date(dateOfVisit)
@@ -16,4 +16,8 @@ export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
 
   // check for rejected T&Cs flag, if absent then is multiple herds journey
   return !agreementFlags?.some(f => f.appliesToMh)
+}
+
+export const isPigsAndPaymentsUserJourney = (dateOfVisit) => {
+  return new Date(dateOfVisit) >= PIGS_AND_PAYMENTS_RELEASE_DATE
 }

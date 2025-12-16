@@ -29,4 +29,5 @@ data:
   FEATURE_ASSURANCE_ENABLED: {{ quote .Values.container.featureAssuranceEnabled }}
   FEATURE_ASSURANCE_START: {{ quote .Values.container.featureAssuranceStartDate }}
   REMINDER_EMAIL_MAX_BATCH_SIZE: {{ quote .Values.container.reminderEmailMaxBatchSize }}
+  PIGS_AND_PAYMENTS_RELEASE_DATE: {{ quote .Values.container.pigsAndPaymentsReleaseDate }}
 {{- end -}}
