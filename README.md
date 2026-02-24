@@ -1,3 +1,5 @@
+# ⚠️ Note this repository is being archived, and is replaced by the backend service at https://github.com/DEFRA/ahwr-application-backend/ ⚠️
+
 # FFC AHWR Application Manager
 
 > Application Manager for Animal Health and Welfare Review
